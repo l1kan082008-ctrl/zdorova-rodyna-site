@@ -535,6 +535,30 @@ footer {
   padding: 48px 0 56px;
 }
 
+.footer-mark {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  overflow: hidden;
+  border-radius: 50%;
+  transition: transform 180ms ease;
+}
+
+.footer-mark:hover,
+.footer-mark:focus-visible {
+  transform: rotate(-3deg) scale(1.04);
+}
+
+.footer-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: multiply;
+}
+
 footer p {
   color: #536366;
   font-size: 14px;
@@ -850,6 +874,11 @@ footer p {
     flex-direction: column;
     padding-bottom: 38px;
     text-align: center;
+  }
+
+  .footer-mark {
+    width: 76px;
+    height: 76px;
   }
 
   .booking-modal {

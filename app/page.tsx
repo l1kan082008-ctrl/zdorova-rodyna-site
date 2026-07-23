@@ -70,6 +70,18 @@ function Logo() {
   );
 }
 
+function BrandMark() {
+  return (
+    <a
+      className="footer-mark"
+      href="#top"
+      aria-label="Здорова Родина — на головну"
+    >
+      <img src="/zdorova-rodyna-mark.jpg" alt="" />
+    </a>
+  );
+}
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -224,7 +236,7 @@ export default function Home() {
       </section>
 
       <footer id="contacts">
-        <Logo />
+        <BrandMark />
         <p>Турбота про здоров’я вашої родини щодня.</p>
         <button className="book-button" onClick={() => setBookingOpen(true)}>
           Записатися
