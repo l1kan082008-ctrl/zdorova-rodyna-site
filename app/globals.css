@@ -71,68 +71,22 @@ footer {
 }
 
 .logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 13px;
-  width: max-content;
-}
-
-.logo-mark {
   position: relative;
-  display: grid;
-  place-items: center;
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle, #0d686a 0 27%, transparent 28%),
-    repeating-conic-gradient(from 8deg, #ff7900 0deg 20deg, transparent 20deg 40deg);
+  display: block;
+  flex: 0 0 auto;
+  width: 270px;
+  height: 60px;
+  overflow: hidden;
 }
 
-.logo-mark::before,
-.logo-mark::after,
-.logo-mark i::before,
-.logo-mark i::after {
+.logo img {
   position: absolute;
-  content: "";
-  width: 27px;
-  height: 54px;
-  border: 1px solid #ff7900;
-  border-radius: 50%;
-}
-
-.logo-mark::after {
-  transform: rotate(60deg);
-}
-
-.logo-mark i::before {
-  transform: rotate(120deg);
-}
-
-.logo-mark b {
-  position: relative;
-  z-index: 2;
-  color: #fff;
-  font-size: 20px;
-  font-weight: 400;
-}
-
-.logo-type {
-  display: flex;
-  flex-direction: column;
-  color: #223137;
-  line-height: 1;
-}
-
-.logo-type strong {
-  font-size: 18px;
-  letter-spacing: -0.02em;
-}
-
-.logo-type small {
-  margin-top: 8px;
-  font-size: 10px;
-  letter-spacing: 0.25em;
+  top: -34px;
+  left: -30px;
+  width: 332px;
+  max-width: none;
+  height: auto;
+  mix-blend-mode: multiply;
 }
 
 .main-nav {
@@ -771,17 +725,15 @@ footer p {
     display: none;
   }
 
-  .logo-mark {
-    width: 48px;
+  .logo {
+    width: 210px;
     height: 48px;
   }
 
-  .logo-type strong {
-    font-size: 15px;
-  }
-
-  .logo-type small {
-    font-size: 8px;
+  .logo img {
+    top: -27px;
+    left: -23px;
+    width: 258px;
   }
 
   .main-nav {

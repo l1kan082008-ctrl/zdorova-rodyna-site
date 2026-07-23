@@ -62,14 +62,10 @@ const quickItems = [
 function Logo() {
   return (
     <a className="logo" href="#top" aria-label="Здорова Родина — на головну">
-      <span className="logo-mark" aria-hidden="true">
-        <i />
-        <b>✚</b>
-      </span>
-      <span className="logo-type">
-        <strong>ЗДОРОВА РОДИНА</strong>
-        <small>медичний центр</small>
-      </span>
+      <img
+        src="/zdorova-rodyna-logo.png"
+        alt="Здорова Родина — медичний центр"
+      />
     </a>
   );
 }
