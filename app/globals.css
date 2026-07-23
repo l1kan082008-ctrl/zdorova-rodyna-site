@@ -399,13 +399,316 @@ footer {
   position: relative;
   z-index: 1;
   align-self: start;
-  width: max-content;
+  display: block;
+  width: 58px;
+  height: 58px;
   color: #fff;
-  font-family: Georgia, serif;
-  font-size: 47px;
+}
+
+.service-icon i,
+.service-icon b,
+.service-icon em {
+  position: absolute;
+  display: block;
+  box-sizing: border-box;
+  color: inherit;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.icon-ct::before,
+.icon-mri::before {
+  position: absolute;
+  top: 1px;
+  left: 5px;
+  width: 48px;
+  height: 48px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  content: "";
+}
+
+.icon-ct::after,
+.icon-mri::after {
+  position: absolute;
+  top: 11px;
+  left: 15px;
+  width: 28px;
+  height: 28px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  content: "";
+}
+
+.icon-ct i,
+.icon-mri i {
+  right: 0;
+  bottom: 3px;
+  left: 0;
+  height: 2px;
+  background: currentColor;
+}
+
+.icon-ct b,
+.icon-mri b {
+  bottom: 5px;
+  left: 17px;
+  width: 31px;
+  height: 5px;
+  border: 2px solid currentColor;
+  border-radius: 5px 0 0 5px;
+}
+
+.icon-ct em,
+.icon-mri em {
+  bottom: 5px;
+  left: 10px;
+  width: 7px;
+  height: 7px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.icon-mri::before {
+  border-bottom-color: transparent;
+}
+
+.icon-mri i {
+  bottom: 1px;
+  height: 7px;
+  border: 2px solid currentColor;
+  border-radius: 2px;
+  background: transparent;
+}
+
+.icon-ultrasound::before {
+  position: absolute;
+  top: 1px;
+  left: 12px;
+  width: 19px;
+  height: 31px;
+  border: 2px solid currentColor;
+  border-radius: 12px 12px 7px 7px;
+  content: "";
+  transform: rotate(38deg);
+}
+
+.icon-ultrasound::after {
+  position: absolute;
+  top: 24px;
+  left: 25px;
+  width: 27px;
+  height: 27px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  border-radius: 0 0 24px;
+  content: "";
+  transform: rotate(12deg);
+}
+
+.icon-ultrasound i {
+  top: 22px;
+  left: 4px;
+  width: 24px;
+  height: 8px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  transform: rotate(38deg);
+}
+
+.icon-ultrasound b {
+  right: 2px;
+  bottom: 3px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.icon-lab i,
+.icon-lab b {
+  top: 3px;
+  width: 16px;
+  height: 49px;
+  border: 2px solid currentColor;
+  border-top: 0;
+  border-radius: 0 0 9px 9px;
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.3) 0 28%, transparent 29%);
+}
+
+.icon-lab i {
+  left: 8px;
+}
+
+.icon-lab b {
+  right: 8px;
+}
+
+.icon-lab::before,
+.icon-lab::after {
+  position: absolute;
+  top: 1px;
+  width: 22px;
+  height: 2px;
+  background: currentColor;
+  content: "";
+}
+
+.icon-lab::before {
+  left: 5px;
+}
+
+.icon-lab::after {
+  right: 5px;
+}
+
+.icon-consultation::before {
+  position: absolute;
+  top: 1px;
+  left: 20px;
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  content: "";
+}
+
+.icon-consultation::after {
+  position: absolute;
+  bottom: 2px;
+  left: 7px;
+  width: 44px;
+  height: 34px;
+  border: 2px solid currentColor;
+  border-radius: 22px 22px 4px 4px;
+  content: "";
+}
+
+.icon-consultation i {
+  top: 29px;
+  left: 17px;
+  width: 24px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-top: 0;
+  border-radius: 0 0 15px 15px;
+}
+
+.icon-consultation b {
+  top: 24px;
+  left: 27px;
+  width: 2px;
+  height: 14px;
+  background: currentColor;
+}
+
+.icon-cardiology::before {
+  position: absolute;
+  top: -8px;
+  left: 0;
+  content: "♡";
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 64px;
   font-weight: 300;
   line-height: 1;
-  text-shadow: 0 0 1px #fff;
+}
+
+.icon-cardiology::after {
+  position: absolute;
+  top: 27px;
+  left: 8px;
+  content: "⌁";
+  font-size: 30px;
+  transform: rotate(-7deg);
+}
+
+.icon-holter::before {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  width: 52px;
+  height: 42px;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+  content: "";
+}
+
+.icon-holter::after {
+  position: absolute;
+  top: 12px;
+  left: 9px;
+  content: "⌁";
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 35px;
+  line-height: 1;
+}
+
+.icon-holter i {
+  bottom: 5px;
+  left: 27px;
+  width: 2px;
+  height: 10px;
+  background: currentColor;
+}
+
+.icon-holter b {
+  right: 14px;
+  bottom: 3px;
+  left: 14px;
+  height: 2px;
+  background: currentColor;
+}
+
+.icon-family i,
+.icon-family b,
+.icon-family em {
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.icon-family i {
+  top: 1px;
+  left: 21px;
+  width: 17px;
+  height: 17px;
+}
+
+.icon-family b {
+  top: 12px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+}
+
+.icon-family em {
+  top: 12px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+}
+
+.icon-family::before {
+  position: absolute;
+  bottom: 1px;
+  left: 13px;
+  width: 32px;
+  height: 31px;
+  border: 2px solid currentColor;
+  border-bottom: 0;
+  border-radius: 18px 18px 0 0;
+  content: "";
+}
+
+.icon-family::after {
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  width: 58px;
+  height: 22px;
+  border: 2px solid currentColor;
+  border-bottom: 0;
+  border-radius: 30px 30px 0 0;
+  content: "";
 }
 
 .service-card strong {

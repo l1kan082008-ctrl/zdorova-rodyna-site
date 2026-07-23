@@ -3,14 +3,14 @@
 import { FormEvent, useState } from "react";
 
 const services = [
-  { title: "КТ", icon: "◎" },
-  { title: "МРТ", icon: "◉" },
-  { title: "УЗД", icon: "⌁" },
-  { title: "Лабораторія", icon: "╫" },
-  { title: "Консультації лікарів", icon: "♙" },
-  { title: "Кардіологія", icon: "♡" },
-  { title: "Холтер", icon: "⌗" },
-  { title: "Сімейний лікар", icon: "♧" },
+  { title: "КТ", icon: "ct" },
+  { title: "МРТ", icon: "mri" },
+  { title: "УЗД", icon: "ultrasound" },
+  { title: "Лабораторія", icon: "lab" },
+  { title: "Консультації лікарів", icon: "consultation" },
+  { title: "Кардіологія", icon: "cardiology" },
+  { title: "Холтер", icon: "holter" },
+  { title: "Сімейний лікар", icon: "family" },
 ];
 
 const advantages = [
@@ -79,6 +79,16 @@ function BrandMark() {
     >
       <img src="/zdorova-rodyna-mark.jpg" alt="" />
     </a>
+  );
+}
+
+function ServiceIcon({ type }: { type: string }) {
+  return (
+    <span className={`service-icon icon-${type}`} aria-hidden="true">
+      <i />
+      <b />
+      <em />
+    </span>
   );
 }
 
@@ -189,9 +199,7 @@ export default function Home() {
               onClick={() => setBookingOpen(true)}
               aria-label={`${service.title}: записатися`}
             >
-              <span className="service-icon" aria-hidden="true">
-                {service.icon}
-              </span>
+              <ServiceIcon type={service.icon} />
               <strong>{service.title}</strong>
               <span className="service-arrow" aria-hidden="true">
                 →
