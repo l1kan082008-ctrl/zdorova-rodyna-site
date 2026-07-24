@@ -18,6 +18,13 @@ const patientGroupValues = new Set<DoctorPatientGroup>([
   "adults",
   "children",
 ]);
+const brokenEncodingPattern = /[\u0080-\u009f\u00c2\u00c3\u00d0\u00d1\ufffd]/u;
+
+function hasBrokenEncoding(values: Array<string | undefined>) {
+  return values.some(
+    (value) => typeof value === "string" && brokenEncodingPattern.test(value),
+  );
+}
 
 export async function GET(request: Request) {
   if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
@@ -57,6 +64,24 @@ export async function PUT(request: Request) {
     if (!id || !specialty) {
       return Response.json(
         { error: "Лікар і спеціальність є обов’язковими" },
+        { status: 400 },
+      );
+    }
+
+    if (
+      hasBrokenEncoding([
+        specialty,
+        payload.branch,
+        payload.description,
+        payload.biography,
+        ...Object.values(payload.schedule ?? {}),
+      ])
+    ) {
+      return Response.json(
+        {
+          error:
+            "Текст має пошкоджене кодування. Оновіть сторінку та введіть його ще раз.",
+        },
         { status: 400 },
       );
     }
