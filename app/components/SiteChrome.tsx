@@ -87,6 +87,29 @@ export function SiteFooter() {
           </a>
         ))}
       </nav>
+      <div className="footer-socials">
+        <strong>Наші соцмережі</strong>
+        <div>
+          <a
+            className="footer-social-link"
+            href="https://www.facebook.com/zdorovarodina.rivne"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Здорова Родина у Facebook"
+          >
+            <span className="social-icon-facebook" aria-hidden="true">f</span>
+          </a>
+          <a
+            className="footer-social-link"
+            href="https://www.instagram.com/zdorova_rodyna_rivne/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Здорова Родина в Instagram"
+          >
+            <span className="social-icon-instagram" aria-hidden="true" />
+          </a>
+        </div>
+      </div>
       <div className="footer-contacts">
         <a href="tel:+380676714444">+38 (067) 671-44-44</a>
         <a href="mailto:zdorovarodynarivne@ukr.net">
