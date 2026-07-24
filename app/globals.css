@@ -435,19 +435,6 @@ footer {
     box-shadow 180ms ease;
 }
 
-.service-card:nth-child(3n + 1) {
-  background:
-    radial-gradient(circle at 88% 8%, rgba(255, 226, 174, 0.34), transparent 34%),
-    linear-gradient(135deg, #ff9614 0%, #f47405 58%, #ca4e00 100%);
-  box-shadow: 0 18px 38px rgba(204, 81, 0, 0.2);
-}
-
-.service-card:nth-child(3n) {
-  background:
-    radial-gradient(circle at 88% 8%, rgba(204, 255, 250, 0.25), transparent 35%),
-    linear-gradient(135deg, #3da7a4 0%, #168083 58%, #075d65 100%);
-}
-
 .service-card::before {
   position: absolute;
   inset: 0;
