@@ -1,7 +1,5 @@
-"use client";
-
-import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
+import { SiteFooter, SiteHeader } from "./components/SiteChrome";
 
 const services = [
   { title: "КТ", icon: "ct" },
@@ -95,29 +93,6 @@ const priceDirections = [
     note: "Актуальність ціни підтвердить адміністратор.",
   },
 ];
-
-function Logo() {
-  return (
-    <Link className="logo" href="/" aria-label="Здорова Родина — на головну">
-      <img
-        src="/zdorova-rodyna-logo.png"
-        alt="Здорова Родина — медичний центр"
-      />
-    </Link>
-  );
-}
-
-function BrandMark() {
-  return (
-    <Link
-      className="footer-mark"
-      href="/"
-      aria-label="Здорова Родина — на головну"
-    >
-      <img src="/zdorova-rodyna-mark.jpg" alt="" />
-    </Link>
-  );
-}
 
 function LineIcon({ type }: { type: string }) {
   const content = (() => {
@@ -295,96 +270,9 @@ function ServiceIcon({ type }: { type: string }) {
 }
 
 export default function Home() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [bookingOpen, setBookingOpen] = useState(false);
-  const [sent, setSent] = useState(false);
-
-  const submitBooking = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSent(true);
-  };
-
-  const closeBooking = () => {
-    setBookingOpen(false);
-    setSent(false);
-  };
-
-  useEffect(() => {
-    if (!bookingOpen) return;
-
-    const previousOverflow = document.body.style.overflow;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setBookingOpen(false);
-        setSent(false);
-      }
-    };
-
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", closeOnEscape);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [bookingOpen]);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
-    };
-
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [menuOpen]);
-
   return (
     <main id="top">
-      <header className="site-header">
-        <Logo />
-
-        <nav
-          className={menuOpen ? "main-nav is-open" : "main-nav"}
-          aria-label="Основна навігація"
-        >
-          <a href="/services" onClick={() => setMenuOpen(false)}>
-            Послуги
-          </a>
-          <a href="/doctors" onClick={() => setMenuOpen(false)}>
-            Лікарі
-          </a>
-          <a href="/about" onClick={() => setMenuOpen(false)}>
-            Про центр
-          </a>
-          <a href="/prices" onClick={() => setMenuOpen(false)}>
-            Вартість
-          </a>
-          <a href="/contacts" onClick={() => setMenuOpen(false)}>
-            Контакти
-          </a>
-        </nav>
-
-        <button
-          className="book-button header-book"
-          type="button"
-          onClick={() => setBookingOpen(true)}
-        >
-          Записатися на прийом
-        </button>
-        <button
-          className="menu-button"
-          type="button"
-          aria-label={menuOpen ? "Закрити меню" : "Відкрити меню"}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-      </header>
+      <SiteHeader />
 
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-copy">
@@ -400,12 +288,12 @@ export default function Home() {
             яким довіряють найцінніше.
           </p>
           <div className="hero-actions">
-            <button className="book-button" onClick={() => setBookingOpen(true)}>
+            <Link className="book-button" href="/contacts#booking">
               Записатися на прийом <span>→</span>
-            </button>
-            <a className="outline-button" href="/services">
+            </Link>
+            <Link className="outline-button" href="/services">
               Переглянути послуги <span>→</span>
-            </a>
+            </Link>
           </div>
         </div>
         <div className="hero-art" role="img" aria-label="Абстрактна скульптура родини" />
@@ -434,10 +322,10 @@ export default function Home() {
         </div>
         <div className="services-grid" id="services-grid">
           {services.map((service) => (
-            <button
+            <Link
               className="service-card"
               key={service.title}
-              onClick={() => setBookingOpen(true)}
+              href={`/contacts?service=${encodeURIComponent(service.title)}#booking`}
               aria-label={`${service.title}: записатися`}
             >
               <ServiceIcon type={service.icon} />
@@ -445,7 +333,7 @@ export default function Home() {
               <span className="service-arrow" aria-hidden="true">
                 →
               </span>
-            </button>
+            </Link>
           ))}
         </div>
       </section>
@@ -469,9 +357,12 @@ export default function Home() {
               </span>
               <h3>{direction.title}</h3>
               <p>{direction.text}</p>
-              <button className="text-button" onClick={() => setBookingOpen(true)}>
+              <Link
+                className="text-button"
+                href={`/contacts?service=${encodeURIComponent(direction.title)}#booking`}
+              >
                 Записатися <span>→</span>
-              </button>
+              </Link>
             </article>
           ))}
         </div>
@@ -529,9 +420,12 @@ export default function Home() {
               <h3>{item.title}</h3>
               <strong>{item.text}</strong>
               <p>{item.note}</p>
-              <button className="outline-button" onClick={() => setBookingOpen(true)}>
+              <Link
+                className="outline-button"
+                href={`/contacts?service=${encodeURIComponent(item.title)}#booking`}
+              >
                 Уточнити вартість <span>→</span>
-              </button>
+              </Link>
             </article>
           ))}
         </div>
@@ -574,104 +468,8 @@ export default function Home() {
         </ol>
       </section>
 
-      <footer>
-        <div className="footer-brand">
-          <BrandMark />
-          <div>
-            <strong>Здорова Родина</strong>
-            <p>Лікувально-діагностичний центр у Рівному.</p>
-          </div>
-        </div>
-        <nav className="footer-nav" aria-label="Навігація у підвалі">
-          <a href="/services">Послуги</a>
-          <a href="/doctors">Лікарі</a>
-          <a href="/about">Про центр</a>
-          <a href="/prices">Вартість</a>
-          <a href="/contacts">Контакти</a>
-        </nav>
-        <p className="footer-note">
-          <a href="tel:+380676714444">+38 (067) 671-44-44</a><br />
-          <a href="mailto:zdorovarodynarivne@ukr.net">zdorovarodynarivne@ukr.net</a>
-        </p>
-      </footer>
+      <SiteFooter />
 
-      {bookingOpen && (
-        <div className="modal-backdrop" role="presentation" onMouseDown={closeBooking}>
-          <section
-            className="booking-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="booking-title"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <button
-              className="modal-close"
-              type="button"
-              onClick={closeBooking}
-              aria-label="Закрити"
-              autoFocus
-            >
-              ×
-            </button>
-            {sent ? (
-              <div className="success-message" aria-live="polite">
-                <span>✓</span>
-                <h2>Дякуємо!</h2>
-                <p>Це демоверсія форми. Для запису зателефонуйте адміністратору.</p>
-                <a className="book-button" href="tel:+380676714444">
-                  +38 (067) 671-44-44
-                </a>
-              </div>
-            ) : (
-              <>
-                <span className="about-kicker">Онлайн-запис</span>
-                <h2 id="booking-title">Записатися на прийом</h2>
-                <p>Демоверсія форми. Для гарантованого запису телефонуйте адміністратору.</p>
-                <form onSubmit={submitBooking}>
-                  <label htmlFor="home-booking-name">
-                    Ваше ім’я
-                    <input
-                      id="home-booking-name"
-                      name="name"
-                      autoComplete="name"
-                      placeholder="Ім’я та прізвище"
-                      required
-                    />
-                  </label>
-                  <label htmlFor="home-booking-phone">
-                    Номер телефону
-                    <input
-                      id="home-booking-phone"
-                      name="phone"
-                      type="tel"
-                      inputMode="tel"
-                      autoComplete="tel"
-                      placeholder="+380"
-                      required
-                    />
-                  </label>
-                  <label htmlFor="home-booking-service">
-                    Послуга
-                    <select id="home-booking-service" name="service" defaultValue="">
-                      <option value="" disabled>
-                        Оберіть послугу
-                      </option>
-                      {services.map((service) => (
-                        <option value={service.title} key={service.title}>
-                          {service.title}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <button className="book-button" type="submit">
-                    Перевірити форму <span>→</span>
-                  </button>
-                </form>
-              </>
-            )}
-          </section>
-        </div>
-      )}
     </main>
   );
 }

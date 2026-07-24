@@ -418,21 +418,34 @@ footer {
   position: relative;
   display: grid;
   grid-template-rows: 1fr auto;
-  min-height: 155px;
-  padding: 22px 28px;
+  min-height: 170px;
+  padding: 24px 28px;
   overflow: hidden;
   border: 0;
   border-radius: 18px;
   background:
-    radial-gradient(circle at 85% 10%, rgba(255, 255, 255, 0.22), transparent 34%),
-    linear-gradient(130deg, #08777a 0%, #16888a 45%, #74b4b3 100%);
+    radial-gradient(circle at 88% 8%, rgba(124, 231, 226, 0.28), transparent 34%),
+    linear-gradient(135deg, #086f74 0%, #075d65 58%, #04464f 100%);
   color: #fff;
   text-align: left;
-  box-shadow: 0 13px 30px rgba(7, 94, 97, 0.16);
+  box-shadow: 0 18px 38px rgba(4, 71, 76, 0.22);
   cursor: pointer;
   transition:
     transform 180ms ease,
     box-shadow 180ms ease;
+}
+
+.service-card:nth-child(3n + 1) {
+  background:
+    radial-gradient(circle at 88% 8%, rgba(255, 226, 174, 0.34), transparent 34%),
+    linear-gradient(135deg, #ff9614 0%, #f47405 58%, #ca4e00 100%);
+  box-shadow: 0 18px 38px rgba(204, 81, 0, 0.2);
+}
+
+.service-card:nth-child(3n) {
+  background:
+    radial-gradient(circle at 88% 8%, rgba(204, 255, 250, 0.25), transparent 35%),
+    linear-gradient(135deg, #3da7a4 0%, #168083 58%, #075d65 100%);
 }
 
 .service-card::before {
@@ -446,8 +459,8 @@ footer {
 
 .service-card:hover,
 .service-card:focus-visible {
-  transform: translateY(-4px);
-  box-shadow: 0 18px 38px rgba(7, 94, 97, 0.24);
+  transform: translateY(-6px);
+  box-shadow: 0 26px 52px rgba(5, 73, 78, 0.3);
 }
 
 .service-icon {
@@ -847,12 +860,21 @@ footer {
   flex-direction: column;
   min-height: 285px;
   padding: 28px;
-  border: 1px solid #dbe9e8;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 22px;
   background:
-    radial-gradient(circle at 95% 0%, rgba(64, 154, 154, 0.13), transparent 38%),
-    #fff;
-  box-shadow: 0 14px 36px rgba(24, 73, 76, 0.07);
+    radial-gradient(circle at 95% 0%, rgba(110, 222, 217, 0.3), transparent 38%),
+    linear-gradient(145deg, #0d8586 0%, #08676d 62%, #064b54 100%);
+  color: #fff;
+  box-shadow: 0 20px 44px rgba(4, 71, 76, 0.2);
+}
+
+.doctor-card:nth-child(2) {
+  background:
+    radial-gradient(circle at 95% 0%, rgba(255, 224, 169, 0.36), transparent 38%),
+    linear-gradient(145deg, #ff9513 0%, #ef7004 62%, #c64b00 100%);
+  box-shadow: 0 20px 44px rgba(199, 76, 0, 0.2);
 }
 
 .doctor-icon {
@@ -863,8 +885,10 @@ footer {
   margin-bottom: 24px;
   padding: 8px;
   border-radius: 16px;
-  background: #e8f5f3;
-  color: var(--teal);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .doctor-card h3,
@@ -875,12 +899,20 @@ footer {
   letter-spacing: -0.025em;
 }
 
+.doctor-card h3 {
+  color: #fff;
+}
+
 .doctor-card p,
 .price-card p {
   margin: 0;
   color: #536468;
   font-size: 14px;
   line-height: 1.6;
+}
+
+.doctor-card p {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .text-button {
@@ -895,6 +927,24 @@ footer {
   color: var(--ink);
   font-weight: 700;
   cursor: pointer;
+}
+
+.doctor-card .text-button {
+  color: #fff;
+}
+
+.doctor-card .text-button span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--teal);
+}
+
+.doctor-card:nth-child(2) .text-button span {
+  color: #d45400;
 }
 
 .text-button span {
@@ -1013,9 +1063,20 @@ footer {
   flex-direction: column;
   min-height: 290px;
   padding: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 22px;
-  background: #fff;
-  box-shadow: 0 16px 42px rgba(24, 73, 76, 0.08);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(86, 196, 193, 0.28), transparent 38%),
+    linear-gradient(145deg, #075f65 0%, #073f49 100%);
+  box-shadow: 0 20px 46px rgba(4, 65, 70, 0.2);
+}
+
+.price-card:nth-child(2) {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 224, 169, 0.34), transparent 38%),
+    linear-gradient(145deg, #f58a0b 0%, #d85a00 100%);
+  box-shadow: 0 20px 46px rgba(192, 70, 0, 0.2);
 }
 
 .price-label {
@@ -1023,8 +1084,9 @@ footer {
   margin-bottom: 22px;
   padding: 7px 11px;
   border-radius: 999px;
-  background: #e6f3f2;
-  color: var(--teal);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -1034,9 +1096,17 @@ footer {
 .price-card strong {
   display: block;
   margin-bottom: 13px;
-  color: #2d4246;
-  font-size: 15px;
+  color: #ffd09d;
+  font-size: 18px;
   line-height: 1.4;
+}
+
+.price-card h3 {
+  color: #fff;
+}
+
+.price-card p {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .price-card .outline-button {
@@ -1044,7 +1114,14 @@ footer {
   min-height: 44px;
   margin-top: auto;
   padding-inline: 16px;
+  border-color: #fff;
+  background: #fff;
+  color: var(--teal);
   font-size: 12px;
+}
+
+.price-card:nth-child(2) .outline-button {
+  color: #d45400;
 }
 
 .contact-section {
