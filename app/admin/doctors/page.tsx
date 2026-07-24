@@ -332,7 +332,10 @@ export default function DoctorsAdminPage() {
     <main className="admin-doctors-page">
       <header className="admin-topbar">
         <Link href="/doctors">← До каталогу лікарів</Link>
-        <strong>Здорова Родина · Керування лікарями</strong>
+        <nav aria-label="Адміністративні розділи">
+          <strong>Лікарі</strong>
+          <Link href="/admin/bookings">Заявки</Link>
+        </nav>
       </header>
 
       <section className="admin-intro">

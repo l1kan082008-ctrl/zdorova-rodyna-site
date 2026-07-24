@@ -1294,6 +1294,8 @@ footer {
 .about-route,
 .about-values,
 .values-grid,
+.service-promise-strip,
+.booking-journey,
 .price-notice,
 .contact-route {
   width: min(1180px, calc(100% - 48px));
@@ -1379,6 +1381,244 @@ footer {
   margin-top: auto;
   color: var(--ink);
   font-size: 13px;
+}
+
+.services-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.services-hero-actions .book-button,
+.services-hero-actions .outline-button {
+  min-width: 220px;
+}
+
+.service-promise-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 28px;
+  overflow: hidden;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(255, 255, 255, 0.18), transparent 32%),
+    linear-gradient(115deg, #0a7779, #075b60);
+  box-shadow: 0 20px 48px rgba(7, 94, 97, 0.17);
+}
+
+.service-promise-strip article {
+  position: relative;
+  min-height: 148px;
+  padding: 28px 30px;
+  border-right: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.service-promise-strip article:last-child {
+  border-right: 0;
+}
+
+.service-promise-strip article > span {
+  display: block;
+  margin-bottom: 17px;
+  color: #ffb16d;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.service-promise-strip strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 17px;
+}
+
+.service-promise-strip p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.services-route-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.service-route-card {
+  min-height: 360px;
+  padding: 30px;
+  border-color: rgba(19, 111, 114, 0.13);
+  border-radius: 26px;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.service-route-card::before {
+  position: absolute;
+  top: -90px;
+  right: -70px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  content: "";
+}
+
+.service-route-card:hover,
+.service-route-card:focus-within {
+  transform: translateY(-4px);
+  border-color: rgba(255, 126, 0, 0.38);
+  box-shadow: 0 22px 54px rgba(24, 73, 76, 0.14);
+}
+
+.service-route-card--teal {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(29, 152, 151, 0.2), transparent 40%),
+    linear-gradient(150deg, #ffffff, #edf7f6);
+}
+
+.service-route-card--orange {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 126, 0, 0.18), transparent 40%),
+    linear-gradient(150deg, #ffffff, #fff7ee);
+}
+
+.service-route-card--aqua {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(105, 190, 188, 0.24), transparent 42%),
+    linear-gradient(150deg, #ffffff, #f0f9f8);
+}
+
+.service-card-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 34px;
+}
+
+.service-card-mark {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  border: 1px solid rgba(5, 90, 94, 0.2);
+  border-radius: 19px;
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--teal);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  box-shadow: 0 12px 28px rgba(24, 73, 76, 0.08);
+}
+
+.service-route-card--orange .service-card-mark {
+  border-color: rgba(255, 126, 0, 0.24);
+  color: #d86800;
+}
+
+.service-route-card .route-number {
+  margin: 9px 0 0;
+}
+
+.service-route-card .route-category {
+  position: relative;
+  z-index: 1;
+}
+
+.service-route-card h2,
+.service-route-card p,
+.service-card-book {
+  position: relative;
+  z-index: 1;
+}
+
+.service-route-card .service-card-book {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 18px;
+  border-top: 1px solid rgba(10, 98, 101, 0.14);
+  font-weight: 800;
+}
+
+.booking-journey {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 54px;
+  margin-bottom: 54px;
+  padding: 48px;
+  border: 1px solid #d9e8e6;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 0% 100%, rgba(255, 126, 0, 0.1), transparent 34%),
+    #fff;
+  box-shadow: 0 18px 48px rgba(24, 73, 76, 0.08);
+}
+
+.booking-journey h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 36px;
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+}
+
+.booking-journey ol {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.booking-journey li {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid #dce9e8;
+}
+
+.booking-journey li:first-child {
+  padding-top: 0;
+}
+
+.booking-journey li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.booking-journey li > span {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: #e8f4f3;
+  color: var(--teal);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.booking-journey strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.booking-journey p {
+  margin: 0;
+  color: #5c6e71;
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .doctors-route-grid,
@@ -3384,6 +3624,7 @@ footer {
   grid-template-columns: 0.8fr 1.2fr;
   gap: 52px;
   align-items: start;
+  scroll-margin-top: 24px;
   padding-bottom: 18px;
 }
 
@@ -3425,6 +3666,7 @@ footer {
 
 .contact-form-card {
   min-height: 570px;
+  scroll-margin-top: 20px;
   padding: 38px;
   border-radius: 26px;
   background: #fff;
@@ -3483,6 +3725,52 @@ footer {
 
 .contact-form-card .book-button {
   width: 100%;
+}
+
+.booking-consent {
+  display: grid !important;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px !important;
+  color: #566a6d !important;
+  font-weight: 500 !important;
+  line-height: 1.5;
+}
+
+.booking-consent input {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  accent-color: var(--teal);
+}
+
+.booking-honeypot {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+}
+
+.booking-submit-error {
+  margin: 0;
+  padding: 13px 15px;
+  border: 1px solid #efc6c6;
+  border-radius: 12px;
+  background: #fff6f6;
+  color: #873838;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.booking-submit-error a {
+  color: #873838;
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+.contact-success p strong {
+  color: var(--ink);
 }
 
 .contact-success {
@@ -3642,6 +3930,141 @@ footer {
   line-height: 1.55;
 }
 
+.admin-bookings-page {
+  min-height: 100vh;
+  padding-bottom: 60px;
+  background:
+    radial-gradient(circle at 85% 0%, rgba(255, 126, 0, 0.1), transparent 28%),
+    #f4f8f7;
+}
+
+.admin-topbar nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.admin-bookings-shell {
+  width: min(1280px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.admin-booking-search {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 22px;
+  border: 1px solid #dce7e6;
+  border-radius: 20px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-booking-search input {
+  height: 50px;
+  padding: 0 16px;
+  border: 1px solid #cbdedc;
+  border-radius: 13px;
+  outline: none;
+  background: #fbfdfc;
+}
+
+.admin-booking-search input:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(20, 126, 129, 0.1);
+}
+
+.admin-booking-error {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #fff1f1;
+  color: #873838;
+}
+
+.admin-booking-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-booking-list article {
+  padding: 24px;
+  border: 1px solid #dce7e6;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 14px 36px rgba(24, 73, 76, 0.07);
+}
+
+.admin-booking-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #738486;
+  font-size: 10px;
+}
+
+.admin-booking-heading span {
+  color: var(--orange);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.admin-booking-list h2 {
+  margin: 22px 0 4px;
+  color: var(--ink);
+  font-size: 22px;
+}
+
+.admin-booking-list article > a {
+  color: var(--teal);
+  font-weight: 800;
+}
+
+.admin-booking-list dl {
+  display: grid;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.admin-booking-list dl div {
+  display: grid;
+  gap: 3px;
+}
+
+.admin-booking-list dt {
+  color: #8a999b;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-booking-list dd {
+  margin: 0;
+  color: #42575a;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.admin-booking-list article > label {
+  display: grid;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.admin-booking-list select {
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid #cbdedc;
+  border-radius: 11px;
+  background: #f7fbfa;
+  color: var(--ink);
+}
+
 @media (max-width: 1080px) {
   .site-header {
     grid-template-columns: 1fr auto auto;
@@ -3697,6 +4120,14 @@ footer {
 
   .route-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .services-route-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-booking-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .values-grid {
@@ -3878,6 +4309,8 @@ footer {
   .about-route,
   .about-values,
   .values-grid,
+  .service-promise-strip,
+  .booking-journey,
   .price-notice,
   .contact-route,
   .catalog-section,
@@ -4013,6 +4446,30 @@ footer {
   .route-grid,
   .values-grid {
     grid-template-columns: 1fr;
+  }
+
+  .service-promise-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .service-promise-strip article {
+    min-height: 0;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .service-promise-strip article:last-child {
+    border-bottom: 0;
+  }
+
+  .booking-journey {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 32px 26px;
+  }
+
+  .booking-journey h2 {
+    font-size: 30px;
   }
 
   .doctors-directory,
@@ -4257,6 +4714,20 @@ footer {
     min-height: 270px;
   }
 
+  .service-route-card {
+    min-height: 330px;
+  }
+
+  .services-hero-actions {
+    display: grid;
+  }
+
+  .services-hero-actions .book-button,
+  .services-hero-actions .outline-button {
+    width: 100%;
+    min-width: 0;
+  }
+
   .subpage-cta {
     align-items: flex-start;
     flex-direction: column;
@@ -4480,6 +4951,14 @@ footer {
   .admin-intro {
     width: calc(100% - 28px);
     padding: 36px 0 24px;
+  }
+
+  .admin-bookings-shell {
+    width: calc(100% - 28px);
+  }
+
+  .admin-booking-list {
+    grid-template-columns: 1fr;
   }
 
   .admin-doctors-layout {

@@ -1,17 +1,26 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
 
 const services = [
-  "КТ",
   "МРТ",
+  "КТ та КТ-коронарографія",
   "УЗД",
   "Лабораторні дослідження",
-  "Консультація лікаря",
-  "Холтер",
+  "Консультації лікарів",
+  "Холтер та кардіодіагностика",
   "Аналізи вдома",
+  "Результати дистанційно",
+  "Скринінг здоров’я 40+",
+  "Комплекс досліджень",
 ];
+
+type BookingResponse = {
+  reference?: string;
+  error?: string;
+};
 
 const locations = [
   {
@@ -45,20 +54,38 @@ export default function ContactsPage() {
   const [selectedServices, setSelectedServices] = useState("");
   const [estimatedTotal, setEstimatedTotal] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState("");
+  const [selectedService, setSelectedService] = useState("");
   const [comment, setComment] = useState("");
+  const [bookingReference, setBookingReference] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const servicesFromCalculator = params.get("services")?.trim() ?? "";
     const totalFromCalculator = params.get("total")?.trim() ?? "";
     const doctorFromCatalog = params.get("doctor")?.trim() ?? "";
+    const serviceFromCatalog = params.get("service")?.trim() ?? "";
+    const shouldScrollToBooking = window.location.hash === "#booking";
 
-    if (!servicesFromCalculator && !doctorFromCatalog) return;
+    if (
+      !servicesFromCalculator &&
+      !doctorFromCatalog &&
+      !serviceFromCatalog &&
+      !shouldScrollToBooking
+    ) {
+      return;
+    }
 
     const applyCalculatorSelection = window.setTimeout(() => {
       setSelectedServices(servicesFromCalculator);
       setEstimatedTotal(totalFromCalculator);
       setSelectedDoctor(doctorFromCatalog);
+      setSelectedService(
+        servicesFromCalculator
+          ? "Комплекс досліджень"
+          : serviceFromCatalog || (doctorFromCatalog ? "Консультації лікарів" : ""),
+      );
       setComment(
         [
           doctorFromCatalog ? `Бажаний лікар: ${doctorFromCatalog}.` : "",
@@ -72,14 +99,53 @@ export default function ContactsPage() {
           .filter(Boolean)
           .join(" "),
       );
-    }, 0);
+      if (shouldScrollToBooking) {
+        const scrollTarget = window.matchMedia("(max-width: 720px)").matches
+          ? document.querySelector(".contact-form-card")
+          : document.getElementById("booking");
+        scrollTarget?.scrollIntoView({ block: "start", behavior: "auto" });
+      }
+    }, 60);
 
     return () => window.clearTimeout(applyCalculatorSelection);
   }, []);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSent(true);
+    setSubmitting(true);
+    setSubmitError("");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: formData.get("name"),
+          phone: formData.get("phone"),
+          service: selectedService,
+          doctor: selectedDoctor,
+          comment,
+          website: formData.get("website"),
+        }),
+      });
+      const payload = (await response.json()) as BookingResponse;
+      if (!response.ok || !payload.reference) {
+        throw new Error(payload.error || "Не вдалося надіслати заявку");
+      }
+
+      setBookingReference(payload.reference);
+      setSent(true);
+      form.reset();
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error ? error.message : "Не вдалося надіслати заявку",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -124,13 +190,13 @@ export default function ContactsPage() {
           {sent ? (
             <div className="contact-success" aria-live="polite">
               <span>✓</span>
-              <h2>Дані заповнено</h2>
+              <h2>Заявку прийнято</h2>
               <p>
-                Демоверсія сайту поки не надсилає форму в медичний центр.
-                Для запису зателефонуйте адміністратору.
+                Номер заявки <strong>{bookingReference}</strong>. Адміністратор
+                зателефонує, щоб погодити дату, час, відділення та підготовку.
               </p>
               <a className="book-button" href="tel:+380676714444">
-                +38 (067) 671-44-44
+                Потрібно терміново? Подзвонити
               </a>
               <button
                 className="outline-button"
@@ -144,8 +210,8 @@ export default function ContactsPage() {
             <form onSubmit={submit}>
               <h2>Заявка на прийом</h2>
               <p className="form-note">
-                Форма працює у демонстраційному режимі. Для гарантованого запису
-                телефонуйте адміністратору.
+                Заповнення займає близько хвилини. Остаточний час візиту
+                підтвердить адміністратор телефоном.
               </p>
               {selectedServices ? (
                 <div className="selected-booking-summary" aria-label="Обрані дослідження">
@@ -164,7 +230,14 @@ export default function ContactsPage() {
                 <div className="selected-booking-summary" aria-label="Обраний лікар">
                   <span>Обраний лікар</span>
                   <strong>{selectedDoctor}</strong>
-                  <a href="/doctors">Обрати іншого лікаря</a>
+                  <Link href="/doctors">Обрати іншого лікаря</Link>
+                </div>
+              ) : null}
+              {selectedService && !selectedServices && !selectedDoctor ? (
+                <div className="selected-booking-summary" aria-label="Обрана послуга">
+                  <span>Обрана послуга</span>
+                  <strong>{selectedService}</strong>
+                  <a href="/services">Обрати іншу послугу</a>
                 </div>
               ) : null}
               <label htmlFor="contact-name">
@@ -194,14 +267,13 @@ export default function ContactsPage() {
                 <select
                   id="contact-service"
                   name="service"
-                  key={selectedServices ? "calculator" : "regular"}
-                  defaultValue={selectedServices ? "Послуги з калькулятора" : ""}
+                  value={selectedService}
+                  onChange={(event) => setSelectedService(event.target.value)}
+                  required
                 >
                   <option value="" disabled>Оберіть послугу</option>
-                  {selectedServices ? (
-                    <option value="Послуги з калькулятора">
-                      Послуги з калькулятора
-                    </option>
+                  {selectedService && !services.includes(selectedService) ? (
+                    <option value={selectedService}>{selectedService}</option>
                   ) : null}
                   {services.map((service) => (
                     <option value={service} key={service}>{service}</option>
@@ -218,8 +290,24 @@ export default function ContactsPage() {
                   onChange={(event) => setComment(event.target.value)}
                 />
               </label>
-              <button className="book-button" type="submit">
-                Перевірити форму <span>→</span>
+              <label className="booking-consent">
+                <input type="checkbox" name="consent" required />
+                <span>
+                  Погоджуюся на обробку контактних даних для організації запису.
+                </span>
+              </label>
+              <label className="booking-honeypot" aria-hidden="true">
+                Ваш сайт
+                <input name="website" tabIndex={-1} autoComplete="off" />
+              </label>
+              {submitError ? (
+                <p className="booking-submit-error" role="alert">
+                  {submitError}. Також можна зателефонувати{" "}
+                  <a href="tel:+380676714444">+38 (067) 671-44-44</a>.
+                </p>
+              ) : null}
+              <button className="book-button" type="submit" disabled={submitting}>
+                {submitting ? "Надсилаємо…" : "Надіслати заявку"} <span>→</span>
               </button>
             </form>
           )}

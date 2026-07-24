@@ -11,46 +11,64 @@ const items = [
   {
     title: "МРТ",
     category: "Діагностика",
+    mark: "МРТ",
+    tone: "teal",
     text: "Дослідження на MAGNETOM Flow Plus від Siemens: висока деталізація, швидкі протоколи та знижений рівень шуму.",
   },
   {
     title: "КТ та КТ-коронарографія",
     category: "Діагностика",
+    mark: "КТ",
+    tone: "orange",
     text: "Комп’ютерна томографія та неінвазивне дослідження коронарних судин для оцінки стану артерій.",
   },
   {
     title: "УЗД",
     category: "Діагностика",
+    mark: "УЗД",
+    tone: "aqua",
     text: "Ультразвукові дослідження органів, судин, серця, м’яких тканин для дорослих і дітей.",
   },
   {
     title: "Лабораторні дослідження",
     category: "Аналізи",
+    mark: "LAB",
+    tone: "orange",
     text: "Загальноклінічні, біохімічні, гормональні, імунологічні, генетичні та інші дослідження.",
   },
   {
     title: "Консультації лікарів",
     category: "Прийом",
+    mark: "DR",
+    tone: "aqua",
     text: "Сімейні лікарі, терапевти, кардіологи, ендокринологи, гастроентерологи та інші спеціалісти.",
   },
   {
     title: "Холтер та кардіодіагностика",
     category: "Серце",
+    mark: "ECG",
+    tone: "teal",
     text: "Добове моніторування ЕКГ, електрокардіографія та ультразвукове дослідження серця.",
   },
   {
     title: "Аналізи вдома",
     category: "Виїзна служба",
+    mark: "ДІМ",
+    tone: "aqua",
     text: "Виклик медсестри для забору біоматеріалу вдома з виїздом корпоративним автомобілем.",
   },
   {
     title: "Результати дистанційно",
     category: "Зручно",
+    mark: "PDF",
+    tone: "teal",
     text: "Отримання результатів лабораторних досліджень електронною поштою, у Viber або Telegram.",
   },
   {
     title: "Скринінг здоров’я 40+",
     category: "Профілактика",
+    mark: "40+",
+    tone: "orange",
     text: "Комплексне обстеження для раннього виявлення серцево-судинних захворювань, діабету та інших ризиків.",
   },
 ];
@@ -78,18 +96,56 @@ export default function ServicesPage() {
         <span className="section-kicker">Послуги</span>
         <h1>Діагностика, аналізи та лікарі в одному центрі</h1>
         <p>
-          Оберіть потрібний напрям. Адміністратор уточнить підготовку, доступний
-          час і актуальну вартість за телефоном.
+          Оберіть потрібний напрям і залиште заявку. Адміністратор уточнить
+          підготовку, доступний час, відділення та актуальну вартість.
         </p>
+        <div className="services-hero-actions">
+          <a className="book-button" href="#services-list">
+            Обрати послугу <span>↓</span>
+          </a>
+          <a className="outline-button" href="/prices">
+            Переглянути вартість <span>→</span>
+          </a>
+        </div>
       </section>
-      <section className="route-grid services-route-grid" aria-label="Перелік послуг">
+      <section className="service-promise-strip" aria-label="Переваги запису">
+        <article>
+          <span>01</span>
+          <strong>Одна заявка</strong>
+          <p>Послуга одразу передається у форму запису.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <strong>Уточнення деталей</strong>
+          <p>Адміністратор погодить час, місце та підготовку.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <strong>Підтвердження</strong>
+          <p>Пацієнт отримує дзвінок із фінальними деталями.</p>
+        </article>
+      </section>
+      <section
+        className="route-grid services-route-grid"
+        id="services-list"
+        aria-label="Перелік послуг"
+      >
         {items.map((item, index) => (
-          <article className="route-card" key={item.title}>
-            <span className="route-number">{String(index + 1).padStart(2, "0")}</span>
+          <article
+            className={`route-card service-route-card service-route-card--${item.tone}`}
+            key={item.title}
+          >
+            <div className="service-card-top">
+              <span className="service-card-mark" aria-hidden="true">{item.mark}</span>
+              <span className="route-number">{String(index + 1).padStart(2, "0")}</span>
+            </div>
             <span className="route-category">{item.category}</span>
             <h2>{item.title}</h2>
             <p>{item.text}</p>
-            <a className="text-button" href="/contacts#booking">
+            <a
+              className="text-button service-card-book"
+              href={`/contacts?service=${encodeURIComponent(item.title)}#booking`}
+            >
               Записатися <span>→</span>
             </a>
           </article>
@@ -103,6 +159,35 @@ export default function ServicesPage() {
         <ul className="catalog-list">
           {analyses.map((item) => <li key={item}>{item}</li>)}
         </ul>
+      </section>
+      <section className="booking-journey" aria-labelledby="booking-journey-title">
+        <div>
+          <span className="section-kicker">Як записатися</span>
+          <h2 id="booking-journey-title">Від вибору послуги до підтвердженого візиту</h2>
+        </div>
+        <ol>
+          <li>
+            <span>01</span>
+            <div>
+              <strong>Оберіть напрям</strong>
+              <p>Натисніть «Записатися» у потрібній картці.</p>
+            </div>
+          </li>
+          <li>
+            <span>02</span>
+            <div>
+              <strong>Залиште контакти</strong>
+              <p>Послуга вже буде вибрана — додайте ім’я та номер телефону.</p>
+            </div>
+          </li>
+          <li>
+            <span>03</span>
+            <div>
+              <strong>Дочекайтеся дзвінка</strong>
+              <p>Адміністратор підтвердить дату, час і підготовку.</p>
+            </div>
+          </li>
+        </ol>
       </section>
       <section className="subpage-cta">
         <div>
