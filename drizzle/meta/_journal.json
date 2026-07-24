@@ -15,6 +15,13 @@
       "when": 1784919601972,
       "tag": "0001_icy_saracen",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1784920614912,
+      "tag": "0002_majestic_hellion",
+      "breakpoints": true
     }
   ]
 }

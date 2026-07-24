@@ -5,6 +5,7 @@ import {
 } from "../../doctors/doctorStore";
 import type {
   DoctorAvailabilityStatus,
+  DoctorPatientGroup,
   DoctorSchedule,
 } from "../../../doctors/doctorData";
 
@@ -12,6 +13,10 @@ const availabilityStatuses = new Set<DoctorAvailabilityStatus>([
   "accepting",
   "by-confirmation",
   "paused",
+]);
+const patientGroupValues = new Set<DoctorPatientGroup>([
+  "adults",
+  "children",
 ]);
 
 export async function GET(request: Request) {
@@ -36,6 +41,8 @@ export async function PUT(request: Request) {
       experienceYears?: number | null;
       branch?: string;
       description?: string;
+      biography?: string;
+      patientGroups?: DoctorPatientGroup[];
       schedule?: DoctorSchedule;
       availabilityStatus?: DoctorAvailabilityStatus;
     };
@@ -62,6 +69,10 @@ export async function PUT(request: Request) {
           : null,
       branch: payload.branch?.trim() ?? "",
       description: payload.description?.trim() ?? "",
+      biography: payload.biography?.trim() ?? "",
+      patientGroups: Array.isArray(payload.patientGroups)
+        ? payload.patientGroups.filter((group) => patientGroupValues.has(group))
+        : [],
       schedule: payload.schedule ?? {},
       availabilityStatus,
     });

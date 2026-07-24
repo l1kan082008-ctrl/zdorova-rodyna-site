@@ -3,6 +3,7 @@ import {
   defaultDoctors,
   type Doctor,
   type DoctorAvailabilityStatus,
+  type DoctorPatientGroup,
   type DoctorSchedule,
 } from "../../doctors/doctorData";
 
@@ -13,6 +14,8 @@ type DoctorRow = {
   experience_years: number | null;
   branch: string;
   description: string;
+  biography: string;
+  patient_groups: string;
   schedule: string;
   photo_key: string;
   availability_status: DoctorAvailabilityStatus;
@@ -26,6 +29,8 @@ const createDoctorsTable = `
     experience_years INTEGER,
     branch TEXT NOT NULL DEFAULT '',
     description TEXT NOT NULL DEFAULT '',
+    biography TEXT NOT NULL DEFAULT '',
+    patient_groups TEXT NOT NULL DEFAULT '[]',
     schedule TEXT NOT NULL DEFAULT '{}',
     photo_key TEXT NOT NULL DEFAULT '',
     availability_status TEXT NOT NULL DEFAULT 'accepting',
@@ -43,6 +48,16 @@ export async function ensureDoctorsTable() {
       "ALTER TABLE doctors ADD COLUMN availability_status TEXT NOT NULL DEFAULT 'accepting'",
     ).run();
   }
+  if (!columns.results.some((column) => column.name === "biography")) {
+    await env.DB.prepare(
+      "ALTER TABLE doctors ADD COLUMN biography TEXT NOT NULL DEFAULT ''",
+    ).run();
+  }
+  if (!columns.results.some((column) => column.name === "patient_groups")) {
+    await env.DB.prepare(
+      "ALTER TABLE doctors ADD COLUMN patient_groups TEXT NOT NULL DEFAULT '[]'",
+    ).run();
+  }
   const count = await env.DB.prepare(
     "SELECT COUNT(*) AS total FROM doctors",
   ).first<{ total: number }>();
@@ -53,8 +68,8 @@ export async function ensureDoctorsTable() {
     defaultDoctors.map((doctor) =>
       env.DB.prepare(
         `INSERT OR IGNORE INTO doctors
-          (id, name, specialty, experience_years, branch, description, schedule, photo_key, availability_status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, '', ?)`,
+          (id, name, specialty, experience_years, branch, description, biography, patient_groups, schedule, photo_key, availability_status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '', ?)`,
       ).bind(
         doctor.id,
         doctor.name,
@@ -62,6 +77,8 @@ export async function ensureDoctorsTable() {
         doctor.experienceYears,
         doctor.branch,
         doctor.description,
+        doctor.biography,
+        JSON.stringify(doctor.patientGroups),
         JSON.stringify(doctor.schedule),
         doctor.availabilityStatus,
       ),
@@ -77,6 +94,19 @@ function parseSchedule(value: string): DoctorSchedule {
   }
 }
 
+function parsePatientGroups(value: string): DoctorPatientGroup[] {
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (group): group is DoctorPatientGroup =>
+        group === "adults" || group === "children",
+    );
+  } catch {
+    return [];
+  }
+}
+
 function toDoctor(row: DoctorRow): Doctor {
   return {
     id: row.id,
@@ -85,6 +115,8 @@ function toDoctor(row: DoctorRow): Doctor {
     experienceYears: row.experience_years,
     branch: row.branch,
     description: row.description,
+    biography: row.biography,
+    patientGroups: parsePatientGroups(row.patient_groups),
     schedule: parseSchedule(row.schedule),
     availabilityStatus: row.availability_status ?? "accepting",
     photoUrl: row.photo_key
@@ -96,12 +128,27 @@ function toDoctor(row: DoctorRow): Doctor {
 export async function listDoctors() {
   await ensureDoctorsTable();
   const result = await env.DB.prepare(
-    `SELECT id, name, specialty, experience_years, branch, description, schedule, photo_key, availability_status
+    `SELECT id, name, specialty, experience_years, branch, description, biography,
+            patient_groups, schedule, photo_key, availability_status
      FROM doctors
      ORDER BY name COLLATE NOCASE`,
   ).all<DoctorRow>();
 
   return result.results.map(toDoctor);
+}
+
+export async function getDoctorById(id: string) {
+  await ensureDoctorsTable();
+  const row = await env.DB.prepare(
+    `SELECT id, name, specialty, experience_years, branch, description, biography,
+            patient_groups, schedule, photo_key, availability_status
+     FROM doctors
+     WHERE id = ?`,
+  )
+    .bind(id)
+    .first<DoctorRow>();
+
+  return row ? toDoctor(row) : null;
 }
 
 export async function getDoctorPhotoKey(id: string) {
@@ -121,6 +168,8 @@ export async function updateDoctor(
     experienceYears: number | null;
     branch: string;
     description: string;
+    biography: string;
+    patientGroups: DoctorPatientGroup[];
     schedule: DoctorSchedule;
     availabilityStatus: DoctorAvailabilityStatus;
   },
@@ -129,7 +178,8 @@ export async function updateDoctor(
   const result = await env.DB.prepare(
     `UPDATE doctors
      SET specialty = ?, experience_years = ?, branch = ?, description = ?,
-         schedule = ?, availability_status = ?, updated_at = CURRENT_TIMESTAMP
+         biography = ?, patient_groups = ?, schedule = ?,
+         availability_status = ?, updated_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
   )
     .bind(
@@ -137,6 +187,8 @@ export async function updateDoctor(
       values.experienceYears,
       values.branch,
       values.description,
+      values.biography,
+      JSON.stringify(values.patientGroups),
       JSON.stringify(values.schedule),
       values.availabilityStatus,
       id,

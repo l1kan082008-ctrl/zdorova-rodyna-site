@@ -1,12 +1,15 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   doctorAvailabilityOptions,
+  doctorPatientGroupOptions,
   getDoctorInitials,
   weekDays,
   type Doctor,
   type DoctorAvailabilityStatus,
+  type DoctorPatientGroup,
   type DoctorSchedule,
 } from "../../doctors/doctorData";
 
@@ -28,6 +31,10 @@ function DoctorEditor({
   );
   const [branch, setBranch] = useState(doctor.branch);
   const [description, setDescription] = useState(doctor.description);
+  const [biography, setBiography] = useState(doctor.biography);
+  const [patientGroups, setPatientGroups] = useState<DoctorPatientGroup[]>(
+    doctor.patientGroups,
+  );
   const [schedule, setSchedule] = useState<DoctorSchedule>(doctor.schedule);
   const [availabilityStatus, setAvailabilityStatus] =
     useState<DoctorAvailabilityStatus>(
@@ -52,6 +59,8 @@ function DoctorEditor({
           experienceYears: experienceYears ? Number(experienceYears) : null,
           branch,
           description,
+          biography,
+          patientGroups,
           schedule,
           availabilityStatus,
         }),
@@ -153,7 +162,7 @@ function DoctorEditor({
             />
           </label>
           <label>
-            Досвід, років
+            Стаж роботи, років
             <input
               type="number"
               min="0"
@@ -189,6 +198,29 @@ function DoctorEditor({
           </label>
         </div>
 
+        <fieldset className="admin-patient-groups">
+          <legend>Кого приймає лікар</legend>
+          <p>Оберіть одну або обидві категорії пацієнтів.</p>
+          <div>
+            {doctorPatientGroupOptions.map((option) => (
+              <label key={option.value}>
+                <input
+                  type="checkbox"
+                  checked={patientGroups.includes(option.value)}
+                  onChange={(event) =>
+                    setPatientGroups((current) =>
+                      event.target.checked
+                        ? [...current, option.value]
+                        : current.filter((group) => group !== option.value),
+                    )
+                  }
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
         <label>
           Відділення або адреса прийому
           <input
@@ -205,6 +237,19 @@ function DoctorEditor({
             onChange={(event) => setDescription(event.target.value)}
             placeholder="Досвід, основні напрями роботи, особливості прийому"
           />
+        </label>
+
+        <label>
+          Біографія лікаря
+          <textarea
+            className="admin-biography-field"
+            value={biography}
+            onChange={(event) => setBiography(event.target.value)}
+            placeholder="Освіта, професійний шлях, кваліфікація, напрями роботи та досягнення"
+          />
+          <small>
+            Цей текст буде повністю показаний на окремій сторінці лікаря.
+          </small>
         </label>
 
         <fieldset className="admin-schedule-editor">
@@ -286,7 +331,7 @@ export default function DoctorsAdminPage() {
   return (
     <main className="admin-doctors-page">
       <header className="admin-topbar">
-        <a href="/doctors">← До каталогу лікарів</a>
+        <Link href="/doctors">← До каталогу лікарів</Link>
         <strong>Здорова Родина · Керування лікарями</strong>
       </header>
 

@@ -5,6 +5,7 @@ import {
   defaultDoctors,
   getDoctorAvailability,
   getDoctorInitials,
+  getDoctorPatientGroups,
   getScheduleSummary,
   weekDays,
   type Doctor,
@@ -154,6 +155,13 @@ export function DoctorsDirectory() {
                     </span>
                   </div>
 
+                  <div className="doctor-patient-groups">
+                    <span>Пацієнти</span>
+                    <strong>
+                      {getDoctorPatientGroups(doctor.patientGroups ?? [])}
+                    </strong>
+                  </div>
+
                   {doctor.description ? (
                     <p className="doctor-description">{doctor.description}</p>
                   ) : null}
@@ -180,25 +188,33 @@ export function DoctorsDirectory() {
                     )}
                   </div>
 
-                  {isPaused ? (
-                    <button
-                      className="book-button doctor-book-button"
-                      type="button"
-                      disabled
-                    >
-                      Запис недоступний
-                    </button>
-                  ) : (
+                  <div className="doctor-card-actions">
                     <a
-                      className="book-button doctor-book-button"
-                      href={`/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`}
+                      className="outline-button doctor-details-button"
+                      href={`/doctors/${doctor.id}`}
                     >
-                      {needsConfirmation
-                        ? "Уточнити прийом"
-                        : "Записатися"}{" "}
-                      <span>→</span>
+                      Про лікаря
                     </a>
-                  )}
+                    {isPaused ? (
+                      <button
+                        className="book-button doctor-book-button"
+                        type="button"
+                        disabled
+                      >
+                        Запис недоступний
+                      </button>
+                    ) : (
+                      <a
+                        className="book-button doctor-book-button"
+                        href={`/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`}
+                      >
+                        {needsConfirmation
+                          ? "Уточнити"
+                          : "Записатися"}{" "}
+                        <span>→</span>
+                      </a>
+                    )}
+                  </div>
                 </div>
               </article>
             );

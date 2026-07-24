@@ -8,6 +8,8 @@ export const doctors = sqliteTable("doctors", {
   experienceYears: integer("experience_years"),
   branch: text("branch").notNull().default(""),
   description: text("description").notNull().default(""),
+  biography: text("biography").notNull().default(""),
+  patientGroups: text("patient_groups").notNull().default("[]"),
   schedule: text("schedule").notNull().default("{}"),
   photoKey: text("photo_key").notNull().default(""),
   availabilityStatus: text("availability_status")

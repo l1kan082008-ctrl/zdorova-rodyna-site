@@ -14,6 +14,7 @@ export type DoctorAvailabilityStatus =
   | "accepting"
   | "by-confirmation"
   | "paused";
+export type DoctorPatientGroup = "adults" | "children";
 
 export const doctorAvailabilityOptions: Array<{
   value: DoctorAvailabilityStatus;
@@ -37,6 +38,14 @@ export const doctorAvailabilityOptions: Array<{
   },
 ];
 
+export const doctorPatientGroupOptions: Array<{
+  value: DoctorPatientGroup;
+  label: string;
+}> = [
+  { value: "adults", label: "Дорослі" },
+  { value: "children", label: "Діти" },
+];
+
 export type Doctor = {
   id: string;
   name: string;
@@ -44,6 +53,8 @@ export type Doctor = {
   experienceYears: number | null;
   branch: string;
   description: string;
+  biography: string;
+  patientGroups: DoctorPatientGroup[];
   schedule: DoctorSchedule;
   photoUrl: string;
   availabilityStatus: DoctorAvailabilityStatus;
@@ -61,6 +72,8 @@ const doctor = (
   experienceYears: null,
   branch: "",
   description,
+  biography: "",
+  patientGroups: [],
   schedule: {},
   photoUrl: "",
   availabilityStatus: "accepting",
@@ -133,4 +146,17 @@ export function getDoctorAvailability(
     doctorAvailabilityOptions.find((option) => option.value === status) ??
     doctorAvailabilityOptions[0]
   );
+}
+
+export function getDoctorPatientGroups(groups: DoctorPatientGroup[]) {
+  if (!groups.length) return "Вік пацієнтів уточнюйте";
+
+  return groups
+    .map(
+      (group) =>
+        doctorPatientGroupOptions.find((option) => option.value === group)
+          ?.label,
+    )
+    .filter(Boolean)
+    .join(" · ");
 }
