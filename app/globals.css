@@ -1448,8 +1448,10 @@ footer {
 .service-route-card {
   min-height: 360px;
   padding: 30px;
-  border-color: rgba(19, 111, 114, 0.13);
+  border-color: rgba(255, 255, 255, 0.24);
   border-radius: 26px;
+  color: #fff;
+  box-shadow: 0 22px 52px rgba(4, 71, 76, 0.22);
   transition:
     transform 180ms ease,
     box-shadow 180ms ease,
@@ -1463,33 +1465,45 @@ footer {
   width: 220px;
   height: 220px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.13);
+  content: "";
+}
+
+.service-route-card::after {
+  position: absolute;
+  right: -54px;
+  bottom: -76px;
+  width: 230px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  transform: rotate(-18deg);
   content: "";
 }
 
 .service-route-card:hover,
 .service-route-card:focus-within {
-  transform: translateY(-4px);
-  border-color: rgba(255, 126, 0, 0.38);
-  box-shadow: 0 22px 54px rgba(24, 73, 76, 0.14);
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 30px 68px rgba(4, 62, 67, 0.3);
 }
 
 .service-route-card--teal {
   background:
-    radial-gradient(circle at 100% 0%, rgba(29, 152, 151, 0.2), transparent 40%),
-    linear-gradient(150deg, #ffffff, #edf7f6);
+    radial-gradient(circle at 92% 4%, rgba(117, 225, 220, 0.34), transparent 34%),
+    linear-gradient(145deg, #128f90 0%, #076d72 56%, #04545c 100%);
 }
 
 .service-route-card--orange {
   background:
-    radial-gradient(circle at 100% 0%, rgba(255, 126, 0, 0.18), transparent 40%),
-    linear-gradient(150deg, #ffffff, #fff7ee);
+    radial-gradient(circle at 92% 4%, rgba(255, 223, 165, 0.38), transparent 34%),
+    linear-gradient(145deg, #ff9b18 0%, #f47405 58%, #cd5000 100%);
 }
 
 .service-route-card--aqua {
   background:
-    radial-gradient(circle at 100% 0%, rgba(105, 190, 188, 0.24), transparent 42%),
-    linear-gradient(150deg, #ffffff, #f0f9f8);
+    radial-gradient(circle at 92% 4%, rgba(194, 255, 249, 0.28), transparent 36%),
+    linear-gradient(145deg, #48aaa7 0%, #168386 56%, #086169 100%);
 }
 
 .service-card-top {
@@ -1505,30 +1519,35 @@ footer {
 .service-card-mark {
   display: grid;
   place-items: center;
-  width: 66px;
-  height: 66px;
-  border: 1px solid rgba(5, 90, 94, 0.2);
-  border-radius: 19px;
-  background: rgba(255, 255, 255, 0.76);
-  color: var(--teal);
-  font-size: 16px;
+  width: 74px;
+  height: 74px;
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  border-radius: 21px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 17px;
   font-weight: 800;
   letter-spacing: -0.03em;
-  box-shadow: 0 12px 28px rgba(24, 73, 76, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 14px 30px rgba(2, 56, 61, 0.18);
+  backdrop-filter: blur(8px);
 }
 
 .service-route-card--orange .service-card-mark {
-  border-color: rgba(255, 126, 0, 0.24);
-  color: #d86800;
+  border-color: rgba(255, 255, 255, 0.56);
+  color: #fff;
 }
 
 .service-route-card .route-number {
   margin: 9px 0 0;
+  color: rgba(255, 255, 255, 0.62);
 }
 
 .service-route-card .route-category {
   position: relative;
   z-index: 1;
+  color: #ffd29f;
 }
 
 .service-route-card h2,
@@ -1538,14 +1557,46 @@ footer {
   z-index: 1;
 }
 
+.service-route-card h2 {
+  color: #fff;
+  font-size: 27px;
+  line-height: 1.08;
+}
+
+.service-route-card p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
 .service-route-card .service-card-book {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   padding-top: 18px;
-  border-top: 1px solid rgba(10, 98, 101, 0.14);
+  border-top: 1px solid rgba(255, 255, 255, 0.26);
+  color: #fff;
   font-weight: 800;
+}
+
+.service-route-card .service-card-book span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--teal);
+  transition: transform 180ms ease;
+}
+
+.service-route-card--orange .service-card-book span {
+  color: #dd5a00;
+}
+
+.service-route-card .service-card-book:hover span,
+.service-route-card .service-card-book:focus-visible span {
+  transform: translateX(3px);
 }
 
 .booking-journey {
@@ -1554,17 +1605,22 @@ footer {
   gap: 54px;
   margin-bottom: 54px;
   padding: 48px;
-  border: 1px solid #d9e8e6;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.36);
   border-radius: 28px;
   background:
-    radial-gradient(circle at 0% 100%, rgba(255, 126, 0, 0.1), transparent 34%),
-    #fff;
-  box-shadow: 0 18px 48px rgba(24, 73, 76, 0.08);
+    radial-gradient(circle at 0% 100%, rgba(255, 231, 191, 0.32), transparent 34%),
+    linear-gradient(120deg, #f17205 0%, #ff9415 100%);
+  box-shadow: 0 22px 56px rgba(205, 80, 0, 0.24);
+}
+
+.booking-journey .section-kicker {
+  color: rgba(255, 255, 255, 0.74);
 }
 
 .booking-journey h2 {
   margin: 0;
-  color: var(--ink);
+  color: #fff;
   font-size: 36px;
   line-height: 1.12;
   letter-spacing: -0.04em;
@@ -1583,7 +1639,7 @@ footer {
   grid-template-columns: 56px minmax(0, 1fr);
   gap: 16px;
   padding: 18px 0;
-  border-bottom: 1px solid #dce9e8;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.26);
 }
 
 .booking-journey li:first-child {
@@ -1601,8 +1657,8 @@ footer {
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: #e8f4f3;
-  color: var(--teal);
+  background: #075f65;
+  color: #fff;
   font-size: 10px;
   font-weight: 800;
 }
@@ -1610,13 +1666,13 @@ footer {
 .booking-journey strong {
   display: block;
   margin-bottom: 4px;
-  color: var(--ink);
+  color: #fff;
   font-size: 16px;
 }
 
 .booking-journey p {
   margin: 0;
-  color: #5c6e71;
+  color: rgba(255, 255, 255, 0.8);
   font-size: 13px;
   line-height: 1.55;
 }
@@ -2947,13 +3003,22 @@ footer {
   gap: 50px;
   margin-bottom: 54px;
   padding: 42px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 26px;
-  background: #e8f4f3;
+  background:
+    radial-gradient(circle at 95% 0%, rgba(89, 203, 199, 0.34), transparent 34%),
+    linear-gradient(125deg, #075f65 0%, #083f49 100%);
+  box-shadow: 0 22px 54px rgba(4, 67, 72, 0.2);
+}
+
+.catalog-section .section-kicker {
+  color: #ffb36e;
 }
 
 .catalog-section h2 {
   margin: 0;
-  color: var(--ink);
+  color: #fff;
   font-size: 34px;
   line-height: 1.12;
   letter-spacing: -0.035em;
@@ -2962,17 +3027,34 @@ footer {
 .catalog-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0 24px;
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .catalog-list li {
-  padding: 11px 0;
-  border-bottom: 1px solid rgba(8, 80, 84, 0.13);
-  color: #365256;
+  position: relative;
+  padding: 13px 15px 13px 36px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
   font-size: 13px;
+  font-weight: 600;
+}
+
+.catalog-list li::before {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--orange);
+  box-shadow: 0 0 0 4px rgba(255, 126, 0, 0.16);
+  content: "";
+  transform: translateY(-50%);
 }
 
 .price-directory {
