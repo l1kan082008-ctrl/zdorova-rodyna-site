@@ -7,9 +7,9 @@ export const metadata: Metadata = {
 };
 
 const values = [
-  ["Точність", "Автоматизоване високоточне обладнання зменшує вплив людського фактора."],
-  ["Якість", "Для лабораторних досліджень використовуються оригінальні реактиви."],
-  ["Безпека", "Забір біоматеріалу проводиться у спеціальні одноразові пробірки та контейнери."],
+  ["Точність і швидкість", "Автоматизоване високоточне обладнання зменшує вплив людського фактора."],
+  ["Перевірена якість", "Для лабораторних досліджень використовуються оригінальні швейцарські реактиви."],
+  ["Професійні фахівці", "У центрі приймають лікарі різних напрямів для дорослих і дітей."],
   ["Зручність", "Доступні виїзд медсестри додому та дистанційне отримання результатів."],
 ];
 
@@ -44,14 +44,20 @@ export default function AboutPage() {
           aria-label="Рецепція медичного центру Здорова Родина"
         />
       </section>
-      <section className="values-grid" aria-label="Переваги центру">
-        {values.map(([title, text], index) => (
-          <article key={title}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <h2>{title}</h2>
-            <p>{text}</p>
-          </article>
-        ))}
+      <section className="about-values" aria-labelledby="about-values-title">
+        <div className="about-values-head">
+          <span className="section-kicker">Чому обирають нас</span>
+          <h2 id="about-values-title">Технології, фахівці та сервіс, яким довіряють</h2>
+        </div>
+        <div className="values-grid">
+          {values.map(([title, text], index) => (
+            <article key={title}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
       </section>
       <section className="subpage-cta">
         <div>

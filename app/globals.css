@@ -1292,6 +1292,7 @@ footer {
 .route-grid,
 .subpage-cta,
 .about-route,
+.about-values,
 .values-grid,
 .price-notice,
 .contact-route {
@@ -2600,10 +2601,36 @@ footer {
 
 .about-route-photo {
   min-height: 460px;
-  background-image: url("/design-reference.png");
+  background-image: url("/center-reception.png");
   background-repeat: no-repeat;
-  background-position: -408px -1257px;
-  background-size: 1239px 1859px;
+  background-position: center;
+  background-size: cover;
+}
+
+.about-values {
+  padding-top: 54px;
+}
+
+.about-values-head {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: end;
+  gap: 34px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid #dce9e8;
+}
+
+.about-values-head .section-kicker {
+  margin: 0;
+}
+
+.about-values-head h2 {
+  max-width: 700px;
+  margin: 0;
+  color: var(--ink);
+  font-size: 36px;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
 }
 
 .values-grid {
@@ -2611,6 +2638,10 @@ footer {
   grid-template-columns: repeat(4, 1fr);
   gap: 18px;
   padding: 32px 0 18px;
+}
+
+.about-values .values-grid {
+  width: 100%;
 }
 
 .values-grid article {
@@ -2628,7 +2659,7 @@ footer {
   letter-spacing: 0.1em;
 }
 
-.values-grid h2 {
+.values-grid h3 {
   margin: 28px 0 10px;
   color: var(--ink);
   font-size: 19px;
@@ -3814,6 +3845,23 @@ footer {
   }
 }
 
+@media (max-width: 860px) {
+  .about-route {
+    grid-template-columns: 1fr;
+  }
+
+  .about-route-copy {
+    padding: 42px 38px;
+  }
+
+  .about-route-photo {
+    min-height: 0;
+    aspect-ratio: 629 / 323;
+    background-position: center;
+    background-size: cover;
+  }
+}
+
 @media (max-width: 720px) {
   .site-header,
   .hero,
@@ -3828,6 +3876,7 @@ footer {
   .route-grid,
   .subpage-cta,
   .about-route,
+  .about-values,
   .values-grid,
   .price-notice,
   .contact-route,
@@ -4226,14 +4275,38 @@ footer {
     grid-template-columns: 1fr;
   }
 
+  .about-values {
+    padding-top: 38px;
+  }
+
+  .about-values-head {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-bottom: 22px;
+  }
+
+  .about-values-head h2 {
+    font-size: 30px;
+  }
+
   .about-route-copy {
     padding: 34px 26px;
   }
 
   .about-route-photo {
-    min-height: 320px;
-    background-position: 57% 68.3%;
-    background-size: 1024px 1536px;
+    min-height: 0;
+    aspect-ratio: 629 / 323;
+    background-position: center;
+    background-size: cover;
+  }
+
+  .values-grid article {
+    min-height: 0;
+    padding: 24px;
+  }
+
+  .values-grid h3 {
+    margin-top: 18px;
   }
 
   .price-notice {
