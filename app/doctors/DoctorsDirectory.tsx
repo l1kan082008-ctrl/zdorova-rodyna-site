@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   defaultDoctors,
+  doctorPatientGroupOptions,
   getDoctorAvailability,
   getDoctorInitials,
-  getDoctorPatientGroups,
   getScheduleSummary,
   weekDays,
   type Doctor,
@@ -157,13 +157,28 @@ export function DoctorsDirectory() {
 
                   <div className="doctor-patient-groups">
                     <span>Приймає</span>
-                    <strong
-                      className={
-                        doctor.patientGroups?.length ? undefined : "is-unset"
-                      }
-                    >
-                      {getDoctorPatientGroups(doctor.patientGroups ?? [])}
-                    </strong>
+                    <div>
+                      {doctor.patientGroups?.length ? (
+                        doctorPatientGroupOptions
+                          .filter((option) =>
+                            doctor.patientGroups.includes(option.value),
+                          )
+                          .map((option) => (
+                            <strong
+                              className="doctor-patient-pill"
+                              key={option.value}
+                            >
+                              {option.label}
+                              <i aria-hidden="true">✓</i>
+                            </strong>
+                          ))
+                      ) : (
+                        <strong className="doctor-patient-pill is-unset">
+                          Вік уточнюйте
+                          <i aria-hidden="true">?</i>
+                        </strong>
+                      )}
+                    </div>
                   </div>
 
                   {doctor.description ? (
