@@ -156,8 +156,12 @@ export function DoctorsDirectory() {
                   </div>
 
                   <div className="doctor-patient-groups">
-                    <span>Пацієнти</span>
-                    <strong>
+                    <span>Приймає</span>
+                    <strong
+                      className={
+                        doctor.patientGroups?.length ? undefined : "is-unset"
+                      }
+                    >
                       {getDoctorPatientGroups(doctor.patientGroups ?? [])}
                     </strong>
                   </div>

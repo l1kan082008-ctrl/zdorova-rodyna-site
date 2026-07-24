@@ -149,7 +149,7 @@ export function getDoctorAvailability(
 }
 
 export function getDoctorPatientGroups(groups: DoctorPatientGroup[]) {
-  if (!groups.length) return "Вік пацієнтів уточнюйте";
+  if (!groups.length) return "Дорослі чи діти — уточнюйте";
 
   return groups
     .map(

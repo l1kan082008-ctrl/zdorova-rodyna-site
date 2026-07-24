@@ -1567,25 +1567,32 @@ footer {
 .doctor-patient-groups {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 9px;
   margin: -4px 0 14px;
-  color: #65787a;
-  font-size: 9px;
+  padding: 9px 11px;
+  border: 1px solid #d8e7e5;
+  border-radius: 11px;
+  background: #f2f8f7;
 }
 
 .doctor-patient-groups > span {
-  color: #859596;
-  font-weight: 700;
+  flex: 0 0 auto;
+  color: #587476;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .doctor-patient-groups > strong {
-  padding: 5px 8px;
-  border-radius: 999px;
-  background: #fff4e9;
-  color: #a65a13;
-  font-size: 8px;
+  color: #07585c;
+  font-size: 9px;
   font-weight: 800;
-  text-transform: uppercase;
+  line-height: 1.35;
+}
+
+.doctor-patient-groups > strong.is-unset {
+  color: #8a5410;
 }
 
 .doctor-description {
