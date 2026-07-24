@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 
 const services = [
   { title: "КТ", icon: "ct" },
@@ -15,79 +16,280 @@ const services = [
 
 const advantages = [
   {
-    icon: "✓",
-    title: "Технології",
-    text: "Сучасне обладнання експертного класу",
+    icon: "shield",
+    title: "Точність",
+    text: "Автоматизоване високоточне обладнання",
   },
   {
-    icon: "♙",
-    title: "Досвід",
-    text: "Команда професіоналів для дорослих і дітей",
+    icon: "team",
+    title: "Фахівці",
+    text: "Лікарі для дорослих і дітей",
   },
   {
-    icon: "♡",
+    icon: "heart",
     title: "Турбота",
-    text: "Індивідуальний підхід та підтримка",
+    text: "Зрозумілий супровід на кожному етапі",
   },
   {
-    icon: "╫",
+    icon: "lab",
     title: "Лабораторія",
-    text: "Швидкі та точні результати аналізів",
+    text: "Дослідження за європейськими стандартами",
   },
 ];
 
 const quickItems = [
   {
-    icon: "▦",
+    icon: "calendar",
     title: "Зручний запис",
-    text: "Онлайн, по телефону або в месенджерах",
+    text: "Телефоном +38 (067) 671-44-44",
   },
   {
-    icon: "◯",
-    title: "Нагадування",
-    text: "Про візит та підготовку до досліджень",
+    icon: "message",
+    title: "Аналізи вдома",
+    text: "Виїзд медсестри для забору матеріалу",
   },
   {
-    icon: "▤",
-    title: "Результати онлайн",
-    text: "Швидко та зручно у вашому кабінеті",
+    icon: "document",
+    title: "Результати дистанційно",
+    text: "Електронною поштою, Viber або Telegram",
   },
   {
-    icon: "♧",
-    title: "Підтримка 24/7",
-    text: "Ми завжди на зв’язку та готові допомогти",
+    icon: "headset",
+    title: "Підтримка",
+    text: "Підкажемо підготовку та оберемо час",
+  },
+];
+
+const doctorDirections = [
+  {
+    icon: "doctor",
+    title: "Сімейний лікар",
+    text: "Первинні консультації, профілактика та супровід здоров’я всієї родини.",
+  },
+  {
+    icon: "cardiology",
+    title: "Кардіолог",
+    text: "Оцінка роботи серця, консультації та рекомендації за результатами обстежень.",
+  },
+  {
+    icon: "ultrasound",
+    title: "Лікар УЗД",
+    text: "Ультразвукова діагностика з поясненням результатів дослідження.",
+  },
+];
+
+const priceDirections = [
+  {
+    title: "Холтер ЕКГ",
+    text: "900 ₴",
+    note: "Добове моніторування роботи серця.",
+  },
+  {
+    title: "ЕхоКГ",
+    text: "650 ₴",
+    note: "Ультразвукове дослідження серця.",
+  },
+  {
+    title: "УЗД щитоподібної залози",
+    text: "500 ₴",
+    note: "Актуальність ціни підтвердить адміністратор.",
   },
 ];
 
 function Logo() {
   return (
-    <a className="logo" href="#top" aria-label="Здорова Родина — на головну">
+    <Link className="logo" href="/" aria-label="Здорова Родина — на головну">
       <img
         src="/zdorova-rodyna-logo.png"
         alt="Здорова Родина — медичний центр"
       />
-    </a>
+    </Link>
   );
 }
 
 function BrandMark() {
   return (
-    <a
+    <Link
       className="footer-mark"
-      href="#top"
+      href="/"
       aria-label="Здорова Родина — на головну"
     >
       <img src="/zdorova-rodyna-mark.jpg" alt="" />
-    </a>
+    </Link>
+  );
+}
+
+function LineIcon({ type }: { type: string }) {
+  const content = (() => {
+    switch (type) {
+      case "shield":
+        return (
+          <>
+            <path d="M32 7 51 14v15c0 13-8 23-19 28C21 52 13 42 13 29V14l19-7Z" />
+            <path d="m23 31 6 6 13-14" />
+          </>
+        );
+      case "team":
+        return (
+          <>
+            <circle cx="32" cy="18" r="9" />
+            <circle cx="13" cy="27" r="6" />
+            <circle cx="51" cy="27" r="6" />
+            <path d="M16 56V46c0-9 7-16 16-16s16 7 16 16v10M3 56v-8c0-8 4-13 10-13 4 0 7 2 9 5M61 56v-8c0-8-4-13-10-13-4 0-7 2-9 5" />
+          </>
+        );
+      case "heart":
+        return (
+          <>
+            <path d="M32 55S9 42 9 24c0-9 6-15 14-15 5 0 8 3 9 7 2-4 5-7 10-7 8 0 14 6 14 15 0 18-24 31-24 31Z" />
+            <path d="M14 32h10l4-8 7 17 5-9h10" />
+          </>
+        );
+      case "lab":
+        return (
+          <>
+            <path d="M10 9h20M14 9v34a8 8 0 0 0 16 0V9M35 9h19M39 9v34a8 8 0 0 0 16 0V9" />
+            <path d="M14 34h16M39 29h16" />
+          </>
+        );
+      case "calendar":
+        return (
+          <>
+            <rect x="8" y="12" width="48" height="44" rx="6" />
+            <path d="M8 25h48M20 7v10M44 7v10M19 35h3M31 35h3M43 35h3M19 45h3M31 45h3M43 45h3" />
+          </>
+        );
+      case "message":
+        return (
+          <>
+            <path d="M55 29c0 12-10 21-23 21-4 0-8-1-11-3L8 55l4-14c-2-4-3-8-3-12C9 17 19 8 32 8s23 9 23 21Z" />
+            <path d="M21 29h22" />
+          </>
+        );
+      case "document":
+        return (
+          <>
+            <path d="M15 7h25l10 10v40H15V7Z" />
+            <path d="M40 7v11h10M23 30h19M23 39h19M23 48h11" />
+          </>
+        );
+      case "headset":
+        return (
+          <>
+            <path d="M10 34V29C10 16 20 7 32 7s22 9 22 22v5M14 34h7v17h-7a5 5 0 0 1-5-5v-7a5 5 0 0 1 5-5ZM50 34h-7v17h7a5 5 0 0 0 5-5v-7a5 5 0 0 0-5-5ZM43 51c-2 5-6 7-13 7" />
+          </>
+        );
+      case "doctor":
+        return (
+          <>
+            <circle cx="32" cy="15" r="8" />
+            <path d="M13 57v-9c0-11 8-19 19-19s19 8 19 19v9M22 32v9a10 10 0 0 0 20 0v-9M19 57V45M45 57V45" />
+            <circle cx="42" cy="43" r="3" />
+          </>
+        );
+      case "cardiology":
+        return (
+          <>
+            <path d="M32 55S9 42 9 24c0-9 6-15 14-15 5 0 8 3 9 7 2-4 5-7 10-7 8 0 14 6 14 15 0 18-24 31-24 31Z" />
+            <path d="M13 32h11l4-9 7 18 5-9h11" />
+          </>
+        );
+      case "ultrasound":
+        return (
+          <>
+            <path d="M20 8c4-3 10-2 13 2l4 5c2 3 2 7-1 10l-6 6-15-15 5-8Z" />
+            <path d="m12 17 17 17-5 5a4 4 0 0 1-6 0L7 28a4 4 0 0 1 0-6l5-5ZM31 32c9 2 17 9 18 18" />
+            <circle cx="50" cy="52" r="4" />
+          </>
+        );
+      default:
+        return <circle cx="32" cy="32" r="20" />;
+    }
+  })();
+
+  return (
+    <svg viewBox="0 0 64 64" focusable="false" aria-hidden="true">
+      {content}
+    </svg>
   );
 }
 
 function ServiceIcon({ type }: { type: string }) {
+  const icon = (() => {
+    switch (type) {
+      case "ct":
+        return (
+          <>
+            <circle cx="32" cy="25" r="18" />
+            <circle cx="32" cy="25" r="10" />
+            <path d="M7 54h50M18 48h30v6M13 44h25c5 0 9 4 9 9" />
+          </>
+        );
+      case "mri":
+        return (
+          <>
+            <path d="M14 43V24a18 18 0 0 1 36 0v19" />
+            <circle cx="32" cy="24" r="10" />
+            <path d="M7 54h50M23 46h27v8M13 44h18" />
+          </>
+        );
+      case "ultrasound":
+        return (
+          <>
+            <path d="M20 8c4-3 10-2 13 2l4 5c2 3 2 7-1 10l-6 6-15-15 5-8Z" />
+            <path d="m12 17 17 17-5 5a4 4 0 0 1-6 0L7 28a4 4 0 0 1 0-6l5-5ZM31 32c9 2 17 9 18 18" />
+            <circle cx="50" cy="52" r="4" />
+          </>
+        );
+      case "lab":
+        return (
+          <>
+            <path d="M12 8h17M15 8v35a8 8 0 0 0 16 0V8M35 8h17M38 8v35a8 8 0 0 0 16 0V8" />
+            <path d="M15 34h16M38 29h16" />
+          </>
+        );
+      case "consultation":
+        return (
+          <>
+            <circle cx="32" cy="15" r="8" />
+            <path d="M14 55v-8c0-11 8-19 18-19s18 8 18 19v8M23 31v9a9 9 0 0 0 18 0v-9" />
+            <path d="M20 55V44M44 55V44" />
+            <circle cx="41" cy="42" r="3" />
+          </>
+        );
+      case "cardiology":
+        return (
+          <>
+            <path d="M32 55S9 42 9 24c0-9 6-15 14-15 5 0 8 3 9 7 2-4 5-7 10-7 8 0 14 6 14 15 0 18-24 31-24 31Z" />
+            <path d="M13 32h11l4-9 7 18 5-9h11" />
+          </>
+        );
+      case "holter":
+        return (
+          <>
+            <rect x="10" y="8" width="44" height="40" rx="6" />
+            <path d="M16 29h8l4-8 7 17 5-9h8M32 48v8M22 56h20" />
+          </>
+        );
+      case "family":
+        return (
+          <>
+            <circle cx="32" cy="15" r="8" />
+            <circle cx="13" cy="25" r="6" />
+            <circle cx="51" cy="25" r="6" />
+            <path d="M18 55V44c0-9 6-16 14-16s14 7 14 16v11M3 55V45c0-7 4-12 10-12 4 0 7 2 9 6M61 55V45c0-7-4-12-10-12-4 0-7 2-9 6" />
+          </>
+        );
+      default:
+        return <circle cx="32" cy="32" r="18" />;
+    }
+  })();
+
   return (
-    <span className={`service-icon icon-${type}`} aria-hidden="true">
-      <i />
-      <b />
-      <em />
+    <span className="service-icon" aria-hidden="true">
+      <svg viewBox="0 0 64 64" focusable="false">
+        {icon}
+      </svg>
     </span>
   );
 }
@@ -107,34 +309,73 @@ export default function Home() {
     setSent(false);
   };
 
+  useEffect(() => {
+    if (!bookingOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setBookingOpen(false);
+        setSent(false);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [bookingOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [menuOpen]);
+
   return (
     <main id="top">
       <header className="site-header">
         <Logo />
 
-        <nav className={menuOpen ? "main-nav is-open" : "main-nav"}>
-          <a href="#services" onClick={() => setMenuOpen(false)}>
+        <nav
+          className={menuOpen ? "main-nav is-open" : "main-nav"}
+          aria-label="Основна навігація"
+        >
+          <a href="/services" onClick={() => setMenuOpen(false)}>
             Послуги
           </a>
-          <a href="#doctors" onClick={() => setMenuOpen(false)}>
+          <a href="/doctors" onClick={() => setMenuOpen(false)}>
             Лікарі
           </a>
-          <a href="#about" onClick={() => setMenuOpen(false)}>
+          <a href="/about" onClick={() => setMenuOpen(false)}>
             Про центр
           </a>
-          <a href="#prices" onClick={() => setMenuOpen(false)}>
-            Ціни
+          <a href="/prices" onClick={() => setMenuOpen(false)}>
+            Вартість
           </a>
-          <a href="#contacts" onClick={() => setMenuOpen(false)}>
+          <a href="/contacts" onClick={() => setMenuOpen(false)}>
             Контакти
           </a>
         </nav>
 
-        <button className="book-button header-book" onClick={() => setBookingOpen(true)}>
+        <button
+          className="book-button header-book"
+          type="button"
+          onClick={() => setBookingOpen(true)}
+        >
           Записатися на прийом
         </button>
         <button
           className="menu-button"
+          type="button"
           aria-label={menuOpen ? "Закрити меню" : "Відкрити меню"}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen(!menuOpen)}
@@ -149,8 +390,10 @@ export default function Home() {
         <div className="hero-copy">
           <p className="eyebrow">Медичний центр для всієї родини</p>
           <h1 id="hero-title">
-            Здорова родина —<br />
-            здорове майбутнє
+            <span className="hero-title-line">
+              Здорова родина<span className="hero-title-dash"> —</span>
+            </span>
+            <span className="hero-title-line">здорове майбутнє</span>
           </h1>
           <p className="hero-lead">
             Сучасна діагностика, власна лабораторія та досвідчені лікарі,
@@ -160,21 +403,19 @@ export default function Home() {
             <button className="book-button" onClick={() => setBookingOpen(true)}>
               Записатися на прийом <span>→</span>
             </button>
-            <a className="outline-button" href="#services">
+            <a className="outline-button" href="/services">
               Переглянути послуги <span>→</span>
             </a>
           </div>
         </div>
-        <div className="hero-art" role="img" aria-label="Абстрактна скульптура родини">
-          <span className="hero-line" />
-        </div>
+        <div className="hero-art" role="img" aria-label="Абстрактна скульптура родини" />
       </section>
 
-      <section className="advantages" id="doctors" aria-label="Переваги центру">
+      <section className="advantages" id="advantages" aria-label="Переваги центру">
         {advantages.map((item) => (
           <article className="advantage" key={item.title}>
             <span className="advantage-icon" aria-hidden="true">
-              {item.icon}
+              <LineIcon type={item.icon} />
             </span>
             <div>
               <h2>{item.title}</h2>
@@ -187,7 +428,7 @@ export default function Home() {
       <section className="services-section" id="services">
         <div className="section-heading">
           <h2>Наші послуги</h2>
-          <a href="#services-grid">
+          <a href="/services">
             Усі послуги <span>⟶</span>
           </a>
         </div>
@@ -209,16 +450,43 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="doctors-section" id="doctors">
+        <div className="section-heading doctors-heading">
+          <div>
+            <span className="section-kicker">Лікарі</span>
+            <h2>Напрями консультацій</h2>
+          </div>
+          <p>
+            Оберіть потрібний напрям — адміністратор допоможе підібрати
+            спеціаліста та зручний час.
+          </p>
+        </div>
+        <div className="doctors-grid">
+          {doctorDirections.map((direction) => (
+            <article className="doctor-card" key={direction.title}>
+              <span className="doctor-icon">
+                <LineIcon type={direction.icon} />
+              </span>
+              <h3>{direction.title}</h3>
+              <p>{direction.text}</p>
+              <button className="text-button" onClick={() => setBookingOpen(true)}>
+                Записатися <span>→</span>
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="about-section" id="about">
         <div className="about-copy">
           <span className="about-kicker">Про нас</span>
           <h2>Медицина, що починається з довіри</h2>
           <p>
-            Ми створили простір, де поєднуються передові технології та людяне
-            ставлення. Щоб кожен пацієнт — від дитини до старших членів сім’ї —
-            відчував спокій, увагу та впевненість.
+            «Здорова Родина» — сучасна українська лабораторія та
+            лікувально-діагностичний центр. Дослідження виконуються на
+            автоматичному високоточному обладнанні.
           </p>
-          <a className="outline-button" href="#contacts">
+          <a className="outline-button" href="/about">
             Дізнатися більше про центр <span>→</span>
           </a>
         </div>
@@ -229,11 +497,11 @@ export default function Home() {
         />
       </section>
 
-      <section className="quick-strip" id="prices">
+      <section className="quick-strip" aria-label="Зручності для пацієнтів">
         {quickItems.map((item) => (
           <article key={item.title}>
             <span className="quick-icon" aria-hidden="true">
-              {item.icon}
+              <LineIcon type={item.icon} />
             </span>
             <div>
               <h2>{item.title}</h2>
@@ -243,12 +511,88 @@ export default function Home() {
         ))}
       </section>
 
-      <footer id="contacts">
-        <BrandMark />
-        <p>Турбота про здоров’я вашої родини щодня.</p>
-        <button className="book-button" onClick={() => setBookingOpen(true)}>
-          Записатися
-        </button>
+      <section className="pricing-section" id="prices">
+        <div className="section-heading pricing-heading">
+          <div>
+            <span className="section-kicker">Вартість</span>
+            <h2>Прозоро перед записом</h2>
+          </div>
+          <p>
+            Точна сума залежить від обраної послуги, області дослідження та
+            переліку аналізів.
+          </p>
+        </div>
+        <div className="pricing-grid">
+          {priceDirections.map((item) => (
+            <article className="price-card" key={item.title}>
+              <span className="price-label">Напрям</span>
+              <h3>{item.title}</h3>
+              <strong>{item.text}</strong>
+              <p>{item.note}</p>
+              <button className="outline-button" onClick={() => setBookingOpen(true)}>
+                Уточнити вартість <span>→</span>
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="contact-section" id="contacts">
+        <div className="contact-copy">
+          <span className="section-kicker">Контакти</span>
+          <h2>Допоможемо обрати послугу та час</h2>
+          <p>
+            Подзвоніть адміністратору: +38 (067) 671-44-44. Підкажемо
+            підготовку, адресу відділення та доступний час.
+          </p>
+          <a className="book-button" href="tel:+380676714444">
+            Подзвонити <span>→</span>
+          </a>
+        </div>
+        <ol className="contact-steps">
+          <li>
+            <span>01</span>
+            <div>
+              <strong>Подзвоніть адміністратору</strong>
+              <p>Номер для запису: +38 (067) 671-44-44.</p>
+            </div>
+          </li>
+          <li>
+            <span>02</span>
+            <div>
+              <strong>Уточніть деталі</strong>
+              <p>Назвіть послугу, лікаря або потрібне дослідження.</p>
+            </div>
+          </li>
+          <li>
+            <span>03</span>
+            <div>
+              <strong>Оберіть час</strong>
+              <p>Узгодьте зручну дату для консультації чи дослідження.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <footer>
+        <div className="footer-brand">
+          <BrandMark />
+          <div>
+            <strong>Здорова Родина</strong>
+            <p>Лікувально-діагностичний центр у Рівному.</p>
+          </div>
+        </div>
+        <nav className="footer-nav" aria-label="Навігація у підвалі">
+          <a href="/services">Послуги</a>
+          <a href="/doctors">Лікарі</a>
+          <a href="/about">Про центр</a>
+          <a href="/prices">Вартість</a>
+          <a href="/contacts">Контакти</a>
+        </nav>
+        <p className="footer-note">
+          <a href="tel:+380676714444">+38 (067) 671-44-44</a><br />
+          <a href="mailto:zdorovarodynarivne@ukr.net">zdorovarodynarivne@ukr.net</a>
+        </p>
       </footer>
 
       {bookingOpen && (
@@ -260,35 +604,55 @@ export default function Home() {
             aria-labelledby="booking-title"
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <button className="modal-close" onClick={closeBooking} aria-label="Закрити">
+            <button
+              className="modal-close"
+              type="button"
+              onClick={closeBooking}
+              aria-label="Закрити"
+              autoFocus
+            >
               ×
             </button>
             {sent ? (
-              <div className="success-message">
+              <div className="success-message" aria-live="polite">
                 <span>✓</span>
                 <h2>Дякуємо!</h2>
-                <p>Ми зв’яжемося з вами, щоб узгодити зручний час прийому.</p>
-                <button className="book-button" onClick={closeBooking}>
-                  Готово
-                </button>
+                <p>Це демоверсія форми. Для запису зателефонуйте адміністратору.</p>
+                <a className="book-button" href="tel:+380676714444">
+                  +38 (067) 671-44-44
+                </a>
               </div>
             ) : (
               <>
                 <span className="about-kicker">Онлайн-запис</span>
                 <h2 id="booking-title">Записатися на прийом</h2>
-                <p>Залиште контакти — адміністратор допоможе обрати послугу й час.</p>
+                <p>Демоверсія форми. Для гарантованого запису телефонуйте адміністратору.</p>
                 <form onSubmit={submitBooking}>
-                  <label>
+                  <label htmlFor="home-booking-name">
                     Ваше ім’я
-                    <input name="name" placeholder="Ім’я та прізвище" required />
+                    <input
+                      id="home-booking-name"
+                      name="name"
+                      autoComplete="name"
+                      placeholder="Ім’я та прізвище"
+                      required
+                    />
                   </label>
-                  <label>
+                  <label htmlFor="home-booking-phone">
                     Номер телефону
-                    <input name="phone" type="tel" placeholder="+380" required />
+                    <input
+                      id="home-booking-phone"
+                      name="phone"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="+380"
+                      required
+                    />
                   </label>
-                  <label>
+                  <label htmlFor="home-booking-service">
                     Послуга
-                    <select name="service" defaultValue="">
+                    <select id="home-booking-service" name="service" defaultValue="">
                       <option value="" disabled>
                         Оберіть послугу
                       </option>
@@ -300,7 +664,7 @@ export default function Home() {
                     </select>
                   </label>
                   <button className="book-button" type="submit">
-                    Надіслати заявку <span>→</span>
+                    Перевірити форму <span>→</span>
                   </button>
                 </form>
               </>
