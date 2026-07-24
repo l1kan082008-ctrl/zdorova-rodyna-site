@@ -10,5 +10,8 @@ export const doctors = sqliteTable("doctors", {
   description: text("description").notNull().default(""),
   schedule: text("schedule").notNull().default("{}"),
   photoKey: text("photo_key").notNull().default(""),
+  availabilityStatus: text("availability_status")
+    .notNull()
+    .default("accepting"),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   defaultDoctors,
+  getDoctorAvailability,
   getDoctorInitials,
   getScheduleSummary,
   weekDays,
@@ -110,6 +111,12 @@ export function DoctorsDirectory() {
             const activeSchedule = weekDays.filter(
               (day) => doctor.schedule[day.key],
             );
+            const availability = getDoctorAvailability(
+              doctor.availabilityStatus,
+            );
+            const isPaused = availability.value === "paused";
+            const needsConfirmation =
+              availability.value === "by-confirmation";
 
             return (
               <article className="doctor-profile-card" key={doctor.id}>
@@ -126,9 +133,11 @@ export function DoctorsDirectory() {
                       {getDoctorInitials(doctor.name)}
                     </div>
                   )}
-                  <span className="doctor-status">
+                  <span
+                    className={`doctor-status is-${availability.value}`}
+                  >
                     <i aria-hidden="true" />
-                    Приймає пацієнтів
+                    {availability.label}
                   </span>
                 </div>
 
@@ -171,12 +180,25 @@ export function DoctorsDirectory() {
                     )}
                   </div>
 
-                  <a
-                    className="book-button doctor-book-button"
-                    href={`/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`}
-                  >
-                    Записатися <span>→</span>
-                  </a>
+                  {isPaused ? (
+                    <button
+                      className="book-button doctor-book-button"
+                      type="button"
+                      disabled
+                    >
+                      Запис недоступний
+                    </button>
+                  ) : (
+                    <a
+                      className="book-button doctor-book-button"
+                      href={`/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`}
+                    >
+                      {needsConfirmation
+                        ? "Уточнити прийом"
+                        : "Записатися"}{" "}
+                      <span>→</span>
+                    </a>
+                  )}
                 </div>
               </article>
             );

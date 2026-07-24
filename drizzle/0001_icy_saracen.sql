@@ -1,0 +1,1 @@
+ALTER TABLE `doctors` ADD `availability_status` text DEFAULT 'accepting' NOT NULL;

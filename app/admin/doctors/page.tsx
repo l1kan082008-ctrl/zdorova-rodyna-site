@@ -2,9 +2,11 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
+  doctorAvailabilityOptions,
   getDoctorInitials,
   weekDays,
   type Doctor,
+  type DoctorAvailabilityStatus,
   type DoctorSchedule,
 } from "../../doctors/doctorData";
 
@@ -27,6 +29,10 @@ function DoctorEditor({
   const [branch, setBranch] = useState(doctor.branch);
   const [description, setDescription] = useState(doctor.description);
   const [schedule, setSchedule] = useState<DoctorSchedule>(doctor.schedule);
+  const [availabilityStatus, setAvailabilityStatus] =
+    useState<DoctorAvailabilityStatus>(
+      doctor.availabilityStatus ?? "accepting",
+    );
   const [photo, setPhoto] = useState<File | null>(null);
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
@@ -47,6 +53,7 @@ function DoctorEditor({
           branch,
           description,
           schedule,
+          availabilityStatus,
         }),
       });
       const payload = (await response.json()) as ApiPayload;
@@ -155,6 +162,30 @@ function DoctorEditor({
               onChange={(event) => setExperienceYears(event.target.value)}
               placeholder="Не вказано"
             />
+          </label>
+          <label>
+            Статус прийому
+            <select
+              value={availabilityStatus}
+              onChange={(event) =>
+                setAvailabilityStatus(
+                  event.target.value as DoctorAvailabilityStatus,
+                )
+              }
+            >
+              {doctorAvailabilityOptions.map((option) => (
+                <option value={option.value} key={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <small>
+              {
+                doctorAvailabilityOptions.find(
+                  (option) => option.value === availabilityStatus,
+                )?.description
+              }
+            </small>
           </label>
         </div>
 

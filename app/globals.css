@@ -1491,6 +1491,24 @@ footer {
   box-shadow: 0 0 0 3px rgba(40, 163, 106, 0.13);
 }
 
+.doctor-status.is-by-confirmation {
+  color: #86611c;
+}
+
+.doctor-status.is-by-confirmation i {
+  background: #e3a62f;
+  box-shadow: 0 0 0 3px rgba(227, 166, 47, 0.16);
+}
+
+.doctor-status.is-paused {
+  color: #7b4b4b;
+}
+
+.doctor-status.is-paused i {
+  background: #c86868;
+  box-shadow: 0 0 0 3px rgba(200, 104, 104, 0.14);
+}
+
 .doctor-profile-content {
   display: flex;
   min-width: 0;
@@ -1633,6 +1651,14 @@ footer {
   margin-top: 13px;
 }
 
+.doctor-book-button:disabled {
+  border-color: #d7dfde;
+  background: #e7eceb;
+  color: #83908f;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
 .admin-doctors-page {
   min-height: 100vh;
   padding-bottom: 60px;
@@ -1732,6 +1758,7 @@ footer {
 
 .admin-doctors-list input,
 .admin-doctor-form input,
+.admin-doctor-form select,
 .admin-doctor-form textarea,
 .admin-schedule-editor input {
   width: 100%;
@@ -1744,6 +1771,7 @@ footer {
 
 .admin-doctors-list input,
 .admin-doctor-form input,
+.admin-doctor-form select,
 .admin-schedule-editor input {
   height: 44px;
   padding: 0 13px;
@@ -1912,9 +1940,16 @@ footer {
   font-weight: 800;
 }
 
+.admin-form-grid label small {
+  color: #738486;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .admin-form-grid {
   display: grid;
-  grid-template-columns: 1fr 180px;
+  grid-template-columns: minmax(0, 1fr) 150px minmax(220px, 0.75fr);
   gap: 16px;
 }
 

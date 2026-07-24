@@ -3,7 +3,16 @@ import {
   listDoctors,
   updateDoctor,
 } from "../../doctors/doctorStore";
-import type { DoctorSchedule } from "../../../doctors/doctorData";
+import type {
+  DoctorAvailabilityStatus,
+  DoctorSchedule,
+} from "../../../doctors/doctorData";
+
+const availabilityStatuses = new Set<DoctorAvailabilityStatus>([
+  "accepting",
+  "by-confirmation",
+  "paused",
+]);
 
 export async function GET(request: Request) {
   if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
@@ -28,10 +37,16 @@ export async function PUT(request: Request) {
       branch?: string;
       description?: string;
       schedule?: DoctorSchedule;
+      availabilityStatus?: DoctorAvailabilityStatus;
     };
 
     const id = payload.id?.trim() ?? "";
     const specialty = payload.specialty?.trim() ?? "";
+    const availabilityStatus = availabilityStatuses.has(
+      payload.availabilityStatus ?? "accepting",
+    )
+      ? (payload.availabilityStatus ?? "accepting")
+      : "accepting";
     if (!id || !specialty) {
       return Response.json(
         { error: "Лікар і спеціальність є обов’язковими" },
@@ -48,6 +63,7 @@ export async function PUT(request: Request) {
       branch: payload.branch?.trim() ?? "",
       description: payload.description?.trim() ?? "",
       schedule: payload.schedule ?? {},
+      availabilityStatus,
     });
 
     if (!updated) {

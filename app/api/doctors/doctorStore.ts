@@ -2,6 +2,7 @@ import { env } from "cloudflare:workers";
 import {
   defaultDoctors,
   type Doctor,
+  type DoctorAvailabilityStatus,
   type DoctorSchedule,
 } from "../../doctors/doctorData";
 
@@ -14,6 +15,7 @@ type DoctorRow = {
   description: string;
   schedule: string;
   photo_key: string;
+  availability_status: DoctorAvailabilityStatus;
 };
 
 const createDoctorsTable = `
@@ -26,12 +28,21 @@ const createDoctorsTable = `
     description TEXT NOT NULL DEFAULT '',
     schedule TEXT NOT NULL DEFAULT '{}',
     photo_key TEXT NOT NULL DEFAULT '',
+    availability_status TEXT NOT NULL DEFAULT 'accepting',
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )
 `;
 
 export async function ensureDoctorsTable() {
   await env.DB.prepare(createDoctorsTable).run();
+  const columns = await env.DB.prepare("PRAGMA table_info(doctors)").all<{
+    name: string;
+  }>();
+  if (!columns.results.some((column) => column.name === "availability_status")) {
+    await env.DB.prepare(
+      "ALTER TABLE doctors ADD COLUMN availability_status TEXT NOT NULL DEFAULT 'accepting'",
+    ).run();
+  }
   const count = await env.DB.prepare(
     "SELECT COUNT(*) AS total FROM doctors",
   ).first<{ total: number }>();
@@ -42,8 +53,8 @@ export async function ensureDoctorsTable() {
     defaultDoctors.map((doctor) =>
       env.DB.prepare(
         `INSERT OR IGNORE INTO doctors
-          (id, name, specialty, experience_years, branch, description, schedule, photo_key)
-         VALUES (?, ?, ?, ?, ?, ?, ?, '')`,
+          (id, name, specialty, experience_years, branch, description, schedule, photo_key, availability_status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, '', ?)`,
       ).bind(
         doctor.id,
         doctor.name,
@@ -52,6 +63,7 @@ export async function ensureDoctorsTable() {
         doctor.branch,
         doctor.description,
         JSON.stringify(doctor.schedule),
+        doctor.availabilityStatus,
       ),
     ),
   );
@@ -74,6 +86,7 @@ function toDoctor(row: DoctorRow): Doctor {
     branch: row.branch,
     description: row.description,
     schedule: parseSchedule(row.schedule),
+    availabilityStatus: row.availability_status ?? "accepting",
     photoUrl: row.photo_key
       ? `/api/doctors/photo?key=${encodeURIComponent(row.photo_key)}`
       : "",
@@ -83,7 +96,7 @@ function toDoctor(row: DoctorRow): Doctor {
 export async function listDoctors() {
   await ensureDoctorsTable();
   const result = await env.DB.prepare(
-    `SELECT id, name, specialty, experience_years, branch, description, schedule, photo_key
+    `SELECT id, name, specialty, experience_years, branch, description, schedule, photo_key, availability_status
      FROM doctors
      ORDER BY name COLLATE NOCASE`,
   ).all<DoctorRow>();
@@ -109,13 +122,14 @@ export async function updateDoctor(
     branch: string;
     description: string;
     schedule: DoctorSchedule;
+    availabilityStatus: DoctorAvailabilityStatus;
   },
 ) {
   await ensureDoctorsTable();
   const result = await env.DB.prepare(
     `UPDATE doctors
      SET specialty = ?, experience_years = ?, branch = ?, description = ?,
-         schedule = ?, updated_at = CURRENT_TIMESTAMP
+         schedule = ?, availability_status = ?, updated_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
   )
     .bind(
@@ -124,6 +138,7 @@ export async function updateDoctor(
       values.branch,
       values.description,
       JSON.stringify(values.schedule),
+      values.availabilityStatus,
       id,
     )
     .run();

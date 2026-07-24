@@ -10,6 +10,32 @@ export const weekDays = [
 
 export type DayKey = (typeof weekDays)[number]["key"];
 export type DoctorSchedule = Partial<Record<DayKey, string>>;
+export type DoctorAvailabilityStatus =
+  | "accepting"
+  | "by-confirmation"
+  | "paused";
+
+export const doctorAvailabilityOptions: Array<{
+  value: DoctorAvailabilityStatus;
+  label: string;
+  description: string;
+}> = [
+  {
+    value: "accepting",
+    label: "Приймає пацієнтів",
+    description: "Пацієнт може одразу перейти до запису.",
+  },
+  {
+    value: "by-confirmation",
+    label: "Прийом за уточненням",
+    description: "Пацієнту запропонуємо уточнити можливість прийому.",
+  },
+  {
+    value: "paused",
+    label: "Тимчасово не приймає",
+    description: "Кнопка запису буде недоступною.",
+  },
+];
 
 export type Doctor = {
   id: string;
@@ -20,6 +46,7 @@ export type Doctor = {
   description: string;
   schedule: DoctorSchedule;
   photoUrl: string;
+  availabilityStatus: DoctorAvailabilityStatus;
 };
 
 const doctor = (
@@ -36,6 +63,7 @@ const doctor = (
   description,
   schedule: {},
   photoUrl: "",
+  availabilityStatus: "accepting",
 });
 
 export const defaultDoctors: Doctor[] = [
@@ -96,4 +124,13 @@ export function getScheduleSummary(schedule: DoctorSchedule) {
   }
 
   return `${activeDays[0].short}–${activeDays.at(-1)?.short} · за графіком`;
+}
+
+export function getDoctorAvailability(
+  status: DoctorAvailabilityStatus | undefined,
+) {
+  return (
+    doctorAvailabilityOptions.find((option) => option.value === status) ??
+    doctorAvailabilityOptions[0]
+  );
 }
