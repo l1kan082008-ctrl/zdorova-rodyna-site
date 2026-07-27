@@ -13,6 +13,23 @@ import {
 
 const initiallyVisible = 12;
 
+const formatDoctorSpecialty = (specialty: string) =>
+  specialty
+    .split(/\s*,\s*/)
+    .filter(Boolean)
+    .join(" · ");
+
+const formatDoctorBranch = (branch: string) => {
+  const value = branch.trim();
+  if (!value) return "Відділення уточнюйте";
+  if (/^відділення\s*:/iu.test(value)) return value;
+  if (/^(?:вул\.?\s*)?стельмаха[,\s]+18[-\s]*м$/iu.test(value)) {
+    return "Відділення: вул. Стельмаха, 18-М";
+  }
+
+  return `Відділення: ${value}`;
+};
+
 export function DoctorsDirectory() {
   const [doctors, setDoctors] = useState<Doctor[]>(defaultDoctors);
   const [query, setQuery] = useState("");
@@ -143,16 +160,16 @@ export function DoctorsDirectory() {
                 </div>
 
                 <div className="doctor-profile-content">
-                  <span className="doctor-specialty">{doctor.specialty}</span>
+                  <span className="doctor-specialty">
+                    {formatDoctorSpecialty(doctor.specialty)}
+                  </span>
                   <h2>{doctor.name}</h2>
 
                   <div className="doctor-profile-meta">
                     {doctor.experienceYears ? (
                       <span>Досвід {doctor.experienceYears} років</span>
                     ) : null}
-                    <span>
-                      {doctor.branch || "Відділення уточнюйте"}
-                    </span>
+                    <span>{formatDoctorBranch(doctor.branch)}</span>
                   </div>
 
                   <div className="doctor-patient-groups">
@@ -215,13 +232,13 @@ export function DoctorsDirectory() {
                       Про лікаря
                     </a>
                     {isPaused ? (
-                      <button
-                        className="book-button doctor-book-button"
-                        type="button"
-                        disabled
+                      <a
+                        className="book-button doctor-book-button doctor-admin-button"
+                        href="tel:+380676714444"
+                        aria-label={`Уточнити можливість прийому лікаря ${doctor.name} в адміністратора`}
                       >
-                        Запис недоступний
-                      </button>
+                        Уточнити в адміністратора <span>→</span>
+                      </a>
                     ) : (
                       <a
                         className="book-button doctor-book-button"

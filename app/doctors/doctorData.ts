@@ -34,7 +34,8 @@ export const doctorAvailabilityOptions: Array<{
   {
     value: "paused",
     label: "Тимчасово не приймає",
-    description: "Кнопка запису буде недоступною.",
+    description:
+      "Пацієнт зможе уточнити можливість прийому в адміністратора.",
   },
 ];
 
