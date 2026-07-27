@@ -1625,6 +1625,8 @@ footer {
 .route-grid,
 .subpage-cta,
 .about-route,
+.about-directions,
+.about-journey,
 .about-values,
 .values-grid,
 .service-promise-strip,
@@ -3236,6 +3238,217 @@ footer {
   background-size: cover;
 }
 
+.about-page-hero {
+  position: relative;
+}
+
+.about-page-hero::after {
+  position: absolute;
+  top: 24px;
+  right: 5%;
+  width: 210px;
+  height: 210px;
+  border: 1px solid rgba(13, 126, 128, 0.13);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 38px rgba(13, 126, 128, 0.035),
+    0 0 0 76px rgba(13, 126, 128, 0.025);
+  content: "";
+  pointer-events: none;
+}
+
+.about-directions {
+  margin-top: 54px;
+  padding: 48px;
+  overflow: hidden;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 92% 5%, rgba(117, 226, 217, 0.22), transparent 31%),
+    linear-gradient(135deg, #064e56 0%, #076a70 55%, #138986 100%);
+  color: #fff;
+  box-shadow: 0 24px 60px rgba(3, 70, 75, 0.18);
+}
+
+.about-directions-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+  gap: 18px 60px;
+  align-items: end;
+  margin-bottom: 34px;
+}
+
+.about-directions-head .section-kicker {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #ffb36e;
+}
+
+.about-directions-head h2 {
+  max-width: 720px;
+  margin: 0;
+  font-size: 38px;
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+}
+
+.about-directions-head > p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.about-directions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.about-directions-grid > a {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 255px;
+  padding: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease;
+}
+
+.about-directions-grid > a::after {
+  position: absolute;
+  right: -28px;
+  bottom: -42px;
+  width: 120px;
+  height: 120px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  content: "";
+}
+
+.about-directions-grid > a:hover,
+.about-directions-grid > a:focus-visible {
+  transform: translateY(-5px);
+  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.about-directions-grid > a > span {
+  color: #ffb36e;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.about-directions-grid h3 {
+  margin: 28px 0 12px;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.about-directions-grid p {
+  margin: 0 0 22px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.about-directions-grid strong {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  font-size: 12px;
+}
+
+.about-directions-grid strong span {
+  color: #ffb36e;
+  font-size: 18px;
+}
+
+.about-journey {
+  display: grid;
+  grid-template-columns: minmax(270px, 0.75fr) minmax(0, 1.25fr);
+  gap: 70px;
+  padding: 68px 0 18px;
+}
+
+.about-journey-intro {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+}
+
+.about-journey-intro h2 {
+  max-width: 420px;
+  margin: 0;
+  color: var(--ink);
+  font-size: 38px;
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+}
+
+.about-journey-intro p {
+  max-width: 430px;
+  margin: 22px 0 0;
+  color: #56686b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.about-journey-steps {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about-journey-steps li {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 22px;
+  padding: 24px 26px;
+  border: 1px solid #dce9e8;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 12px 30px rgba(24, 73, 76, 0.045);
+}
+
+.about-journey-steps li > span {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #e5f3f2;
+  color: var(--teal);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.about-journey-steps h3 {
+  margin: 2px 0 7px;
+  color: var(--ink);
+  font-size: 19px;
+}
+
+.about-journey-steps p {
+  margin: 0;
+  color: #59696c;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
 .about-values {
   padding-top: 54px;
 }
@@ -4579,6 +4792,10 @@ footer {
     grid-template-columns: 42% 58%;
   }
 
+  .about-directions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .contact-route {
     grid-template-columns: 0.9fr 1.1fr;
     gap: 34px;
@@ -4723,6 +4940,8 @@ footer {
   .route-grid,
   .subpage-cta,
   .about-route,
+  .about-directions,
+  .about-journey,
   .about-values,
   .values-grid,
   .service-promise-strip,
@@ -5241,6 +5460,63 @@ footer {
 
   .about-route {
     grid-template-columns: 1fr;
+  }
+
+  .about-page-hero::after {
+    display: none;
+  }
+
+  .about-directions {
+    margin-top: 38px;
+    padding: 34px 26px;
+    border-radius: 24px;
+  }
+
+  .about-directions-head {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 26px;
+  }
+
+  .about-directions-head .section-kicker {
+    grid-column: auto;
+  }
+
+  .about-directions-head h2 {
+    font-size: 31px;
+  }
+
+  .about-directions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-directions-grid > a {
+    min-height: 220px;
+  }
+
+  .about-journey {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding-top: 46px;
+  }
+
+  .about-journey-intro {
+    position: static;
+  }
+
+  .about-journey-intro h2 {
+    font-size: 31px;
+  }
+
+  .about-journey-steps li {
+    grid-template-columns: 46px 1fr;
+    gap: 14px;
+    padding: 20px 18px;
+  }
+
+  .about-journey-steps li > span {
+    width: 44px;
+    height: 44px;
   }
 
   .about-values {
