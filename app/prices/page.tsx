@@ -15,6 +15,14 @@ export default async function PricesPage() {
   return (
     <main className="inner-page">
       <SiteHeader active="prices" />
+      <section className="page-hero prices-page-hero">
+        <span className="section-kicker">Вартість</span>
+        <h1>Вартість послуг</h1>
+        <p>
+          Знайдіть потрібне дослідження за назвою або оберіть напрям.
+          Додайте послуги до калькулятора, щоб побачити орієнтовну суму.
+        </p>
+      </section>
 
       <PriceCatalog initialItems={priceItems} />
 

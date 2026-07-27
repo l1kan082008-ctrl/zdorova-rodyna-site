@@ -24,6 +24,7 @@ const emptyItem: ManagedPriceItem = {
   category: "general",
   categoryLabel: "Загальноклінічні",
   amount: 0,
+  turnaround: "Уточнюйте",
   aliases: [],
   isActive: true,
   sortOrder: 0,
@@ -147,6 +148,20 @@ function PriceEditor({
           />
         </label>
         <label>
+          Термін виконання
+          <input
+            value={draft.turnaround ?? ""}
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                turnaround: event.target.value,
+              }))
+            }
+            placeholder="Наприклад: 1–2 робочі дні"
+            required
+          />
+        </label>
+        <label>
           Порядок
           <input
             type="number"
@@ -248,7 +263,7 @@ export default function PricesAdminPage() {
         <span className="section-kicker">Адмін-панель</span>
         <h1>Послуги та ціни</h1>
         <p>
-          Додавайте дослідження, змінюйте вартість і пошукові синоніми.
+          Додавайте дослідження, змінюйте вартість, термін виконання і пошукові синоніми.
           Приховані позиції залишаються в адмінці, але не показуються пацієнтам.
         </p>
       </section>

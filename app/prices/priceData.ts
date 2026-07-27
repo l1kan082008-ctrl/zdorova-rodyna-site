@@ -42,6 +42,7 @@ export type PriceItem = {
   category: CategoryId;
   categoryLabel: string;
   amount: number;
+  turnaround?: string;
   aliases?: string[];
   isActive?: boolean;
   sortOrder?: number;

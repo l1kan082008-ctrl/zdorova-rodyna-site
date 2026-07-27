@@ -20,6 +20,10 @@ function parseValues(payload: Record<string, unknown>) {
       ? payload.categoryLabel.trim()
       : "";
   const amount = Number(payload.amount);
+  const turnaround =
+    typeof payload.turnaround === "string"
+      ? payload.turnaround.trim()
+      : "Уточнюйте";
   const aliases = Array.isArray(payload.aliases)
     ? payload.aliases
         .filter((value): value is string => typeof value === "string")
@@ -42,6 +46,7 @@ function parseValues(payload: Record<string, unknown>) {
     category: category as CategoryId,
     categoryLabel,
     amount: Math.round(amount),
+    turnaround: turnaround || "Уточнюйте",
     aliases,
     isActive: payload.isActive !== false,
     sortOrder: Math.max(0, Math.round(Number(payload.sortOrder) || 0)),

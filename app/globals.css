@@ -3657,25 +3657,10 @@ footer {
 .price-catalog-shell {
   display: grid;
   grid-template-columns: 255px minmax(0, 1fr);
-  grid-template-areas:
-    "categories heading"
-    "categories prices";
+  grid-template-areas: "categories prices";
   gap: 22px;
   width: min(1180px, calc(100% - 48px));
-  margin: 48px auto 30px;
-}
-
-.price-catalog-heading {
-  grid-area: heading;
-  align-self: end;
-}
-
-.price-catalog-heading h1 {
-  margin: 0;
-  color: var(--ink);
-  font-size: clamp(48px, 5vw, 66px);
-  line-height: 1;
-  letter-spacing: -0.055em;
+  margin: 0 auto 30px;
 }
 
 .price-category-panel,
@@ -3780,6 +3765,10 @@ footer {
 }
 
 .price-category-mobile-hint {
+  display: none;
+}
+
+.price-category-mobile-toggle {
   display: none;
 }
 
@@ -3891,8 +3880,8 @@ footer {
 
 .medical-price-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 120px 132px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) minmax(125px, 150px) 95px 132px;
+  gap: 16px;
   align-items: center;
 }
 
@@ -3985,9 +3974,58 @@ footer {
   overflow-wrap: anywhere;
 }
 
+.medical-price-duration {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.medical-price-duration span {
+  color: #839597;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.medical-price-duration strong {
+  color: #496468;
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
 .medical-price-value strong {
   color: var(--ink);
   font-size: 15px;
+  white-space: nowrap;
+}
+
+.price-group-view-all {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 54px;
+  padding: 10px 24px;
+  border: 0;
+  border-top: 1px solid #e2ecea;
+  background: #f6fbfa;
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.price-group-view-all:hover,
+.price-group-view-all:focus-visible {
+  background: #edf7f5;
+  color: var(--ink);
+}
+
+.price-group-view-all span {
   white-space: nowrap;
 }
 
@@ -4050,6 +4088,10 @@ footer {
   box-shadow: 0 20px 60px rgba(8, 61, 66, 0.2);
   transform: translateX(50%);
   backdrop-filter: blur(18px);
+}
+
+.price-calculator-spacer {
+  height: 96px;
 }
 
 .calculator-bar-icon {
@@ -4255,6 +4297,18 @@ footer {
 .calculator-total .book-button {
   justify-content: center;
   width: 100%;
+}
+
+.calculator-total > .calculator-total-actions {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.55fr) minmax(210px, 1fr);
+  align-items: stretch;
+  gap: 10px;
+}
+
+.calculator-total-actions .outline-button,
+.calculator-total-actions .book-button {
+  min-height: 48px;
 }
 
 .mobile-price-label {
@@ -4943,7 +4997,7 @@ footer {
   }
 
   .medical-price-row {
-    grid-template-columns: minmax(0, 1fr) 82px 112px;
+    grid-template-columns: minmax(0, 1fr) 116px 82px 112px;
     gap: 12px;
   }
 
@@ -5402,21 +5456,16 @@ footer {
   .price-catalog-shell {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      "heading"
       "categories"
       "prices";
     gap: 14px;
-    margin-top: 30px;
-  }
-
-  .price-catalog-heading h1 {
-    font-size: clamp(42px, 13vw, 58px);
+    margin-top: 0;
   }
 
   .price-category-panel {
     position: static;
     min-width: 0;
-    padding: 20px 18px 18px;
+    padding: 10px;
     overflow: hidden;
   }
 
@@ -5425,33 +5474,74 @@ footer {
   }
 
   .price-category-tabs {
-    display: flex;
+    display: none;
     gap: 8px;
-    max-height: none;
-    margin: 0 -18px;
-    padding: 0 18px 5px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
+    max-height: min(55vh, 430px);
+    margin-top: 9px;
+    padding: 2px;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
-  .price-category-tabs::-webkit-scrollbar {
-    display: none;
+  .price-category-tabs.is-open {
+    display: grid;
   }
 
   .price-category-tabs button {
-    flex: 0 0 auto;
-    width: auto;
-    min-width: 164px;
+    width: 100%;
+    min-width: 0;
+    min-height: 58px;
   }
 
-  .price-category-mobile-hint {
-    display: block;
-    margin: 8px 0 0;
-    color: #708689;
-    font-size: 11px;
-    font-weight: 700;
-    text-align: right;
+  .price-category-mobile-toggle {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 20px;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    min-height: 64px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 16px;
+    background: #eff7f6;
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .price-category-mobile-toggle > span:nth-child(2) {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .price-category-mobile-toggle small {
+    color: #758c8e;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .price-category-mobile-toggle strong {
+    overflow: hidden;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .price-category-mobile-chevron {
+    justify-self: center;
+    width: 9px;
+    height: 9px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 160ms ease;
+  }
+
+  .price-category-mobile-chevron.is-open {
+    transform: translateY(2px) rotate(225deg);
   }
 
   .price-phone-card {
@@ -5545,6 +5635,21 @@ footer {
     display: none;
   }
 
+  .medical-price-duration {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+  }
+
+  .medical-price-duration span {
+    flex: 0 0 auto;
+  }
+
+  .medical-price-duration strong {
+    font-size: 11px;
+  }
+
   .medical-price-value {
     display: grid;
     gap: 6px;
@@ -5563,6 +5668,16 @@ footer {
     min-height: 44px;
     padding: 0 14px;
     font-size: 11px;
+  }
+
+  .price-group-view-all {
+    min-height: 50px;
+    padding: 10px 14px;
+    font-size: 11px;
+  }
+
+  .price-calculator-spacer {
+    height: 82px;
   }
 
   .price-calculator-bar {
@@ -5631,6 +5746,18 @@ footer {
 
   .calculator-total > div strong {
     font-size: 27px;
+  }
+
+  .calculator-total > .calculator-total-actions {
+    grid-template-columns: minmax(100px, 0.7fr) minmax(0, 1.3fr);
+    gap: 8px;
+  }
+
+  .calculator-total-actions .outline-button,
+  .calculator-total-actions .book-button {
+    min-height: 46px;
+    padding-inline: 12px;
+    font-size: 10px;
   }
 
   .mobile-price-label {
@@ -6235,7 +6362,7 @@ footer {
 
 .admin-price-form-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 140px 110px;
+  grid-template-columns: minmax(0, 1.6fr) minmax(190px, 0.8fr) 130px 110px;
   gap: 14px;
 }
 

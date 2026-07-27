@@ -37,6 +37,7 @@ export const priceItems = sqliteTable("price_items", {
   category: text("category").notNull(),
   categoryLabel: text("category_label").notNull(),
   amount: integer("amount").notNull(),
+  turnaround: text("turnaround").notNull().default("Уточнюйте"),
   aliases: text("aliases").notNull().default("[]"),
   isActive: integer("is_active").notNull().default(1),
   sortOrder: integer("sort_order").notNull().default(0),

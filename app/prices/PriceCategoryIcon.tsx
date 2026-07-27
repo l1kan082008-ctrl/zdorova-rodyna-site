@@ -1,47 +1,60 @@
 import type { CategoryId } from "./priceData";
 
 type IconKind =
+  | "allergy"
+  | "bone"
   | "brain"
+  | "complex"
+  | "ct"
+  | "dna"
   | "doctor"
   | "drop"
   | "flask"
   | "heart"
   | "kidneys"
+  | "microscope"
+  | "molecule"
+  | "mri"
+  | "needle"
+  | "pregnancy"
+  | "ribbon"
+  | "ruler"
   | "scan"
   | "shield"
   | "stomach"
+  | "vessel"
   | "virus";
 
 const categoryIcons: Record<CategoryId, IconKind> = {
   ultrasound: "scan",
   heart: "heart",
-  doppler: "heart",
-  ct: "scan",
-  mri: "brain",
+  doppler: "vessel",
+  ct: "ct",
+  mri: "mri",
   general: "flask",
-  biochemistry: "flask",
+  biochemistry: "molecule",
   diabetes: "drop",
-  hemostasis: "drop",
+  hemostasis: "vessel",
   hormones: "flask",
-  growth: "heart",
-  prenatal: "heart",
+  growth: "ruler",
+  prenatal: "pregnancy",
   oncology: "shield",
-  rheumatology: "heart",
+  rheumatology: "bone",
   anemia: "drop",
   immunology: "shield",
-  osteoporosis: "shield",
-  cytology: "flask",
+  osteoporosis: "bone",
+  cytology: "microscope",
   infections: "virus",
-  hiv: "shield",
+  hiv: "ribbon",
   torch: "virus",
   urogenital: "kidneys",
-  allergy: "shield",
-  genetics: "brain",
-  culture: "flask",
-  bacteriology: "virus",
-  complexes: "flask",
+  allergy: "allergy",
+  genetics: "dna",
+  culture: "microscope",
+  bacteriology: "microscope",
+  complexes: "complex",
   covid: "virus",
-  sampling: "drop",
+  sampling: "needle",
   medical: "doctor",
   "other-infections": "virus",
 };
@@ -61,6 +74,98 @@ export function PriceCategoryIcon({
             <path d="M32 7S16 27 16 40a16 16 0 0 0 32 0C48 27 32 7 32 7Z" />
             <path d="M24 42c1 5 4 8 9 9" />
           </>
+        );
+      case "vessel":
+        return (
+          <>
+            <path d="M14 8v18c0 8 6 14 14 14h8c8 0 14 6 14 14v2M50 8v14c0 8-6 14-14 14h-8c-8 0-14 6-14 14v6" />
+            <path d="M9 18h10M45 18h10M9 50h10M45 50h10" />
+          </>
+        );
+      case "ct":
+        return (
+          <>
+            <circle cx="32" cy="27" r="20" />
+            <circle cx="32" cy="27" r="10" />
+            <path d="M8 56h48M18 48h28v8M12 44h26c6 0 10 4 10 10" />
+          </>
+        );
+      case "mri":
+        return (
+          <>
+            <path d="M12 45V25a20 20 0 0 1 40 0v20" />
+            <circle cx="32" cy="25" r="10" />
+            <path d="M7 56h50M22 48h30v8M12 45h19" />
+          </>
+        );
+      case "molecule":
+        return (
+          <>
+            <circle cx="18" cy="34" r="7" />
+            <circle cx="42" cy="16" r="7" />
+            <circle cx="47" cy="46" r="8" />
+            <path d="m24 29 12-9M24 38l15 6M43 23l3 15" />
+          </>
+        );
+      case "ruler":
+        return (
+          <>
+            <path d="M20 55 8 43 43 8l12 12-35 35Z" />
+            <path d="m38 13 6 6M31 20l6 6M24 27l6 6M17 34l6 6" />
+          </>
+        );
+      case "pregnancy":
+        return (
+          <>
+            <circle cx="32" cy="13" r="7" />
+            <path d="M25 24c-5 6-7 13-6 21l2 12M39 24c5 6 7 13 6 21l-2 12M25 26h14M24 39c4-4 12-4 17 1M23 49h19" />
+            <circle cx="33" cy="40" r="5" />
+          </>
+        );
+      case "bone":
+        return (
+          <path d="M18 16c-3-3-8-3-11 0s-3 8 0 11c2 2 5 3 7 2l21 21c-1 3 0 6 2 8 3 3 8 3 11 0s3-8 0-11c-2-2-5-3-7-2L20 24c1-3 0-6-2-8ZM46 7c3-3 8-3 11 0s3 8 0 11c-2 2-5 3-7 2L20 50c1 3 0 6-2 8-3 3-8 3-11 0s-3-8 0-11c2-2 5-3 7-2l30-30c-1-3 0-6 2-8Z" />
+        );
+      case "microscope":
+        return (
+          <>
+            <path d="m27 8 13 13-7 7-13-13 7-7ZM30 28l-8 8c-5 5-5 13 0 18M37 19l6 6M11 56h43M21 48h25M42 28c8 2 12 8 12 16" />
+            <circle cx="41" cy="39" r="6" />
+          </>
+        );
+      case "allergy":
+        return (
+          <>
+            <circle cx="32" cy="32" r="7" />
+            <path d="M32 8c6 0 8 9 0 17-8-8-6-17 0-17ZM56 32c0 6-9 8-17 0 8-8 17-6 17 0ZM32 56c-6 0-8-9 0-17 8 8 6 17 0 17ZM8 32c0-6 9-8 17 0-8 8-17 6-17 0Z" />
+          </>
+        );
+      case "dna":
+        return (
+          <>
+            <path d="M18 8c0 18 28 30 28 48M46 8c0 18-28 30-28 48" />
+            <path d="M22 15h20M20 25h24M20 39h24M22 49h20" />
+          </>
+        );
+      case "complex":
+        return (
+          <>
+            <rect x="10" y="10" width="18" height="18" rx="4" />
+            <rect x="36" y="10" width="18" height="18" rx="4" />
+            <rect x="10" y="36" width="18" height="18" rx="4" />
+            <rect x="36" y="36" width="18" height="18" rx="4" />
+            <path d="M28 19h8M19 28v8M45 28v8M28 45h8" />
+          </>
+        );
+      case "needle":
+        return (
+          <>
+            <path d="m39 8 17 17-7 7-17-17 7-7ZM34 19 16 37M11 32l21 21M16 37 8 55M32 53l-6 6" />
+          </>
+        );
+      case "ribbon":
+        return (
+          <path d="M32 8c13 0 18 8 18 17 0 8-5 16-12 24l-6 7-6-7C19 41 14 33 14 25c0-9 5-17 18-17ZM32 8c-6 8-8 17-6 26M32 8c6 8 8 17 6 26" />
         );
       case "heart":
         return (

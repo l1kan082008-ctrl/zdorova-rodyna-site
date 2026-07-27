@@ -1,0 +1,1 @@
+ALTER TABLE `price_items` ADD `turnaround` text DEFAULT 'Уточнюйте' NOT NULL;
