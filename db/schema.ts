@@ -30,3 +30,15 @@ export const bookings = sqliteTable("bookings", {
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const priceItems = sqliteTable("price_items", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  category: text("category").notNull(),
+  categoryLabel: text("category_label").notNull(),
+  amount: integer("amount").notNull(),
+  aliases: text("aliases").notNull().default("[]"),
+  isActive: integer("is_active").notNull().default(1),
+  sortOrder: integer("sort_order").notNull().default(0),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});

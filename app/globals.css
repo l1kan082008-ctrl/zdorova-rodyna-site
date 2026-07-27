@@ -3672,6 +3672,8 @@ footer {
 
 .price-category-panel {
   align-self: start;
+  position: sticky;
+  top: 20px;
   padding: 25px 18px 18px;
 }
 
@@ -3730,6 +3732,10 @@ footer {
 .price-category-tabs button span {
   font-size: 13px;
   font-weight: 700;
+}
+
+.price-category-mobile-hint {
+  display: none;
 }
 
 .price-phone-card {
@@ -3820,6 +3826,7 @@ footer {
   color: var(--ink);
   font-size: 14px;
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .medical-price-category > span:last-child {
@@ -5236,12 +5243,15 @@ footer {
   }
 
   .price-catalog-shell {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 14px;
   }
 
   .price-category-panel {
+    position: static;
+    min-width: 0;
     padding: 20px 18px 18px;
+    overflow: hidden;
   }
 
   .price-category-panel h2 {
@@ -5269,6 +5279,15 @@ footer {
     min-width: 112px;
   }
 
+  .price-category-mobile-hint {
+    display: block;
+    margin: 8px 0 0;
+    color: #708689;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: right;
+  }
+
   .price-phone-card {
     display: none;
   }
@@ -5277,8 +5296,14 @@ footer {
     padding: 20px;
   }
 
+  .price-table-panel {
+    width: 100%;
+    min-width: 0;
+  }
+
   .medical-price-table {
     display: grid;
+    min-width: 0;
     gap: 12px;
     padding: 14px;
   }
@@ -5289,6 +5314,8 @@ footer {
 
   .medical-price-row {
     grid-template-columns: 1fr auto;
+    width: 100%;
+    min-width: 0;
     gap: 14px 18px;
     min-height: auto;
     padding: 19px;
@@ -5299,6 +5326,7 @@ footer {
 
   .medical-price-service {
     grid-column: 1 / -1;
+    min-width: 0;
   }
 
   .medical-price-service strong {
@@ -5821,6 +5849,241 @@ footer {
 
   .booking-modal {
     padding: 34px 24px 26px;
+  }
+}
+
+.admin-prices-page {
+  min-height: 100vh;
+  padding-bottom: 60px;
+  background:
+    radial-gradient(circle at 88% 0%, rgba(255, 126, 0, 0.1), transparent 28%),
+    #f4f8f7;
+}
+
+.admin-prices-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.78fr) minmax(0, 1.35fr);
+  gap: 22px;
+  align-items: start;
+  width: min(1280px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.admin-prices-list,
+.admin-price-editor {
+  border: 1px solid #dce7e6;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 18px 46px rgba(24, 73, 76, 0.07);
+}
+
+.admin-prices-list {
+  position: sticky;
+  top: 18px;
+  overflow: hidden;
+}
+
+.admin-prices-list-tools {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border-bottom: 1px solid #e3eceb;
+}
+
+.admin-prices-list-tools label,
+.admin-price-editor > label,
+.admin-price-form-grid label {
+  display: grid;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-prices-list-tools input,
+.admin-price-editor input,
+.admin-price-editor select {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #cbdedc;
+  border-radius: 12px;
+  outline: none;
+  background: #fff;
+  color: var(--ink-dark);
+}
+
+.admin-prices-list-tools input:focus,
+.admin-price-editor input:focus,
+.admin-price-editor select:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(20, 126, 129, 0.1);
+}
+
+.admin-prices-list-tools .outline-button {
+  width: 100%;
+}
+
+.admin-prices-scroll {
+  display: grid;
+  max-height: 670px;
+  overflow-y: auto;
+}
+
+.admin-prices-scroll > button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  padding: 14px 18px;
+  border: 0;
+  border-bottom: 1px solid #edf2f1;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-prices-scroll > button:hover,
+.admin-prices-scroll > button.is-active {
+  background: #edf7f6;
+}
+
+.admin-prices-scroll > button > span {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.admin-prices-scroll strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-prices-scroll b {
+  color: var(--teal);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.admin-prices-scroll small {
+  color: #789092;
+  font-size: 10px;
+}
+
+.admin-price-editor {
+  display: grid;
+  gap: 20px;
+  padding: 28px;
+}
+
+.admin-price-editor-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e3eceb;
+}
+
+.admin-price-editor-heading span {
+  color: var(--teal);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-price-editor-heading h2 {
+  margin: 5px 0 0;
+  color: var(--ink);
+  font-size: 28px;
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+}
+
+.admin-active-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.admin-active-switch input {
+  width: 18px;
+  height: 18px;
+}
+
+.admin-price-form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px 110px;
+  gap: 14px;
+}
+
+.admin-price-editor small {
+  color: #718588;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.admin-price-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 4px;
+}
+
+.admin-price-actions p {
+  margin: 0;
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 860px) {
+  .admin-prices-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-prices-list {
+    position: static;
+  }
+
+  .admin-prices-scroll {
+    max-height: 360px;
+  }
+}
+
+@media (max-width: 720px) {
+  .admin-prices-layout {
+    width: calc(100% - 28px);
+  }
+
+  .admin-price-editor {
+    padding: 20px;
+  }
+
+  .admin-price-editor-heading,
+  .admin-price-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-price-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-price-actions .book-button {
+    width: 100%;
   }
 }
 

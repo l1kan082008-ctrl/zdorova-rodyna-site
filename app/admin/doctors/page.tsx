@@ -335,6 +335,7 @@ export default function DoctorsAdminPage() {
         <nav aria-label="Адміністративні розділи">
           <strong>Лікарі</strong>
           <Link href="/admin/bookings">Заявки</Link>
+          <Link href="/admin/prices">Прайс</Link>
         </nav>
       </header>
 

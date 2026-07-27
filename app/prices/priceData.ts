@@ -13,6 +13,7 @@ export type CategoryId =
   | "medical"
   | "covid"
   | "rheumatology"
+  | "anemia"
   | "cytology";
 
 export type AdditionalPriceItem = {
@@ -21,6 +22,9 @@ export type AdditionalPriceItem = {
   category: CategoryId;
   categoryLabel: string;
   amount: number;
+  aliases?: string[];
+  isActive?: boolean;
+  sortOrder?: number;
 };
 
 export type PriceItem = AdditionalPriceItem;
@@ -31,21 +35,29 @@ const priceItem = (
   category: CategoryId,
   categoryLabel: string,
   amount: number,
-): AdditionalPriceItem => ({ id, name, category, categoryLabel, amount });
+  aliases: string[] = [],
+): AdditionalPriceItem => ({
+  id,
+  name,
+  category,
+  categoryLabel,
+  amount,
+  aliases,
+});
 
 export const corePriceItems: PriceItem[] = [
-  priceItem("abdomen-complex", "Органи черевної порожнини, комплексно", "ultrasound", "УЗД", 600),
-  priceItem("kidneys-bladder", "Нирки та сечовий міхур", "ultrasound", "УЗД", 500),
+  priceItem("abdomen-complex", "Органи черевної порожнини, комплексно", "ultrasound", "УЗД", 600, ["ОЧП", "УЗД живота"]),
+  priceItem("kidneys-bladder", "Нирки та сечовий міхур", "ultrasound", "УЗД", 500, ["сечовидільна система"]),
   priceItem("kidneys", "Нирки", "ultrasound", "УЗД", 450),
-  priceItem("thyroid", "Щитоподібна залоза", "ultrasound", "УЗД", 500),
+  priceItem("thyroid", "Щитоподібна залоза", "ultrasound", "УЗД", 500, ["УЗД щитовидної залози", "щитовидка"]),
   priceItem("soft-tissues", "М’які тканини", "ultrasound", "УЗД", 450),
   priceItem("female-pelvis", "Органи малого таза у жінок", "ultrasound", "УЗД", 600),
   priceItem("breast", "Молочні залози", "ultrasound", "УЗД", 550),
   priceItem("abdomen-kidneys", "Органи черевної порожнини та нирки", "ultrasound", "УЗД", 700),
-  priceItem("ecg", "ЕКГ", "heart", "Серце", 280),
+  priceItem("ecg", "ЕКГ", "heart", "Серце", 280, ["електрокардіограма"]),
   priceItem("ecg-report", "ЕКГ із заключенням", "heart", "Серце", 320),
-  priceItem("echo", "ЕхоКГ — УЗД серця", "heart", "Серце", 650),
-  priceItem("holter", "Холтер ЕКГ", "heart", "Серце", 900),
+  priceItem("echo", "ЕхоКГ — УЗД серця", "heart", "Серце", 650, ["ехо серця", "ехокардіографія"]),
+  priceItem("holter", "Холтер ЕКГ", "heart", "Серце", 900, ["добове моніторування ЕКГ"]),
   priceItem("one-limb-veins-arteries", "Вени або артерії однієї кінцівки", "doppler", "Доплер судин", 600),
   priceItem("two-limbs-veins-arteries", "Вени або артерії двох кінцівок", "doppler", "Доплер судин", 800),
   priceItem("one-limb-all-vessels", "Артерії та вени однієї кінцівки", "doppler", "Доплер судин", 800),
@@ -64,8 +76,19 @@ export const additionalCategories = [
   { id: "medical", label: "Лікарські послуги" },
   { id: "covid", label: "COVID-19" },
   { id: "rheumatology", label: "Кардіо-ревматологія" },
+  { id: "anemia", label: "Контроль анемії" },
   { id: "cytology", label: "Цитологія" },
 ] as const;
+
+export const categoryOptions: ReadonlyArray<{
+  id: CategoryId;
+  label: string;
+}> = [
+  { id: "ultrasound", label: "УЗД" },
+  { id: "heart", label: "Серце" },
+  { id: "doppler", label: "Доплер судин" },
+  ...additionalCategories,
+];
 
 export const additionalPriceItems: AdditionalPriceItem[] = [
   priceItem("ct-sinuses", "КТ приносових пазух", "ct", "КТ", 1500),
@@ -90,11 +113,11 @@ export const additionalPriceItems: AdditionalPriceItem[] = [
   priceItem("mri-bile-ducts", "МРТ жовчовивідних протоків", "mri", "МРТ", 3200),
   priceItem("mri-abdomen", "МРТ черевної порожнини та МРХПГ", "mri", "МРТ", 6100),
 
-  priceItem("cbc-auto", "Загальний розгорнутий аналіз крові, автоматичний підрахунок", "general", "Загальноклінічні", 210),
+  priceItem("cbc-auto", "Загальний розгорнутий аналіз крові, автоматичний підрахунок", "general", "Загальноклінічні", 210, ["ЗАК", "ОАК", "загальний аналіз крові"]),
   priceItem("cbc-manual", "Загальний розгорнутий аналіз крові, ручна формула", "general", "Загальноклінічні", 260),
   priceItem("reticulocytes", "Аналіз крові на ретикулоцити", "general", "Загальноклінічні", 170),
   priceItem("blood-group", "Група крові та резус-фактор", "general", "Загальноклінічні", 280),
-  priceItem("urine-general", "Загальний аналіз сечі з мікроскопією осаду", "general", "Загальноклінічні", 180),
+  priceItem("urine-general", "Загальний аналіз сечі з мікроскопією осаду", "general", "Загальноклінічні", 180, ["ЗАС", "ОАМ"]),
   priceItem("urine-nechiporenko", "Аналіз сечі за Нечипоренко", "general", "Загальноклінічні", 170),
   priceItem("coprogram", "Копрограма", "general", "Загальноклінічні", 260),
   priceItem("helminths", "Аналіз калу на яйця гельмінтів", "general", "Загальноклінічні", 220),
@@ -131,7 +154,7 @@ export const additionalPriceItems: AdditionalPriceItem[] = [
   priceItem("lupus-anticoagulant", "Вовчаковий антикоагулянт", "hemostasis", "Гемостаз", 500),
   priceItem("d-dimer", "Д-димер", "hemostasis", "Гемостаз", 290),
 
-  priceItem("tsh", "Тиреотропний гормон (ТТГ)", "hormones", "Гормони", 250),
+  priceItem("tsh", "Тиреотропний гормон (ТТГ)", "hormones", "Гормони", 250, ["TSH", "тиреотропін"]),
   priceItem("t4-free", "Т4 вільний", "hormones", "Гормони", 250),
   priceItem("t3-free", "Т3 вільний", "hormones", "Гормони", 250),
   priceItem("anti-tg", "Антитіла до тиреоглобуліну", "hormones", "Гормони", 290),
@@ -184,7 +207,45 @@ export const additionalPriceItems: AdditionalPriceItem[] = [
   priceItem("demodex", "Дослідження на демодекоз", "cytology", "Цитологія", 220),
 ];
 
+export const expandedOfficialPriceItems: PriceItem[] = [
+  priceItem("lymph-nodes", "УЗД лімфатичних вузлів, одна ділянка", "ultrasound", "УЗД", 450, ["лімфовузли"]),
+  priceItem("folliculometry", "УЗД фолікулометрія", "ultrasound", "УЗД", 500, ["фолікулометрія"]),
+  priceItem("salivary-glands", "УЗД слинних залоз", "ultrasound", "УЗД", 450),
+  priceItem("pleural-cavity", "УЗД плевральної порожнини", "ultrasound", "УЗД", 450),
+  priceItem("bladder", "УЗД сечового міхура", "ultrasound", "УЗД", 350),
+  priceItem("male-breast", "УЗД грудних залоз у чоловіків", "ultrasound", "УЗД", 500),
+  priceItem("trus", "ТРУЗД — трансректальне дослідження простати", "ultrasound", "УЗД", 600, ["ТРУЗІ", "простата трансректально"]),
+  priceItem("abdomen-kidneys-urinary", "УЗД ОЧП, нирок і сечовидільної системи", "ultrasound", "УЗД", 800, ["живіт нирки сечовий"]),
+  priceItem("thyroid-elastography", "Щитоподібна залоза з еластографією", "ultrasound", "УЗД", 800),
+  priceItem("breast-elastography", "Молочні залози з еластографією", "ultrasound", "УЗД", 800),
+  priceItem("liver-elastography", "Еластографія печінки", "ultrasound", "УЗД", 800, ["фіброскан"]),
+  priceItem("abdomen-liver-elastography", "Органи черевної порожнини з еластографією печінки", "ultrasound", "УЗД", 1100),
+  priceItem("lymph-elastography", "Лімфовузли, одна ділянка з еластографією", "ultrasound", "УЗД", 800),
+  priceItem("cervicometry", "УЗД цервікометрія", "ultrasound", "УЗД", 450),
+  priceItem("kidneys-adrenals", "УЗД нирок і наднирників", "ultrasound", "УЗД", 500),
+  priceItem("urinary-adrenals", "УЗД сечовидільної системи й наднирників", "ultrasound", "УЗД", 600),
+  priceItem("abdomen-kidneys-adrenals", "УЗД ОЧП, нирок і наднирників", "ultrasound", "УЗД", 800),
+  priceItem("liver-spleen-elastography", "Еластографія печінки та селезінки", "ultrasound", "УЗД", 1000),
+  priceItem("abdomen-liver-spleen-elastography", "Еластографія ОЧП, печінки та селезінки", "ultrasound", "УЗД", 1200),
+  priceItem("abdomen-kidneys-lesion-elastography", "УЗД ОЧП, нирок з еластографією утворення", "ultrasound", "УЗД", 950),
+  priceItem("abdomen-lesion-elastography", "УЗД ОЧП з еластографією утворення", "ultrasound", "УЗД", 800),
+  priceItem("liver-abdomen-kidneys-elastography", "Еластографія печінки з УЗД ОЧП і нирок", "ultrasound", "УЗД", 1200),
+  priceItem("scrotum", "УЗД органів калитки у чоловіків", "ultrasound", "УЗД", 400, ["мошонка"]),
+  priceItem("kidneys-bladder-residual", "УЗД нирок і сечового міхура з визначенням залишкової сечі", "ultrasound", "УЗД", 600),
+  priceItem("kidneys-bladder-prostate", "УЗД нирок, сечового міхура із залишковою сечею та простати", "ultrasound", "УЗД", 1100),
+
+  priceItem("iron-serum", "Залізо, сироватка", "anemia", "Контроль анемії", 150, ["Fe"]),
+  priceItem("iron-binding-capacity", "Загальна залізозв’язувальна здатність сироватки", "anemia", "Контроль анемії", 250, ["ЗЗЗС", "ОЖСС"]),
+  priceItem("transferrin", "Трансферин", "anemia", "Контроль анемії", 270),
+  priceItem("ferritin", "Феритин", "anemia", "Контроль анемії", 300, ["ферритин"]),
+  priceItem("folic-acid", "Фолієва кислота, вітамін B9", "anemia", "Контроль анемії", 300, ["фолати", "B9"]),
+  priceItem("vitamin-b12", "Ціанкобаламін, вітамін B12", "anemia", "Контроль анемії", 300, ["B12", "ціанокобаламін"]),
+  priceItem("direct-coombs", "Пряма проба Кумбса", "anemia", "Контроль анемії", 400),
+  priceItem("erythropoietin", "Еритропоетин", "anemia", "Контроль анемії", 480),
+];
+
 export const catalogItems: PriceItem[] = [
   ...corePriceItems,
   ...additionalPriceItems,
+  ...expandedOfficialPriceItems,
 ];

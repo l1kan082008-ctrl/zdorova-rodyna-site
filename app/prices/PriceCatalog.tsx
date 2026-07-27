@@ -2,26 +2,35 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  additionalCategories,
   catalogItems,
-  type CategoryId,
+  categoryOptions,
   type PriceItem,
 } from "./priceData";
 
 const categories = [
   { id: "all", label: "Усі послуги" },
-  { id: "ultrasound", label: "УЗД" },
-  { id: "heart", label: "Серце" },
-  { id: "doppler", label: "Доплер судин" },
-  ...additionalCategories,
-] as const;
+  ...categoryOptions,
+];
 
 const INITIAL_VISIBLE_COUNT = 24;
 
 const formatPrice = (amount: number) =>
   `${new Intl.NumberFormat("uk-UA").format(amount)} ₴`;
 
-export function PriceCatalog() {
+const normalizeSearch = (value: string) =>
+  value
+    .toLocaleLowerCase("uk-UA")
+    .normalize("NFKD")
+    .replace(/[’'`ʼ]/g, "")
+    .replace(/[–—-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+export function PriceCatalog({
+  initialItems = catalogItems,
+}: {
+  initialItems?: PriceItem[];
+}) {
   const [activeCategory, setActiveCategory] =
     useState<(typeof categories)[number]["id"]>("all");
   const [query, setQuery] = useState("");
@@ -30,24 +39,24 @@ export function PriceCatalog() {
   const [visibleLimit, setVisibleLimit] = useState(INITIAL_VISIBLE_COUNT);
 
   const visibleItems = useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase("uk");
+    const normalized = normalizeSearch(query);
 
-    return catalogItems.filter((item) => {
+    return initialItems.filter((item) => {
       const matchesCategory =
         activeCategory === "all" || item.category === activeCategory;
       const matchesQuery =
         !normalized ||
-        `${item.name} ${item.categoryLabel}`
-          .toLocaleLowerCase("uk")
-          .includes(normalized);
+        normalizeSearch(
+          `${item.name} ${item.categoryLabel} ${(item.aliases ?? []).join(" ")}`,
+        ).includes(normalized);
 
       return matchesCategory && matchesQuery;
     });
-  }, [activeCategory, query]);
+  }, [activeCategory, initialItems, query]);
 
   const selectedItems = useMemo(
-    () => catalogItems.filter((item) => selectedIds.includes(item.id)),
-    [selectedIds],
+    () => initialItems.filter((item) => selectedIds.includes(item.id)),
+    [initialItems, selectedIds],
   );
   const displayedItems = visibleItems.slice(0, visibleLimit);
 
@@ -107,6 +116,9 @@ export function PriceCatalog() {
               </button>
             ))}
           </div>
+          <p className="price-category-mobile-hint" aria-hidden="true">
+            Гортайте категорії →
+          </p>
           <a className="price-phone-card" href="tel:+380676714444">
             <span>Потрібна допомога?</span>
             <strong>+38 (067) 671-44-44</strong>

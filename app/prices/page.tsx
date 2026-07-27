@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
+import { listPublicPriceItems } from "../api/prices/priceStore";
 import { PriceCatalog } from "./PriceCatalog";
+import { catalogItems } from "./priceData";
 
 export const metadata: Metadata = {
   title: "Вартість послуг — Здорова Родина",
   description: "Пошук і актуальні ціни на послуги центру Здорова Родина.",
 };
 
-export default function PricesPage() {
+export default async function PricesPage() {
+  const priceItems = await listPublicPriceItems().catch(() => catalogItems);
+
   return (
     <main className="inner-page">
       <SiteHeader active="prices" />
@@ -20,7 +24,7 @@ export default function PricesPage() {
         </p>
       </section>
 
-      <PriceCatalog />
+      <PriceCatalog initialItems={priceItems} />
 
       <section className="price-notice price-catalog-notice">
         <strong>Зверніть увагу</strong>

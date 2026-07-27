@@ -80,6 +80,7 @@ export default function BookingsAdminPage() {
         <nav aria-label="Адміністративні розділи">
           <Link href="/admin/doctors">Лікарі</Link>
           <strong>Заявки</strong>
+          <Link href="/admin/prices">Прайс</Link>
         </nav>
       </header>
       <section className="admin-intro">

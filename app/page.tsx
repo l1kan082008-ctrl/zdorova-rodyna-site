@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listPopularBookingServices } from "./api/bookings/bookingStore";
+import { listPublicPriceItems } from "./api/prices/priceStore";
 import { PromoSlider } from "./components/PromoSlider";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome";
 import { catalogItems, type PriceItem } from "./prices/priceData";
@@ -108,25 +109,31 @@ const popularServiceAliases: Record<string, string> = {
 const normalizeServiceName = (value: string) =>
   value.trim().toLocaleLowerCase("uk-UA");
 
-function findCatalogItem(serviceName: string): PriceItem | undefined {
+function findCatalogItem(
+  serviceName: string,
+  items: PriceItem[] = catalogItems,
+): PriceItem | undefined {
   const normalized = normalizeServiceName(serviceName);
   const aliasedId = popularServiceAliases[normalized];
 
   if (aliasedId) {
-    return catalogItems.find((item) => item.id === aliasedId);
+    return items.find((item) => item.id === aliasedId);
   }
 
-  return catalogItems.find(
+  return items.find(
     (item) => normalizeServiceName(item.name) === normalized,
   );
 }
 
 async function getPopularPriceDirections() {
   try {
-    const statistics = await listPopularBookingServices();
+    const [statistics, priceItems] = await Promise.all([
+      listPopularBookingServices(),
+      listPublicPriceItems(),
+    ]);
     const seen = new Set<string>();
     const dynamicItems = statistics.flatMap(({ service }) => {
-      const item = findCatalogItem(service);
+      const item = findCatalogItem(service, priceItems);
 
       if (!item || seen.has(item.id)) {
         return [];
@@ -145,11 +152,11 @@ async function getPopularPriceDirections() {
     return [...dynamicItems, ...fallbackPriceDirections]
       .filter((item, index, items) => {
         const key =
-          findCatalogItem(item.title)?.id ?? normalizeServiceName(item.title);
+          findCatalogItem(item.title, priceItems)?.id ?? normalizeServiceName(item.title);
         return (
           items.findIndex(
             (candidate) =>
-              (findCatalogItem(candidate.title)?.id ??
+              (findCatalogItem(candidate.title, priceItems)?.id ??
                 normalizeServiceName(candidate.title)) === key,
           ) === index
         );
