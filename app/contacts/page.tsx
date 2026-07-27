@@ -3,6 +3,8 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
+import { LocationsExplorer } from "./LocationsExplorer";
+import { centerLocations } from "./locationData";
 
 const services = [
   "МРТ",
@@ -22,33 +24,6 @@ type BookingResponse = {
   error?: string;
 };
 
-const locations = [
-  {
-    address: "вул. Володимира Стельмаха (Курчатова), 18-М",
-    hours: "Пн–Пт 08:00–19:00 · Сб 08:00–15:00 · Нд вихідний",
-    phone: "+380676714444",
-    phoneLabel: "+38 (067) 671-44-44",
-  },
-  {
-    address: "вул. Чорновола, 79 (Чорнобильська лікарня)",
-    hours: "Пн–Пт 08:00–14:00 · Сб–Нд вихідні",
-    phone: "+380676714444",
-    phoneLabel: "+38 (067) 671-44-44",
-  },
-  {
-    address: "вул. Кулика і Гудачека, 3, каб. 219",
-    hours: "Пн–Пт 08:00–14:00 · Сб–Нд вихідні",
-    phone: "+380676714444",
-    phoneLabel: "+38 (067) 671-44-44",
-  },
-  {
-    address: "вул. Олександра Олеся, 13",
-    hours: "Пн–Пт 08:00–18:00 · Сб–Нд вихідні",
-    phone: "+380932332043",
-    phoneLabel: "+38 (093) 233-20-43",
-  },
-];
-
 export default function ContactsPage() {
   const [sent, setSent] = useState(false);
   const [selectedServices, setSelectedServices] = useState("");
@@ -59,6 +34,9 @@ export default function ContactsPage() {
   const [bookingReference, setBookingReference] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [selectedLocationId, setSelectedLocationId] = useState(
+    centerLocations[0].id,
+  );
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -66,12 +44,17 @@ export default function ContactsPage() {
     const totalFromCalculator = params.get("total")?.trim() ?? "";
     const doctorFromCatalog = params.get("doctor")?.trim() ?? "";
     const serviceFromCatalog = params.get("service")?.trim() ?? "";
+    const locationFromLink = params.get("location")?.trim() ?? "";
     const shouldScrollToBooking = window.location.hash === "#booking";
+    const linkedLocation = centerLocations.find(
+      (location) => location.id === locationFromLink,
+    );
 
     if (
       !servicesFromCalculator &&
       !doctorFromCatalog &&
       !serviceFromCatalog &&
+      !linkedLocation &&
       !shouldScrollToBooking
     ) {
       return;
@@ -81,6 +64,9 @@ export default function ContactsPage() {
       setSelectedServices(servicesFromCalculator);
       setEstimatedTotal(totalFromCalculator);
       setSelectedDoctor(doctorFromCatalog);
+      if (linkedLocation) {
+        setSelectedLocationId(linkedLocation.id);
+      }
       setSelectedService(
         servicesFromCalculator
           ? "Комплекс досліджень"
@@ -110,6 +96,10 @@ export default function ContactsPage() {
     return () => window.clearTimeout(applyCalculatorSelection);
   }, []);
 
+  const selectedLocation =
+    centerLocations.find((location) => location.id === selectedLocationId) ??
+    centerLocations[0];
+
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitting(true);
@@ -127,7 +117,12 @@ export default function ContactsPage() {
           phone: formData.get("phone"),
           service: selectedService,
           doctor: selectedDoctor,
-          comment,
+          comment: [
+            `Бажане відділення: ${selectedLocation.fullAddress}.`,
+            comment.trim(),
+          ]
+            .filter(Boolean)
+            .join(" "),
           website: formData.get("website"),
         }),
       });
@@ -149,42 +144,42 @@ export default function ContactsPage() {
   };
 
   return (
-    <main className="inner-page">
+    <main className="inner-page contacts-page">
       <SiteHeader active="contacts" />
       <section className="page-hero contacts-page-hero">
-        <span className="section-kicker">Контакти</span>
-        <h1>Оберіть найближче відділення у Рівному</h1>
-        <p>
-          Запис на дослідження та консультації:{" "}
-          <a href="tel:+380676714444">+38 (067) 671-44-44</a>. Електронна
-          пошта:{" "}
+        <div className="contacts-hero-copy">
+          <span className="section-kicker">Контакти</span>
+          <h1>Здорова Родина поруч</h1>
+          <p>
+            Оберіть відділення, перегляньте його фото та розташування на карті,
+            а ми допоможемо погодити зручний час візиту.
+          </p>
+        </div>
+        <div className="contacts-hero-actions" aria-label="Швидкі контакти">
+          <a href="tel:+380676714444">
+            <span aria-hidden="true">☎</span>
+            <small>Є запитання?</small>
+            <strong>+38 (067) 671-44-44</strong>
+          </a>
           <a href="mailto:zdorovarodynarivne@ukr.net">
-            zdorovarodynarivne@ukr.net
-          </a>.
-        </p>
+            <span aria-hidden="true">@</span>
+            <small>Напишіть нам</small>
+            <strong>zdorovarodynarivne@ukr.net</strong>
+          </a>
+        </div>
       </section>
-      <section className="locations-grid" aria-label="Адреси медичного центру">
-        {locations.map((location, index) => (
-          <article className="location-card" key={location.address}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <h2>{location.address}</h2>
-            <p>{location.hours}</p>
-            <a href={`tel:${location.phone}`}>{location.phoneLabel}</a>
-          </article>
-        ))}
-      </section>
+      <LocationsExplorer
+        selectedLocationId={selectedLocationId}
+        onSelectLocation={setSelectedLocationId}
+      />
       <section className="contact-route" id="booking">
         <div className="contact-route-copy">
           <span className="section-kicker">Запис</span>
-          <h2>Зручний спосіб зв’язку</h2>
-          <ol>
-            <li><span>01</span> Подзвоніть за номером +38 (067) 671-44-44.</li>
-            <li><span>02</span> Назвіть послугу або спеціаліста.</li>
-            <li><span>03</span> Узгодьте відділення, дату та підготовку.</li>
-          </ol>
-          <a className="book-button contact-call" href="tel:+380676714444">
-            Подзвонити зараз <span>→</span>
-          </a>
+          <h2>Запис на прийом</h2>
+          <p>
+            Залиште контактні дані. Адміністратор зателефонує, щоб погодити час
+            та підготовку.
+          </p>
         </div>
         <div className="contact-form-card">
           {sent ? (
@@ -208,7 +203,7 @@ export default function ContactsPage() {
             </div>
           ) : (
             <form onSubmit={submit}>
-              <h2>Заявка на прийом</h2>
+              <h2>Ваші дані</h2>
               <p className="form-note">
                 Заповнення займає близько хвилини. Остаточний час візиту
                 підтвердить адміністратор телефоном.
@@ -261,6 +256,22 @@ export default function ContactsPage() {
                   placeholder="+380"
                   required
                 />
+              </label>
+              <label htmlFor="contact-location">
+                Відділення
+                <select
+                  id="contact-location"
+                  name="location"
+                  value={selectedLocationId}
+                  onChange={(event) => setSelectedLocationId(event.target.value)}
+                  required
+                >
+                  {centerLocations.map((location) => (
+                    <option value={location.id} key={location.id}>
+                      {location.fullAddress}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label htmlFor="contact-service">
                 Послуга
