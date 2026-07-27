@@ -42,3 +42,9 @@ export const priceItems = sqliteTable("price_items", {
   sortOrder: integer("sort_order").notNull().default(0),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const priceCatalogMeta = sqliteTable("price_catalog_meta", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});

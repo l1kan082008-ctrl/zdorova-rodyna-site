@@ -98,12 +98,13 @@ const fallbackPriceDirections = [
   },
 ];
 
-const popularServiceAliases: Record<string, string> = {
-  "ехокг": "echo",
-  "узд серця": "echo",
-  "узд щитоподібної залози": "thyroid",
-  "щитоподібна залоза": "thyroid",
-  "холтер": "holter",
+const popularServiceAliases: Record<string, string[]> = {
+  "ехокг": ["ехо", "серця"],
+  "узд серця": ["ехо", "серця"],
+  "узд щитоподібної залози": ["щитоподібної", "залози"],
+  "щитоподібна залоза": ["щитоподібної", "залози"],
+  "холтер": ["холтер"],
+  "холтер екг": ["холтер"],
 };
 
 const normalizeServiceName = (value: string) =>
@@ -114,15 +115,18 @@ function findCatalogItem(
   items: PriceItem[] = catalogItems,
 ): PriceItem | undefined {
   const normalized = normalizeServiceName(serviceName);
-  const aliasedId = popularServiceAliases[normalized];
-
-  if (aliasedId) {
-    return items.find((item) => item.id === aliasedId);
-  }
-
-  return items.find(
+  const exactItem = items.find(
     (item) => normalizeServiceName(item.name) === normalized,
   );
+  if (exactItem) return exactItem;
+
+  const searchTerms = popularServiceAliases[normalized] ?? [normalized];
+  return items.find((item) => {
+    const searchable = normalizeServiceName(
+      `${item.name} ${(item.aliases ?? []).join(" ")}`,
+    );
+    return searchTerms.every((term) => searchable.includes(term));
+  });
 }
 
 async function getPopularPriceDirections() {

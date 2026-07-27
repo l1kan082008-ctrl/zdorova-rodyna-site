@@ -4,6 +4,7 @@ import {
   type CategoryId,
   type PriceItem,
 } from "../../prices/priceData";
+import { officialCatalogSource } from "../../prices/officialPriceData";
 
 type PriceRow = {
   id: string;
@@ -35,6 +36,14 @@ const createPriceItemsTable = `
   )
 `;
 
+const createPriceCatalogMetaTable = `
+  CREATE TABLE IF NOT EXISTS price_catalog_meta (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )
+`;
+
 function parseAliases(value: string) {
   try {
     const parsed = JSON.parse(value) as unknown;
@@ -60,15 +69,20 @@ function toPriceItem(row: PriceRow): ManagedPriceItem {
 }
 
 export async function ensurePriceItemsTable() {
-  await env.DB.prepare(createPriceItemsTable).run();
-  await env.DB.prepare(
-    "CREATE INDEX IF NOT EXISTS price_items_category_idx ON price_items (category, sort_order, name)",
-  ).run();
+  await env.DB.batch([
+    env.DB.prepare(createPriceItemsTable),
+    env.DB.prepare(createPriceCatalogMetaTable),
+    env.DB.prepare(
+      "CREATE INDEX IF NOT EXISTS price_items_category_idx ON price_items (category, sort_order, name)",
+    ),
+  ]);
 
-  const count = await env.DB.prepare(
-    "SELECT COUNT(*) AS total FROM price_items",
-  ).first<{ total: number }>();
-  if ((count?.total ?? 0) > 0) return;
+  const seededVersion = await env.DB.prepare(
+    "SELECT value FROM price_catalog_meta WHERE key = 'official_seed_version'",
+  ).first<{ value: string }>();
+  if (seededVersion?.value === officialCatalogSource.version) return;
+
+  await env.DB.prepare("DELETE FROM price_items").run();
 
   const statements = catalogItems.map((item, index) =>
     env.DB.prepare(
@@ -82,13 +96,21 @@ export async function ensurePriceItemsTable() {
       item.categoryLabel,
       item.amount,
       JSON.stringify(item.aliases ?? []),
-      index,
+      item.sortOrder ?? index,
     ),
   );
 
   for (let index = 0; index < statements.length; index += 50) {
     await env.DB.batch(statements.slice(index, index + 50));
   }
+
+  await env.DB.prepare(
+    `INSERT INTO price_catalog_meta (key, value, updated_at)
+     VALUES ('official_seed_version', ?, CURRENT_TIMESTAMP)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+  )
+    .bind(officialCatalogSource.version)
+    .run();
 }
 
 export async function listManagedPriceItems() {
