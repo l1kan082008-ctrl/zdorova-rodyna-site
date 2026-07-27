@@ -10,6 +10,7 @@ const statuses = new Set<BookingStatus>([
   "contacted",
   "confirmed",
   "closed",
+  "cancelled",
 ]);
 
 export async function GET(request: Request) {

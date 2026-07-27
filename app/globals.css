@@ -94,6 +94,7 @@ main {
 .site-header,
 .hero,
 .advantages,
+.promo-slider-section,
 .services-section,
 .doctors-section,
 .about-section,
@@ -375,6 +376,274 @@ footer {
   color: #435155;
   font-size: 12px;
   line-height: 1.65;
+}
+
+.promo-slider-section {
+  padding: 36px 0 10px;
+}
+
+.promo-slider {
+  position: relative;
+  overflow: hidden;
+  border-radius: 30px;
+  background: #05636a;
+  box-shadow: 0 22px 60px rgba(3, 73, 78, 0.18);
+}
+
+.promo-track {
+  display: flex;
+  touch-action: pan-y;
+  transition: transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.promo-slide {
+  position: relative;
+  display: grid;
+  flex: 0 0 100%;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.75fr);
+  min-height: 322px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 84% 28%, rgba(125, 229, 218, 0.32), transparent 29%),
+    linear-gradient(120deg, #034b53 0%, #076a70 56%, #168d8c 100%);
+  color: #fff;
+}
+
+.promo-slide::before {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(110deg, transparent 0 60%, rgba(255, 255, 255, 0.07) 60.2% 70%, transparent 70.2%),
+    radial-gradient(circle at 13% 120%, rgba(2, 51, 57, 0.55), transparent 40%);
+  content: "";
+  pointer-events: none;
+}
+
+.promo-slide--home {
+  background:
+    radial-gradient(circle at 80% 25%, rgba(255, 186, 93, 0.2), transparent 29%),
+    linear-gradient(120deg, #074d55 0%, #087278 58%, #1d9290 100%);
+}
+
+.promo-slide--heart {
+  background:
+    radial-gradient(circle at 82% 24%, rgba(255, 142, 38, 0.23), transparent 30%),
+    linear-gradient(120deg, #034951 0%, #07676e 58%, #148987 100%);
+}
+
+.promo-copy {
+  position: relative;
+  z-index: 2;
+  align-self: center;
+  padding: 46px 52px 64px;
+}
+
+.promo-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: #c9f1ed;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.promo-eyebrow::before {
+  width: 28px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--orange);
+  content: "";
+}
+
+.promo-copy h2 {
+  max-width: 650px;
+  margin: 0;
+  font-size: clamp(34px, 4vw, 50px);
+  line-height: 1.06;
+  letter-spacing: -0.045em;
+}
+
+.promo-copy > p {
+  max-width: 600px;
+  margin: 20px 0 26px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.promo-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px 24px;
+}
+
+.promo-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--orange);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 12px 28px rgba(171, 69, 0, 0.24);
+  transition:
+    transform 160ms ease,
+    background 160ms ease;
+}
+
+.promo-button:hover,
+.promo-button:focus-visible {
+  transform: translateY(-2px);
+  background: #eb7000;
+}
+
+.promo-note {
+  position: relative;
+  padding-left: 18px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.promo-note::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  content: "";
+  transform: translateY(-50%);
+}
+
+.promo-visual {
+  position: relative;
+  z-index: 1;
+  min-height: 322px;
+}
+
+.promo-orbit {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+}
+
+.promo-orbit--large {
+  top: -52px;
+  right: -55px;
+  width: 350px;
+  height: 350px;
+}
+
+.promo-orbit--small {
+  right: 76px;
+  bottom: -75px;
+  width: 225px;
+  height: 225px;
+}
+
+.promo-mark {
+  position: absolute;
+  top: 50%;
+  right: 86px;
+  display: grid;
+  place-items: center;
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+  border: 12px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(0, 39, 43, 0.2);
+  transform: translateY(-50%) rotate(-4deg);
+}
+
+.promo-mark img {
+  width: 110%;
+  max-width: none;
+  height: 110%;
+  object-fit: cover;
+  mix-blend-mode: multiply;
+}
+
+.promo-number {
+  position: absolute;
+  right: 35px;
+  bottom: 5px;
+  color: rgba(255, 255, 255, 0.08);
+  font-size: 136px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.08em;
+}
+
+.promo-pagination {
+  position: absolute;
+  z-index: 4;
+  bottom: 24px;
+  left: 52px;
+  display: flex;
+  gap: 8px;
+}
+
+.promo-pagination button {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition:
+    width 180ms ease,
+    background 180ms ease;
+}
+
+.promo-pagination button.is-active {
+  width: 28px;
+  background: #fff;
+}
+
+.promo-arrows {
+  position: absolute;
+  z-index: 4;
+  right: 24px;
+  bottom: 22px;
+  display: flex;
+  gap: 8px;
+}
+
+.promo-arrows button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  background: rgba(2, 54, 59, 0.24);
+  color: #fff;
+  font-size: 17px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition:
+    transform 160ms ease,
+    background 160ms ease;
+}
+
+.promo-arrows button:hover,
+.promo-arrows button:focus-visible {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .services-section {
@@ -4443,6 +4712,7 @@ footer {
   .site-header,
   .hero,
   .advantages,
+  .promo-slider-section,
   .services-section,
   .doctors-section,
   .about-section,
@@ -4583,6 +4853,87 @@ footer {
   .advantage:last-child {
     border-bottom: 0;
     padding-bottom: 0;
+  }
+
+  .promo-slider-section {
+    padding-top: 24px;
+  }
+
+  .promo-slider {
+    border-radius: 24px;
+  }
+
+  .promo-slide {
+    grid-template-columns: 1fr;
+    min-height: 490px;
+  }
+
+  .promo-copy {
+    align-self: start;
+    padding: 32px 26px 176px;
+  }
+
+  .promo-copy h2 {
+    font-size: clamp(32px, 10vw, 42px);
+  }
+
+  .promo-copy > p {
+    margin: 17px 0 22px;
+    font-size: 14px;
+  }
+
+  .promo-actions {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .promo-button {
+    min-height: 46px;
+  }
+
+  .promo-visual {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 190px;
+    min-height: 170px;
+  }
+
+  .promo-mark {
+    right: 32px;
+    width: 108px;
+    height: 108px;
+    border-width: 9px;
+  }
+
+  .promo-orbit--large {
+    top: -25px;
+    right: -55px;
+    width: 225px;
+    height: 225px;
+  }
+
+  .promo-orbit--small {
+    right: 85px;
+    bottom: -50px;
+    width: 130px;
+    height: 130px;
+  }
+
+  .promo-number {
+    right: 15px;
+    bottom: 5px;
+    font-size: 90px;
+  }
+
+  .promo-pagination {
+    bottom: 22px;
+    left: 26px;
+  }
+
+  .promo-arrows {
+    display: none;
   }
 
   .services-grid {

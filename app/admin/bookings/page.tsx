@@ -12,6 +12,7 @@ const statusOptions: Array<{ value: BookingStatus; label: string }> = [
   { value: "contacted", label: "Зв’язалися" },
   { value: "confirmed", label: "Підтверджено" },
   { value: "closed", label: "Закрито" },
+  { value: "cancelled", label: "Скасовано" },
 ];
 
 type ApiPayload = {

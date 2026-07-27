@@ -1,6 +1,11 @@
 import { env } from "cloudflare:workers";
 
-export type BookingStatus = "new" | "contacted" | "confirmed" | "closed";
+export type BookingStatus =
+  | "new"
+  | "contacted"
+  | "confirmed"
+  | "closed"
+  | "cancelled";
 
 export type Booking = {
   id: string;
@@ -104,6 +109,34 @@ export async function listBookings() {
   ).all<BookingRow>();
 
   return result.results.map(toBooking);
+}
+
+export async function listPopularBookingServices() {
+  await ensureBookingsTable();
+  const result = await env.DB.prepare(
+    `SELECT service
+     FROM bookings
+     WHERE status IN ('confirmed', 'closed')
+       AND datetime(created_at) >= datetime('now', '-30 days')
+     ORDER BY created_at DESC
+     LIMIT 500`,
+  ).all<{ service: string }>();
+
+  const counts = new Map<string, number>();
+
+  result.results.forEach((booking) => {
+    booking.service
+      .split("|")
+      .map((service) => service.trim())
+      .filter(Boolean)
+      .forEach((service) => {
+        counts.set(service, (counts.get(service) ?? 0) + 1);
+      });
+  });
+
+  return [...counts.entries()]
+    .map(([service, count]) => ({ service, count }))
+    .sort((left, right) => right.count - left.count);
 }
 
 export async function updateBookingStatus(id: string, status: BookingStatus) {

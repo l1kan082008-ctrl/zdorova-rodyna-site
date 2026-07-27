@@ -3,132 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   additionalCategories,
-  additionalPriceItems,
+  catalogItems,
   type CategoryId,
+  type PriceItem,
 } from "./priceData";
-
-type PriceItem = {
-  id: string;
-  name: string;
-  category: CategoryId;
-  categoryLabel: string;
-  amount: number;
-};
-
-const priceItems: PriceItem[] = [
-  {
-    id: "abdomen-complex",
-    name: "Органи черевної порожнини, комплексно",
-    category: "ultrasound",
-    categoryLabel: "УЗД",
-    amount: 600,
-  },
-  {
-    id: "kidneys-bladder",
-    name: "Нирки та сечовий міхур",
-    category: "ultrasound",
-    categoryLabel: "УЗД",
-    amount: 500,
-  },
-  {
-    id: "kidneys",
-    name: "Нирки",
-    category: "ultrasound",
-    categoryLabel: "УЗД",
-    amount: 450,
-  },
-  {
-    id: "thyroid",
-    name: "Щитоподібна залоза",
-    category: "ultrasound",
-    categoryLabel: "УЗД",
-    amount: 500,
-  },
-  {
-    id: "soft-tissues",
-    name: "М’які тканини",
-    category: "ultrasound",
-    categoryLabel: "УЗД",
-    amount: 450,
-  },
-  {
-    id: "female-pelvis",
-    name: "Органи малого таза у жінок",
-    category: "ultrasound",
-    categoryLabel: "УЗД",
-    amount: 600,
-  },
-  {
-    id: "breast",
-    name: "Молочні залози",
-    category: "ultrasound",
-    categoryLabel: "УЗД",
-    amount: 550,
-  },
-  {
-    id: "abdomen-kidneys",
-    name: "Органи черевної порожнини та нирки",
-    category: "ultrasound",
-    categoryLabel: "УЗД",
-    amount: 700,
-  },
-  {
-    id: "ecg",
-    name: "ЕКГ",
-    category: "heart",
-    categoryLabel: "Серце",
-    amount: 280,
-  },
-  {
-    id: "ecg-report",
-    name: "ЕКГ із заключенням",
-    category: "heart",
-    categoryLabel: "Серце",
-    amount: 320,
-  },
-  {
-    id: "echo",
-    name: "ЕхоКГ — УЗД серця",
-    category: "heart",
-    categoryLabel: "Серце",
-    amount: 650,
-  },
-  {
-    id: "holter",
-    name: "Холтер ЕКГ",
-    category: "heart",
-    categoryLabel: "Серце",
-    amount: 900,
-  },
-  {
-    id: "one-limb-veins-arteries",
-    name: "Вени або артерії однієї кінцівки",
-    category: "doppler",
-    categoryLabel: "Доплер судин",
-    amount: 600,
-  },
-  {
-    id: "two-limbs-veins-arteries",
-    name: "Вени або артерії двох кінцівок",
-    category: "doppler",
-    categoryLabel: "Доплер судин",
-    amount: 800,
-  },
-  {
-    id: "one-limb-all-vessels",
-    name: "Артерії та вени однієї кінцівки",
-    category: "doppler",
-    categoryLabel: "Доплер судин",
-    amount: 800,
-  },
-  {
-    id: "two-limbs-all-vessels",
-    name: "Артерії та вени двох кінцівок",
-    category: "doppler",
-    categoryLabel: "Доплер судин",
-    amount: 1100,
-  },
-];
 
 const categories = [
   { id: "all", label: "Усі послуги" },
@@ -138,7 +16,6 @@ const categories = [
   ...additionalCategories,
 ] as const;
 
-const catalogItems: PriceItem[] = [...priceItems, ...additionalPriceItems];
 const INITIAL_VISIBLE_COUNT = 24;
 
 const formatPrice = (amount: number) =>

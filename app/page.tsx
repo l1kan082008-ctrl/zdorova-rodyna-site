@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { listPopularBookingServices } from "./api/bookings/bookingStore";
+import { PromoSlider } from "./components/PromoSlider";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome";
+import { catalogItems, type PriceItem } from "./prices/priceData";
 
 const services = [
   { title: "КТ", icon: "ct" },
@@ -76,7 +79,7 @@ const doctorDirections = [
   },
 ];
 
-const priceDirections = [
+const fallbackPriceDirections = [
   {
     title: "Холтер ЕКГ",
     text: "900 ₴",
@@ -93,6 +96,69 @@ const priceDirections = [
     note: "Актуальність ціни підтвердить адміністратор.",
   },
 ];
+
+const popularServiceAliases: Record<string, string> = {
+  "ехокг": "echo",
+  "узд серця": "echo",
+  "узд щитоподібної залози": "thyroid",
+  "щитоподібна залоза": "thyroid",
+  "холтер": "holter",
+};
+
+const normalizeServiceName = (value: string) =>
+  value.trim().toLocaleLowerCase("uk-UA");
+
+function findCatalogItem(serviceName: string): PriceItem | undefined {
+  const normalized = normalizeServiceName(serviceName);
+  const aliasedId = popularServiceAliases[normalized];
+
+  if (aliasedId) {
+    return catalogItems.find((item) => item.id === aliasedId);
+  }
+
+  return catalogItems.find(
+    (item) => normalizeServiceName(item.name) === normalized,
+  );
+}
+
+async function getPopularPriceDirections() {
+  try {
+    const statistics = await listPopularBookingServices();
+    const seen = new Set<string>();
+    const dynamicItems = statistics.flatMap(({ service }) => {
+      const item = findCatalogItem(service);
+
+      if (!item || seen.has(item.id)) {
+        return [];
+      }
+
+      seen.add(item.id);
+      return [
+        {
+          title: item.name,
+          text: `${new Intl.NumberFormat("uk-UA").format(item.amount)} ₴`,
+          note: `${item.categoryLabel} · популярне за підтвердженими записами`,
+        },
+      ];
+    });
+
+    return [...dynamicItems, ...fallbackPriceDirections]
+      .filter((item, index, items) => {
+        const key =
+          findCatalogItem(item.title)?.id ?? normalizeServiceName(item.title);
+        return (
+          items.findIndex(
+            (candidate) =>
+              (findCatalogItem(candidate.title)?.id ??
+                normalizeServiceName(candidate.title)) === key,
+          ) === index
+        );
+      })
+      .slice(0, 3);
+  } catch {
+    return fallbackPriceDirections;
+  }
+}
 
 function LineIcon({ type }: { type: string }) {
   const content = (() => {
@@ -269,7 +335,9 @@ function ServiceIcon({ type }: { type: string }) {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const priceDirections = await getPopularPriceDirections();
+
   return (
     <main id="top">
       <SiteHeader />
@@ -312,6 +380,8 @@ export default function Home() {
           </article>
         ))}
       </section>
+
+      <PromoSlider />
 
       <section className="services-section" id="services">
         <div className="section-heading">
@@ -406,17 +476,17 @@ export default function Home() {
         <div className="section-heading pricing-heading">
           <div>
             <span className="section-kicker">Вартість</span>
-            <h2>Прозоро перед записом</h2>
+            <h2>Популярні послуги та ціни</h2>
           </div>
           <p>
-            Точна сума залежить від обраної послуги, області дослідження та
-            переліку аналізів.
+            Добірка оновлюється за підтвердженими записами за останні 30 днів.
+            Актуальну вартість остаточно підтвердить адміністратор.
           </p>
         </div>
         <div className="pricing-grid">
           {priceDirections.map((item) => (
             <article className="price-card" key={item.title}>
-              <span className="price-label">Напрям</span>
+              <span className="price-label">Популярне</span>
               <h3>{item.title}</h3>
               <strong>{item.text}</strong>
               <p>{item.note}</p>

@@ -23,6 +23,8 @@ export type AdditionalPriceItem = {
   amount: number;
 };
 
+export type PriceItem = AdditionalPriceItem;
+
 const priceItem = (
   id: string,
   name: string,
@@ -30,6 +32,25 @@ const priceItem = (
   categoryLabel: string,
   amount: number,
 ): AdditionalPriceItem => ({ id, name, category, categoryLabel, amount });
+
+export const corePriceItems: PriceItem[] = [
+  priceItem("abdomen-complex", "Органи черевної порожнини, комплексно", "ultrasound", "УЗД", 600),
+  priceItem("kidneys-bladder", "Нирки та сечовий міхур", "ultrasound", "УЗД", 500),
+  priceItem("kidneys", "Нирки", "ultrasound", "УЗД", 450),
+  priceItem("thyroid", "Щитоподібна залоза", "ultrasound", "УЗД", 500),
+  priceItem("soft-tissues", "М’які тканини", "ultrasound", "УЗД", 450),
+  priceItem("female-pelvis", "Органи малого таза у жінок", "ultrasound", "УЗД", 600),
+  priceItem("breast", "Молочні залози", "ultrasound", "УЗД", 550),
+  priceItem("abdomen-kidneys", "Органи черевної порожнини та нирки", "ultrasound", "УЗД", 700),
+  priceItem("ecg", "ЕКГ", "heart", "Серце", 280),
+  priceItem("ecg-report", "ЕКГ із заключенням", "heart", "Серце", 320),
+  priceItem("echo", "ЕхоКГ — УЗД серця", "heart", "Серце", 650),
+  priceItem("holter", "Холтер ЕКГ", "heart", "Серце", 900),
+  priceItem("one-limb-veins-arteries", "Вени або артерії однієї кінцівки", "doppler", "Доплер судин", 600),
+  priceItem("two-limbs-veins-arteries", "Вени або артерії двох кінцівок", "doppler", "Доплер судин", 800),
+  priceItem("one-limb-all-vessels", "Артерії та вени однієї кінцівки", "doppler", "Доплер судин", 800),
+  priceItem("two-limbs-all-vessels", "Артерії та вени двох кінцівок", "doppler", "Доплер судин", 1100),
+];
 
 export const additionalCategories = [
   { id: "ct", label: "КТ" },
@@ -161,4 +182,9 @@ export const additionalPriceItems: AdditionalPriceItem[] = [
   priceItem("fungi-skin", "Дослідження на паразитарні гриби", "cytology", "Цитологія", 200),
   priceItem("fungi-nails", "Мікроскопія нігтів на патогенні гриби", "cytology", "Цитологія", 220),
   priceItem("demodex", "Дослідження на демодекоз", "cytology", "Цитологія", 220),
+];
+
+export const catalogItems: PriceItem[] = [
+  ...corePriceItems,
+  ...additionalPriceItems,
 ];
