@@ -3701,12 +3701,12 @@ footer {
 
 .price-category-tabs button {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   min-height: 50px;
-  padding: 8px 10px;
+  padding: 11px 13px;
   border: 1px solid transparent;
   border-radius: 13px;
   background: transparent;
@@ -3731,30 +3731,28 @@ footer {
   color: var(--ink);
 }
 
-.price-category-symbol {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: #edf5f4;
-  color: var(--teal);
-  font-size: 13px;
-  font-weight: 800;
-  transition:
-    background 160ms ease,
-    color 160ms ease;
-}
-
-.price-category-tabs button.is-active .price-category-symbol {
-  background: var(--teal);
-  color: #fff;
-}
-
 .price-category-label {
   min-width: 0;
   font-size: 13px;
   font-weight: 700;
+}
+
+.price-category-count {
+  display: grid;
+  place-items: center;
+  min-width: 29px;
+  height: 25px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #edf5f4;
+  color: #688184;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.price-category-tabs button.is-active .price-category-count {
+  background: #fff;
+  color: var(--teal);
 }
 
 .price-category-mobile-hint {
@@ -3820,77 +3818,79 @@ footer {
 }
 
 .medical-price-table {
+  padding: 0 26px 18px;
+}
+
+.medical-price-head,
+.medical-price-row {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) 105px 54px;
   gap: 16px;
-  padding: 22px 26px 26px;
+  align-items: center;
+}
+
+.medical-price-head {
+  min-height: 48px;
+  color: #829497;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .medical-price-group {
-  overflow: hidden;
-  border: 1px solid #dce9e8;
-  border-radius: 19px;
-  background: #fff;
-  box-shadow: 0 10px 28px rgba(20, 70, 73, 0.055);
+  border-top: 1px solid #dce9e8;
 }
 
 .medical-price-group-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 57px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e3eceb;
+  background: linear-gradient(90deg, #f2f8f7 0%, rgba(242, 248, 247, 0) 100%);
+}
+
+.medical-price-group-title {
   display: flex;
   align-items: center;
-  gap: 13px;
-  min-height: 76px;
-  padding: 14px 18px;
-  border-bottom: 1px solid #e3eceb;
-  background: linear-gradient(120deg, #f2f8f7 0%, #fbfdfd 100%);
-}
-
-.medical-price-group-mark {
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  width: 43px;
-  height: 43px;
-  border-radius: 13px;
-  background: #dcefed;
-  color: #087b7d;
-  font-size: 17px;
-  font-weight: 800;
-}
-
-.medical-price-group-head > div {
-  display: grid;
-  gap: 3px;
+  gap: 11px;
   min-width: 0;
+}
+
+.medical-price-group-accent {
+  width: 4px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--orange);
 }
 
 .medical-price-group-head h3 {
   margin: 0;
   color: var(--ink);
-  font-size: 20px;
+  font-size: 17px;
   line-height: 1.2;
   letter-spacing: -0.025em;
 }
 
-.medical-price-group-head > div > span {
+.medical-price-group-head > span {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #e7f3f2;
   color: #778b8e;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 800;
 }
 
 .medical-price-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 105px 112px;
-  gap: 16px;
-  align-items: center;
+  min-height: 68px;
+  border-bottom: 1px solid #e5eceb;
 }
 
-.medical-price-row {
-  min-height: 72px;
-  padding: 0 18px;
-  border-top: 1px solid #e5eceb;
-}
-
-.medical-price-row:first-child {
-  border-top: 0;
+.medical-price-row:last-child {
+  border-bottom: 0;
 }
 
 .medical-price-service strong {
@@ -3907,17 +3907,18 @@ footer {
 }
 
 .price-row-action {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 38px;
-  padding: 0 12px;
+  display: grid;
+  place-items: center;
+  justify-self: end;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: 1px solid #bcd3d2;
-  border-radius: 999px;
+  border-radius: 12px;
   background: #fff;
   color: var(--ink);
-  font-size: 10px;
+  font-size: 20px;
+  line-height: 1;
   font-weight: 800;
   cursor: pointer;
   transition:
@@ -4849,8 +4850,9 @@ footer {
     grid-template-columns: 220px minmax(0, 1fr);
   }
 
+  .medical-price-head,
   .medical-price-row {
-    grid-template-columns: minmax(0, 1fr) 78px 94px;
+    grid-template-columns: minmax(0, 1fr) 78px 46px;
     gap: 12px;
   }
 
@@ -5361,34 +5363,36 @@ footer {
   }
 
   .medical-price-table {
-    display: grid;
     min-width: 0;
-    gap: 14px;
-    padding: 14px;
+    padding: 0 14px 14px;
+  }
+
+  .medical-price-head {
+    display: none;
   }
 
   .medical-price-group {
     width: 100%;
     min-width: 0;
-    border-radius: 17px;
-    box-shadow: 0 8px 22px rgba(20, 70, 73, 0.05);
   }
 
   .medical-price-group-head {
-    min-height: 68px;
-    gap: 11px;
-    padding: 12px 15px;
+    min-height: 58px;
+    gap: 10px;
+    padding: 10px 0;
   }
 
-  .medical-price-group-mark {
-    width: 39px;
-    height: 39px;
-    border-radius: 12px;
-    font-size: 15px;
+  .medical-price-group-title {
+    gap: 9px;
   }
 
   .medical-price-group-head h3 {
-    font-size: 18px;
+    font-size: 16px;
+  }
+
+  .medical-price-group-head > span {
+    flex: 0 0 auto;
+    font-size: 9px;
   }
 
   .medical-price-row {
@@ -5397,15 +5401,15 @@ footer {
     min-width: 0;
     gap: 13px 16px;
     min-height: auto;
-    padding: 16px 15px;
+    padding: 15px 0;
     border: 0;
-    border-top: 1px solid #e5eceb;
+    border-bottom: 1px solid #e5eceb;
     border-radius: 0;
     background: #fff;
   }
 
-  .medical-price-row:first-child {
-    border-top: 0;
+  .medical-price-row:last-child {
+    border-bottom: 0;
   }
 
   .medical-price-service {
@@ -5429,12 +5433,11 @@ footer {
   }
 
   .medical-price-row .price-row-action {
-    display: flex;
+    display: grid;
     grid-column: 2;
-    justify-content: center;
-    min-width: 106px;
+    min-width: 44px;
     min-height: 44px;
-    font-size: 11px;
+    font-size: 20px;
   }
 
   .price-calculator-bar {

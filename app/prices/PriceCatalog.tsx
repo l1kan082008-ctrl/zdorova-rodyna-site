@@ -77,6 +77,15 @@ export function PriceCatalog({
     () => initialItems.filter((item) => selectedIds.includes(item.id)),
     [initialItems, selectedIds],
   );
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+
+    initialItems.forEach((item) => {
+      counts.set(item.category, (counts.get(item.category) ?? 0) + 1);
+    });
+
+    return counts;
+  }, [initialItems]);
   const displayedItems = useMemo(
     () => visibleItems.slice(0, visibleLimit),
     [visibleItems, visibleLimit],
@@ -169,10 +178,12 @@ export function PriceCatalog({
                   setVisibleLimit(INITIAL_VISIBLE_COUNT);
                 }}
               >
-                <span className="price-category-symbol" aria-hidden="true">
-                  {category.label.slice(0, 1)}
-                </span>
                 <span className="price-category-label">{category.label}</span>
+                <span className="price-category-count" aria-hidden="true">
+                  {category.id === "all"
+                    ? initialItems.length
+                    : (categoryCounts.get(category.id) ?? 0)}
+                </span>
               </button>
             ))}
           </div>
@@ -206,6 +217,11 @@ export function PriceCatalog({
 
           {visibleItems.length ? (
             <div className="medical-price-table" role="tabpanel">
+              <div className="medical-price-head" aria-hidden="true">
+                <span>Назва послуги</span>
+                <span>Вартість</span>
+                <span />
+              </div>
               {displayedGroups.map((group) => (
                 <section
                   className="medical-price-group"
@@ -213,15 +229,16 @@ export function PriceCatalog({
                   aria-labelledby={`price-group-${group.category}`}
                 >
                   <div className="medical-price-group-head">
-                    <span className="medical-price-group-mark" aria-hidden="true">
-                      {group.categoryLabel.slice(0, 1)}
-                    </span>
-                    <div>
+                    <div className="medical-price-group-title">
+                      <span
+                        className="medical-price-group-accent"
+                        aria-hidden="true"
+                      />
                       <h3 id={`price-group-${group.category}`}>
                         {group.categoryLabel}
                       </h3>
-                      <span>{formatStudyCount(group.totalCount)}</span>
                     </div>
+                    <span>{formatStudyCount(group.totalCount)}</span>
                   </div>
 
                   <div className="medical-price-group-rows">
@@ -242,12 +259,14 @@ export function PriceCatalog({
                             className={`price-row-action${isSelected ? " is-selected" : ""}`}
                             type="button"
                             aria-pressed={isSelected}
+                            aria-label={
+                              isSelected
+                                ? `Видалити ${item.name} з калькулятора`
+                                : `Додати ${item.name} до калькулятора`
+                            }
                             onClick={() => toggleItem(item.id)}
                           >
-                            {isSelected ? "Додано" : "Додати"}
-                            <span aria-hidden="true">
-                              {isSelected ? "✓" : "+"}
-                            </span>
+                            <span aria-hidden="true">{isSelected ? "✓" : "+"}</span>
                           </button>
                         </article>
                       );
