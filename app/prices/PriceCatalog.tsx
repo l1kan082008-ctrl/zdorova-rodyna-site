@@ -6,6 +6,7 @@ import {
   categoryOptions,
   type PriceItem,
 } from "./priceData";
+import { PriceCategoryIcon } from "./PriceCategoryIcon";
 
 const categories = [
   { id: "all", label: "Усі послуги" },
@@ -16,25 +17,6 @@ const INITIAL_VISIBLE_COUNT = 24;
 
 const formatPrice = (amount: number) =>
   `${new Intl.NumberFormat("uk-UA").format(amount)} ₴`;
-
-const formatStudyCount = (count: number) => {
-  const lastTwoDigits = count % 100;
-  const lastDigit = count % 10;
-
-  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
-    return `${count} досліджень`;
-  }
-
-  if (lastDigit === 1) {
-    return `${count} дослідження`;
-  }
-
-  if (lastDigit >= 2 && lastDigit <= 4) {
-    return `${count} дослідження`;
-  }
-
-  return `${count} досліджень`;
-};
 
 const normalizeSearch = (value: string) =>
   value
@@ -56,6 +38,9 @@ export function PriceCatalog({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   const [visibleLimit, setVisibleLimit] = useState(INITIAL_VISIBLE_COUNT);
+  const [collapsedCategories, setCollapsedCategories] = useState<
+    Set<PriceItem["category"]>
+  >(() => new Set());
 
   const visibleItems = useMemo(() => {
     const normalized = normalizeSearch(query);
@@ -77,15 +62,6 @@ export function PriceCatalog({
     () => initialItems.filter((item) => selectedIds.includes(item.id)),
     [initialItems, selectedIds],
   );
-  const categoryCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-
-    initialItems.forEach((item) => {
-      counts.set(item.category, (counts.get(item.category) ?? 0) + 1);
-    });
-
-    return counts;
-  }, [initialItems]);
   const displayedItems = useMemo(
     () => visibleItems.slice(0, visibleLimit),
     [visibleItems, visibleLimit],
@@ -150,14 +126,28 @@ export function PriceCatalog({
     );
   };
 
+  const toggleCategory = (category: PriceItem["category"]) => {
+    setCollapsedCategories((current) => {
+      const next = new Set(current);
+
+      if (next.has(category)) {
+        next.delete(category);
+      } else {
+        next.add(category);
+      }
+
+      return next;
+    });
+  };
+
   return (
     <>
       <section className="price-catalog-shell" aria-label="Каталог цін">
+        <header className="price-catalog-heading">
+          <h1>Вартість послуг</h1>
+        </header>
+
         <aside className="price-category-panel">
-          <div>
-            <span className="section-kicker">Напрями</span>
-            <h2>Оберіть категорію</h2>
-          </div>
           <div
             className="price-category-tabs"
             role="tablist"
@@ -178,22 +168,16 @@ export function PriceCatalog({
                   setVisibleLimit(INITIAL_VISIBLE_COUNT);
                 }}
               >
-                <span className="price-category-label">{category.label}</span>
-                <span className="price-category-count" aria-hidden="true">
-                  {category.id === "all"
-                    ? initialItems.length
-                    : (categoryCounts.get(category.id) ?? 0)}
+                <span className="price-category-symbol" aria-hidden="true">
+                  <PriceCategoryIcon category={category.id} />
                 </span>
+                <span className="price-category-label">{category.label}</span>
               </button>
             ))}
           </div>
           <p className="price-category-mobile-hint" aria-hidden="true">
             Гортайте категорії →
           </p>
-          <a className="price-phone-card" href="tel:+380676714444">
-            <span>Потрібна допомога?</span>
-            <strong>+38 (067) 671-44-44</strong>
-          </a>
         </aside>
 
         <div className="price-table-panel">
@@ -209,7 +193,7 @@ export function PriceCatalog({
                   setActiveCategory("all");
                   setVisibleLimit(INITIAL_VISIBLE_COUNT);
                 }}
-                placeholder="Наприклад, ЕКГ або нирки"
+                placeholder="Пошук послуги"
                 autoComplete="off"
               />
             </label>
@@ -217,63 +201,77 @@ export function PriceCatalog({
 
           {visibleItems.length ? (
             <div className="medical-price-table" role="tabpanel">
-              <div className="medical-price-head" aria-hidden="true">
-                <span>Назва послуги</span>
-                <span>Вартість</span>
-                <span />
-              </div>
-              {displayedGroups.map((group) => (
-                <section
-                  className="medical-price-group"
-                  key={group.category}
-                  aria-labelledby={`price-group-${group.category}`}
-                >
-                  <div className="medical-price-group-head">
-                    <div className="medical-price-group-title">
-                      <span
-                        className="medical-price-group-accent"
-                        aria-hidden="true"
-                      />
+              {displayedGroups.map((group) => {
+                const isCollapsed = collapsedCategories.has(group.category);
+                const rowsId = `price-group-rows-${group.category}`;
+
+                return (
+                  <section
+                    className="medical-price-group"
+                    key={group.category}
+                    aria-labelledby={`price-group-${group.category}`}
+                  >
+                    <button
+                      className="medical-price-group-head"
+                      type="button"
+                      aria-expanded={!isCollapsed}
+                      aria-controls={rowsId}
+                      onClick={() => toggleCategory(group.category)}
+                    >
+                      <span className="medical-price-group-icon" aria-hidden="true">
+                        <PriceCategoryIcon category={group.category} />
+                      </span>
                       <h3 id={`price-group-${group.category}`}>
                         {group.categoryLabel}
                       </h3>
-                    </div>
-                    <span>{formatStudyCount(group.totalCount)}</span>
-                  </div>
+                      <span className="medical-price-group-count">
+                        {group.totalCount}
+                      </span>
+                      <span
+                        className={`medical-price-group-chevron${isCollapsed ? " is-collapsed" : ""}`}
+                        aria-hidden="true"
+                      />
+                    </button>
 
-                  <div className="medical-price-group-rows">
-                    {group.items.map((item) => {
-                      const isSelected = selectedIds.includes(item.id);
+                    {!isCollapsed ? (
+                      <div className="medical-price-group-rows" id={rowsId}>
+                        {group.items.map((item) => {
+                          const isSelected = selectedIds.includes(item.id);
 
-                      return (
-                        <article className="medical-price-row" key={item.id}>
-                          <div className="medical-price-service">
-                            <span className="mobile-price-label">Послуга</span>
-                            <strong>{item.name}</strong>
-                          </div>
-                          <div className="medical-price-value">
-                            <span className="mobile-price-label">Вартість</span>
-                            <strong>{formatPrice(item.amount)}</strong>
-                          </div>
-                          <button
-                            className={`price-row-action${isSelected ? " is-selected" : ""}`}
-                            type="button"
-                            aria-pressed={isSelected}
-                            aria-label={
-                              isSelected
-                                ? `Видалити ${item.name} з калькулятора`
-                                : `Додати ${item.name} до калькулятора`
-                            }
-                            onClick={() => toggleItem(item.id)}
-                          >
-                            <span aria-hidden="true">{isSelected ? "✓" : "+"}</span>
-                          </button>
-                        </article>
-                      );
-                    })}
-                  </div>
-                </section>
-              ))}
+                          return (
+                            <article className="medical-price-row" key={item.id}>
+                              <div className="medical-price-service">
+                                <span className="mobile-price-label">Послуга</span>
+                                <strong>{item.name}</strong>
+                              </div>
+                              <div className="medical-price-value">
+                                <span className="mobile-price-label">Вартість</span>
+                                <strong>{formatPrice(item.amount)}</strong>
+                              </div>
+                              <button
+                                className={`price-row-action${isSelected ? " is-selected" : ""}`}
+                                type="button"
+                                aria-pressed={isSelected}
+                                aria-label={
+                                  isSelected
+                                    ? `Видалити ${item.name} з калькулятора`
+                                    : `Додати ${item.name} до калькулятора`
+                                }
+                                onClick={() => toggleItem(item.id)}
+                              >
+                                {isSelected ? "Додано" : "Додати"}
+                                <span aria-hidden="true">
+                                  {isSelected ? "✓" : "+"}
+                                </span>
+                              </button>
+                            </article>
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                  </section>
+                );
+              })}
               {displayedItems.length < visibleItems.length ? (
                 <button
                   className="price-load-more"
