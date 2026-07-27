@@ -26,14 +26,6 @@ export default async function PricesPage() {
 
       <PriceCatalog initialItems={priceItems} />
 
-      <section className="price-notice price-catalog-notice">
-        <strong>Зверніть увагу</strong>
-        <p>
-          Ціни перенесені з офіційного прайсу 24 липня 2026 року та можуть
-          змінюватися. Остаточну суму, підготовку й доступний час підтвердить
-          адміністратор за номером +38 (067) 671-44-44.
-        </p>
-      </section>
       <section className="subpage-cta">
         <div>
           <span className="section-kicker">Не знайшли послугу?</span>
