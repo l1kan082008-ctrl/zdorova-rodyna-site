@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import {
+  PRICE_CALCULATOR_CHANGED_EVENT,
+  PRICE_CALCULATOR_OPEN_EVENT,
+  PRICE_CALCULATOR_STORAGE_KEY,
+  readPriceCalculatorSelection,
+} from "../prices/calculatorSelection";
 
 const navigation = [
   { href: "/services", label: "Послуги", key: "services" },
@@ -13,6 +19,7 @@ const navigation = [
 
 export function SiteHeader({ active }: { active?: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedServiceCount, setSelectedServiceCount] = useState(0);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -24,6 +31,40 @@ export function SiteHeader({ active }: { active?: string }) {
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [menuOpen]);
+
+  useEffect(() => {
+    const updateSelectedServiceCount = () => {
+      setSelectedServiceCount(readPriceCalculatorSelection().length);
+    };
+    const updateFromStorage = (event: StorageEvent) => {
+      if (event.key === PRICE_CALCULATOR_STORAGE_KEY) {
+        updateSelectedServiceCount();
+      }
+    };
+    const updateFromSelection = (event: Event) => {
+      const selectedIds = (event as CustomEvent<unknown>).detail;
+      setSelectedServiceCount(
+        Array.isArray(selectedIds)
+          ? selectedIds.filter((id) => typeof id === "string").length
+          : readPriceCalculatorSelection().length,
+      );
+    };
+
+    updateSelectedServiceCount();
+    window.addEventListener("storage", updateFromStorage);
+    window.addEventListener(
+      PRICE_CALCULATOR_CHANGED_EVENT,
+      updateFromSelection,
+    );
+
+    return () => {
+      window.removeEventListener("storage", updateFromStorage);
+      window.removeEventListener(
+        PRICE_CALCULATOR_CHANGED_EVENT,
+        updateFromSelection,
+      );
+    };
+  }, []);
 
   return (
     <header className="site-header inner-header">
@@ -50,9 +91,34 @@ export function SiteHeader({ active }: { active?: string }) {
         ))}
       </nav>
 
-      <a className="book-button header-book" href="/contacts#booking">
-        Записатися на прийом
-      </a>
+      <div className="header-actions">
+        {selectedServiceCount ? (
+          <a
+            className="header-selection"
+            href="/prices#calculator"
+            aria-label={`Обрані послуги: ${selectedServiceCount}`}
+            onClick={(event) => {
+              setMenuOpen(false);
+
+              if (window.location.pathname === "/prices") {
+                event.preventDefault();
+                window.dispatchEvent(
+                  new CustomEvent(PRICE_CALCULATOR_OPEN_EVENT),
+                );
+              }
+            }}
+          >
+            <span className="header-selection-icon" aria-hidden="true">
+              ✓
+            </span>
+            <span className="header-selection-label">Обрані послуги</span>
+            <strong>{selectedServiceCount}</strong>
+          </a>
+        ) : null}
+        <a className="book-button header-book" href="/contacts#booking">
+          Записатися на прийом
+        </a>
+      </div>
       <button
         className="menu-button"
         type="button"

@@ -222,6 +222,68 @@ footer {
   padding-inline: 25px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 10px;
+}
+
+.header-selection {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 5px 8px 5px 6px;
+  border: 1px solid #c8ddda;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+  box-shadow: 0 8px 24px rgba(24, 73, 76, 0.08);
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.header-selection:hover,
+.header-selection:focus-visible {
+  border-color: var(--teal);
+  background: #fff;
+  transform: translateY(-2px);
+}
+
+.header-selection-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #e7f4f2;
+  color: var(--teal);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.header-selection-label {
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.header-selection strong {
+  display: grid;
+  place-items: center;
+  min-width: 25px;
+  height: 25px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--orange);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+}
+
 .menu-button {
   display: none;
   width: 46px;
@@ -5177,12 +5239,45 @@ footer {
   }
 
   .site-header {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
     min-height: 88px;
   }
 
   .header-book {
     display: none;
+  }
+
+  .header-actions {
+    gap: 0;
+  }
+
+  .header-selection {
+    position: relative;
+    justify-content: center;
+    width: 46px;
+    min-height: 46px;
+    padding: 0;
+  }
+
+  .header-selection-label {
+    display: none;
+  }
+
+  .header-selection-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .header-selection strong {
+    position: absolute;
+    top: -2px;
+    right: -3px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    border: 2px solid #fff;
+    font-size: 9px;
   }
 
   .logo {
@@ -6423,6 +6518,19 @@ footer {
 
   .admin-price-actions .book-button {
     width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .site-header .logo {
+    width: 176px;
+    height: 44px;
+  }
+
+  .site-header .logo img {
+    top: -22px;
+    left: -18px;
+    width: 218px;
   }
 }
 

@@ -7,6 +7,12 @@ import {
   type PriceItem,
 } from "./priceData";
 import { PriceCategoryIcon } from "./PriceCategoryIcon";
+import {
+  announcePriceCalculatorSelection,
+  PRICE_CALCULATOR_OPEN_EVENT,
+  PRICE_CALCULATOR_STORAGE_KEY,
+  readPriceCalculatorSelection,
+} from "./calculatorSelection";
 
 const categories = [
   { id: "all", label: "Усі послуги" },
@@ -17,7 +23,6 @@ const INITIAL_VISIBLE_COUNT = 24;
 const CATEGORY_PREVIEW_COUNT = 3;
 const INITIAL_VISIBLE_GROUP_COUNT = 5;
 const GROUPS_PER_LOAD = 5;
-const CALCULATOR_STORAGE_KEY = "zdorova-rodyna-price-calculator-v1";
 
 const formatPrice = (amount: number) =>
   `${new Intl.NumberFormat("uk-UA").format(amount)} ₴`;
@@ -169,10 +174,7 @@ export function PriceCatalog({
     const availableIds = new Set(initialItems.map((item) => item.id));
 
     try {
-      const storedValue = window.localStorage.getItem(CALCULATOR_STORAGE_KEY);
-      const storedIds = storedValue
-        ? (JSON.parse(storedValue) as unknown)
-        : [];
+      const storedIds = readPriceCalculatorSelection();
 
       if (Array.isArray(storedIds)) {
         setSelectedIds(
@@ -183,7 +185,7 @@ export function PriceCatalog({
         );
       }
     } catch {
-      window.localStorage.removeItem(CALCULATOR_STORAGE_KEY);
+      window.localStorage.removeItem(PRICE_CALCULATOR_STORAGE_KEY);
     } finally {
       setSelectionHydrated(true);
     }
@@ -192,15 +194,16 @@ export function PriceCatalog({
   useEffect(() => {
     if (!selectionHydrated) return;
     window.localStorage.setItem(
-      CALCULATOR_STORAGE_KEY,
+      PRICE_CALCULATOR_STORAGE_KEY,
       JSON.stringify(selectedIds),
     );
+    announcePriceCalculatorSelection(selectedIds);
   }, [selectedIds, selectionHydrated]);
 
   useEffect(() => {
     const syncSelection = (event: StorageEvent) => {
       if (
-        event.key !== CALCULATOR_STORAGE_KEY ||
+        event.key !== PRICE_CALCULATOR_STORAGE_KEY ||
         typeof event.newValue !== "string"
       ) {
         return;
@@ -225,6 +228,25 @@ export function PriceCatalog({
     window.addEventListener("storage", syncSelection);
     return () => window.removeEventListener("storage", syncSelection);
   }, [initialItems]);
+
+  useEffect(() => {
+    const openCalculator = () => {
+      if (selectedIds.length) setCalculatorOpen(true);
+    };
+
+    window.addEventListener(PRICE_CALCULATOR_OPEN_EVENT, openCalculator);
+
+    if (
+      selectionHydrated &&
+      selectedIds.length &&
+      window.location.hash === "#calculator"
+    ) {
+      setCalculatorOpen(true);
+    }
+
+    return () =>
+      window.removeEventListener(PRICE_CALCULATOR_OPEN_EVENT, openCalculator);
+  }, [selectedIds.length, selectionHydrated]);
 
   useEffect(() => {
     if (!calculatorOpen) return;
@@ -261,7 +283,11 @@ export function PriceCatalog({
 
   return (
     <>
-      <section className="price-catalog-shell" aria-label="Каталог цін">
+      <section
+        className="price-catalog-shell"
+        id="price-calculator"
+        aria-label="Каталог цін"
+      >
         <aside className="price-category-panel">
           <button
             className="price-category-mobile-toggle"
