@@ -17,6 +17,25 @@ const INITIAL_VISIBLE_COUNT = 24;
 const formatPrice = (amount: number) =>
   `${new Intl.NumberFormat("uk-UA").format(amount)} ₴`;
 
+const formatStudyCount = (count: number) => {
+  const lastTwoDigits = count % 100;
+  const lastDigit = count % 10;
+
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+    return `${count} досліджень`;
+  }
+
+  if (lastDigit === 1) {
+    return `${count} дослідження`;
+  }
+
+  if (lastDigit >= 2 && lastDigit <= 4) {
+    return `${count} дослідження`;
+  }
+
+  return `${count} досліджень`;
+};
+
 const normalizeSearch = (value: string) =>
   value
     .toLocaleLowerCase("uk-UA")
@@ -58,7 +77,45 @@ export function PriceCatalog({
     () => initialItems.filter((item) => selectedIds.includes(item.id)),
     [initialItems, selectedIds],
   );
-  const displayedItems = visibleItems.slice(0, visibleLimit);
+  const displayedItems = useMemo(
+    () => visibleItems.slice(0, visibleLimit),
+    [visibleItems, visibleLimit],
+  );
+  const displayedGroups = useMemo(() => {
+    const categoryTotals = new Map<string, number>();
+
+    visibleItems.forEach((item) => {
+      categoryTotals.set(
+        item.category,
+        (categoryTotals.get(item.category) ?? 0) + 1,
+      );
+    });
+
+    return displayedItems.reduce<
+      Array<{
+        category: PriceItem["category"];
+        categoryLabel: string;
+        totalCount: number;
+        items: PriceItem[];
+      }>
+    >((groups, item) => {
+      const currentGroup = groups.at(-1);
+
+      if (currentGroup?.category === item.category) {
+        currentGroup.items.push(item);
+        return groups;
+      }
+
+      groups.push({
+        category: item.category,
+        categoryLabel: item.categoryLabel,
+        totalCount: categoryTotals.get(item.category) ?? 0,
+        items: [item],
+      });
+
+      return groups;
+    }, []);
+  }, [displayedItems, visibleItems]);
 
   const total = selectedItems.reduce((sum, item) => sum + item.amount, 0);
   const checkoutHref = `/contacts?services=${encodeURIComponent(
@@ -112,7 +169,10 @@ export function PriceCatalog({
                   setVisibleLimit(INITIAL_VISIBLE_COUNT);
                 }}
               >
-                <span>{category.label}</span>
+                <span className="price-category-symbol" aria-hidden="true">
+                  {category.label.slice(0, 1)}
+                </span>
+                <span className="price-category-label">{category.label}</span>
               </button>
             ))}
           </div>
@@ -146,41 +206,55 @@ export function PriceCatalog({
 
           {visibleItems.length ? (
             <div className="medical-price-table" role="tabpanel">
-              <div className="medical-price-head" aria-hidden="true">
-                <span>Послуга</span>
-                <span>Напрям</span>
-                <span>Вартість</span>
-                <span />
-              </div>
-              {displayedItems.map((item) => {
-                const isSelected = selectedIds.includes(item.id);
+              {displayedGroups.map((group) => (
+                <section
+                  className="medical-price-group"
+                  key={group.category}
+                  aria-labelledby={`price-group-${group.category}`}
+                >
+                  <div className="medical-price-group-head">
+                    <span className="medical-price-group-mark" aria-hidden="true">
+                      {group.categoryLabel.slice(0, 1)}
+                    </span>
+                    <div>
+                      <h3 id={`price-group-${group.category}`}>
+                        {group.categoryLabel}
+                      </h3>
+                      <span>{formatStudyCount(group.totalCount)}</span>
+                    </div>
+                  </div>
 
-                return (
-                  <article className="medical-price-row" key={item.id}>
-                    <div className="medical-price-service">
-                      <span className="mobile-price-label">Послуга</span>
-                      <strong>{item.name}</strong>
-                    </div>
-                    <div className="medical-price-category">
-                      <span className="mobile-price-label">Напрям</span>
-                      <span>{item.categoryLabel}</span>
-                    </div>
-                    <div className="medical-price-value">
-                      <span className="mobile-price-label">Вартість</span>
-                      <strong>{formatPrice(item.amount)}</strong>
-                    </div>
-                    <button
-                      className={`price-row-action${isSelected ? " is-selected" : ""}`}
-                      type="button"
-                      aria-pressed={isSelected}
-                      onClick={() => toggleItem(item.id)}
-                    >
-                      {isSelected ? "Додано" : "Додати"}
-                      <span aria-hidden="true">{isSelected ? "✓" : "+"}</span>
-                    </button>
-                  </article>
-                );
-              })}
+                  <div className="medical-price-group-rows">
+                    {group.items.map((item) => {
+                      const isSelected = selectedIds.includes(item.id);
+
+                      return (
+                        <article className="medical-price-row" key={item.id}>
+                          <div className="medical-price-service">
+                            <span className="mobile-price-label">Послуга</span>
+                            <strong>{item.name}</strong>
+                          </div>
+                          <div className="medical-price-value">
+                            <span className="mobile-price-label">Вартість</span>
+                            <strong>{formatPrice(item.amount)}</strong>
+                          </div>
+                          <button
+                            className={`price-row-action${isSelected ? " is-selected" : ""}`}
+                            type="button"
+                            aria-pressed={isSelected}
+                            onClick={() => toggleItem(item.id)}
+                          >
+                            {isSelected ? "Додано" : "Додати"}
+                            <span aria-hidden="true">
+                              {isSelected ? "✓" : "+"}
+                            </span>
+                          </button>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
               {displayedItems.length < visibleItems.length ? (
                 <button
                   className="price-load-more"

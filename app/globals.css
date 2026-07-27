@@ -3700,11 +3700,13 @@ footer {
 }
 
 .price-category-tabs button {
-  display: flex;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
   align-items: center;
+  gap: 10px;
   width: 100%;
   min-height: 50px;
-  padding: 11px 13px;
+  padding: 8px 10px;
   border: 1px solid transparent;
   border-radius: 13px;
   background: transparent;
@@ -3729,7 +3731,28 @@ footer {
   color: var(--ink);
 }
 
-.price-category-tabs button span {
+.price-category-symbol {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #edf5f4;
+  color: var(--teal);
+  font-size: 13px;
+  font-weight: 800;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.price-category-tabs button.is-active .price-category-symbol {
+  background: var(--teal);
+  color: #fff;
+}
+
+.price-category-label {
+  min-width: 0;
   font-size: 13px;
   font-weight: 700;
 }
@@ -3797,29 +3820,77 @@ footer {
 }
 
 .medical-price-table {
-  padding: 0 26px 12px;
+  display: grid;
+  gap: 16px;
+  padding: 22px 26px 26px;
 }
 
-.medical-price-head,
+.medical-price-group {
+  overflow: hidden;
+  border: 1px solid #dce9e8;
+  border-radius: 19px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(20, 70, 73, 0.055);
+}
+
+.medical-price-group-head {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 76px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #e3eceb;
+  background: linear-gradient(120deg, #f2f8f7 0%, #fbfdfd 100%);
+}
+
+.medical-price-group-mark {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 43px;
+  height: 43px;
+  border-radius: 13px;
+  background: #dcefed;
+  color: #087b7d;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.medical-price-group-head > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.medical-price-group-head h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.medical-price-group-head > div > span {
+  color: #778b8e;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .medical-price-row {
   display: grid;
-  grid-template-columns: minmax(250px, 1.5fr) minmax(120px, 0.62fr) 105px 112px;
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) 105px 112px;
+  gap: 16px;
   align-items: center;
 }
 
-.medical-price-head {
-  min-height: 48px;
-  color: #829497;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.medical-price-row {
+  min-height: 72px;
+  padding: 0 18px;
+  border-top: 1px solid #e5eceb;
 }
 
-.medical-price-row {
-  min-height: 77px;
-  border-top: 1px solid #e5eceb;
+.medical-price-row:first-child {
+  border-top: 0;
 }
 
 .medical-price-service strong {
@@ -3827,17 +3898,6 @@ footer {
   font-size: 14px;
   line-height: 1.4;
   overflow-wrap: anywhere;
-}
-
-.medical-price-category > span:last-child {
-  display: inline-flex;
-  width: fit-content;
-  padding: 7px 10px;
-  border-radius: 999px;
-  background: #edf6f5;
-  color: var(--teal);
-  font-size: 10px;
-  font-weight: 800;
 }
 
 .medical-price-value strong {
@@ -4789,9 +4849,8 @@ footer {
     grid-template-columns: 220px minmax(0, 1fr);
   }
 
-  .medical-price-head,
   .medical-price-row {
-    grid-template-columns: minmax(170px, 1.3fr) minmax(78px, 0.5fr) 78px 94px;
+    grid-template-columns: minmax(0, 1fr) 78px 94px;
     gap: 12px;
   }
 
@@ -5276,7 +5335,7 @@ footer {
   .price-category-tabs button {
     flex: 0 0 auto;
     width: auto;
-    min-width: 112px;
+    min-width: 142px;
   }
 
   .price-category-mobile-hint {
@@ -5304,24 +5363,49 @@ footer {
   .medical-price-table {
     display: grid;
     min-width: 0;
-    gap: 12px;
+    gap: 14px;
     padding: 14px;
   }
 
-  .medical-price-head {
-    display: none;
+  .medical-price-group {
+    width: 100%;
+    min-width: 0;
+    border-radius: 17px;
+    box-shadow: 0 8px 22px rgba(20, 70, 73, 0.05);
+  }
+
+  .medical-price-group-head {
+    min-height: 68px;
+    gap: 11px;
+    padding: 12px 15px;
+  }
+
+  .medical-price-group-mark {
+    width: 39px;
+    height: 39px;
+    border-radius: 12px;
+    font-size: 15px;
+  }
+
+  .medical-price-group-head h3 {
+    font-size: 18px;
   }
 
   .medical-price-row {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     width: 100%;
     min-width: 0;
-    gap: 14px 18px;
+    gap: 13px 16px;
     min-height: auto;
-    padding: 19px;
-    border: 1px solid #e0eae9;
-    border-radius: 16px;
+    padding: 16px 15px;
+    border: 0;
+    border-top: 1px solid #e5eceb;
+    border-radius: 0;
     background: #fff;
+  }
+
+  .medical-price-row:first-child {
+    border-top: 0;
   }
 
   .medical-price-service {
@@ -5334,21 +5418,21 @@ footer {
     font-size: 15px;
   }
 
-  .medical-price-category,
   .medical-price-value {
     display: grid;
     gap: 6px;
   }
 
   .medical-price-value {
-    justify-items: end;
-    text-align: right;
+    justify-items: start;
+    text-align: left;
   }
 
   .medical-price-row .price-row-action {
     display: flex;
-    grid-column: 1 / -1;
+    grid-column: 2;
     justify-content: center;
+    min-width: 106px;
     min-height: 44px;
     font-size: 11px;
   }
