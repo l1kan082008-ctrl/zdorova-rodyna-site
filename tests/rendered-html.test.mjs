@@ -150,8 +150,9 @@ test("homepage all-doctor showcase expands on click and links to profiles", asyn
   );
   assert.match(
     css,
-    /\.doctor-showcase-panel:not\(\.is-active\):hover\s*\{[\s\S]*?transform:\s*translateY\(-3px\) scaleX\(1\.04\)/,
+    /\.doctor-showcase-panel:not\(\.is-active\):hover\s*\{[\s\S]*?flex-basis:\s*82px/,
   );
+  assert.doesNotMatch(css, /0 0 0 2px rgba\(255, 126, 0, 0\.24\)/);
   assert.match(
     css,
     /flex-basis 500ms cubic-bezier\(0\.65, 0, 0\.35, 1\)/,
