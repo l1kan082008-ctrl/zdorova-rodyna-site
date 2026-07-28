@@ -1606,6 +1606,32 @@ footer {
     0 10px 24px rgba(19, 85, 88, 0.07);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.price-card .outline-button:hover,
+.price-card .outline-button:focus-visible {
+  border-color: var(--orange);
+  background: var(--orange);
+  color: #fff;
+  box-shadow:
+    0 0 0 1px rgba(255, 121, 0, 0.12),
+    0 0 26px rgba(255, 121, 0, 0.34),
+    0 14px 30px rgba(255, 121, 0, 0.22);
+}
+
+.price-card .outline-button span {
+  transition: transform 160ms ease;
+}
+
+.price-card .outline-button:hover span,
+.price-card .outline-button:focus-visible span {
+  transform: translateX(3px);
 }
 
 @media (hover: none), (pointer: coarse) {

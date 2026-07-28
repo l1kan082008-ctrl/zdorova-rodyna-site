@@ -73,6 +73,10 @@ test("popular price cards use a clean teal cursor-following glow", async () => {
     css,
     /\.price-card\s*\{[\s\S]*?--glow-rgb:\s*17, 121, 122/,
   );
+  assert.match(
+    css,
+    /\.price-card \.outline-button:hover,[\s\S]*?background:\s*var\(--orange\)[\s\S]*?0 0 26px rgba\(255, 121, 0, 0\.34\)/,
+  );
 });
 
 test("doctor pages receive their data during server rendering", async () => {
