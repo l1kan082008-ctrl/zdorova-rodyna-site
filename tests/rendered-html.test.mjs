@@ -115,6 +115,34 @@ test("doctor pages receive their data during server rendering", async () => {
   assert.doesNotMatch(profileDetails, /fetch\(`/);
 });
 
+test("homepage family doctors expand on hover and link to profiles", async () => {
+  const [page, showcase, css, ...photos] = await Promise.all([
+    readSource("app/page.tsx"),
+    readSource("app/components/FamilyDoctorsShowcase.tsx"),
+    readSource("app/globals.css"),
+    ...[
+      "voloshko-tetiana.jpg",
+      "iziumska-olena.jpg",
+      "ishchuk-nadiia-optimized.jpg",
+      "pochtar-kateryna-optimized.jpg",
+    ].map((name) =>
+      readFile(new URL(`../public/doctor-showcase/${name}`, import.meta.url)),
+    ),
+  ]);
+
+  assert.match(page, /await Promise\.all\(\[[\s\S]*?listDoctors\(\)/);
+  assert.match(page, /specialty\.toLocaleLowerCase\("uk-UA"\)\.includes\("сімей"\)/);
+  assert.match(page, /<FamilyDoctorsShowcase doctors=\{familyDoctors\} \/>/);
+  assert.match(showcase, /onMouseEnter=\{\(\) => setActiveId\(doctor\.id\)\}/);
+  assert.match(showcase, /onFocus=\{\(\) => setActiveId\(doctor\.id\)\}/);
+  assert.match(showcase, /href=\{`\/doctors\/\$\{doctor\.id\}`\}/);
+  assert.match(
+    css,
+    /\.family-doctor-panel\.is-active\s*\{[\s\S]*?flex:\s*1 1 350px/,
+  );
+  photos.forEach((photo) => assert.ok(photo.length > 50_000));
+});
+
 test("calculator route hash is consumed after opening once", async () => {
   const catalog = await readSource("app/prices/PriceCatalog.tsx");
 

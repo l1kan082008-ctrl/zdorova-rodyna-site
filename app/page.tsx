@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { listPopularBookingServices } from "./api/bookings/bookingStore";
+import { listDoctors } from "./api/doctors/doctorStore";
 import { listPublicPriceItems } from "./api/prices/priceStore";
+import { FamilyDoctorsShowcase } from "./components/FamilyDoctorsShowcase";
 import { GlowPriceCard } from "./components/GlowPriceCard";
 import { PromoSlider } from "./components/PromoSlider";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome";
+import { defaultDoctors } from "./doctors/doctorData";
 import { catalogItems, type PriceItem } from "./prices/priceData";
 
 const services = [
@@ -75,23 +78,19 @@ const quickItems = [
   },
 ];
 
-const doctorDirections = [
-  {
-    icon: "doctor",
-    title: "Сімейний лікар",
-    text: "Первинні консультації, профілактика та супровід здоров’я всієї родини.",
-  },
-  {
-    icon: "cardiology",
-    title: "Кардіолог",
-    text: "Оцінка роботи серця, консультації та рекомендації за результатами обстежень.",
-  },
-  {
-    icon: "ultrasound",
-    title: "Лікар УЗД",
-    text: "Ультразвукова діагностика з поясненням результатів дослідження.",
-  },
+const familyDoctorOrder = [
+  "voloshko-tetiana",
+  "iziumska-olena",
+  "ishchuk-nadiia",
+  "pochtar-kateryna",
 ];
+
+const familyDoctorFallbackPhotos: Record<string, string> = {
+  "voloshko-tetiana": "/doctor-showcase/voloshko-tetiana.jpg",
+  "iziumska-olena": "/doctor-showcase/iziumska-olena.jpg",
+  "ishchuk-nadiia": "/doctor-showcase/ishchuk-nadiia-optimized.jpg",
+  "pochtar-kateryna": "/doctor-showcase/pochtar-kateryna-optimized.jpg",
+};
 
 const fallbackPriceDirections = [
   {
@@ -280,7 +279,26 @@ function LineIcon({ type }: { type: string }) {
 }
 
 export default async function Home() {
-  const priceDirections = await getPopularPriceDirections();
+  const [priceDirections, doctors] = await Promise.all([
+    getPopularPriceDirections(),
+    listDoctors().catch(() => defaultDoctors),
+  ]);
+  const familyDoctors = doctors
+    .filter((doctor) =>
+      doctor.specialty.toLocaleLowerCase("uk-UA").includes("сімей"),
+    )
+    .sort((first, second) => {
+      const firstIndex = familyDoctorOrder.indexOf(first.id);
+      const secondIndex = familyDoctorOrder.indexOf(second.id);
+      return (
+        (firstIndex === -1 ? Number.MAX_SAFE_INTEGER : firstIndex) -
+        (secondIndex === -1 ? Number.MAX_SAFE_INTEGER : secondIndex)
+      );
+    })
+    .map((doctor) => ({
+      ...doctor,
+      photoUrl: doctor.photoUrl || familyDoctorFallbackPhotos[doctor.id] || "",
+    }));
 
   return (
     <main id="top">
@@ -358,30 +376,14 @@ export default async function Home() {
         <div className="section-heading doctors-heading">
           <div>
             <span className="section-kicker">Лікарі</span>
-            <h2>Напрями консультацій</h2>
+            <h2>Сімейні лікарі</h2>
           </div>
           <p>
-            Оберіть потрібний напрям — адміністратор допоможе підібрати
-            спеціаліста та зручний час.
+            Наведіть на фотографію, щоб познайомитися з лікарем, або натисніть,
+            щоб перейти до його профілю.
           </p>
         </div>
-        <div className="doctors-grid">
-          {doctorDirections.map((direction) => (
-            <article className="doctor-card" key={direction.title}>
-              <span className="doctor-icon">
-                <LineIcon type={direction.icon} />
-              </span>
-              <h3>{direction.title}</h3>
-              <p>{direction.text}</p>
-              <Link
-                className="text-button"
-                href={`/contacts?service=${encodeURIComponent(direction.title)}#booking`}
-              >
-                Записатися <span>→</span>
-              </Link>
-            </article>
-          ))}
-        </div>
+        <FamilyDoctorsShowcase doctors={familyDoctors} />
       </section>
 
       <section className="about-section" id="about">
