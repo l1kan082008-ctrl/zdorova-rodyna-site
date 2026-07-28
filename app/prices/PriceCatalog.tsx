@@ -239,11 +239,21 @@ export function PriceCatalog({
 
     window.addEventListener(PRICE_CALCULATOR_OPEN_EVENT, openCalculator);
 
-    if (
-      selectionHydrated &&
-      selectedIds.length &&
-      window.location.hash === "#calculator"
-    ) {
+    if (selectionHydrated && window.location.hash === "#calculator") {
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${window.location.pathname}${window.location.search}`,
+      );
+
+      if (!selectedIds.length) {
+        return () =>
+          window.removeEventListener(
+            PRICE_CALCULATOR_OPEN_EVENT,
+            openCalculator,
+          );
+      }
+
       const frame = window.requestAnimationFrame(() => {
         setCalculatorOpen(true);
       });

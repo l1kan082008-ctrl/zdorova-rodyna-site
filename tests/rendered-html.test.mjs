@@ -95,3 +95,20 @@ test("doctor pages receive their data during server rendering", async () => {
   assert.match(profileDetails, /doctor:\s*Doctor \| null/);
   assert.doesNotMatch(profileDetails, /fetch\(`/);
 });
+
+test("calculator route hash is consumed after opening once", async () => {
+  const catalog = await readSource("app/prices/PriceCatalog.tsx");
+
+  assert.match(
+    catalog,
+    /selectionHydrated && window\.location\.hash === "#calculator"/,
+  );
+  assert.match(
+    catalog,
+    /window\.history\.replaceState\([\s\S]*?`\$\{window\.location\.pathname\}\$\{window\.location\.search\}`/,
+  );
+  assert.match(
+    catalog,
+    /if \(!selectedIds\.length\) \{[\s\S]*?removeEventListener/,
+  );
+});
