@@ -496,11 +496,8 @@ export default async function Home() {
           </p>
         </div>
         <div className="pricing-grid">
-          {priceDirections.map((item, index) => (
-            <GlowPriceCard
-              key={item.title}
-              tone={index % 2 === 0 ? "blue" : "orange"}
-            >
+          {priceDirections.map((item) => (
+            <GlowPriceCard key={item.title}>
               <span className="price-label">Популярне</span>
               <h3>{item.title}</h3>
               <strong>{item.text}</strong>

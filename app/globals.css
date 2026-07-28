@@ -1498,7 +1498,7 @@ footer {
 .price-card {
   --spot-x: 50%;
   --spot-y: 50%;
-  --glow-rgb: 36, 166, 206;
+  --glow-rgb: 17, 121, 122;
   position: relative;
   isolation: isolate;
   display: flex;
@@ -1520,25 +1520,6 @@ footer {
     border-color 180ms ease,
     box-shadow 180ms ease,
     transform 180ms ease;
-}
-
-.price-card::before {
-  position: absolute;
-  z-index: 0;
-  inset: 0 auto 0 0;
-  width: 33%;
-  border-right: 1px solid rgba(109, 191, 194, 0.2);
-  border-radius: 21px 38px 38px 21px;
-  background:
-    radial-gradient(circle at 22% 12%, rgba(255, 255, 255, 0.62), transparent 38%),
-    linear-gradient(155deg, rgba(113, 207, 205, 0.29), rgba(87, 165, 169, 0.1));
-  box-shadow:
-    inset 1px 1px 0 rgba(255, 255, 255, 0.72),
-    inset -12px 0 28px rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  content: "";
-  pointer-events: none;
 }
 
 .price-card::after {
@@ -1576,10 +1557,6 @@ footer {
 .price-card:hover::after,
 .price-card:focus-within::after {
   opacity: 1;
-}
-
-.price-card--orange {
-  --glow-rgb: 255, 132, 24;
 }
 
 .price-label {

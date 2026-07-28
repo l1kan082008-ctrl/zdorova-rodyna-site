@@ -52,26 +52,27 @@ test("homepage service cards use layered glass styling", async () => {
   );
 });
 
-test("popular price cards use cursor-following blue and orange glow", async () => {
+test("popular price cards use a clean teal cursor-following glow", async () => {
   const [page, card, css] = await Promise.all([
     readSource("app/page.tsx"),
     readSource("app/components/GlowPriceCard.tsx"),
     readSource("app/globals.css"),
   ]);
 
-  assert.match(page, /tone=\{index % 2 === 0 \? "blue" : "orange"\}/);
+  assert.match(page, /<GlowPriceCard key=\{item\.title\}>/);
+  assert.doesNotMatch(page, /tone=/);
   assert.match(card, /onPointerMove=\{followPointer\}/);
   assert.match(card, /"--spot-x"/);
   assert.match(card, /"--spot-y"/);
-  assert.match(
-    css,
-    /\.price-card::before\s*\{[\s\S]*?rgba\(113, 207, 205, 0\.29\)/,
-  );
+  assert.doesNotMatch(css, /\.price-card::before/);
   assert.match(
     css,
     /\.price-card::after\s*\{[\s\S]*?circle at var\(--spot-x\) var\(--spot-y\)/,
   );
-  assert.match(css, /\.price-card--orange\s*\{[\s\S]*?255, 132, 24/);
+  assert.match(
+    css,
+    /\.price-card\s*\{[\s\S]*?--glow-rgb:\s*17, 121, 122/,
+  );
 });
 
 test("doctor pages receive their data during server rendering", async () => {
