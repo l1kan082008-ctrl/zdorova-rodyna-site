@@ -47,7 +47,7 @@
   --teal-mid: #2d9293;
   --teal-soft: #dceeed;
   --orange: #ff7900;
-  --paper: #f8faf9;
+  --paper: #ffffff;
   --white: #ffffff;
 }
 
@@ -62,9 +62,7 @@ html {
 body {
   margin: 0;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 70% 7%, rgba(28, 137, 138, 0.09), transparent 24rem),
-    linear-gradient(180deg, #fbfcfc 0%, #f6f9f8 100%);
+  background: #ffffff;
   color: var(--ink-dark);
   font-family: "Manrope", Arial, Helvetica, sans-serif;
 }
@@ -89,6 +87,7 @@ a {
 main {
   min-height: 100vh;
   overflow: hidden;
+  background: #ffffff;
 }
 
 .site-header,
