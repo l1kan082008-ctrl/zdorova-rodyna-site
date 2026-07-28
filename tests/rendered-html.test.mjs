@@ -55,7 +55,7 @@ test("homepage service cards use dedicated glass medical artwork", async () => {
 
   assert.match(
     css,
-    /\.service-card\s*\{[\s\S]*?aspect-ratio:\s*4\s*\/\s*5/,
+    /\.service-card\s*\{[\s\S]*?min-height:\s*214px[\s\S]*?background-color:\s*#11797a[\s\S]*?background-blend-mode:\s*lighten/,
   );
   assert.match(
     css,
