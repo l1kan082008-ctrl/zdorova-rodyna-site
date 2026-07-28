@@ -133,12 +133,26 @@ test("homepage family doctors expand on hover and link to profiles", async () =>
   assert.match(page, /await Promise\.all\(\[[\s\S]*?listDoctors\(\)/);
   assert.match(page, /specialty\.toLocaleLowerCase\("uk-UA"\)\.includes\("сімей"\)/);
   assert.match(page, /<FamilyDoctorsShowcase doctors=\{familyDoctors\} \/>/);
-  assert.match(showcase, /onMouseEnter=\{\(\) => setActiveId\(doctor\.id\)\}/);
-  assert.match(showcase, /onFocus=\{\(\) => setActiveId\(doctor\.id\)\}/);
+  assert.match(showcase, /onPointerMove=\{previewDoctorFromPointer\}/);
+  assert.match(showcase, /data-doctor-id=\{doctor\.id\}/);
+  assert.match(showcase, /event\.pointerType !== "mouse"/);
+  assert.match(
+    showcase,
+    /onFocus=\{\(\) => previewDoctor\(doctor\.id, true\)\}/,
+  );
+  assert.match(showcase, /setTimeout\(\(\) => \{[\s\S]*?setActiveId\(doctorId\)/);
   assert.match(showcase, /href=\{`\/doctors\/\$\{doctor\.id\}`\}/);
   assert.match(
     css,
     /\.family-doctor-panel\.is-active\s*\{[\s\S]*?flex:\s*1 1 350px/,
+  );
+  assert.match(
+    css,
+    /flex-basis 500ms cubic-bezier\(0\.65, 0, 0\.35, 1\)/,
+  );
+  assert.match(
+    css,
+    /\.family-doctors-summary-content\s*\{[\s\S]*?family-doctors-summary-in 500ms cubic-bezier\(0\.65, 0, 0\.35, 1\)/,
   );
   photos.forEach((photo) => assert.ok(photo.length > 50_000));
 });

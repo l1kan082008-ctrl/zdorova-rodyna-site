@@ -1318,12 +1318,13 @@ footer {
     0 12px 28px rgba(2, 56, 60, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.76);
   outline: 0;
+  will-change: flex-basis, flex-grow;
   transition:
-    flex-basis 360ms cubic-bezier(0.22, 1, 0.36, 1),
-    flex-grow 360ms cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    filter 180ms ease;
+    flex-basis 500ms cubic-bezier(0.65, 0, 0.35, 1),
+    flex-grow 500ms cubic-bezier(0.65, 0, 0.35, 1),
+    border-color 500ms cubic-bezier(0.65, 0, 0.35, 1),
+    box-shadow 500ms cubic-bezier(0.65, 0, 0.35, 1),
+    filter 500ms cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .family-doctor-panel:not(.is-active) {
@@ -1353,7 +1354,7 @@ footer {
     linear-gradient(180deg, transparent 45%, rgba(0, 48, 52, 0.14) 66%, rgba(0, 43, 47, 0.82) 100%),
     linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent 52%);
   opacity: 0.34;
-  transition: opacity 240ms ease;
+  transition: opacity 500ms cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .family-doctor-panel.is-active .family-doctor-panel-shade {
@@ -1372,13 +1373,16 @@ footer {
   opacity: 0;
   transform: translateY(12px);
   transition:
-    opacity 170ms ease 40ms,
-    transform 260ms cubic-bezier(0.22, 1, 0.36, 1) 40ms;
+    opacity 150ms ease,
+    transform 500ms cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .family-doctor-panel.is-active .family-doctor-panel-copy {
   opacity: 1;
   transform: translateY(0);
+  transition:
+    opacity 260ms ease 140ms,
+    transform 500ms cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .family-doctor-panel-copy strong,
@@ -1443,6 +1447,30 @@ footer {
   background:
     radial-gradient(circle at 92% 8%, rgba(226, 241, 240, 0.72), transparent 32%),
     #fff;
+}
+
+.family-doctors-summary-content {
+  display: flex;
+  flex-direction: column;
+  animation: family-doctors-summary-in 500ms cubic-bezier(0.65, 0, 0.35, 1)
+    both;
+}
+
+@keyframes family-doctors-summary-in {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  42% {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .family-doctors-icon {
@@ -9358,7 +9386,9 @@ footer {
   .family-doctor-panel,
   .family-doctor-panel-copy,
   .family-doctor-panel-shade,
+  .family-doctors-summary-content,
   .family-doctors-profile-link {
+    animation: none;
     transition: none;
   }
 }
