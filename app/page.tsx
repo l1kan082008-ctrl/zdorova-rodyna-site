@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listPopularBookingServices } from "./api/bookings/bookingStore";
 import { listPublicPriceItems } from "./api/prices/priceStore";
+import { GlowPriceCard } from "./components/GlowPriceCard";
 import { PromoSlider } from "./components/PromoSlider";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome";
 import { catalogItems, type PriceItem } from "./prices/priceData";
@@ -495,8 +496,11 @@ export default async function Home() {
           </p>
         </div>
         <div className="pricing-grid">
-          {priceDirections.map((item) => (
-            <article className="price-card" key={item.title}>
+          {priceDirections.map((item, index) => (
+            <GlowPriceCard
+              key={item.title}
+              tone={index % 2 === 0 ? "blue" : "orange"}
+            >
               <span className="price-label">Популярне</span>
               <h3>{item.title}</h3>
               <strong>{item.text}</strong>
@@ -507,7 +511,7 @@ export default async function Home() {
               >
                 Уточнити вартість <span>→</span>
               </Link>
-            </article>
+            </GlowPriceCard>
           ))}
         </div>
       </section>
