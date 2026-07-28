@@ -753,7 +753,7 @@ footer {
 .services-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
+  gap: 14px;
 }
 
 .service-card {
@@ -761,26 +761,25 @@ footer {
   isolation: isolate;
   display: flex;
   align-items: flex-end;
-  min-height: 214px;
-  padding: 22px;
+  min-height: 176px;
+  padding: 18px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.42);
-  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 18px;
   background-color: #11797a;
-  background-position: center 40%;
+  background-position: center;
+  background-repeat: no-repeat;
   background-size: cover;
-  background-blend-mode: lighten;
   color: #fff;
   text-align: left;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 14px 30px rgba(17, 121, 122, 0.2);
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 10px 24px rgba(17, 121, 122, 0.17);
   cursor: pointer;
   transition:
     transform 180ms ease,
     border-color 180ms ease,
-    box-shadow 180ms ease,
-    background-size 320ms ease;
+    box-shadow 180ms ease;
 }
 
 .service-card::before {
@@ -790,9 +789,9 @@ footer {
   background:
     linear-gradient(
       180deg,
-      transparent 42%,
-      rgba(7, 89, 91, 0.08) 58%,
-      rgba(6, 78, 80, 0.5) 100%
+      transparent 34%,
+      rgba(8, 98, 99, 0.08) 48%,
+      rgba(6, 76, 78, 0.66) 100%
     );
   content: "";
   pointer-events: none;
@@ -809,45 +808,44 @@ footer {
 }
 
 .service-card--ct {
-  background-image: url("/service-cards/ct.jpg");
+  background-image: url("/service-cards/ct-v2.jpg");
 }
 
 .service-card--mri {
-  background-image: url("/service-cards/mri.jpg");
+  background-image: url("/service-cards/mri-v2.jpg");
 }
 
 .service-card--ultrasound {
-  background-image: url("/service-cards/ultrasound.jpg");
+  background-image: url("/service-cards/ultrasound-v2.jpg");
 }
 
 .service-card--lab {
-  background-image: url("/service-cards/lab.jpg");
+  background-image: url("/service-cards/lab-v2.jpg");
 }
 
 .service-card--consultation {
-  background-image: url("/service-cards/consultation.jpg");
+  background-image: url("/service-cards/consultation-v2.jpg");
 }
 
 .service-card--cardiology {
-  background-image: url("/service-cards/cardiology.jpg");
+  background-image: url("/service-cards/cardiology-v2.jpg");
 }
 
 .service-card--holter {
-  background-image: url("/service-cards/holter.jpg");
+  background-image: url("/service-cards/holter-v2.jpg");
 }
 
 .service-card--family {
-  background-image: url("/service-cards/family.jpg");
+  background-image: url("/service-cards/family-v2.jpg");
 }
 
 .service-card:hover,
 .service-card:focus-visible {
-  transform: translateY(-6px);
+  transform: translateY(-4px);
   border-color: rgba(183, 246, 241, 0.68);
-  background-size: 103%;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 20px 38px rgba(17, 121, 122, 0.3);
+    0 16px 30px rgba(17, 121, 122, 0.26);
 }
 
 .service-card:focus-visible {
@@ -1197,41 +1195,41 @@ footer {
   z-index: 1;
   display: grid;
   gap: 7px;
-  max-width: calc(100% - 48px);
+  max-width: calc(100% - 42px);
   padding-right: 4px;
 }
 
 .service-card strong {
-  max-width: 200px;
+  max-width: 190px;
   color: #fff;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.15;
   letter-spacing: -0.025em;
   text-shadow: 0 2px 18px rgba(0, 28, 33, 0.34);
 }
 
 .service-description {
-  max-width: 200px;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 12px;
-  line-height: 1.4;
+  max-width: 190px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+  line-height: 1.35;
   text-shadow: 0 2px 14px rgba(0, 28, 33, 0.38);
 }
 
 .service-arrow {
   position: absolute;
-  right: 16px;
-  bottom: 16px;
+  right: 14px;
+  bottom: 14px;
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   border: 1px solid rgba(255, 255, 255, 0.84);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.96);
   color: var(--teal);
-  font-size: 21px;
+  font-size: 18px;
   box-shadow:
     inset 0 1px 0 #fff,
     0 10px 24px rgba(1, 52, 58, 0.18);
@@ -6279,24 +6277,23 @@ footer {
   }
 
   .service-card {
-    min-height: 208px;
-    padding: 22px;
-    background-position: center 38%;
+    min-height: 168px;
+    padding: 18px;
   }
 
   .service-card strong {
-    font-size: 21px;
+    font-size: 19px;
   }
 
   .service-description {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .service-arrow {
-    right: 18px;
-    bottom: 18px;
-    width: 42px;
-    height: 42px;
+    right: 14px;
+    bottom: 14px;
+    width: 36px;
+    height: 36px;
   }
 
   .doctors-section,

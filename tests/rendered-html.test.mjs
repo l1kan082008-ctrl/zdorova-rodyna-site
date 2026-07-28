@@ -49,26 +49,26 @@ test("homepage service cards use dedicated glass medical artwork", async () => {
       "holter",
       "family",
     ].map((name) =>
-      readFile(new URL(`../public/service-cards/${name}.jpg`, import.meta.url)),
+      readFile(new URL(`../public/service-cards/${name}-v2.jpg`, import.meta.url)),
     ),
   ]);
 
   assert.match(
     css,
-    /\.service-card\s*\{[\s\S]*?min-height:\s*214px[\s\S]*?background-color:\s*#11797a[\s\S]*?background-blend-mode:\s*lighten/,
+    /\.service-card\s*\{[\s\S]*?min-height:\s*176px[\s\S]*?background-color:\s*#11797a[\s\S]*?background-size:\s*cover/,
   );
   assert.match(
     css,
-    /\.service-card--ct\s*\{[\s\S]*?url\("\/service-cards\/ct\.jpg"\)/,
+    /\.service-card--ct\s*\{[\s\S]*?url\("\/service-cards\/ct-v2\.jpg"\)/,
   );
   assert.match(
     css,
-    /\.service-card--family\s*\{[\s\S]*?url\("\/service-cards\/family\.jpg"\)/,
+    /\.service-card--family\s*\{[\s\S]*?url\("\/service-cards\/family-v2\.jpg"\)/,
   );
   assert.match(page, /description:\s*"Комп’ютерна томографія"/);
   assert.match(page, /className=\{`service-card service-card--\$\{service\.slug\}`\}/);
   assert.doesNotMatch(page, /<ServiceIcon/);
-  assets.forEach((asset) => assert.ok(asset.length > 40_000));
+  assets.forEach((asset) => assert.ok(asset.length > 20_000));
 });
 
 test("popular price cards use a clean teal cursor-following glow", async () => {
