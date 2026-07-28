@@ -16,6 +16,10 @@ test("mobile homepage keeps section copy in the viewport", async () => {
     css,
     /\.doctors-heading > div,[\s\S]*?\.pricing-heading > p\s*\{[\s\S]*?width:\s*100%/,
   );
+  assert.match(
+    css,
+    /@media \(max-width: 720px\)[\s\S]*?\.hero-art\s*\{[\s\S]*?background-position:\s*78% center/,
+  );
 });
 
 test("homepage reception uses the dedicated center photo", async () => {
