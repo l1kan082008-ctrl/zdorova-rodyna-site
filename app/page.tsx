@@ -7,14 +7,26 @@ import { SiteFooter, SiteHeader } from "./components/SiteChrome";
 import { catalogItems, type PriceItem } from "./prices/priceData";
 
 const services = [
-  { title: "КТ", icon: "ct" },
-  { title: "МРТ", icon: "mri" },
-  { title: "УЗД", icon: "ultrasound" },
-  { title: "Лабораторія", icon: "lab" },
-  { title: "Консультації лікарів", icon: "consultation" },
-  { title: "Кардіологія", icon: "cardiology" },
-  { title: "Холтер", icon: "holter" },
-  { title: "Сімейний лікар", icon: "family" },
+  { title: "КТ", slug: "ct", description: "Комп’ютерна томографія" },
+  { title: "МРТ", slug: "mri", description: "Магнітно-резонансна томографія" },
+  { title: "УЗД", slug: "ultrasound", description: "Ультразвукова діагностика" },
+  { title: "Лабораторія", slug: "lab", description: "Лабораторні дослідження" },
+  {
+    title: "Консультації лікарів",
+    slug: "consultation",
+    description: "Прийом досвідчених спеціалістів",
+  },
+  {
+    title: "Кардіологія",
+    slug: "cardiology",
+    description: "Діагностика та лікування серця",
+  },
+  { title: "Холтер", slug: "holter", description: "Моніторинг серцевого ритму 24/7" },
+  {
+    title: "Сімейний лікар",
+    slug: "family",
+    description: "Комплексна турбота про здоров’я родини",
+  },
 ];
 
 const advantages = [
@@ -267,86 +279,6 @@ function LineIcon({ type }: { type: string }) {
   );
 }
 
-function ServiceIcon({ type }: { type: string }) {
-  const icon = (() => {
-    switch (type) {
-      case "ct":
-        return (
-          <>
-            <circle cx="32" cy="25" r="18" />
-            <circle cx="32" cy="25" r="10" />
-            <path d="M7 54h50M18 48h30v6M13 44h25c5 0 9 4 9 9" />
-          </>
-        );
-      case "mri":
-        return (
-          <>
-            <path d="M14 43V24a18 18 0 0 1 36 0v19" />
-            <circle cx="32" cy="24" r="10" />
-            <path d="M7 54h50M23 46h27v8M13 44h18" />
-          </>
-        );
-      case "ultrasound":
-        return (
-          <>
-            <path d="M20 8c4-3 10-2 13 2l4 5c2 3 2 7-1 10l-6 6-15-15 5-8Z" />
-            <path d="m12 17 17 17-5 5a4 4 0 0 1-6 0L7 28a4 4 0 0 1 0-6l5-5ZM31 32c9 2 17 9 18 18" />
-            <circle cx="50" cy="52" r="4" />
-          </>
-        );
-      case "lab":
-        return (
-          <>
-            <path d="M12 8h17M15 8v35a8 8 0 0 0 16 0V8M35 8h17M38 8v35a8 8 0 0 0 16 0V8" />
-            <path d="M15 34h16M38 29h16" />
-          </>
-        );
-      case "consultation":
-        return (
-          <>
-            <circle cx="32" cy="15" r="8" />
-            <path d="M14 55v-8c0-11 8-19 18-19s18 8 18 19v8M23 31v9a9 9 0 0 0 18 0v-9" />
-            <path d="M20 55V44M44 55V44" />
-            <circle cx="41" cy="42" r="3" />
-          </>
-        );
-      case "cardiology":
-        return (
-          <>
-            <path d="M32 55S9 42 9 24c0-9 6-15 14-15 5 0 8 3 9 7 2-4 5-7 10-7 8 0 14 6 14 15 0 18-24 31-24 31Z" />
-            <path d="M13 32h11l4-9 7 18 5-9h11" />
-          </>
-        );
-      case "holter":
-        return (
-          <>
-            <rect x="10" y="8" width="44" height="40" rx="6" />
-            <path d="M16 29h8l4-8 7 17 5-9h8M32 48v8M22 56h20" />
-          </>
-        );
-      case "family":
-        return (
-          <>
-            <circle cx="32" cy="15" r="8" />
-            <circle cx="13" cy="25" r="6" />
-            <circle cx="51" cy="25" r="6" />
-            <path d="M18 55V44c0-9 6-16 14-16s14 7 14 16v11M3 55V45c0-7 4-12 10-12 4 0 7 2 9 6M61 55V45c0-7-4-12-10-12-4 0-7 2-9 6" />
-          </>
-        );
-      default:
-        return <circle cx="32" cy="32" r="18" />;
-    }
-  })();
-
-  return (
-    <span className="service-icon" aria-hidden="true">
-      <svg viewBox="0 0 64 64" focusable="false">
-        {icon}
-      </svg>
-    </span>
-  );
-}
-
 export default async function Home() {
   const priceDirections = await getPopularPriceDirections();
 
@@ -405,13 +337,15 @@ export default async function Home() {
         <div className="services-grid" id="services-grid">
           {services.map((service) => (
             <Link
-              className="service-card"
+              className={`service-card service-card--${service.slug}`}
               key={service.title}
               href={`/contacts?service=${encodeURIComponent(service.title)}#booking`}
               aria-label={`${service.title}: записатися`}
             >
-              <ServiceIcon type={service.icon} />
-              <strong>{service.title}</strong>
+              <span className="service-card-copy">
+                <strong>{service.title}</strong>
+                <span className="service-description">{service.description}</span>
+              </span>
               <span className="service-arrow" aria-hidden="true">
                 →
               </span>

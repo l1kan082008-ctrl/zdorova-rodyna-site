@@ -35,21 +35,40 @@ test("homepage reception uses the dedicated center photo", async () => {
   );
 });
 
-test("homepage service cards use layered glass styling", async () => {
-  const css = await readSource("app/globals.css");
+test("homepage service cards use dedicated glass medical artwork", async () => {
+  const [page, css, ...assets] = await Promise.all([
+    readSource("app/page.tsx"),
+    readSource("app/globals.css"),
+    ...[
+      "ct",
+      "mri",
+      "ultrasound",
+      "lab",
+      "consultation",
+      "cardiology",
+      "holter",
+      "family",
+    ].map((name) =>
+      readFile(new URL(`../public/service-cards/${name}.jpg`, import.meta.url)),
+    ),
+  ]);
 
   assert.match(
     css,
-    /\.service-card\s*\{[\s\S]*?backdrop-filter:\s*blur\(18px\)/,
+    /\.service-card\s*\{[\s\S]*?aspect-ratio:\s*4\s*\/\s*5/,
   );
   assert.match(
     css,
-    /\.service-card::after\s*\{[\s\S]*?rgba\(255, 255, 255, 0\.18\)/,
+    /\.service-card--ct\s*\{[\s\S]*?url\("\/service-cards\/ct\.jpg"\)/,
   );
   assert.match(
     css,
-    /\.service-icon\s*\{[\s\S]*?background:\s*rgba\(255, 255, 255, 0\.1\)/,
+    /\.service-card--family\s*\{[\s\S]*?url\("\/service-cards\/family\.jpg"\)/,
   );
+  assert.match(page, /description:\s*"Комп’ютерна томографія"/);
+  assert.match(page, /className=\{`service-card service-card--\$\{service\.slug\}`\}/);
+  assert.doesNotMatch(page, /<ServiceIcon/);
+  assets.forEach((asset) => assert.ok(asset.length > 40_000));
 });
 
 test("popular price cards use a clean teal cursor-following glow", async () => {
