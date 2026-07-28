@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   PRICE_CALCULATOR_CHANGED_EVENT,
@@ -69,9 +70,14 @@ export function SiteHeader({ active }: { active?: string }) {
   return (
     <header className="site-header inner-header">
       <Link className="logo" href="/" aria-label="Здорова Родина — на головну">
-        <img
-          src="/zdorova-rodyna-logo.png"
+        <Image
+          src="/zdorova-rodyna-logo-cropped.png"
           alt="Здорова Родина — медичний центр"
+          width={1800}
+          height={361}
+          sizes="(max-width: 720px) 210px, 270px"
+          priority
+          unoptimized
         />
       </Link>
 
@@ -139,7 +145,14 @@ export function SiteFooter() {
     <footer>
       <div className="footer-brand">
         <Link className="footer-mark" href="/" aria-label="Здорова Родина — на головну">
-          <img src="/zdorova-rodyna-mark.jpg" alt="" />
+          <Image
+            src="/zdorova-rodyna-mark.jpg"
+            alt=""
+            width={2500}
+            height={2500}
+            sizes="84px"
+            unoptimized
+          />
         </Link>
         <div>
           <strong>Здорова Родина</strong>

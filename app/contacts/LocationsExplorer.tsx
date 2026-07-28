@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   centerLocations,
   getDirectionsUrl,
@@ -20,14 +20,46 @@ const cities = Array.from(
   new Set(centerLocations.map((location) => location.city)),
 );
 
-function getLocationSymbol(location: CenterLocation) {
+function getLocationIconType(location: CenterLocation) {
   if (location.type.includes("Головний")) {
-    return "✚";
+    return "center";
   }
   if (location.type.includes("аналіз")) {
-    return "⌁";
+    return "laboratory";
   }
-  return "♥";
+  return "clinic";
+}
+
+function LocationIcon({ location }: { location: CenterLocation }) {
+  return (
+    <span
+      className={`branch-location-icon branch-location-icon--${getLocationIconType(location)}`}
+    />
+  );
+}
+
+function getHoursForDay(location: CenterLocation, day: number | null) {
+  if (day === null || location.hours.length === 1) {
+    return location.hours[0];
+  }
+
+  if (day === 0) {
+    return (
+      location.hours.find(
+        (line) => line.startsWith("Нд") || line.startsWith("Сб–Нд"),
+      ) ?? location.hours.at(-1)!
+    );
+  }
+
+  if (day === 6) {
+    return (
+      location.hours.find(
+        (line) => line.startsWith("Сб") || line.startsWith("Сб–Нд"),
+      ) ?? location.hours.at(-1)!
+    );
+  }
+
+  return location.hours[0];
 }
 
 function getDistanceInKilometers(
@@ -59,6 +91,9 @@ export function LocationsExplorer({
   const [photoIndex, setPhotoIndex] = useState(0);
   const [isLocating, setIsLocating] = useState(false);
   const [locationStatus, setLocationStatus] = useState("");
+  const [currentDay, setCurrentDay] = useState<number | null>(null);
+  const cityNavRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<HTMLElement>(null);
 
   const selectedLocation =
     centerLocations.find((location) => location.id === selectedLocationId) ??
@@ -73,6 +108,31 @@ export function LocationsExplorer({
   const visibleLocations = centerLocations.filter(
     (location) => location.city === selectedLocation.city,
   );
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setCurrentDay(new Date().getDay());
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const cityNavigation = cityNavRef.current;
+    const activeCity =
+      cityNavigation?.querySelector<HTMLButtonElement>(
+        '[role="tab"][aria-selected="true"]',
+      );
+
+    if (!cityNavigation || !activeCity) {
+      return;
+    }
+
+    cityNavigation.scrollTo({
+      left: Math.max(0, activeCity.offsetLeft - 16),
+      behavior: "smooth",
+    });
+  }, [selectedLocation.city]);
 
   useEffect(() => {
     if (!openLocation) {
@@ -114,6 +174,22 @@ export function LocationsExplorer({
     setPhotoIndex(0);
   };
 
+  const selectLocation = (location: CenterLocation, showMapOnMobile = false) => {
+    onSelectLocation(location.id);
+
+    if (
+      showMapOnMobile &&
+      window.matchMedia("(max-width: 820px)").matches
+    ) {
+      window.requestAnimationFrame(() => {
+        mapRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    }
+  };
+
   const findNearestLocation = () => {
     if (!navigator.geolocation) {
       setLocationStatus("Геолокація не підтримується у вашому браузері.");
@@ -138,9 +214,19 @@ export function LocationsExplorer({
             ? location
             : nearest,
         );
+        const distance = getDistanceInKilometers(
+          coords.latitude,
+          coords.longitude,
+          nearestLocation,
+        );
+        const formattedDistance = new Intl.NumberFormat("uk-UA", {
+          maximumFractionDigits: distance < 10 ? 1 : 0,
+        }).format(distance);
 
-        onSelectLocation(nearestLocation.id);
-        setLocationStatus(`Найближче відділення: ${nearestLocation.address}`);
+        selectLocation(nearestLocation, true);
+        setLocationStatus(
+          `Найближче відділення — ${formattedDistance} км: ${nearestLocation.address}`,
+        );
         setIsLocating(false);
       },
       () => {
@@ -162,41 +248,50 @@ export function LocationsExplorer({
             <h2 id="locations-title">Знайти відділення поруч</h2>
             <p>Адреси, актуальний графік і маршрут — в одному блоці</p>
           </div>
+        </div>
+
+        <div className="branch-directory-controls">
+          <div className="branch-city-nav-shell">
+            <div
+              className="branch-city-nav"
+              role="tablist"
+              aria-label="Міста"
+              ref={cityNavRef}
+            >
+              {cities.map((city) => {
+                const cityLocations = centerLocations.filter(
+                  (location) => location.city === city,
+                );
+                const isActive = selectedLocation.city === city;
+
+                return (
+                  <button
+                    className={isActive ? "is-active" : ""}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    key={city}
+                    onClick={() => selectLocation(cityLocations[0])}
+                  >
+                    {city} <span>{cityLocations.length}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <button
             className="branch-geolocation-button"
             type="button"
             onClick={findNearestLocation}
             disabled={isLocating}
           >
-            <span aria-hidden="true">⌖</span>
+            <span className="branch-geolocation-icon" aria-hidden="true" />
             {isLocating ? "Визначаємо…" : "Моє місцезнаходження"}
           </button>
         </div>
         <p className="branch-location-status" aria-live="polite">
           {locationStatus}
         </p>
-
-        <div className="branch-city-nav" role="tablist" aria-label="Міста">
-          {cities.map((city) => {
-            const cityLocations = centerLocations.filter(
-              (location) => location.city === city,
-            );
-            const isActive = selectedLocation.city === city;
-
-            return (
-              <button
-                className={isActive ? "is-active" : ""}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                key={city}
-                onClick={() => onSelectLocation(cityLocations[0].id)}
-              >
-                {city} <span>{cityLocations.length}</span>
-              </button>
-            );
-          })}
-        </div>
 
         <div className="branch-navigator">
           <div className="branch-navigation-list">
@@ -209,10 +304,10 @@ export function LocationsExplorer({
                   type="button"
                   aria-pressed={isActive}
                   key={location.id}
-                  onClick={() => onSelectLocation(location.id)}
+                  onClick={() => selectLocation(location, true)}
                 >
                   <span className="branch-navigation-icon" aria-hidden="true">
-                    {getLocationSymbol(location)}
+                    <LocationIcon location={location} />
                   </span>
                   <span className="branch-navigation-copy">
                     <strong>{location.address}</strong>
@@ -228,7 +323,11 @@ export function LocationsExplorer({
             })}
           </div>
 
-          <aside className="branch-navigator-map" aria-live="polite">
+          <aside
+            className="branch-navigator-map"
+            aria-live="polite"
+            ref={mapRef}
+          >
             <div className="branch-navigator-map-frame">
               <iframe
                 key={selectedLocation.id}
@@ -242,7 +341,20 @@ export function LocationsExplorer({
               <div className="branch-navigator-map-copy">
                 <span>{selectedLocation.type}</span>
                 <h3>{selectedLocation.address}</h3>
-                <p>{selectedLocation.hours.join(" · ")}</p>
+                <div className="branch-today-hours">
+                  <strong>Сьогодні</strong>
+                  <span>{getHoursForDay(selectedLocation, currentDay)}</span>
+                </div>
+                {selectedLocation.hours.length > 1 ? (
+                  <details className="branch-full-hours">
+                    <summary>Увесь графік</summary>
+                    <div>
+                      {selectedLocation.hours.map((line) => (
+                        <span key={line}>{line}</span>
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
               </div>
               <div className="branch-navigator-actions">
                 <a

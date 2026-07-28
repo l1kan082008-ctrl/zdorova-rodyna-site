@@ -172,23 +172,26 @@ export function PriceCatalog({
 
   useEffect(() => {
     const availableIds = new Set(initialItems.map((item) => item.id));
+    const timer = window.setTimeout(() => {
+      try {
+        const storedIds = readPriceCalculatorSelection();
 
-    try {
-      const storedIds = readPriceCalculatorSelection();
-
-      if (Array.isArray(storedIds)) {
-        setSelectedIds(
-          storedIds.filter(
-            (id): id is string =>
-              typeof id === "string" && availableIds.has(id),
-          ),
-        );
+        if (Array.isArray(storedIds)) {
+          setSelectedIds(
+            storedIds.filter(
+              (id): id is string =>
+                typeof id === "string" && availableIds.has(id),
+            ),
+          );
+        }
+      } catch {
+        window.localStorage.removeItem(PRICE_CALCULATOR_STORAGE_KEY);
+      } finally {
+        setSelectionHydrated(true);
       }
-    } catch {
-      window.localStorage.removeItem(PRICE_CALCULATOR_STORAGE_KEY);
-    } finally {
-      setSelectionHydrated(true);
-    }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [initialItems]);
 
   useEffect(() => {
@@ -241,7 +244,14 @@ export function PriceCatalog({
       selectedIds.length &&
       window.location.hash === "#calculator"
     ) {
-      setCalculatorOpen(true);
+      const frame = window.requestAnimationFrame(() => {
+        setCalculatorOpen(true);
+      });
+
+      return () => {
+        window.removeEventListener(PRICE_CALCULATOR_OPEN_EVENT, openCalculator);
+        window.cancelAnimationFrame(frame);
+      };
     }
 
     return () =>

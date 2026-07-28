@@ -42,12 +42,6 @@ function PriceEditor({
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    setDraft(item);
-    setAliases((item.aliases ?? []).join(", "));
-    setStatus("");
-  }, [item]);
-
   const save = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaving(true);

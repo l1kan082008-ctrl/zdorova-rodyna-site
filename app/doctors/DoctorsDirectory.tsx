@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  defaultDoctors,
   doctorPatientGroupOptions,
   getDoctorAvailability,
   getDoctorInitials,
@@ -30,31 +29,15 @@ const formatDoctorBranch = (branch: string) => {
   return `Відділення: ${value}`;
 };
 
-export function DoctorsDirectory() {
-  const [doctors, setDoctors] = useState<Doctor[]>(defaultDoctors);
+export function DoctorsDirectory({
+  initialDoctors,
+}: {
+  initialDoctors: Doctor[];
+}) {
+  const doctors = initialDoctors;
   const [query, setQuery] = useState("");
   const [specialty, setSpecialty] = useState("all");
   const [showAll, setShowAll] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-
-    fetch("/api/doctors")
-      .then((response) => {
-        if (!response.ok) throw new Error("Doctors API unavailable");
-        return response.json() as Promise<{ doctors: Doctor[] }>;
-      })
-      .then((payload) => {
-        if (active && payload.doctors.length) setDoctors(payload.doctors);
-      })
-      .catch(() => {
-        // The verified static list remains visible if storage is unavailable.
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const specialties = useMemo(
     () =>

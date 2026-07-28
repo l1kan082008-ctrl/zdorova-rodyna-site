@@ -126,12 +126,11 @@ footer {
 }
 
 .logo img {
-  position: absolute;
-  top: -34px;
-  left: -30px;
-  width: 332px;
-  max-width: none;
-  height: auto;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: left center;
   mix-blend-mode: multiply;
 }
 
@@ -358,7 +357,7 @@ footer {
   overflow: hidden;
   border-radius: 52% 0 0 52%;
   background-color: #eef8f7;
-  background-image: url("/hero-family-v2.png");
+  background-image: url("/hero-family-v2.webp");
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
@@ -658,19 +657,32 @@ footer {
 }
 
 .promo-pagination button {
-  width: 8px;
-  height: 8px;
+  position: relative;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.promo-pagination button::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.35);
-  cursor: pointer;
+  content: "";
+  transform: translate(-50%, -50%);
   transition:
     width 180ms ease,
     background 180ms ease;
 }
 
-.promo-pagination button.is-active {
+.promo-pagination button.is-active::before {
   width: 28px;
   background: #fff;
 }
@@ -1324,10 +1336,10 @@ footer {
 .reception-photo {
   min-height: 405px;
   border-radius: 25px;
-  background-image: url("/design-reference.png");
+  background-image: url("/center-reception.webp");
   background-repeat: no-repeat;
-  background-position: -408px -1257px;
-  background-size: 1239px 1859px;
+  background-position: center;
+  background-size: cover;
 }
 
 .quick-strip {
@@ -1586,8 +1598,8 @@ footer {
 .footer-social-link {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border: 1px solid #c6d9d7;
   border-radius: 50%;
   background: #fff;
@@ -3298,7 +3310,7 @@ footer {
 
 .about-route-photo {
   min-height: 460px;
-  background-image: url("/center-reception.png");
+  background-image: url("/center-reception.webp");
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
@@ -5290,9 +5302,7 @@ footer {
   }
 
   .logo img {
-    top: -27px;
-    left: -23px;
-    width: 258px;
+    width: 100%;
   }
 
   .main-nav {
@@ -5328,7 +5338,9 @@ footer {
   }
 
   .page-hero h1 {
-    font-size: clamp(39px, 12vw, 56px);
+    max-width: 100%;
+    font-size: clamp(36px, 10.5vw, 48px);
+    overflow-wrap: anywhere;
   }
 
   .page-hero p {
@@ -6054,13 +6066,18 @@ footer {
 
   .doctors-heading,
   .pricing-heading {
+    flex-direction: column;
     align-items: flex-start;
     gap: 15px;
   }
 
+  .doctors-heading > div,
+  .pricing-heading > div,
   .doctors-heading > p,
   .pricing-heading > p {
+    width: 100%;
     max-width: none;
+    min-width: 0;
     text-align: left;
   }
 
@@ -6085,8 +6102,8 @@ footer {
 
   .reception-photo {
     min-height: 315px;
-    background-position: 57% 68.3%;
-    background-size: 1024px 1536px;
+    background-position: center;
+    background-size: cover;
   }
 
   .quick-strip {
@@ -6296,7 +6313,7 @@ footer {
   grid-template-columns: minmax(0, 1fr) minmax(430px, 0.78fr);
   gap: 64px;
   align-items: end;
-  padding-bottom: 66px;
+  padding-bottom: 38px;
 }
 
 .contacts-page-hero h1 {
@@ -7609,9 +7626,7 @@ footer {
   }
 
   .site-header .logo img {
-    top: -22px;
-    left: -18px;
-    width: 218px;
+    width: 100%;
   }
 }
 
@@ -7666,12 +7681,18 @@ footer {
   display: none;
 }
 
+.branch-city-nav-shell {
+  position: relative;
+}
+
 .branch-city-nav {
   display: flex;
   gap: 28px;
   margin: -2px 0 28px;
   overflow-x: auto;
   border-bottom: 1px solid #cfdedc;
+  scroll-padding-inline: 16px;
+  scroll-snap-type: x proximity;
   scrollbar-width: none;
 }
 
@@ -7682,6 +7703,7 @@ footer {
 .branch-city-nav button {
   position: relative;
   flex: 0 0 auto;
+  scroll-snap-align: start;
   min-height: 48px;
   padding: 0 0 12px;
   border: 0;
@@ -8099,20 +8121,37 @@ footer {
 
 /* Contacts — branch navigator */
 .branch-directory-heading {
-  display: flex;
-  max-width: none;
-  align-items: end;
-  justify-content: space-between;
-  gap: 32px;
-  margin-bottom: 16px;
+  display: block;
+  max-width: 720px;
+  margin-bottom: 18px;
 }
 
 .branch-directory-heading > div {
-  flex: 1 1 auto;
+  display: grid;
+  gap: 8px;
 }
 
 .branch-directory-heading h2 {
-  max-width: none;
+  max-width: 680px;
+  font-size: clamp(30px, 2.7vw, 36px);
+}
+
+.branch-directory-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 28px;
+  align-items: end;
+  margin-bottom: 28px;
+  border-bottom: 1px solid #cfdedc;
+}
+
+.branch-directory-controls .branch-city-nav-shell {
+  min-width: 0;
+}
+
+.branch-directory-controls .branch-city-nav {
+  margin: 0;
+  border-bottom: 0;
 }
 
 .branch-geolocation-button {
@@ -8121,16 +8160,16 @@ footer {
   gap: 9px;
   align-items: center;
   justify-content: center;
-  min-height: 46px;
-  margin-bottom: 2px;
-  padding: 0 20px;
+  min-height: 40px;
+  margin-bottom: 7px;
+  padding: 0 16px;
   border: 1px solid var(--orange);
   border-radius: 999px;
   color: #fff;
   background: var(--orange);
-  box-shadow: 0 12px 28px rgba(255, 123, 0, 0.18);
+  box-shadow: 0 9px 22px rgba(255, 123, 0, 0.14);
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 750;
   cursor: pointer;
   transition:
@@ -8139,14 +8178,42 @@ footer {
 }
 
 .branch-geolocation-button span {
-  font-size: 18px;
-  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.branch-geolocation-icon {
+  position: relative;
+  width: 17px;
+  height: 17px;
+  border: 1.8px solid currentColor;
+  border-radius: 50%;
+}
+
+.branch-geolocation-icon::before,
+.branch-geolocation-icon::after {
+  position: absolute;
+  content: "";
+}
+
+.branch-geolocation-icon::before {
+  inset: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.branch-geolocation-icon::after {
+  inset: -4px;
+  background:
+    linear-gradient(currentColor 0 0) center top / 1.5px 4px no-repeat,
+    linear-gradient(currentColor 0 0) center bottom / 1.5px 4px no-repeat,
+    linear-gradient(currentColor 0 0) left center / 4px 1.5px no-repeat,
+    linear-gradient(currentColor 0 0) right center / 4px 1.5px no-repeat;
 }
 
 .branch-geolocation-button:hover,
 .branch-geolocation-button:focus-visible {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 34px rgba(255, 123, 0, 0.24);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 27px rgba(255, 123, 0, 0.2);
 }
 
 .branch-geolocation-button:disabled {
@@ -8156,10 +8223,19 @@ footer {
 }
 
 .branch-location-status {
+  width: fit-content;
+  max-width: 100%;
   margin: 0 0 15px;
+  padding: 8px 0 8px 12px;
+  border-left: 3px solid var(--orange);
   color: var(--teal);
   font-size: 13px;
   font-weight: 700;
+  line-height: 1.45;
+}
+
+.branch-location-status:not(:empty) {
+  margin-top: -16px;
 }
 
 .branch-location-status:empty {
@@ -8233,9 +8309,76 @@ footer {
   border-radius: 50%;
   color: #fff;
   background: var(--teal);
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 1;
+}
+
+.branch-location-icon {
+  position: relative;
+  display: block;
+  width: 22px;
+  height: 22px;
+  color: currentColor;
+}
+
+.branch-location-icon--center {
+  background:
+    linear-gradient(currentColor 0 0) center / 3px 18px no-repeat,
+    linear-gradient(currentColor 0 0) center / 18px 3px no-repeat;
+  border-radius: 2px;
+}
+
+.branch-location-icon--laboratory {
+  transform: rotate(-10deg);
+}
+
+.branch-location-icon--laboratory::before,
+.branch-location-icon--laboratory::after {
+  position: absolute;
+  content: "";
+}
+
+.branch-location-icon--laboratory::before {
+  top: 5px;
+  left: 5px;
+  width: 12px;
+  height: 15px;
+  border: 2px solid currentColor;
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
+}
+
+.branch-location-icon--laboratory::after {
+  top: 3px;
+  left: 4px;
+  width: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.branch-location-icon--clinic::before,
+.branch-location-icon--clinic::after {
+  position: absolute;
+  content: "";
+}
+
+.branch-location-icon--clinic::before {
+  inset: 2px 3px 1px;
+  border: 2px solid currentColor;
+  border-radius: 3px 3px 1px 1px;
+}
+
+.branch-location-icon--clinic::after {
+  top: 6px;
+  left: 7px;
+  width: 3px;
+  height: 3px;
+  border-radius: 1px;
+  background: currentColor;
+  box-shadow:
+    6px 0 currentColor,
+    0 6px currentColor,
+    6px 6px currentColor,
+    3px 11px 0 1px currentColor;
 }
 
 .branch-navigation-item:not(.is-active) .branch-navigation-icon {
@@ -8338,11 +8481,55 @@ footer {
   letter-spacing: -0.025em;
 }
 
-.branch-navigator-map-copy p {
-  margin: 0;
-  color: #6f8184;
+.branch-today-hours {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  align-items: baseline;
+  margin-top: 3px;
+}
+
+.branch-today-hours strong {
+  color: var(--teal);
   font-size: 11px;
-  line-height: 1.5;
+}
+
+.branch-today-hours span {
+  color: #536c70;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.branch-full-hours {
+  position: relative;
+  width: fit-content;
+  margin-top: 6px;
+  color: #6f8184;
+  font-size: 10px;
+}
+
+.branch-full-hours summary {
+  color: var(--teal);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.branch-full-hours div {
+  position: absolute;
+  z-index: 3;
+  bottom: calc(100% + 7px);
+  left: 0;
+  display: grid;
+  min-width: 185px;
+  gap: 5px;
+  padding: 11px 13px;
+  border: 1px solid #d5e5e2;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(16, 65, 69, 0.14);
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .branch-navigator-actions {
@@ -8417,18 +8604,54 @@ footer {
   .branch-navigator-map-frame iframe {
     min-height: 440px;
   }
+
+  .branch-navigator-map {
+    scroll-margin-top: 84px;
+  }
 }
 
 @media (max-width: 720px) {
   .branch-directory-heading {
     display: grid;
-    gap: 18px;
     margin-bottom: 12px;
   }
 
+  .branch-directory-controls {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+    border-bottom: 0;
+  }
+
   .branch-geolocation-button {
+    order: -1;
     width: 100%;
     margin: 0;
+  }
+
+  .branch-directory-controls .branch-city-nav-shell {
+    border-bottom: 1px solid #cfdedc;
+  }
+
+  .branch-city-nav-shell::after {
+    position: absolute;
+    z-index: 2;
+    top: -2px;
+    right: -1px;
+    width: 40px;
+    height: 48px;
+    background: linear-gradient(
+      90deg,
+      rgba(250, 252, 252, 0),
+      rgba(250, 252, 252, 0.98) 74%
+    );
+    pointer-events: none;
+    content: "";
+  }
+
+  .branch-city-nav {
+    gap: 22px;
+    padding-right: 44px;
   }
 
   .branch-navigator {
@@ -8469,6 +8692,17 @@ footer {
     left: 12px;
     padding: 16px;
     border-radius: 15px;
+  }
+
+  .branch-today-hours {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 8px;
+  }
+
+  .branch-today-hours strong,
+  .branch-today-hours span {
+    font-size: 11px;
   }
 
   .branch-navigator-actions {

@@ -1,6 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   getDoctorAvailability,
@@ -10,56 +7,12 @@ import {
   type Doctor,
 } from "../doctorData";
 
-type DoctorPayload = {
-  doctor?: Doctor;
-  error?: string;
-};
-
-export function DoctorProfileDetails({ doctorId }: { doctorId: string }) {
-  const [doctor, setDoctor] = useState<Doctor | null>(null);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-
-    fetch(`/api/doctors?id=${encodeURIComponent(doctorId)}`)
-      .then(async (response) => {
-        const payload = (await response.json()) as DoctorPayload;
-        if (!response.ok || !payload.doctor) {
-          throw new Error(payload.error || "Лікаря не знайдено");
-        }
-        if (active) setDoctor(payload.doctor);
-      })
-      .catch((reason) => {
-        if (active) {
-          setError(
-            reason instanceof Error ? reason.message : "Сталася помилка",
-          );
-        }
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [doctorId]);
-
-  if (loading) {
-    return (
-      <section className="doctor-detail-state" aria-live="polite">
-        Завантажуємо профіль лікаря…
-      </section>
-    );
-  }
-
-  if (!doctor || error) {
+export function DoctorProfileDetails({ doctor }: { doctor: Doctor | null }) {
+  if (!doctor) {
     return (
       <section className="doctor-detail-state">
         <span className="section-kicker">Лікарі</span>
-        <h1>{error || "Лікаря не знайдено"}</h1>
+        <h1>Лікаря не знайдено</h1>
         <p>Поверніться до каталогу та оберіть іншого спеціаліста.</p>
         <Link className="outline-button" href="/doctors">
           ← До всіх лікарів

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 const slides = [
@@ -121,7 +122,14 @@ export function PromoSlider() {
                 <span className="promo-orbit promo-orbit--small" />
                 <span className="promo-number">0{index + 1}</span>
                 <span className="promo-mark">
-                  <img src="/zdorova-rodyna-mark.jpg" alt="" />
+                  <Image
+                    src="/zdorova-rodyna-mark.jpg"
+                    alt=""
+                    width={2500}
+                    height={2500}
+                    sizes="110px"
+                    unoptimized
+                  />
                 </span>
               </div>
             </article>
