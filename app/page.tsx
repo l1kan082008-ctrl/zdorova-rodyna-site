@@ -2,7 +2,7 @@ import Link from "next/link";
 import { listPopularBookingServices } from "./api/bookings/bookingStore";
 import { listDoctors } from "./api/doctors/doctorStore";
 import { listPublicPriceItems } from "./api/prices/priceStore";
-import { FamilyDoctorsShowcase } from "./components/FamilyDoctorsShowcase";
+import { DoctorsShowcase } from "./components/DoctorsShowcase";
 import { GlowPriceCard } from "./components/GlowPriceCard";
 import { PromoSlider } from "./components/PromoSlider";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome";
@@ -78,14 +78,14 @@ const quickItems = [
   },
 ];
 
-const familyDoctorOrder = [
+const featuredDoctorOrder = [
   "voloshko-tetiana",
   "iziumska-olena",
   "ishchuk-nadiia",
   "pochtar-kateryna",
 ];
 
-const familyDoctorFallbackPhotos: Record<string, string> = {
+const doctorFallbackPhotos: Record<string, string> = {
   "voloshko-tetiana": "/doctor-showcase/voloshko-tetiana.jpg",
   "iziumska-olena": "/doctor-showcase/iziumska-olena.jpg",
   "ishchuk-nadiia": "/doctor-showcase/ishchuk-nadiia-optimized.jpg",
@@ -283,21 +283,22 @@ export default async function Home() {
     getPopularPriceDirections(),
     listDoctors().catch(() => defaultDoctors),
   ]);
-  const familyDoctors = doctors
-    .filter((doctor) =>
-      doctor.specialty.toLocaleLowerCase("uk-UA").includes("сімей"),
-    )
+  const showcaseDoctors = doctors
     .sort((first, second) => {
-      const firstIndex = familyDoctorOrder.indexOf(first.id);
-      const secondIndex = familyDoctorOrder.indexOf(second.id);
-      return (
+      const firstIndex = featuredDoctorOrder.indexOf(first.id);
+      const secondIndex = featuredDoctorOrder.indexOf(second.id);
+      const featuredDifference =
         (firstIndex === -1 ? Number.MAX_SAFE_INTEGER : firstIndex) -
-        (secondIndex === -1 ? Number.MAX_SAFE_INTEGER : secondIndex)
+        (secondIndex === -1 ? Number.MAX_SAFE_INTEGER : secondIndex);
+
+      return (
+        featuredDifference ||
+        first.name.localeCompare(second.name, "uk-UA", { sensitivity: "base" })
       );
     })
     .map((doctor) => ({
       ...doctor,
-      photoUrl: doctor.photoUrl || familyDoctorFallbackPhotos[doctor.id] || "",
+      photoUrl: doctor.photoUrl || doctorFallbackPhotos[doctor.id] || "",
     }));
 
   return (
@@ -376,14 +377,14 @@ export default async function Home() {
         <div className="section-heading doctors-heading">
           <div>
             <span className="section-kicker">Лікарі</span>
-            <h2>Сімейні лікарі</h2>
+            <h2>Наші лікарі</h2>
           </div>
           <p>
-            Наведіть на фотографію, щоб виділити лікаря. Натисніть, щоб відкрити
-            його картку та перейти до профілю.
+            Наведіть на фотографію, щоб виділити лікаря. Натисніть, щоб розкрити
+            картку, або скористайтеся стрілками для перегляду всієї команди.
           </p>
         </div>
-        <FamilyDoctorsShowcase doctors={familyDoctors} />
+        <DoctorsShowcase doctors={showcaseDoctors} />
       </section>
 
       <section className="about-section" id="about">

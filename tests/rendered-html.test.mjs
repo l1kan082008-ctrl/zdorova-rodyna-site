@@ -115,10 +115,10 @@ test("doctor pages receive their data during server rendering", async () => {
   assert.doesNotMatch(profileDetails, /fetch\(`/);
 });
 
-test("homepage family doctors expand on click and link to profiles", async () => {
+test("homepage all-doctor showcase expands on click and links to profiles", async () => {
   const [page, showcase, css, ...photos] = await Promise.all([
     readSource("app/page.tsx"),
-    readSource("app/components/FamilyDoctorsShowcase.tsx"),
+    readSource("app/components/DoctorsShowcase.tsx"),
     readSource("app/globals.css"),
     ...[
       "voloshko-tetiana.jpg",
@@ -131,34 +131,30 @@ test("homepage family doctors expand on click and link to profiles", async () =>
   ]);
 
   assert.match(page, /await Promise\.all\(\[[\s\S]*?listDoctors\(\)/);
-  assert.match(page, /specialty\.toLocaleLowerCase\("uk-UA"\)\.includes\("сімей"\)/);
-  assert.match(page, /<FamilyDoctorsShowcase doctors=\{familyDoctors\} \/>/);
+  assert.doesNotMatch(page, /\.filter\(\(doctor\)[\s\S]*?specialty/);
+  assert.match(page, /<DoctorsShowcase doctors=\{showcaseDoctors\} \/>/);
   assert.match(showcase, /data-doctor-id=\{doctor\.id\}/);
   assert.match(showcase, /type="button"/);
-  assert.match(showcase, /onClick=\{\(\) => setActiveId\(doctor\.id\)\}/);
+  assert.match(showcase, /onClick=\{\(\) => selectDoctor\(doctor\.id\)\}/);
   assert.match(showcase, /aria-expanded=\{isActive\}/);
+  assert.match(showcase, /scrollIntoView\(\{/);
+  assert.match(showcase, /disabled=\{activeIndex === 0\}/);
+  assert.match(showcase, /disabled=\{activeIndex === doctors\.length - 1\}/);
   assert.doesNotMatch(showcase, /onPointerMove|onMouseEnter|setTimeout/);
-  assert.doesNotMatch(showcase, /family-doctor-panel-copy/);
-  assert.match(showcase, /href=\{`\/doctors\/\$\{activeDoctor\.id\}`\}/);
+  assert.match(showcase, /className="doctor-showcase-copy"/);
+  assert.match(showcase, /href=\{`\/doctors\/\$\{doctor\.id\}`\}/);
+  assert.doesNotMatch(showcase, /family-doctors-summary/);
   assert.match(
     css,
-    /\.family-doctors-showcase\s*\{[\s\S]*?grid-template-rows:\s*minmax\(0, 1fr\)[\s\S]*?height:\s*450px/,
+    /\.doctor-showcase-panel\.is-active\s*\{[\s\S]*?flex-basis:\s*clamp\(340px, 38vw, 520px\)/,
   );
   assert.match(
     css,
-    /\.family-doctor-panel\.is-active\s*\{[\s\S]*?flex:\s*1 1 350px/,
-  );
-  assert.match(
-    css,
-    /\.family-doctor-panel:not\(\.is-active\):hover\s*\{[\s\S]*?transform:\s*translateY\(-2px\)/,
+    /\.doctor-showcase-panel:not\(\.is-active\):hover\s*\{[\s\S]*?transform:\s*translateY\(-3px\) scaleX\(1\.04\)/,
   );
   assert.match(
     css,
     /flex-basis 500ms cubic-bezier\(0\.65, 0, 0\.35, 1\)/,
-  );
-  assert.match(
-    css,
-    /\.family-doctors-summary-content\s*\{[\s\S]*?family-doctors-summary-in 500ms cubic-bezier\(0\.65, 0, 0\.35, 1\)/,
   );
   photos.forEach((photo) => assert.ok(photo.length > 50_000));
 });
