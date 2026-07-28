@@ -115,7 +115,7 @@ test("doctor pages receive their data during server rendering", async () => {
   assert.doesNotMatch(profileDetails, /fetch\(`/);
 });
 
-test("homepage family doctors expand on hover and link to profiles", async () => {
+test("homepage family doctors expand on click and link to profiles", async () => {
   const [page, showcase, css, ...photos] = await Promise.all([
     readSource("app/page.tsx"),
     readSource("app/components/FamilyDoctorsShowcase.tsx"),
@@ -133,18 +133,24 @@ test("homepage family doctors expand on hover and link to profiles", async () =>
   assert.match(page, /await Promise\.all\(\[[\s\S]*?listDoctors\(\)/);
   assert.match(page, /specialty\.toLocaleLowerCase\("uk-UA"\)\.includes\("сімей"\)/);
   assert.match(page, /<FamilyDoctorsShowcase doctors=\{familyDoctors\} \/>/);
-  assert.match(showcase, /onPointerMove=\{previewDoctorFromPointer\}/);
   assert.match(showcase, /data-doctor-id=\{doctor\.id\}/);
-  assert.match(showcase, /event\.pointerType !== "mouse"/);
+  assert.match(showcase, /type="button"/);
+  assert.match(showcase, /onClick=\{\(\) => setActiveId\(doctor\.id\)\}/);
+  assert.match(showcase, /aria-expanded=\{isActive\}/);
+  assert.doesNotMatch(showcase, /onPointerMove|onMouseEnter|setTimeout/);
+  assert.doesNotMatch(showcase, /family-doctor-panel-copy/);
+  assert.match(showcase, /href=\{`\/doctors\/\$\{activeDoctor\.id\}`\}/);
   assert.match(
-    showcase,
-    /onFocus=\{\(\) => previewDoctor\(doctor\.id, true\)\}/,
+    css,
+    /\.family-doctors-showcase\s*\{[\s\S]*?grid-template-rows:\s*minmax\(0, 1fr\)[\s\S]*?height:\s*450px/,
   );
-  assert.match(showcase, /setTimeout\(\(\) => \{[\s\S]*?setActiveId\(doctorId\)/);
-  assert.match(showcase, /href=\{`\/doctors\/\$\{doctor\.id\}`\}/);
   assert.match(
     css,
     /\.family-doctor-panel\.is-active\s*\{[\s\S]*?flex:\s*1 1 350px/,
+  );
+  assert.match(
+    css,
+    /\.family-doctor-panel:not\(\.is-active\):hover\s*\{[\s\S]*?transform:\s*translateY\(-2px\)/,
   );
   assert.match(
     css,

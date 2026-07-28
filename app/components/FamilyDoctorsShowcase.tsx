@@ -1,14 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  type PointerEvent as ReactPointerEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useMemo, useState } from "react";
 import type { Doctor } from "../doctors/doctorData";
 import { getDoctorInitials } from "../doctors/doctorData";
 
@@ -37,61 +30,10 @@ export function FamilyDoctorsShowcase({
   doctors,
 }: FamilyDoctorsShowcaseProps) {
   const [activeId, setActiveId] = useState(doctors[0]?.id ?? "");
-  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingId = useRef<string | null>(null);
   const activeDoctor = useMemo(
     () => doctors.find((doctor) => doctor.id === activeId) ?? doctors[0],
     [activeId, doctors],
   );
-  const clearHoverTimer = useCallback(() => {
-    if (!hoverTimer.current) return;
-    clearTimeout(hoverTimer.current);
-    hoverTimer.current = null;
-    pendingId.current = null;
-  }, []);
-  const previewDoctor = useCallback(
-    (doctorId: string, immediate = false) => {
-      clearHoverTimer();
-      if (doctorId === activeId) return;
-
-      if (immediate) {
-        setActiveId(doctorId);
-        return;
-      }
-
-      pendingId.current = doctorId;
-      hoverTimer.current = setTimeout(() => {
-        setActiveId(doctorId);
-        hoverTimer.current = null;
-        pendingId.current = null;
-      }, 70);
-    },
-    [activeId, clearHoverTimer],
-  );
-  const previewDoctorFromPointer = useCallback(
-    (event: ReactPointerEvent<HTMLDivElement>) => {
-      if (event.pointerType !== "mouse") return;
-
-      const target = (event.target as HTMLElement).closest<HTMLElement>(
-        "[data-doctor-id]",
-      );
-      const doctorId = target?.dataset.doctorId;
-
-      if (
-        !doctorId ||
-        !event.currentTarget.contains(target) ||
-        doctorId === activeId ||
-        doctorId === pendingId.current
-      ) {
-        return;
-      }
-
-      previewDoctor(doctorId);
-    },
-    [activeId, previewDoctor],
-  );
-
-  useEffect(() => clearHoverTimer, [clearHoverTimer]);
 
   if (!activeDoctor) return null;
 
@@ -100,25 +42,22 @@ export function FamilyDoctorsShowcase({
       <div
         className="family-doctors-gallery"
         aria-label="Сімейні лікарі медичного центру"
-        onPointerLeave={clearHoverTimer}
-        onPointerMove={previewDoctorFromPointer}
       >
         {doctors.map((doctor) => {
           const isActive = doctor.id === activeDoctor.id;
 
           return (
-            <Link
+            <button
               className={`family-doctor-panel${isActive ? " is-active" : ""}${
                 doctor.photoUrl ? "" : " has-placeholder"
               }`}
               data-doctor-id={doctor.id}
-              href={`/doctors/${doctor.id}`}
               key={doctor.id}
-              onBlur={clearHoverTimer}
-              onFocus={() => previewDoctor(doctor.id, true)}
-              onPointerDown={() => previewDoctor(doctor.id, true)}
-              aria-label={`Переглянути профіль лікаря ${doctor.name}`}
-              aria-current={isActive ? "true" : undefined}
+              type="button"
+              onClick={() => setActiveId(doctor.id)}
+              aria-controls="family-doctors-summary"
+              aria-expanded={isActive}
+              aria-label={`Показати інформацію про лікаря ${doctor.name}`}
               style={
                 doctor.photoUrl
                   ? { backgroundImage: `url("${doctor.photoUrl}")` }
@@ -130,18 +69,16 @@ export function FamilyDoctorsShowcase({
                   {getDoctorInitials(doctor.name)}
                 </span>
               ) : null}
-              <span className="family-doctor-panel-shade" aria-hidden="true" />
-              <span className="family-doctor-panel-copy">
-                <strong>{doctor.name}</strong>
-                <span>{formatSpecialty(doctor.specialty)}</span>
-                <i aria-hidden="true">→</i>
-              </span>
-            </Link>
+            </button>
           );
         })}
       </div>
 
-      <div className="family-doctors-summary" aria-live="polite">
+      <div
+        className="family-doctors-summary"
+        id="family-doctors-summary"
+        aria-live="polite"
+      >
         <div
           className="family-doctors-summary-content"
           key={activeDoctor.id}
