@@ -35,6 +35,23 @@ test("homepage reception uses the dedicated center photo", async () => {
   );
 });
 
+test("homepage service cards use layered glass styling", async () => {
+  const css = await readSource("app/globals.css");
+
+  assert.match(
+    css,
+    /\.service-card\s*\{[\s\S]*?backdrop-filter:\s*blur\(18px\)/,
+  );
+  assert.match(
+    css,
+    /\.service-card::after\s*\{[\s\S]*?rgba\(255, 255, 255, 0\.18\)/,
+  );
+  assert.match(
+    css,
+    /\.service-icon\s*\{[\s\S]*?background:\s*rgba\(255, 255, 255, 0\.1\)/,
+  );
+});
+
 test("doctor pages receive their data during server rendering", async () => {
   const [directory, doctorsPage, profilePage, profileDetails] =
     await Promise.all([
