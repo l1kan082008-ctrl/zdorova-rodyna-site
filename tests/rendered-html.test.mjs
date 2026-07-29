@@ -35,7 +35,7 @@ test("homepage reception uses the dedicated center photo", async () => {
   );
 });
 
-test("homepage service cards use dedicated glass medical artwork", async () => {
+test("homepage service cards use calm artwork and open service detail pages", async () => {
   const [page, css, ...assets] = await Promise.all([
     readSource("app/page.tsx"),
     readSource("app/globals.css"),
@@ -55,20 +55,50 @@ test("homepage service cards use dedicated glass medical artwork", async () => {
 
   assert.match(
     css,
-    /\.service-card\s*\{[\s\S]*?min-height:\s*176px[\s\S]*?background-color:\s*#11797a[\s\S]*?background-size:\s*cover/,
+    /\.service-card\s*\{[\s\S]*?min-height:\s*184px[\s\S]*?background:\s*#f8fbfa/,
   );
   assert.match(
     css,
-    /\.service-card--ct\s*\{[\s\S]*?url\("\/service-cards\/ct-v2\.jpg"\)/,
+    /\.service-card--ct\s*\{[\s\S]*?--service-art:\s*url\("\/service-cards\/ct-v2\.jpg"\)/,
   );
   assert.match(
     css,
-    /\.service-card--family\s*\{[\s\S]*?url\("\/service-cards\/family-v2\.jpg"\)/,
+    /\.service-card--family\s*\{[\s\S]*?--service-art:\s*url\("\/service-cards\/family-v2\.jpg"\)/,
   );
-  assert.match(page, /description:\s*"Комп’ютерна томографія"/);
+  assert.match(page, /import \{ serviceDetails \} from "\.\/services\/serviceData"/);
   assert.match(page, /className=\{`service-card service-card--\$\{service\.slug\}`\}/);
+  assert.match(page, /href=\{`\/services\/\$\{service\.slug\}`\}/);
   assert.doesNotMatch(page, /<ServiceIcon/);
   assets.forEach((asset) => assert.ok(asset.length > 20_000));
+});
+
+test("every homepage service has a detailed information page", async () => {
+  const [data, page, servicesPage, css] = await Promise.all([
+    readSource("app/services/serviceData.ts"),
+    readSource("app/services/[slug]/page.tsx"),
+    readSource("app/services/page.tsx"),
+    readSource("app/globals.css"),
+  ]);
+
+  for (const slug of [
+    "ct",
+    "mri",
+    "ultrasound",
+    "lab",
+    "consultation",
+    "cardiology",
+    "holter",
+    "family",
+  ]) {
+    assert.match(data, new RegExp(`slug: "${slug}"`));
+  }
+  assert.match(page, /generateStaticParams/);
+  assert.match(page, /Як підготуватися/);
+  assert.match(page, /Як усе відбувається/);
+  assert.match(page, /\/contacts\?service=/);
+  assert.match(servicesPage, /href=\{`\/services\/\$\{item\.slug\}`\}/);
+  assert.match(css, /\.service-detail-hero\s*\{/);
+  assert.match(css, /\.service-information-grid\s*\{/);
 });
 
 test("popular price cards use a clean teal cursor-following glow", async () => {

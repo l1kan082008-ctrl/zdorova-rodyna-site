@@ -232,7 +232,7 @@ export default function ContactsPage() {
                 <div className="selected-booking-summary" aria-label="Обрана послуга">
                   <span>Обрана послуга</span>
                   <strong>{selectedService}</strong>
-                  <a href="/services">Обрати іншу послугу</a>
+                  <Link href="/services">Обрати іншу послугу</Link>
                 </div>
               ) : null}
               <label htmlFor="contact-name">

@@ -8,29 +8,7 @@ import { PromoSlider } from "./components/PromoSlider";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome";
 import { defaultDoctors } from "./doctors/doctorData";
 import { catalogItems, type PriceItem } from "./prices/priceData";
-
-const services = [
-  { title: "КТ", slug: "ct", description: "Комп’ютерна томографія" },
-  { title: "МРТ", slug: "mri", description: "Магнітно-резонансна томографія" },
-  { title: "УЗД", slug: "ultrasound", description: "Ультразвукова діагностика" },
-  { title: "Лабораторія", slug: "lab", description: "Лабораторні дослідження" },
-  {
-    title: "Консультації лікарів",
-    slug: "consultation",
-    description: "Прийом досвідчених спеціалістів",
-  },
-  {
-    title: "Кардіологія",
-    slug: "cardiology",
-    description: "Діагностика та лікування серця",
-  },
-  { title: "Холтер", slug: "holter", description: "Моніторинг серцевого ритму 24/7" },
-  {
-    title: "Сімейний лікар",
-    slug: "family",
-    description: "Комплексна турбота про здоров’я родини",
-  },
-];
+import { serviceDetails } from "./services/serviceData";
 
 const advantages = [
   {
@@ -337,21 +315,23 @@ export default async function Home() {
       <section className="services-section" id="services">
         <div className="section-heading">
           <h2>Наші послуги</h2>
-          <a href="/services">
+          <Link href="/services">
             Усі послуги <span>⟶</span>
-          </a>
+          </Link>
         </div>
         <div className="services-grid" id="services-grid">
-          {services.map((service) => (
+          {serviceDetails.map((service) => (
             <Link
               className={`service-card service-card--${service.slug}`}
-              key={service.title}
-              href={`/contacts?service=${encodeURIComponent(service.title)}#booking`}
-              aria-label={`${service.title}: записатися`}
+              key={service.slug}
+              href={`/services/${service.slug}`}
+              aria-label={`${service.shortTitle}: дізнатися більше`}
             >
               <span className="service-card-copy">
-                <strong>{service.title}</strong>
-                <span className="service-description">{service.description}</span>
+                <strong>{service.shortTitle}</strong>
+                <span className="service-description">
+                  {service.cardDescription}
+                </span>
               </span>
               <span className="service-arrow" aria-hidden="true">
                 →

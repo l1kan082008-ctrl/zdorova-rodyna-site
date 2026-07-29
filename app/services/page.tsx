@@ -1,77 +1,13 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
+import { serviceDetails } from "./serviceData";
 
 export const metadata: Metadata = {
   title: "Послуги — Здорова Родина",
   description:
     "МРТ, КТ, УЗД, лабораторні дослідження та консультації лікарів у Рівному.",
 };
-
-const items = [
-  {
-    title: "МРТ",
-    category: "Діагностика",
-    mark: "МРТ",
-    tone: "teal",
-    text: "Дослідження на MAGNETOM Flow Plus від Siemens: висока деталізація, швидкі протоколи та знижений рівень шуму.",
-  },
-  {
-    title: "КТ та КТ-коронарографія",
-    category: "Діагностика",
-    mark: "КТ",
-    tone: "orange",
-    text: "Комп’ютерна томографія та неінвазивне дослідження коронарних судин для оцінки стану артерій.",
-  },
-  {
-    title: "УЗД",
-    category: "Діагностика",
-    mark: "УЗД",
-    tone: "aqua",
-    text: "Ультразвукові дослідження органів, судин, серця, м’яких тканин для дорослих і дітей.",
-  },
-  {
-    title: "Лабораторні дослідження",
-    category: "Аналізи",
-    mark: "LAB",
-    tone: "orange",
-    text: "Загальноклінічні, біохімічні, гормональні, імунологічні, генетичні та інші дослідження.",
-  },
-  {
-    title: "Консультації лікарів",
-    category: "Прийом",
-    mark: "DR",
-    tone: "aqua",
-    text: "Сімейні лікарі, терапевти, кардіологи, ендокринологи, гастроентерологи та інші спеціалісти.",
-  },
-  {
-    title: "Холтер та кардіодіагностика",
-    category: "Серце",
-    mark: "ECG",
-    tone: "teal",
-    text: "Добове моніторування ЕКГ, електрокардіографія та ультразвукове дослідження серця.",
-  },
-  {
-    title: "Аналізи вдома",
-    category: "Виїзна служба",
-    mark: "ДІМ",
-    tone: "aqua",
-    text: "Виклик медсестри для забору біоматеріалу вдома з виїздом корпоративним автомобілем.",
-  },
-  {
-    title: "Результати дистанційно",
-    category: "Зручно",
-    mark: "PDF",
-    tone: "teal",
-    text: "Отримання результатів лабораторних досліджень електронною поштою, у Viber або Telegram.",
-  },
-  {
-    title: "Скринінг здоров’я 40+",
-    category: "Профілактика",
-    mark: "40+",
-    tone: "orange",
-    text: "Комплексне обстеження для раннього виявлення серцево-судинних захворювань, діабету та інших ризиків.",
-  },
-];
 
 const analyses = [
   "Загальноклінічні дослідження",
@@ -130,24 +66,26 @@ export default function ServicesPage() {
         id="services-list"
         aria-label="Перелік послуг"
       >
-        {items.map((item, index) => (
+        {serviceDetails.map((item, index) => (
           <article
-            className={`route-card service-route-card service-route-card--${item.tone}`}
-            key={item.title}
+            className="route-card service-route-card service-route-card--teal"
+            key={item.slug}
           >
             <div className="service-card-top">
-              <span className="service-card-mark" aria-hidden="true">{item.mark}</span>
+              <span className="service-card-mark" aria-hidden="true">
+                {item.shortTitle}
+              </span>
               <span className="route-number">{String(index + 1).padStart(2, "0")}</span>
             </div>
             <span className="route-category">{item.category}</span>
             <h2>{item.title}</h2>
-            <p>{item.text}</p>
-            <a
+            <p>{item.lead}</p>
+            <Link
               className="text-button service-card-book"
-              href={`/contacts?service=${encodeURIComponent(item.title)}#booking`}
+              href={`/services/${item.slug}`}
             >
-              Записатися <span>→</span>
-            </a>
+              Детальніше <span>→</span>
+            </Link>
           </article>
         ))}
       </section>
