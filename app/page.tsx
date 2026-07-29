@@ -413,7 +413,7 @@ export default async function Home() {
         <div className="section-heading pricing-heading">
           <div>
             <span className="section-kicker">Вартість</span>
-            <h2>Популярні послуги та ціни</h2>
+            <h2>Популярні послуги</h2>
           </div>
           <p>
             Добірка оновлюється за підтвердженими записами за останні 30 днів.
