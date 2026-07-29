@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 const readSource = (path) =>
@@ -116,19 +116,15 @@ test("doctor pages receive their data during server rendering", async () => {
 });
 
 test("homepage all-doctor showcase expands on click and links to profiles", async () => {
-  const [page, showcase, css, ...photos] = await Promise.all([
-    readSource("app/page.tsx"),
-    readSource("app/components/DoctorsShowcase.tsx"),
-    readSource("app/globals.css"),
-    ...[
-      "voloshko-tetiana.jpg",
-      "iziumska-olena.jpg",
-      "ishchuk-nadiia-optimized.jpg",
-      "pochtar-kateryna-optimized.jpg",
-    ].map((name) =>
-      readFile(new URL(`../public/doctor-showcase/${name}`, import.meta.url)),
-    ),
-  ]);
+  const [page, showcase, css, doctorData, doctorStore, importedPhotos] =
+    await Promise.all([
+      readSource("app/page.tsx"),
+      readSource("app/components/DoctorsShowcase.tsx"),
+      readSource("app/globals.css"),
+      readSource("app/doctors/doctorData.ts"),
+      readSource("app/api/doctors/doctorStore.ts"),
+      readdir(new URL("../public/doctors/", import.meta.url)),
+    ]);
 
   assert.match(page, /await Promise\.all\(\[[\s\S]*?listDoctors\(\)/);
   assert.doesNotMatch(page, /\.filter\(\(doctor\)[\s\S]*?specialty/);
@@ -144,6 +140,9 @@ test("homepage all-doctor showcase expands on click and links to profiles", asyn
   assert.match(showcase, /className="doctor-showcase-copy"/);
   assert.match(showcase, /href=\{`\/doctors\/\$\{doctor\.id\}`\}/);
   assert.doesNotMatch(showcase, /family-doctors-summary/);
+  assert.equal(importedPhotos.filter((name) => name.endsWith(".webp")).length, 36);
+  assert.match(doctorData, /photoUrl:\s*doctorPhotoUrls\[id\]\s*\?\?\s*""/);
+  assert.match(doctorStore, /doctorPhotoUrls\[row\.id\]\s*\?\?\s*""/);
   assert.match(
     css,
     /\.doctor-showcase-panel\.is-active\s*\{[\s\S]*?flex-basis:\s*clamp\(340px, 38vw, 520px\)/,
@@ -157,7 +156,6 @@ test("homepage all-doctor showcase expands on click and links to profiles", asyn
     css,
     /flex-basis 500ms cubic-bezier\(0\.65, 0, 0\.35, 1\)/,
   );
-  photos.forEach((photo) => assert.ok(photo.length > 50_000));
 });
 
 test("calculator route hash is consumed after opening once", async () => {

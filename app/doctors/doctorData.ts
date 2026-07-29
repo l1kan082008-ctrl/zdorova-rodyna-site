@@ -61,6 +61,45 @@ export type Doctor = {
   availabilityStatus: DoctorAvailabilityStatus;
 };
 
+export const doctorPhotoUrls: Record<string, string> = {
+  "voloshko-tetiana": "/doctors/voloshko-tetiana.webp",
+  "yatseniuk-zinoviia": "/doctors/yatseniuk-zinoviia.webp",
+  "danylkiv-yurii": "/doctors/danylkiv-yurii.webp",
+  "romanenko-liliia": "/doctors/romanenko-liliia.webp",
+  "koziar-nila": "/doctors/koziar-nila.webp",
+  "afonin-dmytro": "/doctors/afonin-dmytro.webp",
+  "korolkova-olena": "/doctors/korolkova-olena.webp",
+  "romanchuk-andrii": "/doctors/romanchuk-andrii.webp",
+  "ponomarova-olena": "/doctors/ponomarova-olena.webp",
+  "pysarchuk-taras": "/doctors/pysarchuk-taras.webp",
+  "rudenko-iryna": "/doctors/rudenko-iryna.webp",
+  "kyselchuk-tetiana": "/doctors/kyselchuk-tetiana.webp",
+  "bereska-oksana": "/doctors/bereska-oksana.webp",
+  "kondratyshyna-oksana": "/doctors/kondratyshyna-oksana.webp",
+  "rohalskyi-vitalii": "/doctors/rohalskyi-vitalii.webp",
+  "dombrovska-halyna": "/doctors/dombrovska-halyna.webp",
+  "nalbandian-taron": "/doctors/nalbandian-taron.webp",
+  "iziumska-olena": "/doctors/iziumska-olena.webp",
+  "stoliarska-nataliia": "/doctors/stoliarska-nataliia.webp",
+  "zhyber-kostiantyn": "/doctors/zhyber-kostiantyn.webp",
+  "meretskyi-viktor": "/doctors/meretskyi-viktor.webp",
+  bevztetiana: "/doctors/bevztetiana.webp",
+  "martyniuk-halyna": "/doctors/martyniuk-halyna.webp",
+  "ishchuk-nadiia": "/doctors/ishchuk-nadiia.webp",
+  "krokhmal-oksana": "/doctors/krokhmal-oksana.webp",
+  "havrysh-olena": "/doctors/havrysh-olena.webp",
+  "pshenychna-valentyna": "/doctors/pshenychna-valentyna.webp",
+  "korniiets-nellia": "/doctors/korniiets-nellia.webp",
+  "luniakin-vitalii": "/doctors/luniakin-vitalii.webp",
+  "vankevych-iryna": "/doctors/vankevych-iryna.webp",
+  "novak-bohdana": "/doctors/novak-bohdana.webp",
+  "skakalska-tetiana": "/doctors/skakalska-tetiana.webp",
+  "pochtar-kateryna": "/doctors/pochtar-kateryna.webp",
+  "antonenko-oleksandra": "/doctors/antonenko-oleksandra.webp",
+  "videlska-tetiana": "/doctors/videlska-tetiana.webp",
+  "talalaieva-daria": "/doctors/talalaieva-daria.webp",
+};
+
 const doctor = (
   id: string,
   name: string,
@@ -76,7 +115,7 @@ const doctor = (
   biography: "",
   patientGroups: [],
   schedule: {},
-  photoUrl: "",
+  photoUrl: doctorPhotoUrls[id] ?? "",
   availabilityStatus: "accepting",
 });
 

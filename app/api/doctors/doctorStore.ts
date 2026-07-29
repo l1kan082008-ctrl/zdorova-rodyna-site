@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import {
   defaultDoctors,
+  doctorPhotoUrls,
   type Doctor,
   type DoctorAvailabilityStatus,
   type DoctorPatientGroup,
@@ -121,7 +122,7 @@ function toDoctor(row: DoctorRow): Doctor {
     availabilityStatus: row.availability_status ?? "accepting",
     photoUrl: row.photo_key
       ? `/api/doctors/photo?key=${encodeURIComponent(row.photo_key)}`
-      : "",
+      : doctorPhotoUrls[row.id] ?? "",
   };
 }
 

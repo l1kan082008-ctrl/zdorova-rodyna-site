@@ -85,13 +85,6 @@ const featuredDoctorOrder = [
   "pochtar-kateryna",
 ];
 
-const doctorFallbackPhotos: Record<string, string> = {
-  "voloshko-tetiana": "/doctor-showcase/voloshko-tetiana.jpg",
-  "iziumska-olena": "/doctor-showcase/iziumska-olena.jpg",
-  "ishchuk-nadiia": "/doctor-showcase/ishchuk-nadiia-optimized.jpg",
-  "pochtar-kateryna": "/doctor-showcase/pochtar-kateryna-optimized.jpg",
-};
-
 const fallbackPriceDirections = [
   {
     title: "Холтер ЕКГ",
@@ -283,23 +276,18 @@ export default async function Home() {
     getPopularPriceDirections(),
     listDoctors().catch(() => defaultDoctors),
   ]);
-  const showcaseDoctors = doctors
-    .sort((first, second) => {
-      const firstIndex = featuredDoctorOrder.indexOf(first.id);
-      const secondIndex = featuredDoctorOrder.indexOf(second.id);
-      const featuredDifference =
-        (firstIndex === -1 ? Number.MAX_SAFE_INTEGER : firstIndex) -
-        (secondIndex === -1 ? Number.MAX_SAFE_INTEGER : secondIndex);
+  const showcaseDoctors = doctors.sort((first, second) => {
+    const firstIndex = featuredDoctorOrder.indexOf(first.id);
+    const secondIndex = featuredDoctorOrder.indexOf(second.id);
+    const featuredDifference =
+      (firstIndex === -1 ? Number.MAX_SAFE_INTEGER : firstIndex) -
+      (secondIndex === -1 ? Number.MAX_SAFE_INTEGER : secondIndex);
 
-      return (
-        featuredDifference ||
-        first.name.localeCompare(second.name, "uk-UA", { sensitivity: "base" })
-      );
-    })
-    .map((doctor) => ({
-      ...doctor,
-      photoUrl: doctor.photoUrl || doctorFallbackPhotos[doctor.id] || "",
-    }));
+    return (
+      featuredDifference ||
+      first.name.localeCompare(second.name, "uk-UA", { sensitivity: "base" })
+    );
+  });
 
   return (
     <main id="top">
