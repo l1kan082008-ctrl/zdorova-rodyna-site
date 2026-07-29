@@ -23,6 +23,18 @@ export type ManagedPriceItem = PriceItem & {
   sortOrder: number;
 };
 
+export type ImportedPriceItem = {
+  id?: string;
+  name: string;
+  category: CategoryId;
+  categoryLabel: string;
+  amount: number;
+  turnaround: string;
+  aliases: string[];
+  isActive: boolean;
+  sortOrder: number;
+};
+
 const createPriceItemsTable = `
   CREATE TABLE IF NOT EXISTS price_items (
     id TEXT PRIMARY KEY,
@@ -212,4 +224,78 @@ export async function updateManagedPriceItem(
     .run();
 
   return result.meta.changes > 0;
+}
+
+function getImportMatchKey(name: string, category: CategoryId) {
+  return `${category}::${name.trim().toLocaleLowerCase("uk-UA")}`;
+}
+
+export async function importManagedPriceItems(values: ImportedPriceItem[]) {
+  await ensurePriceItemsTable();
+
+  const existing = await listManagedPriceItems();
+  const existingIds = new Set(existing.map((item) => item.id));
+  const existingByName = new Map(
+    existing.map((item) => [
+      getImportMatchKey(item.name, item.category),
+      item.id,
+    ]),
+  );
+  const selectedIds = new Set<string>();
+  const selectedKeys = new Set<string>();
+  let created = 0;
+  let updated = 0;
+
+  const statements = values.map((item) => {
+    const matchKey = getImportMatchKey(item.name, item.category);
+    if (selectedKeys.has(matchKey)) {
+      throw new Error(`Позиція «${item.name}» дублюється у файлі`);
+    }
+    selectedKeys.add(matchKey);
+
+    const matchedId =
+      (item.id && existingIds.has(item.id) ? item.id : undefined) ??
+      existingByName.get(matchKey);
+    const id = matchedId ?? `price-${crypto.randomUUID()}`;
+
+    if (selectedIds.has(id)) {
+      throw new Error(`Позиція «${item.name}» дублюється у файлі`);
+    }
+
+    selectedIds.add(id);
+    if (matchedId) updated += 1;
+    else created += 1;
+
+    return env.DB.prepare(
+      `INSERT INTO price_items
+       (id, name, category, category_label, amount, turnaround, aliases, is_active, sort_order, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(id) DO UPDATE SET
+         name = excluded.name,
+         category = excluded.category,
+         category_label = excluded.category_label,
+         amount = excluded.amount,
+         turnaround = excluded.turnaround,
+         aliases = excluded.aliases,
+         is_active = excluded.is_active,
+         sort_order = excluded.sort_order,
+         updated_at = CURRENT_TIMESTAMP`,
+    ).bind(
+      id,
+      item.name,
+      item.category,
+      item.categoryLabel,
+      item.amount,
+      item.turnaround,
+      JSON.stringify(item.aliases),
+      item.isActive ? 1 : 0,
+      item.sortOrder,
+    );
+  });
+
+  for (let index = 0; index < statements.length; index += 50) {
+    await env.DB.batch(statements.slice(index, index + 50));
+  }
+
+  return { created, updated };
 }

@@ -174,3 +174,29 @@ test("calculator route hash is consumed after opening once", async () => {
     /if \(!selectedIds\.length\) \{[\s\S]*?removeEventListener/,
   );
 });
+
+test("admin price list supports validated Excel imports without deleting other rows", async () => {
+  const [page, panel, parser, route, store] = await Promise.all([
+    readSource("app/admin/prices/page.tsx"),
+    readSource("app/admin/prices/PriceImportPanel.tsx"),
+    readSource("app/admin/prices/priceImport.ts"),
+    readSource("app/api/admin/prices/import/route.ts"),
+    readSource("app/api/prices/priceStore.ts"),
+  ]);
+
+  assert.match(page, /<PriceImportPanel items=\{items\} onImported=\{handleImported\}/);
+  assert.match(panel, /accept="\.xlsx,\.xls,\.csv"/);
+  assert.match(panel, /\/api\/admin\/prices\/import/);
+  assert.match(panel, /issues\.length > 0/);
+  assert.match(parser, /await import\("xlsx"\)/);
+  assert.match(parser, /sheet_to_json<unknown\[\]>/);
+  assert.match(parser, /const MAX_ROWS = 5000/);
+  assert.match(route, /isAuthorizedAdmin\(request\)/);
+  assert.match(route, /categoryLabel: categoryOption\.label/);
+  assert.match(store, /ON CONFLICT\(id\) DO UPDATE SET/);
+  assert.match(store, /env\.DB\.batch\(statements\.slice\(index, index \+ 50\)\)/);
+  assert.doesNotMatch(
+    store.slice(store.indexOf("export async function importManagedPriceItems")),
+    /DELETE FROM price_items/,
+  );
+});

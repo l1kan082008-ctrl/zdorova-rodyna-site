@@ -7,6 +7,7 @@ import {
   type CategoryId,
   type PriceItem,
 } from "../../prices/priceData";
+import PriceImportPanel from "./PriceImportPanel";
 
 type ManagedPriceItem = PriceItem & {
   isActive: boolean;
@@ -242,6 +243,16 @@ export default function PricesAdminPage() {
     }
   };
 
+  const handleImported = (updatedItems: ManagedPriceItem[]) => {
+    setItems(updatedItems);
+    if (
+      selectedId !== "new" &&
+      !updatedItems.some((item) => item.id === selectedId)
+    ) {
+      setSelectedId(updatedItems[0]?.id ?? "");
+    }
+  };
+
   return (
     <main className="admin-prices-page">
       <header className="admin-topbar">
@@ -270,55 +281,60 @@ export default function PricesAdminPage() {
           <p>{error}</p>
         </div>
       ) : (
-        <section className="admin-prices-layout">
-          <aside className="admin-prices-list">
-            <div className="admin-prices-list-tools">
-              <label>
-                <span>Знайти позицію</span>
-                <input
-                  type="search"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Назва, категорія або синонім"
-                />
-              </label>
-              <button
-                className="outline-button"
-                type="button"
-                onClick={() => setSelectedId("new")}
-              >
-                + Додати позицію
-              </button>
-            </div>
-            <div className="admin-prices-scroll">
-              {filteredItems.map((item) => (
+        <>
+          <PriceImportPanel items={items} onImported={handleImported} />
+          <section className="admin-prices-layout">
+            <aside className="admin-prices-list">
+              <div className="admin-prices-list-tools">
+                <label>
+                  <span>Знайти позицію</span>
+                  <input
+                    type="search"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Назва, категорія або синонім"
+                  />
+                </label>
                 <button
+                  className="outline-button"
                   type="button"
-                  className={item.id === selectedId ? "is-active" : undefined}
-                  onClick={() => setSelectedId(item.id)}
-                  key={item.id}
+                  onClick={() => setSelectedId("new")}
                 >
-                  <span>
-                    <strong>{item.name}</strong>
-                    <small>{item.categoryLabel}</small>
-                  </span>
-                  <span>
-                    <b>{new Intl.NumberFormat("uk-UA").format(item.amount)} ₴</b>
-                    {!item.isActive ? <small>Приховано</small> : null}
-                  </span>
+                  + Додати позицію
                 </button>
-              ))}
-            </div>
-          </aside>
+              </div>
+              <div className="admin-prices-scroll">
+                {filteredItems.map((item) => (
+                  <button
+                    type="button"
+                    className={item.id === selectedId ? "is-active" : undefined}
+                    onClick={() => setSelectedId(item.id)}
+                    key={item.id}
+                  >
+                    <span>
+                      <strong>{item.name}</strong>
+                      <small>{item.categoryLabel}</small>
+                    </span>
+                    <span>
+                      <b>
+                        {new Intl.NumberFormat("uk-UA").format(item.amount)} ₴
+                      </b>
+                      {!item.isActive ? <small>Приховано</small> : null}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </aside>
 
-          {selectedItem ? (
-            <PriceEditor
-              key={selectedItem.id || "new"}
-              item={selectedItem}
-              onSaved={handleSaved}
-            />
-          ) : null}
-        </section>
+            {selectedItem ? (
+              <PriceEditor
+                key={selectedItem.id || "new"}
+                item={selectedItem}
+                onSaved={handleSaved}
+              />
+            ) : null}
+          </section>
+        </>
       )}
     </main>
   );
