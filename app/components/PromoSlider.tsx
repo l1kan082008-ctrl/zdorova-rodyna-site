@@ -3,50 +3,38 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-
-const slides = [
-  {
-    eyebrow: "Лабораторія",
-    title: "Дослідження без зайвих очікувань",
-    text: "Оберіть потрібні аналізи, дізнайтеся актуальну вартість і заплануйте візит у зручний час.",
-    note: "Результати — дистанційно",
-    action: "Переглянути ціни",
-    href: "/prices",
-    theme: "laboratory",
-  },
-  {
-    eyebrow: "Виїзна послуга",
-    title: "Медсестра приїде до вас",
-    text: "Забір матеріалу вдома — зручно для дітей, старших людей і тих, кому складно відвідати центр.",
-    note: "Узгодимо день і час",
-    action: "Замовити виїзд",
-    href: "/contacts?service=Аналізи вдома#booking",
-    theme: "home",
-  },
-  {
-    eyebrow: "Діагностика серця",
-    title: "Серце під надійним контролем",
-    text: "ЕКГ, ЕхоКГ та Холтер-моніторинг із консультацією фахівця і зрозумілими рекомендаціями.",
-    note: "Комплексний підхід",
-    action: "Записатися",
-    href: "/contacts?service=Кардіологія#booking",
-    theme: "heart",
-  },
-];
+import { defaultPromoSlides, type PromoSlide } from "./promoData";
 
 export function PromoSlider() {
+  const [slides, setSlides] = useState<PromoSlide[]>(
+    defaultPromoSlides.filter((slide) => slide.active),
+  );
   const [activeSlide, setActiveSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const pointerStart = useRef<number | null>(null);
 
   const showSlide = (index: number) => {
+    if (slides.length === 0) return;
     setActiveSlide((index + slides.length) % slides.length);
   };
 
   useEffect(() => {
+    fetch("/api/banners")
+      .then(async (response) => {
+        const payload = await response.json() as { banners?: PromoSlide[] };
+        if (response.ok && payload.banners?.length) setSlides(payload.banners);
+      })
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    if (activeSlide >= slides.length) setActiveSlide(0);
+  }, [activeSlide, slides.length]);
+
+  useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (isPaused || reduceMotion) {
+    if (isPaused || reduceMotion || slides.length < 2) {
       return;
     }
 
@@ -55,7 +43,7 @@ export function PromoSlider() {
     }, 6500);
 
     return () => window.clearInterval(timer);
-  }, [isPaused]);
+  }, [isPaused, slides.length]);
 
   return (
     <section
@@ -98,12 +86,18 @@ export function PromoSlider() {
           {slides.map((slide, index) => (
             <article
               className={`promo-slide promo-slide--${slide.theme}`}
-              key={slide.title}
+              key={slide.id}
               aria-hidden={activeSlide !== index}
             >
               <div className="promo-copy">
                 <span className="promo-eyebrow">{slide.eyebrow}</span>
                 <h2>{slide.title}</h2>
+                {slide.accent ? (
+                  <span className="promo-cito">
+                    <span className="promo-cito-icon" aria-hidden="true" />
+                    {slide.accent}
+                  </span>
+                ) : null}
                 <p>{slide.text}</p>
                 <div className="promo-actions">
                   <Link
@@ -140,7 +134,7 @@ export function PromoSlider() {
           {slides.map((slide, index) => (
             <button
               type="button"
-              key={slide.title}
+              key={slide.id}
               className={activeSlide === index ? "is-active" : ""}
               aria-label={`Показати банер ${index + 1}: ${slide.title}`}
               aria-current={activeSlide === index ? "true" : undefined}

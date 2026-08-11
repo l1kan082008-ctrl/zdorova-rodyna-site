@@ -115,6 +115,8 @@ export default function PriceImportPanel({
             categoryLabel: row.categoryLabel,
             amount: row.amount,
             turnaround: row.turnaround,
+            citoAvailable: row.citoAvailable,
+            citoSurcharge: row.citoSurcharge,
             aliases: row.aliases,
             isActive: row.isActive,
             sortOrder: row.sortOrder,
@@ -153,6 +155,9 @@ export default function PriceImportPanel({
           <p>
             Підтримуються .xlsx, .xls і .csv. Обов’язкові колонки: «Назва» та
             «Ціна». Категорію можна вказати в колонці або назвою аркуша.
+            Для термінового виконання додайте необов’язкову колонку «CITO доступно».
+            Доплата розраховується автоматично за кількістю обраних досліджень.
+            Старі файли з колонкою «Доплата CITO» також підтримуються.
           </p>
         </div>
         <div className="admin-import-file-actions">
@@ -217,6 +222,7 @@ export default function PriceImportPanel({
                   <th>Категорія</th>
                   <th>Ціна</th>
                   <th>Термін</th>
+                  <th>CITO</th>
                   <th>Дія</th>
                 </tr>
               </thead>
@@ -236,6 +242,9 @@ export default function PriceImportPanel({
                       <td>{row.categoryLabel}</td>
                       <td>{new Intl.NumberFormat("uk-UA").format(row.amount)} ₴</td>
                       <td>{row.turnaround}</td>
+                      <td>
+                        {row.citoAvailable ? "Так · до 2 годин" : "—"}
+                      </td>
                       <td>
                         <span className={exists ? "is-update" : "is-new"}>
                           {exists ? "Оновити" : "Додати"}

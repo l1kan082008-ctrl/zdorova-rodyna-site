@@ -8,6 +8,10 @@ import {
   categoryOptions,
   type CategoryId,
 } from "../../../prices/priceData";
+import {
+  DEFAULT_CITO_SURCHARGE,
+  usesDefaultCitoPolicy,
+} from "../../../prices/citoPolicy";
 
 const categoryIds = new Set(categoryOptions.map((category) => category.id));
 
@@ -20,6 +24,11 @@ function parseValues(payload: Record<string, unknown>) {
       ? payload.categoryLabel.trim()
       : "";
   const amount = Number(payload.amount);
+  const defaultCitoEnabled = categoryIds.has(category as CategoryId)
+    ? usesDefaultCitoPolicy(category as CategoryId)
+    : false;
+  const citoAvailable = defaultCitoEnabled || payload.citoAvailable === true;
+  const citoSurcharge = citoAvailable ? DEFAULT_CITO_SURCHARGE : 0;
   const turnaround =
     typeof payload.turnaround === "string"
       ? payload.turnaround.trim()
@@ -40,13 +49,14 @@ function parseValues(payload: Record<string, unknown>) {
   ) {
     throw new Error("Заповніть назву, категорію та коректну вартість");
   }
-
   return {
     name,
     category: category as CategoryId,
     categoryLabel,
     amount: Math.round(amount),
     turnaround: turnaround || "Уточнюйте",
+    citoAvailable,
+    citoSurcharge: citoAvailable ? citoSurcharge : 0,
     aliases,
     isActive: payload.isActive !== false,
     sortOrder: Math.max(0, Math.round(Number(payload.sortOrder) || 0)),

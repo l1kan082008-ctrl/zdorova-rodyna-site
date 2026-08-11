@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import AdminNavigation from "../AdminNavigation";
 import {
   categoryOptions,
   type CategoryId,
   type PriceItem,
 } from "../../prices/priceData";
+import { DEFAULT_CITO_SURCHARGE } from "../../prices/citoPolicy";
 import PriceImportPanel from "./PriceImportPanel";
 
 type ManagedPriceItem = PriceItem & {
@@ -26,6 +28,8 @@ const emptyItem: ManagedPriceItem = {
   categoryLabel: "Загальноклінічні",
   amount: 0,
   turnaround: "Уточнюйте",
+  citoAvailable: false,
+  citoSurcharge: 0,
   aliases: [],
   isActive: true,
   sortOrder: 0,
@@ -171,6 +175,26 @@ function PriceEditor({
             }
           />
         </label>
+        <label className="admin-cito-switch">
+          <span>Термінове виконання CITO</span>
+          <input
+            type="checkbox"
+            checked={draft.citoAvailable === true}
+            onChange={(event) =>
+              setDraft((current) => ({
+                ...current,
+                citoAvailable: event.target.checked,
+                citoSurcharge: event.target.checked
+                  ? DEFAULT_CITO_SURCHARGE
+                  : 0,
+              }))
+            }
+          />
+          <small>
+            Увімкніть лише для доступних досліджень. Доплата розраховується
+            автоматично за кількістю обраних CITO-досліджень.
+          </small>
+        </label>
       </div>
 
       <label>
@@ -257,18 +281,14 @@ export default function PricesAdminPage() {
     <main className="admin-prices-page">
       <header className="admin-topbar">
         <Link href="/prices">← До прайса</Link>
-        <nav aria-label="Адміністративні розділи">
-          <Link href="/admin/doctors">Лікарі</Link>
-          <Link href="/admin/bookings">Заявки</Link>
-          <strong>Прайс</strong>
-        </nav>
+        <AdminNavigation current="prices" />
       </header>
 
       <section className="admin-intro">
         <span className="section-kicker">Адмін-панель</span>
         <h1>Послуги та ціни</h1>
         <p>
-          Додавайте дослідження, змінюйте вартість, термін виконання і пошукові синоніми.
+          Додавайте дослідження, змінюйте вартість, термін виконання, режим CITO і пошукові синоніми.
           Приховані позиції залишаються в адмінці, але не показуються пацієнтам.
         </p>
       </section>
@@ -319,6 +339,9 @@ export default function PricesAdminPage() {
                       <b>
                         {new Intl.NumberFormat("uk-UA").format(item.amount)} ₴
                       </b>
+                      {item.citoAvailable ? (
+                        <small>CITO · до 2 годин</small>
+                      ) : null}
                       {!item.isActive ? <small>Приховано</small> : null}
                     </span>
                   </button>

@@ -4,9 +4,13 @@ import type { PointerEvent, ReactNode } from "react";
 
 type GlowPriceCardProps = {
   children: ReactNode;
+  className?: string;
 };
 
-export function GlowPriceCard({ children }: GlowPriceCardProps) {
+export function GlowPriceCard({
+  children,
+  className = "",
+}: GlowPriceCardProps) {
   const followPointer = (event: PointerEvent<HTMLElement>) => {
     if (event.pointerType === "touch") return;
 
@@ -22,7 +26,10 @@ export function GlowPriceCard({ children }: GlowPriceCardProps) {
   };
 
   return (
-    <article className="price-card" onPointerMove={followPointer}>
+    <article
+      className={`price-card${className ? ` ${className}` : ""}`}
+      onPointerMove={followPointer}
+    >
       {children}
     </article>
   );

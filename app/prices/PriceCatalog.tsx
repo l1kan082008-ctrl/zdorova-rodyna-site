@@ -1,26 +1,122 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   catalogItems,
-  categoryOptions,
   type PriceItem,
 } from "./priceData";
 import { PriceCategoryIcon } from "./PriceCategoryIcon";
 import {
   announcePriceCalculatorSelection,
+  PRICE_CALCULATOR_CITO_STORAGE_KEY,
   PRICE_CALCULATOR_OPEN_EVENT,
   PRICE_CALCULATOR_STORAGE_KEY,
+  readPriceCalculatorCitoSelection,
   readPriceCalculatorSelection,
+  writePriceCalculatorCitoSelection,
 } from "./calculatorSelection";
+import {
+  normalizeMedicalSearch,
+  scoreMedicalSearch,
+} from "../search/medicalSearch";
+import {
+  downloadCalculatorPdf,
+  isCalculatorPdfPrepared,
+  prepareCalculatorPdf,
+  shareCalculatorSelection,
+} from "./calculatorExport";
+import { calculateCitoSurcharge } from "./citoPolicy";
 
-const categories = [
+const ANALYSIS_CATEGORIES = new Set<PriceItem["category"]>([
+  "general",
+  "biochemistry",
+  "diabetes",
+  "hemostasis",
+  "hormones",
+  "growth",
+  "prenatal",
+  "oncology",
+  "rheumatology",
+  "anemia",
+  "immunology",
+  "osteoporosis",
+  "cytology",
+  "infections",
+  "hiv",
+  "torch",
+  "urogenital",
+  "allergy",
+  "genetics",
+  "culture",
+  "bacteriology",
+  "complexes",
+  "covid",
+  "other-infections",
+]);
+
+const ULTRASOUND_CATEGORIES = new Set<PriceItem["category"]>([
+  "ultrasound",
+  "doppler",
+]);
+
+type PriceCategoryFilter =
+  | "all"
+  | "analyses"
+  | "ultrasound-group"
+  | PriceItem["category"];
+
+const categories: ReadonlyArray<{
+  id: PriceCategoryFilter;
+  label: string;
+  caption?: string;
+}> = [
   { id: "all", label: "Усі послуги" },
-  ...categoryOptions,
+  {
+    id: "analyses",
+    label: "Аналізи",
+    caption: "Усі лабораторні напрямки",
+  },
+  { id: "ct", label: "КТ" },
+  { id: "mri", label: "МРТ" },
+  {
+    id: "ultrasound-group",
+    label: "УЗД",
+    caption: "УЗД · Доплер судин",
+  },
+  { id: "heart", label: "Кардіологія" },
+  { id: "medical", label: "Лікарські послуги" },
+  { id: "sampling", label: "Забір матеріалу" },
 ];
+
+const getCategoryFilter = (
+  category: PriceItem["category"] | "all",
+): PriceCategoryFilter => {
+  if (category === "all") return "all";
+  if (ANALYSIS_CATEGORIES.has(category)) return "analyses";
+  if (ULTRASOUND_CATEGORIES.has(category)) return "ultrasound-group";
+  return category;
+};
+
+const matchesCategoryFilter = (
+  category: PriceItem["category"],
+  filter: PriceCategoryFilter,
+) =>
+  filter === "all" ||
+  (filter === "analyses" && ANALYSIS_CATEGORIES.has(category)) ||
+  (filter === "ultrasound-group" && ULTRASOUND_CATEGORIES.has(category)) ||
+  category === filter;
+
+const getCategoryIconId = (
+  category: PriceCategoryFilter,
+): PriceItem["category"] | "all" => {
+  if (category === "analyses") return "general";
+  if (category === "ultrasound-group") return "ultrasound";
+  return category;
+};
 
 const INITIAL_VISIBLE_COUNT = 24;
 const CATEGORY_PREVIEW_COUNT = 3;
+const CITO_CATEGORY_PREVIEW_COUNT = 4;
 const INITIAL_VISIBLE_GROUP_COUNT = 5;
 const GROUPS_PER_LOAD = 5;
 
@@ -40,53 +136,96 @@ const formatServiceCount = (count: number) => {
   return `${count} послуг`;
 };
 
+const formatRemainingStudies = (count: number) => {
+  const lastTwoDigits = count % 100;
+  const lastDigit = count % 10;
+  const noun =
+    lastTwoDigits >= 11 && lastTwoDigits <= 14
+      ? "досліджень"
+      : lastDigit >= 1 && lastDigit <= 4
+        ? "дослідження"
+        : "досліджень";
+
+  return `Ще ${count} ${noun}`;
+};
+
 const getTurnaround = (item: PriceItem) =>
   item.turnaround?.trim() || "Уточнюйте";
 
-const normalizeSearch = (value: string) =>
-  value
-    .toLocaleLowerCase("uk-UA")
-    .normalize("NFKD")
-    .replace(/[’'`ʼ]/g, "")
-    .replace(/[–—-]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
 export function PriceCatalog({
   initialItems = catalogItems,
+  initialCategory = "all",
+  initialQuery = "",
 }: {
   initialItems?: PriceItem[];
+  initialCategory?: PriceItem["category"] | "all";
+  initialQuery?: string;
 }) {
+  const requestedDefaultCategory = getCategoryFilter(initialCategory);
+  const defaultCategory = categories.some(
+    (category) => category.id === requestedDefaultCategory,
+  )
+    ? requestedDefaultCategory
+    : "all";
   const [activeCategory, setActiveCategory] =
-    useState<(typeof categories)[number]["id"]>("all");
-  const [query, setQuery] = useState("");
+    useState<PriceCategoryFilter>(defaultCategory);
+  const [query, setQuery] = useState(initialQuery);
+  const [citoOnly, setCitoOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [citoSelectedIds, setCitoSelectedIds] = useState<string[]>([]);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [calculatorExporting, setCalculatorExporting] = useState<
+    "pdf" | "share" | null
+  >(null);
+  const [calculatorActionMessage, setCalculatorActionMessage] = useState("");
+  const [calculatorPdfReady, setCalculatorPdfReady] = useState(false);
   const [visibleLimit, setVisibleLimit] = useState(INITIAL_VISIBLE_COUNT);
   const [visibleGroupLimit, setVisibleGroupLimit] = useState(
     INITIAL_VISIBLE_GROUP_COUNT,
   );
   const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
   const [selectionHydrated, setSelectionHydrated] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<
+    Set<PriceItem["category"]>
+  >(() => new Set());
+  const [expandedPreviewCategories, setExpandedPreviewCategories] = useState<
     Set<PriceItem["category"]>
   >(() => new Set());
 
   const visibleItems = useMemo(() => {
-    const normalized = normalizeSearch(query);
+    const normalized = normalizeMedicalSearch(query);
 
-    return initialItems.filter((item) => {
-      const matchesCategory =
-        activeCategory === "all" || item.category === activeCategory;
-      const matchesQuery =
-        !normalized ||
-        normalizeSearch(
-          `${item.name} ${item.categoryLabel} ${getTurnaround(item)} ${(item.aliases ?? []).join(" ")}`,
-        ).includes(normalized);
+    return initialItems
+      .map((item, index) => ({
+        item,
+        index,
+        score: normalized
+          ? scoreMedicalSearch(
+              normalized,
+              item.name,
+              `${item.categoryLabel} ${getTurnaround(item)} ${(item.aliases ?? []).join(" ")}`,
+            )
+          : 1,
+      }))
+      .filter(
+        ({ item, score }) =>
+          matchesCategoryFilter(item.category, activeCategory) &&
+          (!citoOnly ||
+            item.citoAvailable) &&
+          score > 0,
+      )
+      .sort((first, second) => second.score - first.score || first.index - second.index)
+      .map(({ item }) => item);
+  }, [activeCategory, citoOnly, initialItems, query]);
 
-      return matchesCategory && matchesQuery;
-    });
-  }, [activeCategory, initialItems, query]);
+  const citoAvailableCount = useMemo(
+    () =>
+      initialItems.filter(
+        (item) => item.citoAvailable,
+      ).length,
+    [initialItems],
+  );
 
   const selectedItems = useMemo(
     () => initialItems.filter((item) => selectedIds.includes(item.id)),
@@ -133,15 +272,59 @@ export function PriceCatalog({
     return Array.from(groupedItems.values());
   }, [visibleItems]);
 
-  const isAllOverview = activeCategory === "all" && !normalizeSearch(query);
+  const isAllOverview =
+    activeCategory === "all" && !normalizeMedicalSearch(query) && !citoOnly;
+  const isCitoOverview =
+    activeCategory === "all" && !normalizeMedicalSearch(query) && citoOnly;
+  const isGroupedCategoryOverview =
+    (activeCategory === "analyses" ||
+      activeCategory === "ultrasound-group") &&
+    !normalizeMedicalSearch(query) &&
+    !citoOnly;
+  const isInlineOverview =
+    isAllOverview || isCitoOverview || isGroupedCategoryOverview;
 
   const displayedGroups = useMemo(() => {
+    if (isCitoOverview) {
+      return allVisibleGroups.map((group) => {
+        const isExpanded = expandedPreviewCategories.has(group.category);
+
+        return {
+          ...group,
+          items: isExpanded
+            ? group.items
+            : group.items.slice(0, CITO_CATEGORY_PREVIEW_COUNT),
+          isPreview: group.items.length > CITO_CATEGORY_PREVIEW_COUNT,
+        };
+      });
+    }
+
+    if (isGroupedCategoryOverview) {
+      return allVisibleGroups.map((group) => {
+        const isExpanded = expandedPreviewCategories.has(group.category);
+
+        return {
+          ...group,
+          items: isExpanded
+            ? group.items
+            : group.items.slice(0, CATEGORY_PREVIEW_COUNT),
+          isPreview: group.items.length > CATEGORY_PREVIEW_COUNT,
+        };
+      });
+    }
+
     if (isAllOverview) {
-      return allVisibleGroups.slice(0, visibleGroupLimit).map((group) => ({
-        ...group,
-        items: group.items.slice(0, CATEGORY_PREVIEW_COUNT),
-        isPreview: group.items.length > CATEGORY_PREVIEW_COUNT,
-      }));
+      return allVisibleGroups.slice(0, visibleGroupLimit).map((group) => {
+        const isExpanded = expandedPreviewCategories.has(group.category);
+
+        return {
+          ...group,
+          items: isExpanded
+            ? group.items
+            : group.items.slice(0, CATEGORY_PREVIEW_COUNT),
+          isPreview: group.items.length > CATEGORY_PREVIEW_COUNT,
+        };
+      });
     }
 
     const limitedItems = visibleItems.slice(0, visibleLimit);
@@ -155,6 +338,9 @@ export function PriceCatalog({
       .filter((group) => group.items.length);
   }, [
     allVisibleGroups,
+    expandedPreviewCategories,
+    isCitoOverview,
+    isGroupedCategoryOverview,
     isAllOverview,
     visibleGroupLimit,
     visibleItems,
@@ -163,12 +349,94 @@ export function PriceCatalog({
 
   const activeCategoryInfo =
     categories.find((category) => category.id === activeCategory) ??
-    categories[0];
+    {
+      id: activeCategory,
+      label:
+        initialItems.find((item) => item.category === activeCategory)
+          ?.categoryLabel ?? categories[0].label,
+    };
 
-  const total = selectedItems.reduce((sum, item) => sum + item.amount, 0);
+  const displayedItemCount = displayedGroups.reduce(
+    (count, group) => count + group.items.length,
+    0,
+  );
+  const hasExpandedDisplayedGroup = displayedGroups.some(
+    (group) => !collapsedCategories.has(group.category),
+  );
+  const hasMoreVisibleItems =
+    !isCitoOverview &&
+    !isAllOverview &&
+    !isGroupedCategoryOverview &&
+    hasExpandedDisplayedGroup &&
+    displayedItemCount < visibleItems.length;
+
+  const citoSelectedCount = selectedItems.filter(
+    (item) => citoSelectedIds.includes(item.id) && item.citoAvailable,
+  ).length;
+  const citoSurchargeTotal = calculateCitoSurcharge(citoSelectedCount);
+  const total =
+    selectedItems.reduce((sum, item) => sum + item.amount, 0) +
+    citoSurchargeTotal;
+  const calculatorExportItems = useMemo(
+    () =>
+      selectedItems.map((item) => {
+        const cito = citoSelectedIds.includes(item.id) && item.citoAvailable;
+        return {
+          name: item.name,
+          categoryLabel: item.categoryLabel,
+          turnaround: getTurnaround(item),
+          amount: item.amount,
+          cito,
+        };
+      }),
+    [citoSelectedIds, selectedItems],
+  );
   const checkoutHref = `/contacts?services=${encodeURIComponent(
-    selectedItems.map((item) => item.name).join(" | "),
+    [
+      ...selectedItems.map((item) =>
+        citoSelectedIds.includes(item.id) && item.citoAvailable
+          ? `${item.name} — CITO`
+          : item.name,
+      ),
+      ...(citoSelectedCount > 0
+        ? [
+            `Доплата CITO (${citoSelectedCount} досл., до 2 годин) — ${formatPrice(citoSurchargeTotal)}`,
+          ]
+        : []),
+    ].join(" | "),
   )}&total=${total}#booking`;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!calculatorExportItems.length) {
+      setCalculatorPdfReady(false);
+      return;
+    }
+
+    if (isCalculatorPdfPrepared(calculatorExportItems, total)) {
+      setCalculatorPdfReady(true);
+      return;
+    }
+
+    setCalculatorPdfReady(false);
+    void prepareCalculatorPdf(calculatorExportItems, total)
+      .then(() => {
+        if (!cancelled) setCalculatorPdfReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCalculatorPdfReady(false);
+          setCalculatorActionMessage(
+            "Не вдалося підготувати PDF. Спробуйте змінити список і повторити.",
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [calculatorExportItems, total]);
 
   useEffect(() => {
     const availableIds = new Set(initialItems.map((item) => item.id));
@@ -184,6 +452,16 @@ export function PriceCatalog({
             ),
           );
         }
+        const eligibleCitoIds = new Set(
+          initialItems
+            .filter((item) => item.citoAvailable)
+            .map((item) => item.id),
+        );
+        setCitoSelectedIds(
+          readPriceCalculatorCitoSelection().filter(
+            (id) => availableIds.has(id) && eligibleCitoIds.has(id),
+          ),
+        );
       } catch {
         window.localStorage.removeItem(PRICE_CALCULATOR_STORAGE_KEY);
       } finally {
@@ -204,11 +482,38 @@ export function PriceCatalog({
   }, [selectedIds, selectionHydrated]);
 
   useEffect(() => {
+    if (!selectionHydrated) return;
+    const selectedSet = new Set(selectedIds);
+    const eligibleSet = new Set(
+      initialItems
+        .filter((item) => item.citoAvailable)
+        .map((item) => item.id),
+    );
+    const nextIds = citoSelectedIds.filter(
+      (id) => selectedSet.has(id) && eligibleSet.has(id),
+    );
+    writePriceCalculatorCitoSelection(nextIds);
+    if (nextIds.length !== citoSelectedIds.length) {
+      setCitoSelectedIds(nextIds);
+    }
+  }, [citoSelectedIds, initialItems, selectedIds, selectionHydrated]);
+
+  useEffect(() => {
     const syncSelection = (event: StorageEvent) => {
       if (
-        event.key !== PRICE_CALCULATOR_STORAGE_KEY ||
-        typeof event.newValue !== "string"
+        event.key !== PRICE_CALCULATOR_STORAGE_KEY &&
+        event.key !== PRICE_CALCULATOR_CITO_STORAGE_KEY
       ) {
+        return;
+      }
+
+      if (event.key === PRICE_CALCULATOR_CITO_STORAGE_KEY) {
+        setCitoSelectedIds(readPriceCalculatorCitoSelection());
+        return;
+      }
+
+      if (event.newValue === null) {
+        setSelectedIds([]);
         return;
       }
 
@@ -280,11 +585,31 @@ export function PriceCatalog({
   }, [calculatorOpen]);
 
   const toggleItem = (id: string) => {
-    setSelectedIds((current) =>
-      current.includes(id)
-        ? current.filter((selectedId) => selectedId !== id)
-        : [...current, id],
-    );
+    setSelectedIds((current) => {
+      if (current.includes(id)) {
+        setCitoSelectedIds((citoIds) =>
+          citoIds.filter((selectedId) => selectedId !== id),
+        );
+        return current.filter((selectedId) => selectedId !== id);
+      }
+      return [...current, id];
+    });
+  };
+
+  const setCitoForItem = (id: string, enabled: boolean) => {
+    if (enabled) {
+      setSelectedIds((current) =>
+        current.includes(id) ? current : [...current, id],
+      );
+    }
+
+    setCitoSelectedIds((current) => {
+      if (enabled) {
+        return current.includes(id) ? current : [...current, id];
+      }
+
+      return current.filter((selectedId) => selectedId !== id);
+    });
   };
 
   const toggleCategory = (category: PriceItem["category"]) => {
@@ -299,6 +624,47 @@ export function PriceCatalog({
 
       return next;
     });
+  };
+
+  const clearSearch = () => {
+    setQuery("");
+    setActiveCategory("all");
+    setExpandedPreviewCategories(new Set());
+    setVisibleLimit(INITIAL_VISIBLE_COUNT);
+    setVisibleGroupLimit(INITIAL_VISIBLE_GROUP_COUNT);
+    window.requestAnimationFrame(() => searchInputRef.current?.focus());
+  };
+
+  const handlePdfDownload = async () => {
+    if (!calculatorPdfReady) return;
+    setCalculatorExporting("pdf");
+    setCalculatorActionMessage("");
+    try {
+      await downloadCalculatorPdf(calculatorExportItems, total);
+      setCalculatorActionMessage("PDF збережено на пристрій.");
+    } catch {
+      setCalculatorActionMessage("Не вдалося створити PDF. Спробуйте ще раз.");
+    } finally {
+      setCalculatorExporting(null);
+    }
+  };
+
+  const handleShareSelection = async () => {
+    if (!calculatorPdfReady) return;
+    setCalculatorExporting("share");
+    setCalculatorActionMessage("");
+    try {
+      const result = await shareCalculatorSelection(calculatorExportItems, total);
+      if (result === "copied") {
+        setCalculatorActionMessage("Список скопійовано — його можна надіслати.");
+      } else if (result === "shared") {
+        setCalculatorActionMessage("Список підготовлено до надсилання.");
+      }
+    } catch {
+      setCalculatorActionMessage("Не вдалося поділитися списком. Спробуйте ще раз.");
+    } finally {
+      setCalculatorExporting(null);
+    }
   };
 
   return (
@@ -317,7 +683,9 @@ export function PriceCatalog({
             onClick={() => setMobileCategoriesOpen((current) => !current)}
           >
             <span className="price-category-symbol" aria-hidden="true">
-              <PriceCategoryIcon category={activeCategoryInfo.id} />
+              <PriceCategoryIcon
+                category={getCategoryIconId(activeCategoryInfo.id)}
+              />
             </span>
             <span>
               <small>Категорія</small>
@@ -346,15 +714,24 @@ export function PriceCatalog({
                 onClick={() => {
                   setActiveCategory(category.id);
                   setQuery("");
+                  setCollapsedCategories(new Set());
+                  setExpandedPreviewCategories(new Set());
                   setVisibleLimit(INITIAL_VISIBLE_COUNT);
                   setVisibleGroupLimit(INITIAL_VISIBLE_GROUP_COUNT);
                   setMobileCategoriesOpen(false);
                 }}
               >
                 <span className="price-category-symbol" aria-hidden="true">
-                  <PriceCategoryIcon category={category.id} />
+                  <PriceCategoryIcon
+                    category={getCategoryIconId(category.id)}
+                  />
                 </span>
-                <span className="price-category-label">{category.label}</span>
+                <span className="price-category-label-wrap">
+                  <span className="price-category-label">{category.label}</span>
+                  {category.caption ? (
+                    <small>{category.caption}</small>
+                  ) : null}
+                </span>
               </button>
             ))}
           </div>
@@ -366,24 +743,71 @@ export function PriceCatalog({
               <span>Пошук послуги</span>
               <input
                 id="price-search"
+                ref={searchInputRef}
                 type="search"
                 value={query}
                 onChange={(event) => {
                   setQuery(event.target.value);
                   setActiveCategory("all");
+                  setExpandedPreviewCategories(new Set());
                   setVisibleLimit(INITIAL_VISIBLE_COUNT);
                   setVisibleGroupLimit(INITIAL_VISIBLE_GROUP_COUNT);
                 }}
                 placeholder="Пошук послуги"
                 autoComplete="off"
               />
+              {query ? (
+                <button
+                  className="price-search-clear"
+                  type="button"
+                  aria-label="Очистити пошук"
+                  onClick={clearSearch}
+                >
+                  ×
+                </button>
+              ) : null}
             </label>
+            <button
+              className={`price-cito-filter${citoOnly ? " is-active" : ""}`}
+              type="button"
+              aria-pressed={citoOnly}
+              onClick={() => {
+                const nextCitoOnly = !citoOnly;
+                setCitoOnly(nextCitoOnly);
+                setExpandedPreviewCategories(new Set());
+                if (nextCitoOnly) {
+                  setActiveCategory("all");
+                  setQuery("");
+                  setCollapsedCategories(new Set());
+                }
+                setVisibleLimit(INITIAL_VISIBLE_COUNT);
+                setVisibleGroupLimit(INITIAL_VISIBLE_GROUP_COUNT);
+              }}
+            >
+              <span className="price-cito-filter-icon" aria-hidden="true">
+                ⚡
+              </span>
+              <span className="price-cito-filter-copy">
+                <strong>Доступні CITO</strong>
+                <small>Термінове виконання</small>
+              </span>
+              <span className="price-cito-filter-count">
+                {citoAvailableCount}
+              </span>
+            </button>
           </div>
 
           {visibleItems.length ? (
             <div className="medical-price-table" role="tabpanel">
               {displayedGroups.map((group) => {
                 const isCollapsed = collapsedCategories.has(group.category);
+                const isPreviewExpanded = expandedPreviewCategories.has(
+                  group.category,
+                );
+                const hiddenStudyCount = Math.max(
+                  group.totalCount - group.items.length,
+                  0,
+                );
                 const rowsId = `price-group-rows-${group.category}`;
 
                 return (
@@ -405,9 +829,6 @@ export function PriceCatalog({
                       <h3 id={`price-group-${group.category}`}>
                         {group.categoryLabel}
                       </h3>
-                      <span className="medical-price-group-count">
-                        {group.totalCount}
-                      </span>
                       <span
                         className={`medical-price-group-chevron${isCollapsed ? " is-collapsed" : ""}`}
                         aria-hidden="true"
@@ -418,12 +839,33 @@ export function PriceCatalog({
                       <div className="medical-price-group-rows" id={rowsId}>
                         {group.items.map((item) => {
                           const isSelected = selectedIds.includes(item.id);
+                          const citoSelected = citoSelectedIds.includes(item.id);
 
                           return (
                             <article className="medical-price-row" key={item.id}>
                               <div className="medical-price-service">
                                 <span className="mobile-price-label">Послуга</span>
                                 <strong>{item.name}</strong>
+                                {item.citoAvailable ? (
+                                  <div className={`cito-control price-cito-control${citoSelected ? " is-active" : ""}`}>
+                                    <span className="cito-control-copy">
+                                      <b>CITO</b>
+                                      <small>до 2 годин</small>
+                                    </span>
+                                    <button
+                                      className="cito-switch"
+                                      type="button"
+                                      role="switch"
+                                      aria-checked={citoSelected}
+                                      aria-label={`CITO для ${item.name}, термінове виконання до 2 годин`}
+                                      onClick={() =>
+                                        setCitoForItem(item.id, !citoSelected)
+                                      }
+                                    >
+                                      <span aria-hidden="true" />
+                                    </button>
+                                  </div>
+                                ) : null}
                               </div>
                               <div className="medical-price-duration">
                                 <span>Термін</span>
@@ -431,7 +873,9 @@ export function PriceCatalog({
                               </div>
                               <div className="medical-price-value">
                                 <span className="mobile-price-label">Вартість</span>
-                                <strong>{formatPrice(item.amount)}</strong>
+                                <strong>
+                                  {formatPrice(item.amount)}
+                                </strong>
                               </div>
                               <button
                                 className={`price-row-action${isSelected ? " is-selected" : ""}`}
@@ -456,14 +900,57 @@ export function PriceCatalog({
                           <button
                             className="price-group-view-all"
                             type="button"
+                            aria-expanded={
+                              isInlineOverview ? isPreviewExpanded : undefined
+                            }
                             onClick={() => {
+                              if (isInlineOverview) {
+                                setExpandedPreviewCategories((current) => {
+                                  const next = new Set(current);
+
+                                  if (next.has(group.category)) {
+                                    next.delete(group.category);
+                                  } else {
+                                    next.add(group.category);
+                                  }
+
+                                  return next;
+                                });
+                                return;
+                              }
+
                               setActiveCategory(group.category);
+                              setCollapsedCategories(new Set());
                               setVisibleLimit(INITIAL_VISIBLE_COUNT);
                               setMobileCategoriesOpen(false);
                             }}
                           >
-                            Усі дослідження категорії
-                            <span>{group.totalCount} →</span>
+                            <span className="price-group-view-all-copy">
+                              <strong>
+                                {isInlineOverview
+                                  ? isPreviewExpanded
+                                    ? "Повний список відкрито"
+                                    : formatRemainingStudies(hiddenStudyCount)
+                                  : "Усі дослідження категорії"}
+                              </strong>
+                              <small>
+                                {isInlineOverview
+                                  ? isPreviewExpanded
+                                    ? "Згорнути до короткого списку"
+                                    : "Розгорнути повний список"
+                                  : "Перейти до повного списку"}
+                              </small>
+                            </span>
+                            <span
+                              className="price-group-view-all-action"
+                              aria-hidden="true"
+                            >
+                              {isInlineOverview
+                                ? isPreviewExpanded
+                                  ? "↑"
+                                  : "↓"
+                                : "→"}
+                            </span>
                           </button>
                         ) : null}
                       </div>
@@ -482,11 +969,7 @@ export function PriceCatalog({
                 >
                   Показати більше категорій
                 </button>
-              ) : !isAllOverview &&
-                displayedGroups.reduce(
-                  (count, group) => count + group.items.length,
-                  0,
-                ) < visibleItems.length ? (
+              ) : hasMoreVisibleItems ? (
                 <button
                   className="price-load-more"
                   type="button"
@@ -507,12 +990,7 @@ export function PriceCatalog({
               <button
                 className="outline-button"
                 type="button"
-                onClick={() => {
-                  setQuery("");
-                  setActiveCategory("all");
-                  setVisibleLimit(INITIAL_VISIBLE_COUNT);
-                  setVisibleGroupLimit(INITIAL_VISIBLE_GROUP_COUNT);
-                }}
+                onClick={clearSearch}
               >
                 Очистити пошук
               </button>
@@ -574,13 +1052,35 @@ export function PriceCatalog({
             </div>
 
             <div className="calculator-items">
-              {selectedItems.map((item) => (
+              {selectedItems.map((item) => {
+                const citoSelected = citoSelectedIds.includes(item.id);
+                return (
                 <article key={item.id}>
-                  <div>
+                  <div className="calculator-item-copy">
                     <span>
                       {item.categoryLabel} · {getTurnaround(item)}
                     </span>
                     <strong>{item.name}</strong>
+                    {item.citoAvailable ? (
+                      <div className={`cito-control calculator-cito-option${citoSelected ? " is-active" : ""}`}>
+                        <span className="cito-control-copy">
+                          <b>CITO</b>
+                          <small>до 2 годин · групова доплата</small>
+                        </span>
+                        <button
+                          className="cito-switch"
+                          type="button"
+                          role="switch"
+                          aria-checked={citoSelected}
+                          aria-label={`CITO для ${item.name}, термінове виконання до 2 годин`}
+                          onClick={() =>
+                            setCitoForItem(item.id, !citoSelected)
+                          }
+                        >
+                          <span aria-hidden="true" />
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                   <strong>{formatPrice(item.amount)}</strong>
                   <button
@@ -594,7 +1094,68 @@ export function PriceCatalog({
                     ×
                   </button>
                 </article>
-              ))}
+                );
+              })}
+            </div>
+
+            {citoSelectedCount > 0 ? (
+              <div className="calculator-cito-summary">
+                <div>
+                  <span>Термінове виконання CITO</span>
+                  <strong>{citoSelectedCount} досл. · до 2 годин</strong>
+                </div>
+                <b>+{formatPrice(citoSurchargeTotal)}</b>
+                <p>
+                  1–2 дослідження — 200 грн; кожне наступне — +50 грн;
+                  від 5 досліджень — 350 грн.
+                </p>
+              </div>
+            ) : null}
+
+            <div className="calculator-share-tools" aria-label="Дії зі списком досліджень">
+              <div className="calculator-share-actions">
+                <button
+                  type="button"
+                  aria-label="Зберегти список у PDF"
+                  onClick={handlePdfDownload}
+                  disabled={calculatorExporting !== null || !calculatorPdfReady}
+                >
+                  <span
+                    className="calculator-action-icon is-file-download"
+                    aria-hidden="true"
+                  >
+                    <i />
+                  </span>
+                  <strong>
+                    {!calculatorPdfReady
+                      ? "Готуємо…"
+                      : calculatorExporting === "pdf"
+                        ? "Створюємо…"
+                        : "PDF"}
+                  </strong>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleShareSelection}
+                  disabled={calculatorExporting !== null || !calculatorPdfReady}
+                >
+                  <span
+                    className="calculator-action-icon is-share"
+                    aria-hidden="true"
+                  >
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                  <strong>
+                    {calculatorExporting === "share" ? "Готуємо…" : "Надіслати"}
+                  </strong>
+                </button>
+              </div>
+              <p className="calculator-action-message" aria-live="polite" role="status">
+                {calculatorActionMessage ||
+                  "Список готовий до збереження або надсилання."}
+              </p>
             </div>
 
             <div className="calculator-total">
@@ -612,6 +1173,7 @@ export function PriceCatalog({
                   type="button"
                   onClick={() => {
                     setSelectedIds([]);
+                    setCitoSelectedIds([]);
                     setCalculatorOpen(false);
                   }}
                 >

@@ -1,5 +1,7 @@
 import { isAuthorizedAdmin, unauthorizedAdminResponse } from "../adminAuth";
 import {
+  createDoctor,
+  deleteDoctor,
   listDoctors,
   updateDoctor,
 } from "../../doctors/doctorStore";
@@ -44,6 +46,7 @@ export async function PUT(request: Request) {
   try {
     const payload = (await request.json()) as {
       id?: string;
+      name?: string;
       specialty?: string;
       experienceYears?: number | null;
       branch?: string;
@@ -55,21 +58,23 @@ export async function PUT(request: Request) {
     };
 
     const id = payload.id?.trim() ?? "";
+    const name = payload.name?.trim() ?? "";
     const specialty = payload.specialty?.trim() ?? "";
     const availabilityStatus = availabilityStatuses.has(
       payload.availabilityStatus ?? "accepting",
     )
       ? (payload.availabilityStatus ?? "accepting")
       : "accepting";
-    if (!id || !specialty) {
+    if (!id || !name || !specialty) {
       return Response.json(
-        { error: "Лікар і спеціальність є обов’язковими" },
+        { error: "Ім’я лікаря та спеціальність є обов’язковими" },
         { status: 400 },
       );
     }
 
     if (
       hasBrokenEncoding([
+        name,
         specialty,
         payload.branch,
         payload.description,
@@ -87,6 +92,7 @@ export async function PUT(request: Request) {
     }
 
     const updated = await updateDoctor(id, {
+      name,
       specialty,
       experienceYears:
         typeof payload.experienceYears === "number"
@@ -110,6 +116,41 @@ export async function PUT(request: Request) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Не вдалося зберегти зміни";
+    return Response.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  try {
+    const payload = (await request.json()) as { name?: string; specialty?: string };
+    const name = payload.name?.trim() ?? "";
+    const specialty = payload.specialty?.trim() ?? "";
+    if (!name || !specialty) {
+      return Response.json({ error: "Вкажіть ім’я та спеціальність" }, { status: 400 });
+    }
+    if (hasBrokenEncoding([name, specialty])) {
+      return Response.json({ error: "Текст має пошкоджене кодування" }, { status: 400 });
+    }
+    const doctor = await createDoctor({ name, specialty });
+    return Response.json({ doctor, doctors: await listDoctors() }, { status: 201 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Не вдалося додати лікаря";
+    return Response.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  try {
+    const id = new URL(request.url).searchParams.get("id")?.trim() ?? "";
+    if (!id) return Response.json({ error: "Не вказано лікаря" }, { status: 400 });
+    if (!(await deleteDoctor(id))) {
+      return Response.json({ error: "Лікаря не знайдено" }, { status: 404 });
+    }
+    return Response.json({ doctors: await listDoctors() });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Не вдалося видалити лікаря";
     return Response.json({ error: message }, { status: 500 });
   }
 }

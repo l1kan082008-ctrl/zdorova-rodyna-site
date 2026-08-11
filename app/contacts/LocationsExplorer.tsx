@@ -3,22 +3,20 @@
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  centerLocations,
+  branchServiceCatalog,
   getDirectionsUrl,
   getMapEmbedUrl,
+  type BranchServiceId,
   type CenterLocation,
 } from "./locationData";
 
 type LocationsExplorerProps = {
+  locations: CenterLocation[];
   selectedLocationId: string;
   onSelectLocation: (locationId: string) => void;
 };
 
 type MediaMode = "photos" | "video";
-
-const cities = Array.from(
-  new Set(centerLocations.map((location) => location.city)),
-);
 
 function getLocationIconType(location: CenterLocation) {
   if (location.type.includes("Головний")) {
@@ -35,6 +33,22 @@ function LocationIcon({ location }: { location: CenterLocation }) {
     <span
       className={`branch-location-icon branch-location-icon--${getLocationIconType(location)}`}
     />
+  );
+}
+
+function BranchServiceTags({ services }: { services: BranchServiceId[] }) {
+  return (
+    <span className="branch-service-tags" aria-label="Доступні послуги">
+      {services.map((serviceId) => {
+        const service = branchServiceCatalog.find(({ id }) => id === serviceId);
+
+        return service ? (
+          <span className="branch-service-tag" key={service.id}>
+            {service.label}
+          </span>
+        ) : null;
+      })}
+    </span>
   );
 }
 
@@ -62,50 +76,34 @@ function getHoursForDay(location: CenterLocation, day: number | null) {
   return location.hours[0];
 }
 
-function getDistanceInKilometers(
-  latitude: number,
-  longitude: number,
-  location: CenterLocation,
-) {
-  const toRadians = (value: number) => (value * Math.PI) / 180;
-  const earthRadius = 6371;
-  const latitudeDelta = toRadians(location.coordinates.lat - latitude);
-  const longitudeDelta = toRadians(location.coordinates.lng - longitude);
-  const startLatitude = toRadians(latitude);
-  const destinationLatitude = toRadians(location.coordinates.lat);
-  const haversine =
-    Math.sin(latitudeDelta / 2) ** 2 +
-    Math.cos(startLatitude) *
-      Math.cos(destinationLatitude) *
-      Math.sin(longitudeDelta / 2) ** 2;
-
-  return earthRadius * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
-}
-
 export function LocationsExplorer({
+  locations,
   selectedLocationId,
   onSelectLocation,
 }: LocationsExplorerProps) {
   const [openLocationId, setOpenLocationId] = useState<string | null>(null);
   const [mediaMode, setMediaMode] = useState<MediaMode>("photos");
   const [photoIndex, setPhotoIndex] = useState(0);
-  const [isLocating, setIsLocating] = useState(false);
-  const [locationStatus, setLocationStatus] = useState("");
   const [currentDay, setCurrentDay] = useState<number | null>(null);
   const cityNavRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLElement>(null);
 
+  const cities = useMemo(
+    () => Array.from(new Set(locations.map((location) => location.city))),
+    [locations],
+  );
+
   const selectedLocation =
-    centerLocations.find((location) => location.id === selectedLocationId) ??
-    centerLocations[0];
+    locations.find((location) => location.id === selectedLocationId) ??
+    locations[0];
 
   const openLocation = useMemo(
     () =>
-      centerLocations.find((location) => location.id === openLocationId) ??
+      locations.find((location) => location.id === openLocationId) ??
       null,
-    [openLocationId],
+    [locations, openLocationId],
   );
-  const visibleLocations = centerLocations.filter(
+  const visibleLocations = locations.filter(
     (location) => location.city === selectedLocation.city,
   );
 
@@ -190,63 +188,14 @@ export function LocationsExplorer({
     }
   };
 
-  const findNearestLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationStatus("Геолокація не підтримується у вашому браузері.");
-      return;
-    }
-
-    setIsLocating(true);
-    setLocationStatus("");
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        const nearestLocation = centerLocations.reduce((nearest, location) =>
-          getDistanceInKilometers(
-            coords.latitude,
-            coords.longitude,
-            location,
-          ) <
-          getDistanceInKilometers(
-            coords.latitude,
-            coords.longitude,
-            nearest,
-          )
-            ? location
-            : nearest,
-        );
-        const distance = getDistanceInKilometers(
-          coords.latitude,
-          coords.longitude,
-          nearestLocation,
-        );
-        const formattedDistance = new Intl.NumberFormat("uk-UA", {
-          maximumFractionDigits: distance < 10 ? 1 : 0,
-        }).format(distance);
-
-        selectLocation(nearestLocation, true);
-        setLocationStatus(
-          `Найближче відділення — ${formattedDistance} км: ${nearestLocation.address}`,
-        );
-        setIsLocating(false);
-      },
-      () => {
-        setLocationStatus(
-          "Не вдалося визначити місцезнаходження. Оберіть місто вручну.",
-        );
-        setIsLocating(false);
-      },
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
-    );
-  };
-
   return (
     <>
       <section className="branch-directory" aria-labelledby="locations-title">
         <div className="branch-directory-heading">
           <div>
-            <span className="section-kicker">Наші відділення</span>
-            <h2 id="locations-title">Знайти відділення поруч</h2>
-            <p>Адреси, актуальний графік і маршрут — в одному блоці</p>
+            <span className="section-kicker">Відділення</span>
+            <h2 id="locations-title">Оберіть місто та адресу</h2>
+            <p>Одразу бачите доступні послуги, графік і маршрут.</p>
           </div>
         </div>
 
@@ -259,7 +208,7 @@ export function LocationsExplorer({
               ref={cityNavRef}
             >
               {cities.map((city) => {
-                const cityLocations = centerLocations.filter(
+                const cityLocations = locations.filter(
                   (location) => location.city === city,
                 );
                 const isActive = selectedLocation.city === city;
@@ -279,19 +228,7 @@ export function LocationsExplorer({
               })}
             </div>
           </div>
-          <button
-            className="branch-geolocation-button"
-            type="button"
-            onClick={findNearestLocation}
-            disabled={isLocating}
-          >
-            <span className="branch-geolocation-icon" aria-hidden="true" />
-            {isLocating ? "Визначаємо…" : "Моє місцезнаходження"}
-          </button>
         </div>
-        <p className="branch-location-status" aria-live="polite">
-          {locationStatus}
-        </p>
 
         <div className="branch-navigator">
           <div className="branch-navigation-list">
@@ -314,6 +251,7 @@ export function LocationsExplorer({
                     <small>
                       {location.type} · {location.hours[0]}
                     </small>
+                    <BranchServiceTags services={location.services} />
                   </span>
                   <span className="branch-navigation-arrow" aria-hidden="true">
                     ›
@@ -341,6 +279,7 @@ export function LocationsExplorer({
               <div className="branch-navigator-map-copy">
                 <span>{selectedLocation.type}</span>
                 <h3>{selectedLocation.address}</h3>
+                <BranchServiceTags services={selectedLocation.services} />
                 <div className="branch-today-hours">
                   <strong>Сьогодні</strong>
                   <span>{getHoursForDay(selectedLocation, currentDay)}</span>
@@ -418,15 +357,17 @@ export function LocationsExplorer({
               >
                 Фото
               </button>
-              <button
-                className={mediaMode === "video" ? "is-active" : ""}
-                type="button"
-                role="tab"
-                aria-selected={mediaMode === "video"}
-                onClick={() => setMediaMode("video")}
-              >
-                Відеоогляд
-              </button>
+              {openLocation.videoUrl ? (
+                <button
+                  className={mediaMode === "video" ? "is-active" : ""}
+                  type="button"
+                  role="tab"
+                  aria-selected={mediaMode === "video"}
+                  onClick={() => setMediaMode("video")}
+                >
+                  Відеоогляд
+                </button>
+              ) : null}
             </div>
 
             <div className="branch-modal-body">
@@ -494,10 +435,6 @@ export function LocationsExplorer({
                           />
                         </button>
                       ))}
-                      <div className="branch-gallery-note">
-                        <span aria-hidden="true">＋</span>
-                        Галерея готова до додавання нових фото пункту
-                      </div>
                     </div>
                   </>
                 ) : openLocation.videoUrl ? (
@@ -509,24 +446,7 @@ export function LocationsExplorer({
                   >
                     Ваш браузер не підтримує відтворення відео.
                   </video>
-                ) : (
-                  <div className="branch-video-empty">
-                    <span className="branch-play-icon" aria-hidden="true">▶</span>
-                    <h3>Відеоогляд готується</h3>
-                    <p>
-                      Тут відтворюватиметься реальне відео саме цього
-                      відділення. Розділ уже готовий — після додавання ролика
-                      він з’явиться тут без зміни дизайну.
-                    </p>
-                    <a
-                      href="https://www.instagram.com/zdorova_rodyna_rivne/"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Переглянути наш Instagram ↗
-                    </a>
-                  </div>
-                )}
+                ) : null}
               </div>
 
               <aside className="branch-modal-info">
@@ -537,6 +457,7 @@ export function LocationsExplorer({
                   </p>
                 ) : null}
                 <p>{openLocation.description}</p>
+                <BranchServiceTags services={openLocation.services} />
                 <div className="branch-modal-hours">
                   <strong>Графік роботи</strong>
                   {openLocation.hours.map((line) => (

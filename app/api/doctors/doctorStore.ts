@@ -165,6 +165,7 @@ export async function getDoctorPhotoKey(id: string) {
 export async function updateDoctor(
   id: string,
   values: {
+    name: string;
     specialty: string;
     experienceYears: number | null;
     branch: string;
@@ -178,12 +179,13 @@ export async function updateDoctor(
   await ensureDoctorsTable();
   const result = await env.DB.prepare(
     `UPDATE doctors
-     SET specialty = ?, experience_years = ?, branch = ?, description = ?,
+     SET name = ?, specialty = ?, experience_years = ?, branch = ?, description = ?,
          biography = ?, patient_groups = ?, schedule = ?,
          availability_status = ?, updated_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
   )
     .bind(
+      values.name,
       values.specialty,
       values.experienceYears,
       values.branch,
@@ -196,6 +198,27 @@ export async function updateDoctor(
     )
     .run();
 
+  return result.meta.changes > 0;
+}
+
+export async function createDoctor(values: { name: string; specialty: string }) {
+  await ensureDoctorsTable();
+  const id = `doctor-${crypto.randomUUID()}`;
+  await env.DB.prepare(
+    `INSERT INTO doctors
+      (id, name, specialty, experience_years, branch, description, biography, patient_groups, schedule, photo_key, availability_status)
+     VALUES (?, ?, ?, NULL, '', '', '', '[]', '{}', '', 'by-confirmation')`,
+  )
+    .bind(id, values.name, values.specialty)
+    .run();
+  return getDoctorById(id);
+}
+
+export async function deleteDoctor(id: string) {
+  await ensureDoctorsTable();
+  const result = await env.DB.prepare("DELETE FROM doctors WHERE id = ?")
+    .bind(id)
+    .run();
   return result.meta.changes > 0;
 }
 

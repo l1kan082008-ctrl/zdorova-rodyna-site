@@ -21,6 +21,7 @@ const getSurname = (name: string) => name.trim().split(/\s+/)[0] ?? name;
 export function DoctorsShowcase({ doctors }: DoctorsShowcaseProps) {
   const [activeId, setActiveId] = useState(doctors[0]?.id ?? "");
   const viewportRef = useRef<HTMLDivElement>(null);
+  const alignTimeoutRef = useRef<number | null>(null);
   const activeIndex = Math.max(
     0,
     doctors.findIndex((doctor) => doctor.id === activeId),
@@ -30,19 +31,50 @@ export function DoctorsShowcase({ doctors }: DoctorsShowcaseProps) {
     [activeIndex, doctors],
   );
 
+  const alignDoctorInsideViewport = useCallback(
+    (doctorId: string, behavior: ScrollBehavior = "smooth") => {
+      const viewport = viewportRef.current;
+      const panel = viewport?.querySelector<HTMLElement>(
+        `[data-doctor-id="${doctorId}"]`,
+      );
+
+      if (!viewport || !panel) return;
+
+      const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+      const viewportRect = viewport.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      const safeGutter = 6;
+      let safeLeft = viewport.scrollLeft;
+
+      if (panelRect.left < viewportRect.left + safeGutter) {
+        safeLeft -= viewportRect.left + safeGutter - panelRect.left;
+      } else if (panelRect.right > viewportRect.right - safeGutter) {
+        safeLeft += panelRect.right - (viewportRect.right - safeGutter);
+      }
+
+      safeLeft = Math.min(maxScrollLeft, Math.max(0, safeLeft));
+
+      viewport.scrollTo({ left: safeLeft, behavior });
+    },
+    [],
+  );
+
   const selectDoctor = useCallback((doctorId: string) => {
     setActiveId(doctorId);
 
+    if (alignTimeoutRef.current !== null) {
+      window.clearTimeout(alignTimeoutRef.current);
+    }
+
     requestAnimationFrame(() => {
-      viewportRef.current
-        ?.querySelector<HTMLElement>(`[data-doctor-id="${doctorId}"]`)
-        ?.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "center",
-        });
+      alignDoctorInsideViewport(doctorId);
+
+      alignTimeoutRef.current = window.setTimeout(() => {
+        alignDoctorInsideViewport(doctorId);
+        alignTimeoutRef.current = null;
+      }, 520);
     });
-  }, []);
+  }, [alignDoctorInsideViewport]);
 
   const selectAtIndex = useCallback(
     (nextIndex: number) => {

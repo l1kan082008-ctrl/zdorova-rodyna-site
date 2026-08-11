@@ -5,6 +5,10 @@ import {
   type PriceItem,
 } from "../../prices/priceData";
 import { officialCatalogSource } from "../../prices/officialPriceData";
+import {
+  DEFAULT_CITO_CATEGORIES,
+  DEFAULT_CITO_SURCHARGE,
+} from "../../prices/citoPolicy";
 
 type PriceRow = {
   id: string;
@@ -13,6 +17,8 @@ type PriceRow = {
   category_label: string;
   amount: number;
   turnaround: string;
+  cito_available: number;
+  cito_surcharge: number;
   aliases: string;
   is_active: number;
   sort_order: number;
@@ -30,6 +36,8 @@ export type ImportedPriceItem = {
   categoryLabel: string;
   amount: number;
   turnaround: string;
+  citoAvailable: boolean;
+  citoSurcharge: number;
   aliases: string[];
   isActive: boolean;
   sortOrder: number;
@@ -43,6 +51,8 @@ const createPriceItemsTable = `
     category_label TEXT NOT NULL,
     amount INTEGER NOT NULL,
     turnaround TEXT NOT NULL DEFAULT 'Уточнюйте',
+    cito_available INTEGER NOT NULL DEFAULT 0,
+    cito_surcharge INTEGER NOT NULL DEFAULT 0,
     aliases TEXT NOT NULL DEFAULT '[]',
     is_active INTEGER NOT NULL DEFAULT 1,
     sort_order INTEGER NOT NULL DEFAULT 0,
@@ -57,6 +67,8 @@ const createPriceCatalogMetaTable = `
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )
 `;
+
+const DEFAULT_CITO_POLICY_VERSION = "general-biochemistry-hormones-100-v2";
 
 function parseAliases(value: string) {
   try {
@@ -77,6 +89,8 @@ function toPriceItem(row: PriceRow): ManagedPriceItem {
     categoryLabel: row.category_label,
     amount: row.amount,
     turnaround: row.turnaround || "Уточнюйте",
+    citoAvailable: row.cito_available === 1,
+    citoSurcharge: Math.max(0, row.cito_surcharge || 0),
     aliases: parseAliases(row.aliases),
     isActive: row.is_active === 1,
     sortOrder: row.sort_order,
@@ -100,6 +114,41 @@ export async function ensurePriceItemsTable() {
       "ALTER TABLE price_items ADD COLUMN turnaround TEXT NOT NULL DEFAULT 'Уточнюйте'",
     ).run();
   }
+  if (!tableInfo.results.some((column) => column.name === "cito_available")) {
+    await env.DB.prepare(
+      "ALTER TABLE price_items ADD COLUMN cito_available INTEGER NOT NULL DEFAULT 0",
+    ).run();
+  }
+  if (!tableInfo.results.some((column) => column.name === "cito_surcharge")) {
+    await env.DB.prepare(
+      "ALTER TABLE price_items ADD COLUMN cito_surcharge INTEGER NOT NULL DEFAULT 0",
+    ).run();
+  }
+
+  const appliedCitoPolicy = await env.DB.prepare(
+    "SELECT value FROM price_catalog_meta WHERE key = 'default_cito_policy_version'",
+  ).first<{ value: string }>();
+  if (appliedCitoPolicy?.value !== DEFAULT_CITO_POLICY_VERSION) {
+    await env.DB.prepare(
+      `UPDATE price_items
+       SET cito_available = 1,
+           cito_surcharge = CASE
+             WHEN cito_surcharge > 0 THEN cito_surcharge
+             ELSE ?
+           END,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE category IN (?, ?, ?)`,
+    )
+      .bind(DEFAULT_CITO_SURCHARGE, ...DEFAULT_CITO_CATEGORIES)
+      .run();
+    await env.DB.prepare(
+      `INSERT INTO price_catalog_meta (key, value, updated_at)
+       VALUES ('default_cito_policy_version', ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+    )
+      .bind(DEFAULT_CITO_POLICY_VERSION)
+      .run();
+  }
 
   const seededVersion = await env.DB.prepare(
     "SELECT value FROM price_catalog_meta WHERE key = 'official_seed_version'",
@@ -111,8 +160,8 @@ export async function ensurePriceItemsTable() {
   const statements = catalogItems.map((item, index) =>
     env.DB.prepare(
       `INSERT OR IGNORE INTO price_items
-       (id, name, category, category_label, amount, turnaround, aliases, is_active, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+       (id, name, category, category_label, amount, turnaround, cito_available, cito_surcharge, aliases, is_active, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
     ).bind(
       item.id,
       item.name,
@@ -120,6 +169,8 @@ export async function ensurePriceItemsTable() {
       item.categoryLabel,
       item.amount,
       item.turnaround?.trim() || "Уточнюйте",
+      item.citoAvailable ? 1 : 0,
+      Math.max(0, Math.round(item.citoSurcharge ?? 0)),
       JSON.stringify(item.aliases ?? []),
       item.sortOrder ?? index,
     ),
@@ -141,7 +192,7 @@ export async function ensurePriceItemsTable() {
 export async function listManagedPriceItems() {
   await ensurePriceItemsTable();
   const result = await env.DB.prepare(
-    `SELECT id, name, category, category_label, amount, turnaround, aliases, is_active, sort_order
+    `SELECT id, name, category, category_label, amount, turnaround, cito_available, cito_surcharge, aliases, is_active, sort_order
      FROM price_items
      ORDER BY sort_order, name COLLATE NOCASE`,
   ).all<PriceRow>();
@@ -160,6 +211,8 @@ export async function createManagedPriceItem(values: {
   categoryLabel: string;
   amount: number;
   turnaround: string;
+  citoAvailable: boolean;
+  citoSurcharge: number;
   aliases: string[];
   isActive: boolean;
 }) {
@@ -171,8 +224,8 @@ export async function createManagedPriceItem(values: {
 
   await env.DB.prepare(
     `INSERT INTO price_items
-     (id, name, category, category_label, amount, turnaround, aliases, is_active, sort_order)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     (id, name, category, category_label, amount, turnaround, cito_available, cito_surcharge, aliases, is_active, sort_order)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       id,
@@ -181,6 +234,8 @@ export async function createManagedPriceItem(values: {
       values.categoryLabel,
       values.amount,
       values.turnaround,
+      values.citoAvailable ? 1 : 0,
+      values.citoAvailable ? values.citoSurcharge : 0,
       JSON.stringify(values.aliases),
       values.isActive ? 1 : 0,
       (maximum?.value ?? 0) + 1,
@@ -198,6 +253,8 @@ export async function updateManagedPriceItem(
     categoryLabel: string;
     amount: number;
     turnaround: string;
+    citoAvailable: boolean;
+    citoSurcharge: number;
     aliases: string[];
     isActive: boolean;
     sortOrder: number;
@@ -206,8 +263,9 @@ export async function updateManagedPriceItem(
   await ensurePriceItemsTable();
   const result = await env.DB.prepare(
     `UPDATE price_items
-     SET name = ?, category = ?, category_label = ?, amount = ?, turnaround = ?, aliases = ?,
-         is_active = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP
+     SET name = ?, category = ?, category_label = ?, amount = ?, turnaround = ?,
+         cito_available = ?, cito_surcharge = ?, aliases = ?, is_active = ?, sort_order = ?,
+         updated_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
   )
     .bind(
@@ -216,6 +274,8 @@ export async function updateManagedPriceItem(
       values.categoryLabel,
       values.amount,
       values.turnaround,
+      values.citoAvailable ? 1 : 0,
+      values.citoAvailable ? values.citoSurcharge : 0,
       JSON.stringify(values.aliases),
       values.isActive ? 1 : 0,
       values.sortOrder,
@@ -268,14 +328,16 @@ export async function importManagedPriceItems(values: ImportedPriceItem[]) {
 
     return env.DB.prepare(
       `INSERT INTO price_items
-       (id, name, category, category_label, amount, turnaround, aliases, is_active, sort_order, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+       (id, name, category, category_label, amount, turnaround, cito_available, cito_surcharge, aliases, is_active, sort_order, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
        ON CONFLICT(id) DO UPDATE SET
          name = excluded.name,
          category = excluded.category,
          category_label = excluded.category_label,
          amount = excluded.amount,
          turnaround = excluded.turnaround,
+         cito_available = excluded.cito_available,
+         cito_surcharge = excluded.cito_surcharge,
          aliases = excluded.aliases,
          is_active = excluded.is_active,
          sort_order = excluded.sort_order,
@@ -287,6 +349,8 @@ export async function importManagedPriceItems(values: ImportedPriceItem[]) {
       item.categoryLabel,
       item.amount,
       item.turnaround,
+      item.citoAvailable ? 1 : 0,
+      item.citoAvailable ? item.citoSurcharge : 0,
       JSON.stringify(item.aliases),
       item.isActive ? 1 : 0,
       item.sortOrder,

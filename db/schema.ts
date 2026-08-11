@@ -38,6 +38,8 @@ export const priceItems = sqliteTable("price_items", {
   categoryLabel: text("category_label").notNull(),
   amount: integer("amount").notNull(),
   turnaround: text("turnaround").notNull().default("Уточнюйте"),
+  citoAvailable: integer("cito_available").notNull().default(0),
+  citoSurcharge: integer("cito_surcharge").notNull().default(0),
   aliases: text("aliases").notNull().default("[]"),
   isActive: integer("is_active").notNull().default(1),
   sortOrder: integer("sort_order").notNull().default(0),

@@ -50,6 +50,27 @@
       "when": 1785178061339,
       "tag": "0006_nifty_psynapse",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1785613428038,
+      "tag": "0007_fair_spirit",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1785614561546,
+      "tag": "0008_enable_cito_defaults",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1785618000000,
+      "tag": "0009_enable_cito_general",
+      "breakpoints": true
     }
   ]
 }

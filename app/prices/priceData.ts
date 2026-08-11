@@ -34,7 +34,8 @@ export type CategoryId =
   | "covid"
   | "sampling"
   | "medical"
-  | "other-infections";
+  | "other-infections"
+  | "mri";
 
 export type PriceItem = {
   id: string;
@@ -43,6 +44,8 @@ export type PriceItem = {
   categoryLabel: string;
   amount: number;
   turnaround?: string;
+  citoAvailable?: boolean;
+  citoSurcharge?: number;
   aliases?: string[];
   isActive?: boolean;
   sortOrder?: number;

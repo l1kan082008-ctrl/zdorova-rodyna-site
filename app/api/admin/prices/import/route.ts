@@ -8,6 +8,10 @@ import {
   categoryOptions,
   type CategoryId,
 } from "../../../../prices/priceData";
+import {
+  DEFAULT_CITO_SURCHARGE,
+  usesDefaultCitoPolicy,
+} from "../../../../prices/citoPolicy";
 
 const MAX_ITEMS = 5000;
 const categoryById = new Map(
@@ -25,6 +29,14 @@ function parseItem(value: unknown, index: number): ImportedPriceItem {
     typeof payload.category === "string" ? payload.category : "";
   const categoryOption = categoryById.get(category as CategoryId);
   const amount = Number(payload.amount);
+  const defaultCitoEnabled = categoryOption
+    ? usesDefaultCitoPolicy(categoryOption.id)
+    : false;
+  const citoAvailable =
+    defaultCitoEnabled ||
+    payload.citoAvailable === true ||
+    Number(payload.citoSurcharge) > 0;
+  const citoSurcharge = citoAvailable ? DEFAULT_CITO_SURCHARGE : 0;
   const turnaround =
     typeof payload.turnaround === "string"
       ? payload.turnaround.trim()
@@ -49,7 +61,6 @@ function parseItem(value: unknown, index: number): ImportedPriceItem {
   if (turnaround.length > 200) {
     throw new Error(`Рядок ${index + 1}: термін виконання надто довгий.`);
   }
-
   return {
     id: id || undefined,
     name,
@@ -57,6 +68,8 @@ function parseItem(value: unknown, index: number): ImportedPriceItem {
     categoryLabel: categoryOption.label,
     amount: Math.round(amount),
     turnaround: turnaround || "Уточнюйте",
+    citoAvailable,
+    citoSurcharge: citoAvailable ? citoSurcharge : 0,
     aliases,
     isActive: payload.isActive !== false,
     sortOrder: Math.min(

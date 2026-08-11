@@ -1,4 +1,8 @@
 import { categoryOptions, type CategoryId } from "../../prices/priceData";
+import {
+  DEFAULT_CITO_SURCHARGE,
+  usesDefaultCitoPolicy,
+} from "../../prices/citoPolicy";
 
 export type ParsedPriceImportRow = {
   id?: string;
@@ -7,6 +11,8 @@ export type ParsedPriceImportRow = {
   categoryLabel: string;
   amount: number;
   turnaround: string;
+  citoAvailable: boolean;
+  citoSurcharge: number;
   aliases: string[];
   isActive: boolean;
   sortOrder: number;
@@ -32,6 +38,8 @@ type ColumnName =
   | "category"
   | "amount"
   | "turnaround"
+  | "citoAvailable"
+  | "citoSurcharge"
   | "aliases"
   | "isActive"
   | "sortOrder";
@@ -66,6 +74,23 @@ const columnAliases: Record<ColumnName, string[]> = {
     "термін готовності",
     "готовність",
     "turnaround",
+  ],
+  citoAvailable: [
+    "cito",
+    "cito доступно",
+    "режим cito",
+    "цито",
+    "цито доступно",
+    "режим цито",
+    "cito available",
+  ],
+  citoSurcharge: [
+    "доплата cito",
+    "доплата цито",
+    "вартість cito",
+    "вартість цито",
+    "cito surcharge",
+    "cito доплата",
   ],
   aliases: [
     "синоніми",
@@ -166,9 +191,9 @@ function parseAmount(value: unknown) {
   return Number.isFinite(amount) && amount >= 0 ? Math.round(amount) : null;
 }
 
-function parseBoolean(value: unknown) {
+function parseBoolean(value: unknown, defaultValue = true) {
   const normalized = normalize(value);
-  if (!normalized) return true;
+  if (!normalized) return defaultValue;
   if (["ні", "нет", "false", "0", "приховано", "неактивна"].includes(normalized)) {
     return false;
   }
@@ -265,6 +290,13 @@ export async function parsePriceWorkbook(
       const explicitOrder = Number(
         getCell(row, header.columns, "sortOrder"),
       );
+      const defaultCitoEnabled = usesDefaultCitoPolicy(category.id);
+      const legacyCitoSurcharge =
+        parseAmount(getCell(row, header.columns, "citoSurcharge")) ?? 0;
+      const citoAvailable = parseBoolean(
+        getCell(row, header.columns, "citoAvailable"),
+        defaultCitoEnabled || legacyCitoSurcharge > 0,
+      );
 
       rows.push({
         id:
@@ -276,6 +308,8 @@ export async function parsePriceWorkbook(
         turnaround:
           String(getCell(row, header.columns, "turnaround")).trim() ||
           "Уточнюйте",
+        citoAvailable,
+        citoSurcharge: citoAvailable ? DEFAULT_CITO_SURCHARGE : 0,
         aliases,
         isActive: parseBoolean(
           getCell(row, header.columns, "isActive"),

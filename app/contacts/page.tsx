@@ -3,18 +3,18 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
+import { clearPriceCalculatorSelection } from "../prices/calculatorSelection";
 import { LocationsExplorer } from "./LocationsExplorer";
-import { centerLocations } from "./locationData";
+import { centerLocations, type CenterLocation } from "./locationData";
 
 const services = [
   "МРТ",
-  "КТ та КТ-коронарографія",
+  "КТ",
   "УЗД",
   "Лабораторні дослідження",
   "Консультації лікарів",
   "Холтер та кардіодіагностика",
   "Аналізи вдома",
-  "Результати дистанційно",
   "Скринінг здоров’я 40+",
   "Комплекс досліджень",
 ];
@@ -25,6 +25,7 @@ type BookingResponse = {
 };
 
 export default function ContactsPage() {
+  const [locations, setLocations] = useState<CenterLocation[]>(centerLocations);
   const [sent, setSent] = useState(false);
   const [selectedServices, setSelectedServices] = useState("");
   const [estimatedTotal, setEstimatedTotal] = useState("");
@@ -39,6 +40,19 @@ export default function ContactsPage() {
   );
 
   useEffect(() => {
+    let active = true;
+    fetch("/api/locations")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: { locations?: CenterLocation[] } | null) => {
+        if (active && payload?.locations?.length) setLocations(payload.locations);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const servicesFromCalculator = params.get("services")?.trim() ?? "";
     const totalFromCalculator = params.get("total")?.trim() ?? "";
@@ -46,7 +60,7 @@ export default function ContactsPage() {
     const serviceFromCatalog = params.get("service")?.trim() ?? "";
     const locationFromLink = params.get("location")?.trim() ?? "";
     const shouldScrollToBooking = window.location.hash === "#booking";
-    const linkedLocation = centerLocations.find(
+    const linkedLocation = locations.find(
       (location) => location.id === locationFromLink,
     );
 
@@ -94,11 +108,11 @@ export default function ContactsPage() {
     }, 60);
 
     return () => window.clearTimeout(applyCalculatorSelection);
-  }, []);
+  }, [locations]);
 
   const selectedLocation =
-    centerLocations.find((location) => location.id === selectedLocationId) ??
-    centerLocations[0];
+    locations.find((location) => location.id === selectedLocationId) ??
+    locations[0] ?? centerLocations[0];
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -132,6 +146,24 @@ export default function ContactsPage() {
       }
 
       setBookingReference(payload.reference);
+
+      if (selectedServices) {
+        clearPriceCalculatorSelection();
+        setSelectedServices("");
+        setEstimatedTotal("");
+        setSelectedService("");
+        setComment("");
+
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete("services");
+        cleanUrl.searchParams.delete("total");
+        window.history.replaceState(
+          window.history.state,
+          "",
+          `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`,
+        );
+      }
+
       setSent(true);
       form.reset();
     } catch (error) {
@@ -146,29 +178,23 @@ export default function ContactsPage() {
   return (
     <main className="inner-page contacts-page">
       <SiteHeader active="contacts" />
-      <section className="page-hero contacts-page-hero">
-        <div className="contacts-hero-copy">
+      <section className="contacts-overview">
+        <div className="contacts-overview__copy">
           <span className="section-kicker">Контакти</span>
-          <h1>Здорова Родина поруч</h1>
+          <h1>Наші відділення</h1>
           <p>
-            Оберіть відділення, перегляньте його фото та розташування на карті,
-            а ми допоможемо погодити зручний час візиту.
+            Адреси, доступні послуги, графік роботи та маршрут.
           </p>
         </div>
-        <div className="contacts-hero-actions" aria-label="Швидкі контакти">
-          <a href="tel:+380676714444">
-            <span aria-hidden="true">☎</span>
-            <small>Є запитання?</small>
-            <strong>+38 (067) 671-44-44</strong>
-          </a>
+        <div className="contacts-overview__support" aria-label="Контакти центру">
+          <a href="tel:+380676714444">+38 (067) 671-44-44</a>
           <a href="mailto:zdorovarodynarivne@ukr.net">
-            <span aria-hidden="true">@</span>
-            <small>Напишіть нам</small>
-            <strong>zdorovarodynarivne@ukr.net</strong>
+            zdorovarodynarivne@ukr.net
           </a>
         </div>
       </section>
       <LocationsExplorer
+        locations={locations}
         selectedLocationId={selectedLocationId}
         onSelectLocation={setSelectedLocationId}
       />
@@ -266,7 +292,7 @@ export default function ContactsPage() {
                   onChange={(event) => setSelectedLocationId(event.target.value)}
                   required
                 >
-                  {centerLocations.map((location) => (
+                  {locations.map((location) => (
                     <option value={location.id} key={location.id}>
                       {location.fullAddress}
                     </option>

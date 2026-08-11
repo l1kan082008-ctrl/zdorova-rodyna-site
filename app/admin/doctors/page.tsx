@@ -2,13 +2,12 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import AdminNavigation from "../AdminNavigation";
 import {
-  doctorAvailabilityOptions,
   doctorPatientGroupOptions,
   getDoctorInitials,
   weekDays,
   type Doctor,
-  type DoctorAvailabilityStatus,
   type DoctorPatientGroup,
   type DoctorSchedule,
 } from "../../doctors/doctorData";
@@ -21,10 +20,13 @@ type ApiPayload = {
 function DoctorEditor({
   doctor,
   onUpdated,
+  onDeleted,
 }: {
   doctor: Doctor;
   onUpdated: (doctors: Doctor[]) => void;
+  onDeleted: (doctors: Doctor[]) => void;
 }) {
+  const [name, setName] = useState(doctor.name);
   const [specialty, setSpecialty] = useState(doctor.specialty);
   const [experienceYears, setExperienceYears] = useState(
     doctor.experienceYears?.toString() ?? "",
@@ -36,10 +38,6 @@ function DoctorEditor({
     doctor.patientGroups,
   );
   const [schedule, setSchedule] = useState<DoctorSchedule>(doctor.schedule);
-  const [availabilityStatus, setAvailabilityStatus] =
-    useState<DoctorAvailabilityStatus>(
-      doctor.availabilityStatus ?? "accepting",
-    );
   const [photo, setPhoto] = useState<File | null>(null);
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
@@ -55,6 +53,7 @@ function DoctorEditor({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           id: doctor.id,
+          name,
           specialty,
           experienceYears: experienceYears ? Number(experienceYears) : null,
           branch,
@@ -62,7 +61,6 @@ function DoctorEditor({
           biography,
           patientGroups,
           schedule,
-          availabilityStatus,
         }),
       });
       const payload = (await response.json()) as ApiPayload;
@@ -154,6 +152,14 @@ function DoctorEditor({
       <form className="admin-doctor-form" onSubmit={saveProfile}>
         <div className="admin-form-grid">
           <label>
+            Ім’я та прізвище лікаря
+            <input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              required
+            />
+          </label>
+          <label>
             Спеціальність
             <input
               value={specialty}
@@ -171,30 +177,6 @@ function DoctorEditor({
               onChange={(event) => setExperienceYears(event.target.value)}
               placeholder="Не вказано"
             />
-          </label>
-          <label>
-            Статус прийому
-            <select
-              value={availabilityStatus}
-              onChange={(event) =>
-                setAvailabilityStatus(
-                  event.target.value as DoctorAvailabilityStatus,
-                )
-              }
-            >
-              {doctorAvailabilityOptions.map((option) => (
-                <option value={option.value} key={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <small>
-              {
-                doctorAvailabilityOptions.find(
-                  (option) => option.value === availabilityStatus,
-                )?.description
-              }
-            </small>
           </label>
         </div>
 
@@ -279,6 +261,33 @@ function DoctorEditor({
 
         <div className="admin-form-actions">
           <p role="status">{status}</p>
+          <button
+            className="admin-danger-button"
+            type="button"
+            disabled={saving}
+            onClick={async () => {
+              if (!window.confirm(`Видалити профіль «${doctor.name}»?`)) return;
+              setSaving(true);
+              setStatus("");
+              try {
+                const response = await fetch(
+                  `/api/admin/doctors?id=${encodeURIComponent(doctor.id)}`,
+                  { method: "DELETE" },
+                );
+                const payload = (await response.json()) as ApiPayload;
+                if (!response.ok || !payload.doctors) {
+                  throw new Error(payload.error || "Не вдалося видалити лікаря");
+                }
+                onDeleted(payload.doctors);
+              } catch (reason) {
+                setStatus(reason instanceof Error ? reason.message : "Сталася помилка");
+              } finally {
+                setSaving(false);
+              }
+            }}
+          >
+            Видалити профіль
+          </button>
           <button className="book-button" type="submit" disabled={saving}>
             {saving ? "Зберігаємо…" : "Зберегти профіль"}
             <span>→</span>
@@ -295,6 +304,7 @@ export default function DoctorsAdminPage() {
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     fetch("/api/admin/doctors")
@@ -328,15 +338,39 @@ export default function DoctorsAdminPage() {
     setDoctors(updatedDoctors);
   };
 
+  const createDoctor = async () => {
+    setCreating(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/doctors", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: "Новий лікар",
+          specialty: "Спеціальність уточнюється",
+        }),
+      });
+      const payload = (await response.json()) as ApiPayload;
+      if (!response.ok || !payload.doctors) {
+        throw new Error(payload.error || "Не вдалося додати лікаря");
+      }
+      setDoctors(payload.doctors);
+      const created = payload.doctors.find(
+        (doctor) => !doctors.some((item) => item.id === doctor.id),
+      );
+      setSelectedId(created?.id ?? payload.doctors.at(-1)?.id ?? "");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Сталася помилка");
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <main className="admin-doctors-page">
       <header className="admin-topbar">
         <Link href="/doctors">← До каталогу лікарів</Link>
-        <nav aria-label="Адміністративні розділи">
-          <strong>Лікарі</strong>
-          <Link href="/admin/bookings">Заявки</Link>
-          <Link href="/admin/prices">Прайс</Link>
-        </nav>
+        <AdminNavigation current="doctors" />
       </header>
 
       <section className="admin-intro">
@@ -358,6 +392,18 @@ export default function DoctorsAdminPage() {
       ) : (
         <section className="admin-doctors-layout">
           <aside className="admin-doctors-list">
+            <button
+              className="admin-create-button"
+              type="button"
+              onClick={createDoctor}
+              disabled={creating}
+            >
+              <span>+</span>
+              <span>
+                <strong>{creating ? "Додаємо…" : "Додати лікаря"}</strong>
+                <small>Створити новий профіль</small>
+              </span>
+            </button>
             <label>
               <span>Знайти лікаря</span>
               <input
@@ -390,6 +436,10 @@ export default function DoctorsAdminPage() {
               key={selectedDoctor.id}
               doctor={selectedDoctor}
               onUpdated={updateDoctors}
+              onDeleted={(updatedDoctors) => {
+                setDoctors(updatedDoctors);
+                setSelectedId(updatedDoctors[0]?.id ?? "");
+              }}
             />
           ) : null}
         </section>

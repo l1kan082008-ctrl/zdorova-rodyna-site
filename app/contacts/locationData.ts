@@ -1,3 +1,13 @@
+export const branchServiceCatalog = [
+  { id: "laboratory", label: "Аналізи" },
+  { id: "ct", label: "КТ" },
+  { id: "mri", label: "МРТ" },
+  { id: "ultrasound", label: "УЗД" },
+  { id: "doctors", label: "Лікарі" },
+] as const;
+
+export type BranchServiceId = (typeof branchServiceCatalog)[number]["id"];
+
 export type CenterLocation = {
   id: string;
   city: string;
@@ -9,6 +19,7 @@ export type CenterLocation = {
   description: string;
   hours: string[];
   phone: string;
+  services: BranchServiceId[];
   coordinates: {
     lat: number;
     lng: number;
@@ -38,6 +49,7 @@ export const centerLocations: CenterLocation[] = [
       "Нд · вихідний",
     ],
     phone: "+380676714444",
+    services: ["ct", "mri", "laboratory", "doctors", "ultrasound"],
     coordinates: { lat: 50.6031702, lng: 26.2797542 },
     gallery: [
       {
@@ -62,6 +74,7 @@ export const centerLocations: CenterLocation[] = [
       "Сб–Нд · вихідні",
     ],
     phone: "+380676714444",
+    services: ["laboratory"],
     coordinates: { lat: 50.6033456, lng: 26.2600134 },
     gallery: [
       {
@@ -86,6 +99,7 @@ export const centerLocations: CenterLocation[] = [
       "Сб–Нд · вихідні",
     ],
     phone: "+380676714444",
+    services: ["laboratory"],
     coordinates: { lat: 50.6349071, lng: 26.1985517 },
     gallery: [
       {
@@ -109,6 +123,7 @@ export const centerLocations: CenterLocation[] = [
       "Сб–Нд · вихідні",
     ],
     phone: "+380932332043",
+    services: ["laboratory"],
     coordinates: { lat: 50.6105105, lng: 26.2209196 },
     gallery: [
       {
@@ -129,6 +144,7 @@ export const centerLocations: CenterLocation[] = [
       "Пункт лабораторної діагностики «Здорова Родина» у Бродах.",
     hours: ["Графік роботи уточнюйте"],
     phone: "+380970993130",
+    services: ["laboratory"],
     coordinates: { lat: 50.0927788, lng: 25.1347706 },
     gallery: [
       {
@@ -149,6 +165,7 @@ export const centerLocations: CenterLocation[] = [
       "Пункт лабораторної діагностики «Здорова Родина» у Звягелі.",
     hours: ["Графік роботи уточнюйте"],
     phone: "+380970383113",
+    services: ["laboratory"],
     coordinates: { lat: 50.5897806, lng: 27.615086 },
     gallery: [
       {
@@ -169,6 +186,7 @@ export const centerLocations: CenterLocation[] = [
       "Пункт лабораторної діагностики «Здорова Родина» у Костополі.",
     hours: ["Графік роботи уточнюйте"],
     phone: "+380982002300",
+    services: ["laboratory"],
     coordinates: { lat: 50.8817744, lng: 26.451782 },
     gallery: [
       {

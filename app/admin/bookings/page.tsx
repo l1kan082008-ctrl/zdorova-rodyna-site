@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import AdminNavigation from "../AdminNavigation";
 import type {
   Booking,
   BookingStatus,
@@ -77,11 +78,7 @@ export default function BookingsAdminPage() {
     <main className="admin-bookings-page">
       <header className="admin-topbar">
         <Link href="/services">← До сайту</Link>
-        <nav aria-label="Адміністративні розділи">
-          <Link href="/admin/doctors">Лікарі</Link>
-          <strong>Заявки</strong>
-          <Link href="/admin/prices">Прайс</Link>
-        </nav>
+        <AdminNavigation current="bookings" />
       </header>
       <section className="admin-intro">
         <span className="section-kicker">Адмін-панель</span>

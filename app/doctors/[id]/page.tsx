@@ -37,16 +37,26 @@ export async function generateMetadata({
 
 export default async function DoctorProfilePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ returnTo?: string | string[] }>;
 }) {
   const { id } = await params;
+  const resolvedSearchParams = await searchParams;
+  const requestedReturnTo = Array.isArray(resolvedSearchParams.returnTo)
+    ? resolvedSearchParams.returnTo[0]
+    : resolvedSearchParams.returnTo;
+  const returnTo =
+    requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//")
+      ? requestedReturnTo
+      : undefined;
   const doctor = await loadDoctor(id);
 
   return (
     <main className="inner-page">
       <SiteHeader active="doctors" />
-      <DoctorProfileDetails doctor={doctor} />
+      <DoctorProfileDetails doctor={doctor} returnTo={returnTo} />
       <SiteFooter />
     </main>
   );

@@ -13,7 +13,7 @@ const directions = [
     number: "01",
     title: "Лабораторні дослідження",
     text: "Від базових аналізів до комплексних програм — із підказками щодо підготовки та зрозумілим способом отримання результатів.",
-    href: "/prices",
+    href: "/services/lab",
   },
   {
     number: "02",
@@ -25,7 +25,7 @@ const directions = [
     number: "03",
     title: "Діагностика серця",
     text: "ЕКГ, ЕхоКГ і Холтер-моніторинг для оцінки роботи серця в спокої та протягом звичного дня.",
-    href: "/contacts?service=Кардіологія#booking",
+    href: "/services/cardiology#cardiology-services",
   },
   {
     number: "04",
@@ -102,9 +102,6 @@ export default function AboutPage() {
             підібрати доречний маршрут, пояснити підготовку та не залишити
             пацієнта наодинці з незрозумілим результатом.
           </p>
-          <Link className="outline-button" href="/contacts#booking">
-            Записатися на прийом <span>→</span>
-          </Link>
         </div>
         <div
           className="about-route-photo"

@@ -1,4 +1,8 @@
 import type { CategoryId, PriceItem } from "./priceData";
+import {
+  DEFAULT_CITO_SURCHARGE,
+  usesDefaultCitoPolicy,
+} from "./citoPolicy.ts";
 
 export const officialCatalogSource = {
   url: "https://zdorovarodynaplus.com.ua/pricelist",
@@ -137,7 +141,7 @@ export const officialCategoryOptions: ReadonlyArray<{
   }
 ];
 
-export const officialPriceItems: PriceItem[] = [
+const officialPriceItemsBase: PriceItem[] = [
   {
     "id": "official-uzd-001",
     "name": "ОЧП (органи черевної порожнини) комплексно",
@@ -6706,3 +6710,17 @@ export const officialPriceItems: PriceItem[] = [
     "sortOrder": 30122
   }
 ];
+
+export const officialPriceItems: PriceItem[] = officialPriceItemsBase.map(
+  (item) =>
+    usesDefaultCitoPolicy(item.category)
+      ? {
+          ...item,
+          citoAvailable: true,
+          citoSurcharge:
+            (item.citoSurcharge ?? 0) > 0
+              ? item.citoSurcharge
+              : DEFAULT_CITO_SURCHARGE,
+        }
+      : item,
+);

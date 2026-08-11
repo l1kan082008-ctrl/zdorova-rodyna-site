@@ -1,13 +1,17 @@
 import Link from "next/link";
 import {
-  getDoctorAvailability,
   getDoctorInitials,
   getDoctorPatientGroups,
   weekDays,
   type Doctor,
 } from "../doctorData";
 
-export function DoctorProfileDetails({ doctor }: { doctor: Doctor | null }) {
+type DoctorProfileDetailsProps = {
+  doctor: Doctor | null;
+  returnTo?: string;
+};
+
+export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsProps) {
   if (!doctor) {
     return (
       <section className="doctor-detail-state">
@@ -21,9 +25,6 @@ export function DoctorProfileDetails({ doctor }: { doctor: Doctor | null }) {
     );
   }
 
-  const availability = getDoctorAvailability(doctor.availabilityStatus);
-  const isPaused = availability.value === "paused";
-  const needsConfirmation = availability.value === "by-confirmation";
   const biographyParagraphs = doctor.biography
     .split(/\n+/)
     .map((paragraph) => paragraph.trim())
@@ -32,8 +33,8 @@ export function DoctorProfileDetails({ doctor }: { doctor: Doctor | null }) {
   return (
     <>
       <section className="doctor-detail-shell">
-        <Link className="doctor-detail-back" href="/doctors">
-          ← Всі лікарі
+        <Link className="doctor-detail-back" href={returnTo ?? "/doctors"}>
+          {returnTo ? "← Повернутися до вибору лікаря" : "← Всі лікарі"}
         </Link>
 
         <div className="doctor-detail-hero">
@@ -50,12 +51,6 @@ export function DoctorProfileDetails({ doctor }: { doctor: Doctor | null }) {
           </div>
 
           <div className="doctor-detail-heading">
-            <span
-              className={`doctor-detail-status is-${availability.value}`}
-            >
-              <i aria-hidden="true" />
-              {availability.label}
-            </span>
             <span className="doctor-specialty">{doctor.specialty}</span>
             <h1>{doctor.name}</h1>
 
@@ -83,21 +78,12 @@ export function DoctorProfileDetails({ doctor }: { doctor: Doctor | null }) {
             ) : null}
 
             <div className="doctor-detail-actions">
-              {isPaused ? (
-                <button className="book-button" type="button" disabled>
-                  Запис тимчасово недоступний
-                </button>
-              ) : (
-                <a
-                  className="book-button"
-                  href={`/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`}
-                >
-                  {needsConfirmation
-                    ? "Уточнити можливість прийому"
-                    : "Записатися на прийом"}{" "}
-                  <span>→</span>
-                </a>
-              )}
+              <a
+                className="book-button"
+                href={`/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`}
+              >
+                Записатися на прийом <span>→</span>
+              </a>
               <a className="outline-button" href="tel:+380676714444">
                 +38 (067) 671-44-44
               </a>

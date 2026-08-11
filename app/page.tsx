@@ -4,11 +4,38 @@ import { listDoctors } from "./api/doctors/doctorStore";
 import { listPublicPriceItems } from "./api/prices/priceStore";
 import { DoctorsShowcase } from "./components/DoctorsShowcase";
 import { GlowPriceCard } from "./components/GlowPriceCard";
+import { HomeSearch, type HomeSearchItem } from "./components/HomeSearch";
+import { HorizontalCardScroller } from "./components/HorizontalCardScroller";
 import { PromoSlider } from "./components/PromoSlider";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome";
+import { centerLocations } from "./contacts/locationData";
 import { defaultDoctors } from "./doctors/doctorData";
 import { catalogItems, type PriceItem } from "./prices/priceData";
+import {
+  formatPrice,
+  priceReferences,
+  resolvePriceItem,
+  type PriceReference,
+} from "./prices/priceReferences";
+import { primaryServiceDetails } from "./services/serviceData";
 import { serviceDetails } from "./services/serviceData";
+
+export const dynamic = "force-dynamic";
+
+const homeServiceOrder = ["lab", "ct", "mri", "consultation"] as const;
+
+const homeServiceDetails = homeServiceOrder.map((slug) => {
+  const service = primaryServiceDetails.find((item) => item.slug === slug);
+  if (!service) throw new Error(`Missing home service: ${slug}`);
+
+  return slug === "lab"
+    ? {
+        ...service,
+        shortTitle: "Аналізи",
+        cardDescription: "Лабораторні дослідження",
+      }
+    : service;
+});
 
 const advantages = [
   {
@@ -63,23 +90,66 @@ const featuredDoctorOrder = [
   "pochtar-kateryna",
 ];
 
-const fallbackPriceDirections = [
+type PopularPriceDirection = {
+  priceItemId: string;
+  title: string;
+  text: string;
+  note: string;
+};
+
+const fallbackPriceDirectionDefinitions: Array<{
+  reference: PriceReference;
+  note: string;
+}> = [
   {
-    title: "Холтер ЕКГ",
-    text: "900 ₴",
+    reference: priceReferences.holter,
     note: "Добове моніторування роботи серця.",
   },
   {
-    title: "ЕхоКГ",
-    text: "650 ₴",
+    reference: priceReferences.echoHeart,
     note: "Ультразвукове дослідження серця.",
   },
   {
-    title: "УЗД щитоподібної залози",
-    text: "500 ₴",
+    reference: priceReferences.thyroidUltrasound,
     note: "Актуальність ціни підтвердить адміністратор.",
   },
+  {
+    reference: priceReferences.ctBrain,
+    note: "Комп’ютерна томографія головного мозку.",
+  },
+  {
+    reference: priceReferences.mriBrain,
+    note: "Магнітно-резонансне дослідження головного мозку.",
+  },
+  {
+    reference: priceReferences.ecg,
+    note: "Швидка реєстрація електричної активності серця.",
+  },
+  {
+    reference: priceReferences.glucose,
+    note: "Біохімічне дослідження рівня глюкози.",
+  },
+  {
+    reference: priceReferences.ferritin,
+    note: "Оцінка запасів заліза в організмі.",
+  },
 ];
+
+function buildFallbackPriceDirections(items: PriceItem[]): PopularPriceDirection[] {
+  return fallbackPriceDirectionDefinitions.flatMap(({ reference, note }) => {
+    const item = resolvePriceItem(items, reference);
+    if (!item) return [];
+
+    return [
+      {
+        priceItemId: item.id,
+        title: item.name,
+        text: formatPrice(item.amount),
+        note,
+      },
+    ];
+  });
+}
 
 const popularServiceAliases: Record<string, string[]> = {
   "ехокг": ["ехо", "серця"],
@@ -115,8 +185,8 @@ function findCatalogItem(
 async function getPopularPriceDirections() {
   try {
     const [statistics, priceItems] = await Promise.all([
-      listPopularBookingServices(),
-      listPublicPriceItems(),
+      listPopularBookingServices().catch(() => []),
+      listPublicPriceItems().catch(() => catalogItems),
     ]);
     const seen = new Set<string>();
     const dynamicItems = statistics.flatMap(({ service }) => {
@@ -129,28 +199,21 @@ async function getPopularPriceDirections() {
       seen.add(item.id);
       return [
         {
+          priceItemId: item.id,
           title: item.name,
-          text: `${new Intl.NumberFormat("uk-UA").format(item.amount)} ₴`,
+          text: formatPrice(item.amount),
           note: `${item.categoryLabel} · популярне за підтвердженими записами`,
         },
       ];
     });
 
-    return [...dynamicItems, ...fallbackPriceDirections]
-      .filter((item, index, items) => {
-        const key =
-          findCatalogItem(item.title, priceItems)?.id ?? normalizeServiceName(item.title);
-        return (
-          items.findIndex(
-            (candidate) =>
-              (findCatalogItem(candidate.title, priceItems)?.id ??
-                normalizeServiceName(candidate.title)) === key,
-          ) === index
-        );
-      })
-      .slice(0, 3);
+    const fallbackItems = buildFallbackPriceDirections(priceItems).filter(
+      (item) => !seen.has(item.priceItemId),
+    );
+
+    return [...dynamicItems, ...fallbackItems].slice(0, 8);
   } catch {
-    return fallbackPriceDirections;
+    return buildFallbackPriceDirections(catalogItems);
   }
 }
 
@@ -250,9 +313,10 @@ function LineIcon({ type }: { type: string }) {
 }
 
 export default async function Home() {
-  const [priceDirections, doctors] = await Promise.all([
+  const [priceDirections, doctors, priceItems] = await Promise.all([
     getPopularPriceDirections(),
     listDoctors().catch(() => defaultDoctors),
+    listPublicPriceItems().catch(() => catalogItems),
   ]);
   const showcaseDoctors = doctors.sort((first, second) => {
     const firstIndex = featuredDoctorOrder.indexOf(first.id);
@@ -266,10 +330,58 @@ export default async function Home() {
       first.name.localeCompare(second.name, "uk-UA", { sensitivity: "base" })
     );
   });
+  const searchItems: HomeSearchItem[] = [
+    ...serviceDetails.map((service) => ({
+      id: service.slug,
+      kind: "service" as const,
+      title: service.shortTitle,
+      meta: service.cardDescription,
+      href: `/services/${service.slug}`,
+      actionHref: `/services/${service.slug}`,
+      keywords: `${service.title} ${service.category} ${service.lead} ${
+        service.slug === "home-nurse"
+          ? "аналізи вдома виклик медсестри медсестра додому"
+          : ""
+      }`,
+    })),
+    ...showcaseDoctors.map((doctor) => ({
+      id: doctor.id,
+      kind: "doctor" as const,
+      title: doctor.name,
+      meta: `${doctor.specialty} · ${doctor.branch}`,
+      href: `/doctors/${doctor.id}`,
+      actionHref: `/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`,
+      keywords: `${doctor.description} ${doctor.biography} ${doctor.patientGroups.join(" ")}`,
+      imageUrl: doctor.photoUrl,
+    })),
+    ...priceItems
+      .filter((item) => item.isActive !== false)
+      .map((item) => ({
+        id: item.id,
+        kind: "price" as const,
+        title: item.name,
+        meta: item.categoryLabel,
+        amount: item.amount,
+        turnaround: item.turnaround,
+        href: `/prices?search=${encodeURIComponent(item.name)}`,
+        actionHref: `/contacts?service=${encodeURIComponent(item.name)}#booking`,
+        keywords: (item.aliases ?? []).join(" "),
+      })),
+    ...centerLocations.map((location) => ({
+      id: location.id,
+      kind: "location" as const,
+      title: location.address,
+      meta: `${location.city} · ${location.type}`,
+      href: `/contacts?location=${encodeURIComponent(location.id)}#locations`,
+      actionHref: `/contacts?location=${encodeURIComponent(location.id)}#locations`,
+      keywords: `${location.fullAddress} ${location.name} ${location.landmark ?? ""}`,
+    })),
+  ];
 
   return (
     <main id="top">
       <SiteHeader />
+      <HomeSearch items={searchItems} />
 
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-copy">
@@ -320,7 +432,7 @@ export default async function Home() {
           </Link>
         </div>
         <div className="services-grid" id="services-grid">
-          {serviceDetails.map((service) => (
+          {homeServiceDetails.map((service) => (
             <Link
               className={`service-card service-card--${service.slug}`}
               key={service.slug}
@@ -358,11 +470,11 @@ export default async function Home() {
       <section className="about-section" id="about">
         <div className="about-copy">
           <span className="about-kicker">Про нас</span>
-          <h2>Медицина, що починається з довіри</h2>
+          <h2>Аналізи, діагностика та лікарі — в одному центрі</h2>
           <p>
-            «Здорова Родина» — сучасна українська лабораторія та
-            лікувально-діагностичний центр. Дослідження виконуються на
-            автоматичному високоточному обладнанні.
+            У «Здоровій Родині» можна здати лабораторні аналізи, пройти КТ,
+            МРТ, УЗД і кардіологічні обстеження, а також записатися до
+            профільного або сімейного лікаря.
           </p>
           <a className="outline-button" href="/about">
             Дізнатися більше про центр <span>→</span>
@@ -400,10 +512,9 @@ export default async function Home() {
             Актуальну вартість остаточно підтвердить адміністратор.
           </p>
         </div>
-        <div className="pricing-grid">
+        <HorizontalCardScroller label="Популярні послуги">
           {priceDirections.map((item) => (
-            <GlowPriceCard key={item.title}>
-              <span className="price-label">Популярне</span>
+            <GlowPriceCard key={item.priceItemId} className="price-card--plain">
               <h3>{item.title}</h3>
               <strong>{item.text}</strong>
               <p>{item.note}</p>
@@ -415,44 +526,7 @@ export default async function Home() {
               </Link>
             </GlowPriceCard>
           ))}
-        </div>
-      </section>
-
-      <section className="contact-section" id="contacts">
-        <div className="contact-copy">
-          <span className="section-kicker">Контакти</span>
-          <h2>Допоможемо обрати послугу та час</h2>
-          <p>
-            Подзвоніть адміністратору: +38 (067) 671-44-44. Підкажемо
-            підготовку, адресу відділення та доступний час.
-          </p>
-          <a className="book-button" href="tel:+380676714444">
-            Подзвонити <span>→</span>
-          </a>
-        </div>
-        <ol className="contact-steps">
-          <li>
-            <span>01</span>
-            <div>
-              <strong>Подзвоніть адміністратору</strong>
-              <p>Номер для запису: +38 (067) 671-44-44.</p>
-            </div>
-          </li>
-          <li>
-            <span>02</span>
-            <div>
-              <strong>Уточніть деталі</strong>
-              <p>Назвіть послугу, лікаря або потрібне дослідження.</p>
-            </div>
-          </li>
-          <li>
-            <span>03</span>
-            <div>
-              <strong>Оберіть час</strong>
-              <p>Узгодьте зручну дату для консультації чи дослідження.</p>
-            </div>
-          </li>
-        </ol>
+        </HorizontalCardScroller>
       </section>
 
       <SiteFooter />

@@ -45,7 +45,7 @@ export default defineConfig(async () => {
 
   return {
     server: {
-      allowedHosts: [".lhr.life"],
+      allowedHosts: [".lhr.life", ".ngrok-free.dev"],
       ...(isCodexSeatbeltSandbox
         ? { watch: { useFsEvents: false, usePolling: true } }
         : {}),
