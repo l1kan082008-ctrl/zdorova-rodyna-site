@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
 import { clearPriceCalculatorSelection } from "../prices/calculatorSelection";
@@ -23,6 +23,87 @@ type BookingResponse = {
   reference?: string;
   error?: string;
 };
+
+type BookingSelectOption = {
+  value: string;
+  label: string;
+};
+
+function BookingSelect({
+  id,
+  label,
+  value,
+  placeholder,
+  options,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  placeholder: string;
+  options: BookingSelectOption[];
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const selectedLabel = options.find((option) => option.value === value)?.label;
+
+  useEffect(() => {
+    if (!open) return;
+
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
+  return (
+    <div className={`booking-select${open ? " is-open" : ""}`} ref={rootRef}>
+      <span className="booking-select-label" id={`${id}-label`}>{label}</span>
+      <button
+        className="booking-select-trigger"
+        id={id}
+        type="button"
+        aria-labelledby={`${id}-label ${id}`}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span className={selectedLabel ? "" : "is-placeholder"}>
+          {selectedLabel ?? placeholder}
+        </span>
+        <span className="booking-select-chevron" aria-hidden="true" />
+      </button>
+      <div className="booking-select-menu" role="listbox" aria-labelledby={`${id}-label`}>
+        {options.map((option) => (
+          <button
+            className={option.value === value ? "is-selected" : ""}
+            type="button"
+            role="option"
+            aria-selected={option.value === value}
+            key={option.value}
+            onClick={() => {
+              onChange(option.value);
+              setOpen(false);
+            }}
+          >
+            <span>{option.label}</span>
+            {option.value === value ? <span aria-hidden="true">✓</span> : null}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function ContactsPage() {
   const [locations, setLocations] = useState<CenterLocation[]>(centerLocations);
@@ -283,40 +364,30 @@ export default function ContactsPage() {
                   required
                 />
               </label>
-              <label htmlFor="contact-location">
-                Відділення
-                <select
-                  id="contact-location"
-                  name="location"
-                  value={selectedLocationId}
-                  onChange={(event) => setSelectedLocationId(event.target.value)}
-                  required
-                >
-                  {locations.map((location) => (
-                    <option value={location.id} key={location.id}>
-                      {location.fullAddress}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label htmlFor="contact-service">
-                Послуга
-                <select
-                  id="contact-service"
-                  name="service"
-                  value={selectedService}
-                  onChange={(event) => setSelectedService(event.target.value)}
-                  required
-                >
-                  <option value="" disabled>Оберіть послугу</option>
-                  {selectedService && !services.includes(selectedService) ? (
-                    <option value={selectedService}>{selectedService}</option>
-                  ) : null}
-                  {services.map((service) => (
-                    <option value={service} key={service}>{service}</option>
-                  ))}
-                </select>
-              </label>
+              <BookingSelect
+                id="contact-location"
+                label="Відділення"
+                value={selectedLocationId}
+                placeholder="Оберіть відділення"
+                options={locations.map((location) => ({
+                  value: location.id,
+                  label: location.fullAddress,
+                }))}
+                onChange={setSelectedLocationId}
+              />
+              <BookingSelect
+                id="contact-service"
+                label="Послуга"
+                value={selectedService}
+                placeholder="Оберіть послугу"
+                options={[
+                  ...(selectedService && !services.includes(selectedService)
+                    ? [{ value: selectedService, label: selectedService }]
+                    : []),
+                  ...services.map((service) => ({ value: service, label: service })),
+                ]}
+                onChange={setSelectedService}
+              />
               <label htmlFor="contact-comment">
                 Коментар
                 <textarea

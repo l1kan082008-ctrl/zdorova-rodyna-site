@@ -584,6 +584,14 @@ export function PriceCatalog({
     return () => document.removeEventListener("keydown", closeOnEscape);
   }, [calculatorOpen]);
 
+  useEffect(() => {
+    document.body.classList.toggle("calculator-is-open", calculatorOpen);
+
+    return () => {
+      document.body.classList.remove("calculator-is-open");
+    };
+  }, [calculatorOpen]);
+
   const toggleItem = (id: string) => {
     setSelectedIds((current) => {
       if (current.includes(id)) {
@@ -1120,11 +1128,17 @@ export function PriceCatalog({
                   onClick={handlePdfDownload}
                   disabled={calculatorExporting !== null || !calculatorPdfReady}
                 >
-                  <span
-                    className="calculator-action-icon is-file-download"
-                    aria-hidden="true"
-                  >
-                    <i />
+                  <span className="calculator-action-icon is-file-download" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false">
+                      <path
+                        className="pdf-file-shape"
+                        d="M6.68.51h8.1c.47.03.64.33.92.61 1.56 1.55 3.11 3.14 4.61 4.74.11.18.17.36.18.57v13.84c-.16 1.69-1.49 3.06-3.19 3.23H6.67c-1.6-.18-2.81-1.37-3.1-2.93-.07-5.29-.09-10.62 0-15.9 0-.56-.05-1.05.1-1.59.38-1.4 1.57-2.42 3.02-2.56ZM14 1.86l-.21-.04h-7.09c-1.09.22-1.84 1.1-1.91 2.21v16.14c.17 1.13.98 1.93 2.13 2.02 3.51-.04 7.04.07 10.54-.06 1.03-.23 1.75-1.18 1.77-2.22.08-3.62-.15-7.24 0-10.86l-.04-1.72h-3.53c-.47 0-1.15-.48-1.38-.88-.06-.1-.3-.64-.3-.72V1.86ZM18.72 6.01c-.06-.08-.12-.17-.19-.25-.88-1-2-2.14-2.97-3.07-.08-.08-.21-.2-.32-.23v2.92c0 .19.28.62.47.62h3Z"
+                      />
+                      <path
+                        className="download-arrow"
+                        d="m12.68 18.03.11-.06c.59-.5 1.18-1.39 1.79-1.83s1.3.25.92.89c-1.03.97-1.96 2.16-3 3.11-.34.31-.71.29-1.04-.02-.46-.43-.88-.95-1.32-1.4-.37-.37-.76-.73-1.11-1.11-.15-.16-.49-.51-.57-.68-.26-.6.31-1.15.85-.85.29.16 1.11 1.07 1.39 1.36.16.17.3.39.49.53.04.03.05.07.11.06-.04-.27.04-.55.04-.81.01-1.57-.05-3.15-.04-4.71 0-.61-.06-1.38 0-1.96.05-.46.36-.74.83-.66.23.04.52.34.52.58v7.56Z"
+                      />
+                    </svg>
                   </span>
                   <strong>
                     {!calculatorPdfReady
@@ -1139,13 +1153,10 @@ export function PriceCatalog({
                   onClick={handleShareSelection}
                   disabled={calculatorExporting !== null || !calculatorPdfReady}
                 >
-                  <span
-                    className="calculator-action-icon is-share"
-                    aria-hidden="true"
-                  >
-                    <i />
-                    <i />
-                    <i />
+                  <span className="calculator-action-icon is-share" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false">
+                      <path d="M7.47 13.1l9.42 5.16.1-.02c.48-.63 1.2-1.16 1.98-1.33 3.49-.76 5.45 3.74 2.75 5.86-2.48 1.94-5.86-.27-5.27-3.28l-.2-.16-9.37-5.14c-.43.39-.83.78-1.39 1-2.5.97-4.95-1.18-4.4-3.77.47-2.24 3.17-3.39 5.09-2.07.22.15.48.49.64.59.04.02.06.05.11.03l9.49-5.38c.07-.09-.03-.38-.04-.51-.23-3.98 5.39-4.96 6.44-1.23s-3.59 5.91-5.82 2.94l-.14-.02-9.33 5.27-.04.06.14.94-.15 1.08ZM19.37 1.73c-.76.09-1.47.8-1.67 1.53-.53 1.9 1.65 3.45 3.22 2.19s.6-3.98-1.55-3.71ZM4.11 10.01c-2.6.3-2.37 4.42.38 4.17s2.34-4.48-.38-4.17ZM19.33 18.09c-.61.08-1.22.61-1.48 1.16-.79 1.68.81 3.56 2.57 2.85 2.23-.91 1.47-4.35-1.09-4.01Z" />
+                    </svg>
                   </span>
                   <strong>
                     {calculatorExporting === "share" ? "Готуємо…" : "Надіслати"}

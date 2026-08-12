@@ -112,10 +112,22 @@ const preparationGroups = [
 ];
 
 const visitChecklist = [
-  "Документ, що посвідчує особу",
-  "Направлення — за наявності",
-  "Попередні висновки та знімки",
-  "Список ліків, які ви приймаєте",
+  {
+    title: "Документ, що посвідчує особу",
+    text: "Паспорт або інший документ для оформлення візиту.",
+  },
+  {
+    title: "Направлення — за наявності",
+    text: "Електронне або паперове, якщо його видав лікар.",
+  },
+  {
+    title: "Попередні висновки та знімки",
+    text: "Допоможуть порівняти результати обстежень у динаміці.",
+  },
+  {
+    title: "Перелік ліків, які ви приймаєте",
+    text: "Запишіть назви препаратів і дозування перед консультацією.",
+  },
 ];
 
 export default function PreparationPage() {
@@ -184,9 +196,14 @@ export default function PreparationPage() {
           </div>
           <ol>
             {visitChecklist.map((item, index) => (
-              <li key={item}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                {item}
+              <li key={item.title}>
+                <span className="preparation-checklist-number">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <strong>{item.title}</strong>
+                  <small>{item.text}</small>
+                </div>
               </li>
             ))}
           </ol>

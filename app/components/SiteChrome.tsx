@@ -19,6 +19,29 @@ const footerNavigation = [
   { href: "/contacts", label: "Контакти", key: "contacts" },
 ];
 
+const footerServiceLinks = [
+  { href: "/services/lab", label: "Лабораторні дослідження" },
+  { href: "/services/ct", label: "Комп’ютерна томографія" },
+  { href: "/services/mri", label: "Магнітно-резонансна томографія" },
+  { href: "/services/ultrasound", label: "Ультразвукова діагностика" },
+  { href: "/services/consultation", label: "Лікарські консультації" },
+];
+
+const footerPatientLinks = [
+  { href: "/patients/preparation", label: "Підготовка до обстежень" },
+  { href: "/patients#results", label: "Як отримати результати" },
+  { href: "/patients/faq", label: "Часті запитання" },
+  { href: "/patients#benefits", label: "Пільги та знижки" },
+];
+
+const footerDoctorLinks = [
+  { href: "/doctors?specialty=Сімейна медицина", label: "Сімейна медицина" },
+  { href: "/doctors?specialty=Педіатрія", label: "Педіатрія" },
+  { href: "/doctors?specialty=Кардіологія", label: "Кардіологія" },
+  { href: "/doctors?specialty=Гінекологія", label: "Гінекологія" },
+  { href: "/doctors?specialty=Хірургія та урологія", label: "Хірургія та урологія" },
+];
+
 const navigation = [
   ...footerNavigation.slice(0, 3),
   {
@@ -28,7 +51,7 @@ const navigation = [
     children: [
       { href: "/patients/preparation", label: "Підготовка до обстежень" },
       { href: "/patients#results", label: "Як отримати результати" },
-      { href: "/patients#faq", label: "Часті запитання" },
+      { href: "/patients/faq", label: "Часті запитання" },
       { href: "/patients#benefits", label: "Пільги та знижки" },
     ],
   },
@@ -119,12 +142,17 @@ export function SiteHeader({ active }: { active?: string }) {
   useEffect(() => {
     if (!menuOpen) return;
 
+    const previousOverflow = document.body.style.overflow;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") setMenuOpen(false);
     };
 
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
   }, [menuOpen]);
 
   useEffect(() => {
@@ -184,7 +212,12 @@ export function SiteHeader({ active }: { active?: string }) {
 
   return (
     <>
-      <header className="site-header inner-header">
+      <div
+        className={menuOpen ? "site-menu-backdrop is-visible" : "site-menu-backdrop"}
+        aria-hidden="true"
+        onClick={() => setMenuOpen(false)}
+      />
+      <header className={menuOpen ? "site-header inner-header is-menu-open" : "site-header inner-header"}>
       <Link className="logo" href="/" aria-label="Здорова Родина — на головну">
         <Image
           src="/zdorova-rodyna-logo-cropped.png"
@@ -304,33 +337,34 @@ export function SiteHeader({ active }: { active?: string }) {
         >
           <svg
             className="header-support-figure"
-            viewBox="0 0 48 44"
+            viewBox="0 0 60 54"
             aria-hidden="true"
           >
             <path
-              className="header-support-line"
-              d="M9 25v-5C9 10.6 15.7 4 24 4s15 6.6 15 16v5"
+              className="header-support-headband"
+              d="M5.9 30.5v-6C5.9 11.5 16.4 1.8 30 1.8c6 0 11.5 1.9 15.7 5.4l-3 3.8A18.7 18.7 0 0 0 30 6.8c-10.5 0-18.8 7.6-18.8 17.7v6H5.9Z"
             />
-            <rect className="header-support-line" x="6" y="20" width="7" height="13" rx="3.5" />
-            <rect className="header-support-line" x="35" y="20" width="7" height="13" rx="3.5" />
+            <rect className="header-support-earpiece" x="4.2" y="26.8" width="8.6" height="14.4" rx="4.3" />
+            <path
+              className="header-support-earpiece"
+              d="M47.2 26.8h4a4.3 4.3 0 0 1 4.3 4.3v5.8a4.3 4.3 0 0 1-4.3 4.3h-4V26.8Z"
+            />
             <path
               className="header-support-hair"
-              d="M15 18.5c1.8-5.3 5.2-8 10.1-8 3.8 0 6.8 1.6 8.9 4.8-4.5.2-8.1-1.2-10.8-4.1-1.4 3.7-4.1 6.1-8.2 7.3Z"
-            />
-            <path
-              className="header-support-line"
-              d="M16 18.5v5.2c0 6 3.5 10.3 8 10.3s8-4.3 8-10.3v-7.4"
+              d="M15.5 26.1c0-10.1 6-16.4 14.4-16.4 8.5 0 14.5 6.3 14.5 16.4-6-.8-10.9-3.4-14.6-7.7-3.5 4.3-8.3 6.9-14.3 7.7Z"
             />
             <g className="header-support-eyes">
-              <circle cx="21" cy="23" r="1.55" />
-              <circle cx="28.2" cy="23" r="1.55" />
+              <circle cx="24" cy="31.5" r="2.15" />
+              <circle cx="36" cy="31.5" r="2.15" />
             </g>
-            <path className="header-support-line" d="M38.5 32c0 4.4-4 6.5-9.5 6.5h-2" />
-            <rect className="header-support-mic" x="23" y="36" width="7" height="4.5" rx="2.25" />
-            <path
-              className="header-support-heart"
-              d="M39.5 2.5c-2.9 0-4.4 3.2-2.4 5.3l4.6 4.6 4.6-4.6c2-2.1.5-5.3-2.4-5.3-1.1 0-1.9.5-2.2 1.2-.4-.7-1.2-1.2-2.2-1.2Z"
-            />
+            <path className="header-support-boom" d="M51 38.5c-1.7 6.8-7.6 10.6-14.8 10.6" />
+            <rect className="header-support-mic" x="28.4" y="46.9" width="7.6" height="4.3" rx="2.15" />
+            <g transform="translate(10 6.5) scale(.82)">
+              <path
+                className="header-support-heart"
+                d="M48.7 5.5c-4.4 0-6.5 5-3.4 8.1l7 7 7-7c3.1-3.1.9-8.1-3.4-8.1-1.7 0-3 .8-3.6 1.9-.7-1.1-2-1.9-3.6-1.9Z"
+              />
+            </g>
           </svg>
         </button>
         <button
@@ -394,10 +428,10 @@ export function SiteHeader({ active }: { active?: string }) {
             ) : (
               <>
                 <form className="support-callback-form" onSubmit={submitSupportCallback}>
-                  <label htmlFor="support-phone">
-                    <strong>Зворотний зв’язок</strong>
-                    <small>Залиште номер — ми передзвонимо.</small>
-                  </label>
+                  <div className="support-dialog-intro">
+                    <h2>Ми на зв’язку</h2>
+                    <p>Залиште номер, і ми зателефонуємо найближчим часом.</p>
+                  </div>
                   <div className="support-phone-row">
                     <div
                       className={
@@ -412,7 +446,8 @@ export function SiteHeader({ active }: { active?: string }) {
                         type="tel"
                         inputMode="numeric"
                         autoComplete="tel-national"
-                        placeholder="067 671 44 44"
+                        aria-label="Ваш номер телефону"
+                        placeholder="(067) 671-44-44"
                         value={supportPhone}
                         aria-invalid={Boolean(supportError)}
                         aria-describedby={supportError ? "support-phone-error" : undefined}
@@ -422,35 +457,48 @@ export function SiteHeader({ active }: { active?: string }) {
                         }}
                       />
                     </div>
-                    <button
-                      className="support-callback-submit"
-                      type="submit"
-                      disabled={supportSubmitting}
-                    >
-                      {supportSubmitting ? "Надсилаємо…" : "Передзвоніть мені"}
-                    </button>
                   </div>
                   {supportError ? (
                     <p className="support-phone-error" id="support-phone-error" role="alert">
                       {supportError}
                     </p>
                   ) : null}
+                  <button
+                    className="support-callback-submit"
+                    type="submit"
+                    disabled={supportSubmitting}
+                  >
+                    {supportSubmitting ? "Надсилаємо…" : "Подзвоніть мені"}
+                  </button>
                 </form>
 
-                <div className="support-dialog-separator"><span>або</span></div>
+                <div className="support-dialog-separator">
+                  <span>Або зв’яжіться з нами</span>
+                </div>
 
-                <a className="support-call-link" href="tel:+380676714444">
-                  <span className="support-call-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M7.2 3.5 9.8 8l-2.1 1.8a14.7 14.7 0 0 0 6.5 6.5l1.8-2.1 4.5 2.6-1.1 3.1c-.3.8-1.1 1.3-2 1.2C9.7 20.2 3.8 14.3 2.9 6.6c-.1-.9.4-1.7 1.2-2l3.1-1.1Z" />
-                    </svg>
-                  </span>
-                  <span>
+                <div className="support-contact-actions">
+                  <a className="support-contact-link support-call-link" href="tel:+380676714444">
+                    <img
+                      className="support-contact-icon support-call-icon"
+                      src="/icons/phone.svg"
+                      alt=""
+                      aria-hidden="true"
+                    />
                     <strong>Подзвонити</strong>
-                    <small>+38 (067) 671-44-44</small>
-                  </span>
-                  <span className="support-call-arrow" aria-hidden="true">→</span>
-                </a>
+                  </a>
+                  <a
+                    className="support-contact-link support-viber-link"
+                    href="viber://chat?number=%2B380676714444"
+                  >
+                    <img
+                      className="support-contact-icon support-viber-icon"
+                      src="/icons/viber.svg"
+                      alt=""
+                      aria-hidden="true"
+                    />
+                    <strong>Написати у Viber</strong>
+                  </a>
+                </div>
               </>
             )}
           </section>
@@ -462,60 +510,104 @@ export function SiteHeader({ active }: { active?: string }) {
 
 export function SiteFooter() {
   return (
-    <footer>
-      <div className="footer-brand">
-        <Link className="footer-mark" href="/" aria-label="Здорова Родина — на головну">
-          <Image
-            src="/zdorova-rodyna-mark.jpg"
-            alt=""
-            width={2500}
-            height={2500}
-            sizes="84px"
-            unoptimized
-          />
-        </Link>
-        <div>
-          <strong>Здорова Родина</strong>
-          <p>Лікувально-діагностичний центр у Рівному.</p>
-        </div>
+    <footer className="site-footer-minimal">
+      <div className="footer-directory-grid">
+        <section className="footer-brand-column">
+          <div className="footer-brand">
+          <Link className="footer-mark" href="/" aria-label="Здорова Родина — на головну">
+            <Image
+              src="/zdorova-rodyna-mark.jpg"
+              alt=""
+              width={2500}
+              height={2500}
+              sizes="72px"
+              unoptimized
+            />
+          </Link>
+          <div>
+            <strong>Здорова Родина</strong>
+            <p>Медичний центр у Рівному</p>
+          </div>
+          </div>
+          <p className="footer-brand-note">
+            Діагностика, лабораторія та консультації для всієї родини.
+          </p>
+          <div className="footer-socials" aria-label="Соціальні мережі">
+            <div>
+              <a
+                className="footer-social-link"
+                href="https://www.facebook.com/zdorovarodina.rivne"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Здорова Родина у Facebook"
+              >
+                <span className="social-icon-facebook" aria-hidden="true">f</span>
+              </a>
+              <a
+                className="footer-social-link"
+                href="https://www.instagram.com/zdorova_rodyna_rivne/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Здорова Родина в Instagram"
+              >
+                <span className="social-icon-instagram" aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section className="footer-directory-column">
+          <h2><Link href="/services">Послуги</Link></h2>
+          <nav aria-label="Послуги">
+            {footerServiceLinks.map((item) => (
+              <Link href={item.href} key={item.href}>{item.label}</Link>
+            ))}
+            <Link className="footer-inline-more" href="/services">Усі послуги</Link>
+          </nav>
+        </section>
+
+        <section className="footer-directory-column">
+          <h2><Link href="/doctors">Лікарі</Link></h2>
+          <nav aria-label="Лікарі за напрямами">
+            {footerDoctorLinks.map((item) => (
+              <Link href={item.href} key={item.href}>{item.label}</Link>
+            ))}
+            <Link className="footer-inline-more" href="/doctors">Усі лікарі</Link>
+          </nav>
+        </section>
+
+        <section className="footer-directory-column">
+          <h2><Link href="/patients">Пацієнтам</Link></h2>
+          <nav aria-label="Інформація пацієнтам">
+            {footerPatientLinks.map((item) => (
+              <Link href={item.href} key={item.href}>{item.label}</Link>
+            ))}
+          </nav>
+        </section>
+
+        <section className="footer-directory-column">
+          <h2><Link href="/about">Про центр</Link></h2>
+          <nav aria-label="Про медичний центр">
+            <Link href="/about">Про Здорову Родину</Link>
+            <Link href="/contacts">Наші відділення</Link>
+            <Link href="/prices">Вартість послуг</Link>
+          </nav>
+        </section>
+
+        <section className="footer-directory-column footer-contact-column">
+          <h2><Link href="/contacts">Контакти</Link></h2>
+          <div className="footer-contact-list">
+            <a href="tel:+380676714444">+38 (067) 671-44-44</a>
+            <a href="mailto:zdorovarodynarivne@ukr.net">zdorovarodynarivne@ukr.net</a>
+            <Link href="/contacts">
+              м. Рівне, вул. Володимира Стельмаха (Курчатова), 18-М
+            </Link>
+            <p>Пн–Пт 08:00–19:00<br />Сб 08:00–15:00</p>
+          </div>
+        </section>
       </div>
-      <nav className="footer-nav" aria-label="Навігація у підвалі">
-        {footerNavigation.map((item) => (
-          <a href={item.href} key={item.key}>
-            {item.label}
-          </a>
-        ))}
-      </nav>
-      <div className="footer-socials">
-        <strong>Наші соцмережі</strong>
-        <div>
-          <a
-            className="footer-social-link"
-            href="https://www.facebook.com/zdorovarodina.rivne"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Здорова Родина у Facebook"
-          >
-            <span className="social-icon-facebook" aria-hidden="true">f</span>
-          </a>
-          <a
-            className="footer-social-link"
-            href="https://www.instagram.com/zdorova_rodyna_rivne/"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Здорова Родина в Instagram"
-          >
-            <span className="social-icon-instagram" aria-hidden="true" />
-          </a>
-        </div>
-      </div>
-      <div className="footer-contacts">
-        <a href="tel:+380676714444">+38 (067) 671-44-44</a>
-        <a href="mailto:zdorovarodynarivne@ukr.net">
-          zdorovarodynarivne@ukr.net
-        </a>
-        <p>© 2026 Здорова Родина</p>
-      </div>
+
+      <p className="footer-copyright">© 2026 Медичний центр «Здорова Родина»</p>
     </footer>
   );
 }
