@@ -43,7 +43,18 @@ const footerDoctorLinks = [
 ];
 
 const navigation = [
-  ...footerNavigation.slice(0, 3),
+  {
+    href: "/services",
+    label: "Послуги",
+    key: "services",
+    children: [
+      { href: "/services/lab", label: "Аналізи" },
+      { href: "/services/ct", label: "КТ" },
+      { href: "/services/mri", label: "МРТ" },
+      { href: "/services/consultation", label: "Консультації лікарів" },
+    ],
+  },
+  ...footerNavigation.slice(1, 3),
   {
     href: "/patients",
     label: "Пацієнтам",
@@ -76,7 +87,7 @@ function formatSupportPhone(value: string) {
 
 export function SiteHeader({ active }: { active?: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [patientsMenuOpen, setPatientsMenuOpen] = useState(false);
+  const [openNavigationMenu, setOpenNavigationMenu] = useState<string | null>(null);
   const [supportOpen, setSupportOpen] = useState(false);
   const [supportOrigin, setSupportOrigin] = useState({ x: 0, y: 0 });
   const [supportPhone, setSupportPhone] = useState("");
@@ -156,7 +167,7 @@ export function SiteHeader({ active }: { active?: string }) {
   }, [menuOpen]);
 
   useEffect(() => {
-    if (!menuOpen) setPatientsMenuOpen(false);
+    if (!menuOpen) setOpenNavigationMenu(null);
   }, [menuOpen]);
 
   useEffect(() => {
@@ -237,15 +248,19 @@ export function SiteHeader({ active }: { active?: string }) {
         {navigation.map((item) =>
           item.children ? (
             <div
-              className={patientsMenuOpen ? "main-nav-group is-expanded" : "main-nav-group"}
+              className={openNavigationMenu === item.key ? "main-nav-group is-expanded" : "main-nav-group"}
               key={item.key}
             >
               <button
                 className={active === item.key ? "main-nav-group-toggle is-active" : "main-nav-group-toggle"}
                 type="button"
-                aria-expanded={patientsMenuOpen}
+                aria-expanded={openNavigationMenu === item.key}
                 aria-controls={`main-nav-submenu-${item.key}`}
-                onClick={() => setPatientsMenuOpen((isOpen) => !isOpen)}
+                onClick={() =>
+                  setOpenNavigationMenu((currentMenu) =>
+                    currentMenu === item.key ? null : item.key,
+                  )
+                }
               >
                 {item.label}
                 <span className="main-nav-chevron" aria-hidden="true" />
@@ -260,7 +275,7 @@ export function SiteHeader({ active }: { active?: string }) {
                     href={child.href}
                     key={child.href}
                     onClick={() => {
-                      setPatientsMenuOpen(false);
+                      setOpenNavigationMenu(null);
                       setMenuOpen(false);
                     }}
                   >
@@ -329,7 +344,7 @@ export function SiteHeader({ active }: { active?: string }) {
             }
 
             setMenuOpen(false);
-            setPatientsMenuOpen(false);
+            setOpenNavigationMenu(null);
             setSupportError("");
             setSupportSubmitted(false);
             setSupportOpen(true);

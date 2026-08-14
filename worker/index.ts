@@ -1,11 +1,13 @@
 /** Cloudflare Worker entry point for the vinext-starter template. */
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
+import { verifyAdminRequest } from "../lib/adminSession";
 
 interface Env {
   ASSETS: Fetcher;
   DB: D1Database;
   DOCTOR_MEDIA: R2Bucket;
+  ADMIN_SESSION_SECRET?: string;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -29,6 +31,16 @@ interface ExecutionContext {
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+
+    if (
+      url.pathname.startsWith("/admin") &&
+      url.pathname !== "/admin/login" &&
+      !(await verifyAdminRequest(request, env.ADMIN_SESSION_SECRET))
+    ) {
+      const loginUrl = new URL("/admin/login", request.url);
+      loginUrl.searchParams.set("next", `${url.pathname}${url.search}`);
+      return Response.redirect(loginUrl, 302);
+    }
 
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];

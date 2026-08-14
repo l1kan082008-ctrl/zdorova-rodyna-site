@@ -7,6 +7,7 @@ import type { FormEvent } from "react";
 import {
   addPriceCalculatorSelection,
   PRICE_CALCULATOR_CHANGED_EVENT,
+  PRICE_CALCULATOR_OPEN_EVENT,
   readPriceCalculatorSelection,
   removePriceCalculatorSelection,
 } from "../prices/calculatorSelection";
@@ -227,6 +228,20 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
     );
   };
 
+  const openCalculator = () => {
+    if (selectedPriceIds.length === 0) return;
+
+    setIsOpen(false);
+    if (window.location.pathname === "/prices") {
+      window.requestAnimationFrame(() => {
+        window.dispatchEvent(new Event(PRICE_CALCULATOR_OPEN_EVENT));
+      });
+      return;
+    }
+
+    window.location.assign("/prices#calculator");
+  };
+
   return (
     <section
       className={`home-search-shell${isOpen ? " is-open" : ""}`}
@@ -441,11 +456,21 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
             </div>
           )}
 
-          <div className="home-search-footer">
+          <div className={`home-search-footer${selectedPriceIds.length ? " has-calculator" : ""}`}>
             <span>{query ? `Показано: ${resultCount}` : "Оберіть потрібний напрям"}</span>
-            <Link href={`/prices${query ? `?search=${encodeURIComponent(query)}` : ""}`}>
-              Переглянути весь прайс <span>→</span>
-            </Link>
+            {selectedPriceIds.length ? (
+              <button className="home-search-calculator-cta" type="button" onClick={openCalculator}>
+                <span>Відкрити калькулятор</span>
+                <strong aria-label={`Обрано досліджень: ${selectedPriceIds.length}`}>
+                  {selectedPriceIds.length}
+                </strong>
+                <span aria-hidden="true">→</span>
+              </button>
+            ) : (
+              <Link href={`/prices${query ? `?search=${encodeURIComponent(query)}` : ""}`}>
+                Переглянути весь прайс <span>→</span>
+              </Link>
+            )}
           </div>
         </div>
       ) : null}

@@ -14,7 +14,7 @@ const statuses = new Set<BookingStatus>([
 ]);
 
 export async function GET(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
 
   try {
     return Response.json({ bookings: await listBookings() });
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
 
   try {
     const payload = (await request.json()) as {

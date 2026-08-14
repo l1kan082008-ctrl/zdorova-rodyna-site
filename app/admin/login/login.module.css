@@ -1,0 +1,127 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 82% 14%, rgba(7, 133, 138, 0.18), transparent 34%),
+    radial-gradient(circle at 12% 84%, rgba(255, 122, 0, 0.13), transparent 30%),
+    #f4f9f8;
+}
+
+.card {
+  width: min(100%, 430px);
+  padding: 38px;
+  border: 1px solid rgba(7, 133, 138, 0.18);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 30px 80px rgba(4, 61, 66, 0.12);
+}
+
+.mark {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  margin-bottom: 24px;
+  border-radius: 16px;
+  background: #07858a;
+  color: white;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: #f27400;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: #063f45;
+  font-size: clamp(34px, 8vw, 48px);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.description {
+  margin: 18px 0 26px;
+  color: #668083;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.label {
+  display: block;
+  margin-bottom: 8px;
+  color: #174f54;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.input {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 16px;
+  border: 1px solid #bdd4d2;
+  border-radius: 14px;
+  outline: none;
+  color: #063f45;
+  background: white;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  border-color: #07858a;
+  box-shadow: 0 0 0 4px rgba(7, 133, 138, 0.1);
+}
+
+.error {
+  min-height: 22px;
+  margin: 8px 0 4px;
+  color: #b53d29;
+  font-size: 14px;
+}
+
+.submit {
+  width: 100%;
+  min-height: 56px;
+  border: 0;
+  border-radius: 14px;
+  background: #ff7800;
+  color: white;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 14px 28px rgba(255, 120, 0, 0.18);
+}
+
+.submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #ed7100;
+}
+
+.submit:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.back {
+  display: block;
+  margin-top: 20px;
+  color: #527174;
+  text-align: center;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+@media (max-width: 520px) {
+  .page { padding: 14px; }
+  .card { padding: 28px 22px; border-radius: 22px; }
+}

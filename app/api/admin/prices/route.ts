@@ -64,7 +64,7 @@ function parseValues(payload: Record<string, unknown>) {
 }
 
 export async function GET(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
     return Response.json({ items: await listManagedPriceItems() });
   } catch (error) {
@@ -76,7 +76,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
     const values = parseValues((await request.json()) as Record<string, unknown>);
     await createManagedPriceItem(values);
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
     const payload = (await request.json()) as Record<string, unknown>;
     const id = typeof payload.id === "string" ? payload.id.trim() : "";

@@ -6423,16 +6423,21 @@ footer {
 }
 
 .price-cito-filter-count {
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
   min-width: 30px;
   height: 30px;
-  padding: 0 7px;
+  padding: 0;
   border-radius: 999px;
   background: #edf4f3;
   color: var(--teal);
   font-size: 11px;
   font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  box-sizing: border-box;
   transition:
     background 180ms ease,
     color 180ms ease;
@@ -6892,6 +6897,7 @@ footer {
   padding: 24px;
   background: rgba(4, 37, 42, 0.58);
   backdrop-filter: blur(7px);
+  overscroll-behavior: contain;
 }
 
 body.calculator-is-open .site-header {
@@ -6902,6 +6908,8 @@ body.calculator-is-open .site-header {
   width: min(620px, 100%);
   max-height: min(760px, calc(100vh - 48px));
   overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 29px;
   border-radius: 27px;
   background: #f8fbfa;
@@ -16076,6 +16084,37 @@ body.calculator-is-open .site-header {
   font-weight: 800;
 }
 
+.home-search-calculator-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--orange);
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 9px 22px rgba(255, 122, 0, 0.2);
+}
+
+.home-search-calculator-cta strong {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--orange);
+  font-size: 11px;
+  line-height: 1;
+}
+
 @media (max-width: 720px) {
   .site-header {
     z-index: 60;
@@ -16321,6 +16360,11 @@ body.calculator-is-open .site-header {
     border-radius: 999px;
     background: var(--teal);
     color: #fff;
+  }
+
+  .home-search-calculator-cta {
+    width: 100%;
+    min-height: 48px;
   }
 }
 
@@ -22587,4 +22631,52 @@ body.calculator-is-open .site-header {
   .footer-contact-list {
     grid-template-columns: 1fr;
   }
+}
+
+/* Keep the desktop navigation and action controls in separate grid columns. */
+@media (min-width: 1081px) {
+  .site-header {
+    width: min(1240px, calc(100% - 48px));
+    grid-template-columns: 270px minmax(0, 1fr) max-content;
+    gap: 16px;
+  }
+
+  .main-nav {
+    min-width: 0;
+    gap: clamp(18px, 1.65vw, 28px);
+  }
+
+  .main-nav > a,
+  .main-nav-group-toggle {
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    min-width: max-content;
+  }
+
+  .main-nav-submenu {
+    width: 238px;
+    gap: 2px;
+    padding: 7px 6px;
+  }
+
+  .main-nav-submenu a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: center;
+    padding: 9px 10px;
+    text-align: center;
+  }
+
+  .main-nav-submenu a::after {
+    display: block;
+  }
+
+.main-nav-submenu a:hover,
+.main-nav-submenu a:focus-visible {
+  background: transparent;
+  color: inherit;
+}
 }

@@ -80,7 +80,7 @@ function parseItem(value: unknown, index: number): ImportedPriceItem {
 }
 
 export async function POST(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
 
   try {
     const payload = (await request.json()) as { items?: unknown[] };

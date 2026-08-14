@@ -29,7 +29,7 @@ function hasBrokenEncoding(values: Array<string | undefined>) {
 }
 
 export async function GET(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
 
   try {
     return Response.json({ doctors: await listDoctors() });
@@ -41,7 +41,7 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
 
   try {
     const payload = (await request.json()) as {
@@ -121,7 +121,7 @@ export async function PUT(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
     const payload = (await request.json()) as { name?: string; specialty?: string };
     const name = payload.name?.trim() ?? "";
@@ -141,7 +141,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
     const id = new URL(request.url).searchParams.get("id")?.trim() ?? "";
     if (!id) return Response.json({ error: "Не вказано лікаря" }, { status: 400 });

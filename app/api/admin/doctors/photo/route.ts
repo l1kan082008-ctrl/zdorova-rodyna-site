@@ -9,7 +9,7 @@ import {
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 
 export async function POST(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
 
   try {
     const formData = await request.formData();

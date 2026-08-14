@@ -8,7 +8,7 @@ import {
 import type { CenterLocation } from "../../../contacts/locationData";
 
 export async function GET(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
     return Response.json({ locations: await listLocations() });
   } catch (error) {
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
     const payload = (await request.json()) as Partial<CenterLocation>;
     const location = await createLocation(payload);
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
     const payload = (await request.json()) as Partial<CenterLocation> & { id?: string };
     if (!payload.id) return Response.json({ error: "Не вказано відділення." }, { status: 400 });
@@ -40,7 +40,7 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   const id = new URL(request.url).searchParams.get("id");
   if (!id) return Response.json({ error: "Не вказано відділення." }, { status: 400 });
   try {
