@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import AdminNavigation from "../AdminNavigation";
 
 type CallState = "idle" | "connecting" | "active" | "ending" | "error";
@@ -16,14 +17,19 @@ type RealtimeEvent = {
   item_id?: string;
   delta?: string;
   transcript?: string;
+  call_id?: string;
+  name?: string;
+  arguments?: string;
   error?: { message?: string };
 };
+
+type ToolResult = Record<string, unknown>;
 
 const initialLog: TranscriptEntry[] = [
   {
     id: "welcome",
     role: "system",
-    text: "TEST MODE. Реальні записи пацієнтів і розклад поки не підключені.",
+    text: "TEST MODE. Підключені тестові ціни, слоти та тестовий запис. Реальна база пацієнтів не використовується.",
   },
 ];
 
@@ -32,6 +38,7 @@ export default function AiOperatorPage() {
   const [error, setError] = useState("");
   const [seconds, setSeconds] = useState(0);
   const [log, setLog] = useState<TranscriptEntry[]>(initialLog);
+  const [activeTool, setActiveTool] = useState("");
   const peerRef = useRef<RTCPeerConnection | null>(null);
   const channelRef = useRef<RTCDataChannel | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -58,10 +65,74 @@ export default function AiOperatorPage() {
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     assistantDraftRef.current = "";
+    setActiveTool("");
     if (audioRef.current) audioRef.current.srcObject = null;
   };
 
-  const handleRealtimeEvent = (event: RealtimeEvent) => {
+  const executeToolCall = async (event: RealtimeEvent) => {
+    if (!event.name || !event.call_id) return;
+
+    let args: unknown = {};
+    try {
+      args = JSON.parse(event.arguments || "{}");
+    } catch {
+      args = {};
+    }
+
+    setActiveTool(event.name);
+    append({
+      id: event.event_id || crypto.randomUUID(),
+      role: "system",
+      text: `AI викликає тестовий інструмент: ${event.name}`,
+    });
+
+    let result: ToolResult;
+    try {
+      const response = await fetch("/api/admin/ai-operator/tools", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: event.name, arguments: args }),
+      });
+      const payload = (await response.json()) as ToolResult & { error?: string };
+      result = response.ok
+        ? payload
+        : {
+            ok: false,
+            error: payload.error || `Tool HTTP ${response.status}`,
+          };
+    } catch (reason) {
+      result = {
+        ok: false,
+        error: reason instanceof Error ? reason.message : "Не вдалося виконати tool call.",
+      };
+    }
+
+    const channel = channelRef.current;
+    if (channel?.readyState === "open") {
+      channel.send(
+        JSON.stringify({
+          type: "conversation.item.create",
+          item: {
+            type: "function_call_output",
+            call_id: event.call_id,
+            output: JSON.stringify(result),
+          },
+        }),
+      );
+      channel.send(JSON.stringify({ type: "response.create" }));
+    }
+
+    append({
+      id: crypto.randomUUID(),
+      role: "system",
+      text: result.ok === false
+        ? `Тестовий інструмент ${event.name} повернув помилку.`
+        : `Тестовий інструмент ${event.name} виконався успішно.`,
+    });
+    setActiveTool("");
+  };
+
+  const handleRealtimeEvent = async (event: RealtimeEvent) => {
     if (event.type === "conversation.item.input_audio_transcription.completed") {
       const text = event.transcript?.trim();
       if (text) {
@@ -84,6 +155,11 @@ export default function AiOperatorPage() {
       return;
     }
 
+    if (event.type === "response.function_call_arguments.done") {
+      await executeToolCall(event);
+      return;
+    }
+
     if (event.type === "error") {
       const message = event.error?.message || "Realtime API повернув невідому помилку.";
       setError(message);
@@ -96,6 +172,7 @@ export default function AiOperatorPage() {
     setError("");
     setSeconds(0);
     setLog(initialLog);
+    setActiveTool("");
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -129,7 +206,7 @@ export default function AiOperatorPage() {
       channelRef.current = channel;
       channel.onmessage = (message) => {
         try {
-          handleRealtimeEvent(JSON.parse(message.data) as RealtimeEvent);
+          void handleRealtimeEvent(JSON.parse(message.data) as RealtimeEvent);
         } catch {
           // Ignore non-JSON diagnostic frames.
         }
@@ -205,13 +282,15 @@ export default function AiOperatorPage() {
           <div style={styles.statusRow}>
             <span style={{ ...styles.dot, background: state === "active" ? "#16a34a" : state === "connecting" ? "#f59e0b" : "#94a3b8" }} />
             <strong style={styles.statusText}>
-              {state === "active"
-                ? "Розмова триває"
-                : state === "connecting"
-                  ? "Підключення…"
-                  : state === "error"
-                    ? "Помилка"
-                    : "Готовий до тесту"}
+              {activeTool
+                ? `Інструмент: ${activeTool}`
+                : state === "active"
+                  ? "Розмова триває"
+                  : state === "connecting"
+                    ? "Підключення…"
+                    : state === "error"
+                      ? "Помилка"
+                      : "Готовий до тесту"}
             </strong>
             <span style={styles.timer}>{time}</span>
           </div>
@@ -224,7 +303,7 @@ export default function AiOperatorPage() {
 
           <h2 style={styles.callTitle}>Віртуальний адміністратор</h2>
           <p style={styles.callCopy}>
-            Дозволь доступ до мікрофона, говори як звичайний пацієнт і перебивай, уточнюй та змінюй тему. Саме так ми знайдемо слабкі місця.
+            Запитай про МРТ головного мозку, КТ грудної клітки або уролога. Потім попроси вільний час і спробуй зробити тестовий запис.
           </p>
 
           {error ? <p style={styles.error}>{error}</p> : null}
@@ -240,7 +319,7 @@ export default function AiOperatorPage() {
           )}
 
           <p style={styles.privacyNote}>
-            TEST MODE: не називай реальні персональні дані пацієнтів. Для перевірки використовуй вигадані ім’я, телефон та дату народження.
+            TEST MODE: не називай реальні персональні дані пацієнтів. Для перевірки використовуй вигадані ім’я та номер телефону.
           </p>
         </article>
 
@@ -270,21 +349,21 @@ export default function AiOperatorPage() {
 
       <section style={styles.bottomGrid}>
         <article style={styles.infoCard}>
-          <span style={styles.kicker}>v0.1</span>
-          <h3 style={styles.infoTitle}>Що вже тестуємо</h3>
-          <p style={styles.infoText}>Живу українську й російську мову, паузи, перебивання, швидкість відповіді, числа, дати та загальну поведінку адміністратора.</p>
+          <span style={styles.kicker}>v0.2</span>
+          <h3 style={styles.infoTitle}>Tool calls уже працюють</h3>
+          <p style={styles.infoText}>AI може сам звернутися до тестової бази за послугою, ціною, відділенням і вільними слотами під час живої голосової розмови.</p>
         </article>
         <article style={styles.infoCard}>
-          <span style={styles.kicker}>Наступний модуль</span>
-          <h3 style={styles.infoTitle}>База медцентру</h3>
-          <p style={styles.infoText}>Після перевірки голосу підключимо інструменти для цін, відділень, підготовки, тестового розкладу та створення тестових записів.</p>
+          <span style={styles.kicker}>Безпечний тест</span>
+          <h3 style={styles.infoTitle}>Запис без реального пацієнта</h3>
+          <p style={styles.infoText}>Після погодження часу AI створює лише TEST-підтвердження з номером виду TEST-XXXXXXXX. У реальну базу нічого не записується.</p>
         </article>
       </section>
     </main>
   );
 }
 
-const styles: Record<string, React.CSSProperties> = {
+const styles: Record<string, CSSProperties> = {
   page: { minHeight: "100vh", padding: "38px clamp(18px, 4vw, 64px) 70px", background: "#f3f7f6", color: "#073f45", fontFamily: "Manrope, Arial, sans-serif" },
   header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 30, marginBottom: 34, flexWrap: "wrap" },
   kicker: { display: "block", marginBottom: 8, color: "#008a91", fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" },
