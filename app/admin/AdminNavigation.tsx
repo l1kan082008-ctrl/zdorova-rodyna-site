@@ -6,6 +6,7 @@ const adminSections = [
   { id: "prices", href: "/admin/prices", label: "Прайс" },
   { id: "locations", href: "/admin/locations", label: "Відділення" },
   { id: "banners", href: "/admin/banners", label: "Банери" },
+  { id: "ai-operator", href: "/admin/ai-operator", label: "AI Call Center" },
 ] as const;
 
 type AdminSectionId = (typeof adminSections)[number]["id"];
