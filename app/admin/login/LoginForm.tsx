@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import styles from "./login.module.css";
 
 export default function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -14,25 +13,32 @@ export default function LoginForm() {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (pending) return;
     setPending(true);
     setError("");
-    const response = await fetch("/api/admin/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
+    try {
+      const response = await fetch("/api/admin/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        cache: "no-store",
+        body: JSON.stringify({ password }),
+      });
 
-    if (!response.ok) {
-      const data = await response.json().catch(() => null) as { error?: string } | null;
-      setError(data?.error ?? "Не вдалося виконати вхід.");
+      if (!response.ok) {
+        const data = await response.json().catch(() => null) as { error?: string } | null;
+        setError(data?.error ?? "Не вдалося виконати вхід.");
+        return;
+      }
+
+      const requested = searchParams.get("next");
+      const destination = requested?.startsWith("/admin/") ? requested : "/admin/doctors";
+      window.location.assign(destination);
+    } catch {
+      setError("Не вдалося перевірити пароль. Спробуйте ще раз.");
+    } finally {
       setPending(false);
-      return;
     }
-
-    const requested = searchParams.get("next");
-    const destination = requested?.startsWith("/admin/") ? requested : "/admin/doctors";
-    router.replace(destination);
-    router.refresh();
   };
 
   return (

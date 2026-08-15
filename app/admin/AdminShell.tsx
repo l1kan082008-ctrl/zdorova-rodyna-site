@@ -6,11 +6,12 @@ import type { ReactNode } from "react";
 import styles from "./AdminShell.module.css";
 
 const sections = [
-  { href: "/admin/doctors", label: "Лікарі" },
-  { href: "/admin/bookings", label: "Заявки" },
-  { href: "/admin/prices", label: "Прайс" },
-  { href: "/admin/locations", label: "Відділення" },
-  { href: "/admin/banners", label: "Банери" },
+  { href: "/admin", label: "Огляд", icon: "⌂", exact: true },
+  { href: "/admin/doctors", label: "Лікарі", icon: "✚" },
+  { href: "/admin/bookings", label: "Заявки", icon: "▤" },
+  { href: "/admin/prices", label: "Прайс", icon: "₴" },
+  { href: "/admin/locations", label: "Відділення", icon: "⌖" },
+  { href: "/admin/banners", label: "Банери", icon: "▧" },
 ];
 
 export default function AdminShell({ children }: { children: ReactNode }) {
@@ -27,35 +28,40 @@ export default function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <div className={styles.shell}>
-      <header className={styles.header}>
-        <Link className={styles.brand} href="/admin/doctors">
+      <aside className={styles.sidebar}>
+        <Link className={styles.brand} href="/admin">
           <span className={styles.brandMark}>ЗР</span>
           <span className={styles.brandText}>
-            Адмінпанель
-            <small>Медичний центр «Здорова Родина»</small>
+            Здорова Родина
+            <small>Панель керування</small>
           </span>
         </Link>
 
+        <p className={styles.navLabel}>Навігація</p>
         <nav className={styles.nav} aria-label="Розділи адмінпанелі">
           {sections.map((section) => {
-            const active = pathname.startsWith(section.href);
+            const active = section.exact
+              ? pathname === section.href
+              : pathname.startsWith(section.href);
             return (
               <Link
                 key={section.href}
                 className={`${styles.navLink} ${active ? styles.navLinkActive : ""}`}
                 href={section.href}
               >
-                {section.label}
+                <span className={styles.navIcon} aria-hidden="true">{section.icon}</span>
+                <span>{section.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className={styles.actions}>
-          <Link className={styles.siteLink} href="/">На сайт</Link>
+        <div className={styles.sidebarFooter}>
+          <Link className={styles.secondaryAction} href="/">↗ На сайт</Link>
           <button className={styles.logout} onClick={logout} type="button">Вийти</button>
         </div>
-      </header>
+      </aside>
+
       <main className={styles.content}>{children}</main>
     </div>
   );

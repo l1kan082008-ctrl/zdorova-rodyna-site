@@ -31,8 +31,8 @@ export async function POST(request: Request) {
   }
 
   const token = await createAdminSession(runtimeEnv.ADMIN_SESSION_SECRET);
-  return new Response(null, {
-    status: 204,
+  return Response.json({ ok: true }, {
+    status: 200,
     headers: { "Set-Cookie": adminSessionCookie(token, isSecure(request)) },
   });
 }

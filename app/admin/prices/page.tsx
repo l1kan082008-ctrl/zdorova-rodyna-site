@@ -38,14 +38,17 @@ const emptyItem: ManagedPriceItem = {
 function PriceEditor({
   item,
   onSaved,
+  onDeleted,
 }: {
   item: ManagedPriceItem;
   onSaved: (items: ManagedPriceItem[]) => void;
+  onDeleted: (items: ManagedPriceItem[]) => void;
 }) {
   const [draft, setDraft] = useState(item);
   const [aliases, setAliases] = useState((item.aliases ?? []).join(", "));
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const save = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -70,6 +73,31 @@ function PriceEditor({
       setStatus(error instanceof Error ? error.message : "Сталася помилка");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const deleteItem = async () => {
+    if (!draft.id || !window.confirm(`Видалити «${draft.name}»? Цю дію неможливо скасувати.`)) {
+      return;
+    }
+
+    setDeleting(true);
+    setStatus("");
+    try {
+      const response = await fetch("/api/admin/prices", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: draft.id }),
+      });
+      const payload = (await response.json()) as ApiPayload;
+      if (!response.ok || !payload.items) {
+        throw new Error(payload.error || "Не вдалося видалити позицію");
+      }
+      onDeleted(payload.items);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Помилка видалення");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -209,10 +237,22 @@ function PriceEditor({
 
       <div className="admin-price-actions">
         <p role="status">{status}</p>
-        <button className="book-button" type="submit" disabled={saving}>
-          {saving ? "Зберігаємо…" : "Зберегти"}
-          <span>→</span>
-        </button>
+        <div className="admin-price-action-buttons">
+          {draft.id ? (
+            <button
+              className="admin-danger-button"
+              type="button"
+              onClick={deleteItem}
+              disabled={saving || deleting}
+            >
+              {deleting ? "Видаляємо…" : "Видалити"}
+            </button>
+          ) : null}
+          <button className="book-button" type="submit" disabled={saving || deleting}>
+            {saving ? "Зберігаємо…" : "Зберегти"}
+            <span>→</span>
+          </button>
+        </div>
       </div>
     </form>
   );
@@ -265,6 +305,12 @@ export default function PricesAdminPage() {
         updatedItems.at(-1);
       setSelectedId(created?.id ?? "");
     }
+  };
+
+  const handleDeleted = (updatedItems: ManagedPriceItem[]) => {
+    setItems(updatedItems);
+    setSelectedId(updatedItems[0]?.id ?? "new");
+    setError("");
   };
 
   const handleImported = (updatedItems: ManagedPriceItem[]) => {
@@ -354,6 +400,7 @@ export default function PricesAdminPage() {
                 key={selectedItem.id || "new"}
                 item={selectedItem}
                 onSaved={handleSaved}
+                onDeleted={handleDeleted}
               />
             ) : null}
           </section>

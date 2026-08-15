@@ -1,0 +1,612 @@
+.page {
+  width: min(1420px, 100%);
+  margin: 0 auto;
+  color: #073f45;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 30px;
+}
+
+.eyebrow,
+.editorLabel {
+  display: block;
+  margin-bottom: 10px;
+  color: #f4770b;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.pageHeader h1 {
+  margin: 0;
+  font-size: clamp(36px, 4.2vw, 64px);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.pageHeader p {
+  max-width: 650px;
+  margin: 14px 0 0;
+  color: #688084;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.siteLink {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 15px;
+  border: 1px solid #c7dcda;
+  border-radius: 12px;
+  color: #075f64;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 750;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.siteLink:hover {
+  border-color: #8fc2bf;
+  background: #f8fbfa;
+}
+
+.error,
+.loading {
+  margin: 0 0 20px;
+  padding: 15px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.error {
+  border: 1px solid #f0c3bc;
+  color: #9e352b;
+  background: #fff8f6;
+}
+
+.loading {
+  border: 1px solid #d5e4e2;
+  color: #668084;
+  background: #fff;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 312px minmax(0, 1fr);
+  align-items: start;
+  gap: 22px;
+}
+
+.locationPanel,
+.editor,
+.emptyEditor {
+  border: 1px solid #d5e4e2;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 14px 38px rgba(3, 63, 69, 0.055);
+}
+
+.locationPanel {
+  position: sticky;
+  top: 24px;
+  overflow: hidden;
+}
+
+.locationPanelHeader {
+  display: flex;
+  min-height: 78px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 16px 0 20px;
+  border-bottom: 1px solid #e2eceb;
+}
+
+.locationPanelHeader > div {
+  display: grid;
+  gap: 3px;
+}
+
+.locationPanelHeader strong {
+  font-size: 15px;
+}
+
+.locationPanelHeader div > span {
+  color: #839497;
+  font-size: 12px;
+}
+
+.createButton {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  background: #087f82;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.createButton span {
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.createButton:disabled,
+.saveButton:disabled,
+.deleteButton:disabled,
+.emptyEditor button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.locationList {
+  display: grid;
+  padding: 8px;
+}
+
+.locationItem {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 11px;
+  min-height: 70px;
+  padding: 10px 10px;
+  border: 0;
+  border-radius: 13px;
+  color: #244f53;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.locationItem:hover {
+  background: #f5f9f8;
+}
+
+.locationItemActive,
+.locationItemActive:hover {
+  color: #073f45;
+  background: #e8f4f2;
+}
+
+.locationNumber {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 10px;
+  color: #0a8385;
+  background: #f0f7f6;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.locationItemActive .locationNumber {
+  color: #fff;
+  background: #087f82;
+}
+
+.locationCopy {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.locationCopy strong {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.locationCopy small {
+  overflow: hidden;
+  color: #829497;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.locationArrow {
+  color: #88a4a4;
+  font-size: 22px;
+}
+
+.emptyList {
+  display: grid;
+  gap: 5px;
+  padding: 30px 22px;
+  color: #72888a;
+  font-size: 13px;
+  text-align: center;
+}
+
+.emptyList strong {
+  color: #244f53;
+}
+
+.editor {
+  overflow: hidden;
+}
+
+.editorHeader {
+  display: flex;
+  min-height: 104px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 clamp(22px, 3vw, 38px);
+  border-bottom: 1px solid #e2eceb;
+}
+
+.editorLabel {
+  margin-bottom: 6px;
+  font-size: 10px;
+}
+
+.editorHeader h2 {
+  margin: 0;
+  font-size: clamp(22px, 2vw, 30px);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.saveState {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  border-radius: 10px;
+  color: #24766d;
+  background: #edf8f4;
+  font-size: 12px;
+  font-weight: 750;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.saveStateVisible {
+  opacity: 1;
+}
+
+.formSection {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 52px);
+  padding: 34px clamp(22px, 3vw, 38px);
+  border-bottom: 1px solid #e2eceb;
+}
+
+.sectionHeading {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-content: start;
+  gap: 10px;
+}
+
+.sectionHeading > span {
+  padding-top: 3px;
+  color: #f4770b;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.sectionHeading h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.sectionHeading p {
+  margin: 7px 0 0;
+  color: #849598;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.formGrid label {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  color: #315b5e;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.formGrid label small {
+  color: #92a1a3;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.formGrid input,
+.formGrid textarea {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #cbdedc;
+  border-radius: 11px;
+  outline: none;
+  color: #073f45;
+  background: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.formGrid input {
+  min-height: 46px;
+  padding: 0 14px;
+}
+
+.formGrid textarea {
+  min-height: 108px;
+  resize: vertical;
+  padding: 13px 14px;
+  line-height: 1.5;
+}
+
+.formGrid input::placeholder,
+.formGrid textarea::placeholder {
+  color: #a0afb1;
+}
+
+.formGrid input:focus,
+.formGrid textarea:focus {
+  border-color: #168f91;
+  box-shadow: 0 0 0 3px rgba(22, 143, 145, 0.1);
+}
+
+.wideField {
+  grid-column: 1 / -1;
+}
+
+.serviceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.serviceOption {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px;
+  border: 1px solid #d3e2e0;
+  border-radius: 12px;
+  color: #315b5e;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.serviceOption:hover {
+  border-color: #9dc9c5;
+  background: #fbfdfd;
+}
+
+.serviceOption span {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 8px;
+  color: #0b8587;
+  background: #edf6f5;
+  font-size: 15px;
+}
+
+.serviceOptionSelected {
+  border-color: #82c0bb;
+  color: #07565a;
+  background: #eaf6f4;
+}
+
+.serviceOptionSelected span {
+  color: #fff;
+  background: #087f82;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 22px clamp(22px, 3vw, 38px);
+  background: #fbfcfc;
+}
+
+.actions button,
+.emptyEditor button {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.deleteButton {
+  border: 1px solid #e1cbca;
+  color: #a0443b;
+  background: transparent;
+}
+
+.saveButton,
+.emptyEditor button {
+  border: 0;
+  color: #fff;
+  background: #087f82;
+  box-shadow: 0 9px 20px rgba(8, 127, 130, 0.16);
+}
+
+.emptyEditor {
+  display: grid;
+  min-height: 420px;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  padding: 40px;
+  text-align: center;
+}
+
+.emptyEditor > span {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 8px;
+  place-items: center;
+  border-radius: 14px;
+  color: #087f82;
+  background: #eaf6f4;
+  font-size: 24px;
+}
+
+.emptyEditor strong {
+  font-size: 20px;
+}
+
+.emptyEditor p {
+  max-width: 360px;
+  margin: 0 0 14px;
+  color: #7b9092;
+  font-size: 14px;
+}
+
+@media (max-width: 1180px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .locationPanel {
+    position: static;
+  }
+
+  .locationList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .formSection {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .pageHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-bottom: 22px;
+  }
+
+  .pageHeader h1 {
+    font-size: 38px;
+  }
+
+  .pageHeader p {
+    font-size: 14px;
+  }
+
+  .siteLink {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+  }
+
+  .locationPanel,
+  .editor,
+  .emptyEditor {
+    border-radius: 16px;
+  }
+
+  .locationList {
+    grid-template-columns: 1fr;
+  }
+
+  .editorHeader {
+    min-height: 94px;
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+    gap: 9px;
+    padding-block: 18px;
+  }
+
+  .saveState {
+    min-height: auto;
+    padding: 0;
+    background: transparent;
+  }
+
+  .formSection {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding-block: 28px;
+  }
+
+  .sectionHeading {
+    grid-template-columns: 26px minmax(0, 1fr);
+  }
+
+  .formGrid,
+  .serviceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  .locationPanelHeader {
+    min-height: 72px;
+    padding-inline: 14px;
+  }
+
+  .createButton {
+    width: 38px;
+    padding: 0;
+    justify-content: center;
+    font-size: 0;
+  }
+
+  .createButton span {
+    font-size: 20px;
+  }
+}

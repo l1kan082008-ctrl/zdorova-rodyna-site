@@ -11015,6 +11015,35 @@ body.calculator-is-open .site-header {
   font-weight: 700;
 }
 
+.admin-price-action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.admin-danger-button {
+  min-height: 46px;
+  padding: 0 20px;
+  border: 1px solid #e2b6aa;
+  border-radius: 999px;
+  background: #fff;
+  color: #a13e2c;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.admin-danger-button:hover {
+  border-color: #c85d48;
+  background: #fff4f1;
+}
+
+.admin-danger-button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 @media (max-width: 860px) {
   .admin-prices-layout {
     grid-template-columns: 1fr;
@@ -11075,6 +11104,14 @@ body.calculator-is-open .site-header {
 
   .admin-price-actions .book-button {
     width: 100%;
+  }
+
+  .admin-price-action-buttons {
+    width: 100%;
+  }
+
+  .admin-price-action-buttons > * {
+    flex: 1;
   }
 }
 

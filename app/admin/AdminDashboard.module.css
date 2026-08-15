@@ -1,0 +1,31 @@
+.dashboard { display: grid; gap: 26px; }
+.hero {
+  display: flex;
+  min-height: 245px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: clamp(28px, 5vw, 58px);
+  overflow: hidden;
+  border-radius: 28px;
+  color: #fff;
+  background: linear-gradient(120deg, #064d51 0%, #087e80 72%, #18a5a0 100%);
+  box-shadow: 0 18px 48px rgba(3,63,69,.15);
+}
+.eyebrow { margin: 0 0 12px; color: #ff8a18; font-size: 13px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.hero h1 { max-width: 720px; margin: 0; font-size: clamp(40px, 6vw, 78px); font-weight: 500; letter-spacing: -.055em; line-height: .96; }
+.hero p:not(.eyebrow) { max-width: 620px; margin: 20px 0 0; color: #d8efed; font-size: clamp(16px, 2vw, 20px); }
+.mark { display: grid; width: 112px; height: 112px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(255,255,255,.3); border-radius: 50%; color: #ff8a18; font-size: 30px; font-weight: 800; background: rgba(255,255,255,.08); }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.card { position: relative; display: grid; min-height: 170px; grid-template-columns: auto 1fr auto; align-items: start; gap: 20px; padding: 26px; border: 1px solid #d8e7e5; border-radius: 22px; color: #073f45; background: #fff; text-decoration: none; box-shadow: 0 12px 32px rgba(3,63,69,.06); transition: transform 160ms ease, box-shadow 160ms ease; }
+.card:hover { transform: translateY(-3px); box-shadow: 0 18px 38px rgba(3,63,69,.1); }
+.number { color: #ff7900; font-size: 13px; font-weight: 800; }
+.card h2 { margin: 0 0 8px; font-size: 28px; }
+.card p { margin: 0; color: #718486; line-height: 1.5; }
+.arrow { display: grid; width: 42px; height: 42px; place-items: center; align-self: end; border-radius: 50%; color: #fff; background: #078689; font-size: 21px; }
+@media (max-width: 720px) {
+  .hero { min-height: 210px; align-items: flex-end; border-radius: 22px; }
+  .mark { display: none; }
+  .grid { grid-template-columns: 1fr; }
+  .card { min-height: 132px; padding: 22px; }
+}

@@ -1,6 +1,7 @@
 import { isAuthorizedAdmin, unauthorizedAdminResponse } from "../adminAuth";
 import {
   createManagedPriceItem,
+  deleteManagedPriceItem,
   listManagedPriceItems,
   updateManagedPriceItem,
 } from "../../prices/priceStore";
@@ -103,6 +104,32 @@ export async function PATCH(request: Request) {
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "Не вдалося зберегти позицію" },
+      { status: 400 },
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  if (!(await isAuthorizedAdmin(request))) {
+    return unauthorizedAdminResponse();
+  }
+
+  try {
+    const payload = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+    const id = typeof payload.id === "string" ? payload.id.trim() : "";
+    if (!id) {
+      throw new Error("Не вказано позицію прайса");
+    }
+
+    const deleted = await deleteManagedPriceItem(id);
+    if (!deleted) {
+      return Response.json({ error: "Позицію не знайдено" }, { status: 404 });
+    }
+
+    return Response.json({ items: await listManagedPriceItems() });
+  } catch (error) {
+    return Response.json(
+      { error: error instanceof Error ? error.message : "Не вдалося видалити позицію" },
       { status: 400 },
     );
   }

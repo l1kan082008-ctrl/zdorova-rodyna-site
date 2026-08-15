@@ -286,6 +286,15 @@ export async function updateManagedPriceItem(
   return result.meta.changes > 0;
 }
 
+export async function deleteManagedPriceItem(id: string) {
+  await ensurePriceItemsTable();
+  const result = await env.DB.prepare("DELETE FROM price_items WHERE id = ?")
+    .bind(id)
+    .run();
+
+  return result.meta.changes > 0;
+}
+
 function getImportMatchKey(name: string, category: CategoryId) {
   return `${category}::${name.trim().toLocaleLowerCase("uk-UA")}`;
 }
