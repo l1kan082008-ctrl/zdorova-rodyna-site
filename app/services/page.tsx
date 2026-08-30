@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { CSSProperties } from "react";
+import {
+  getDefaultManagedServices,
+  listManagedServices,
+} from "../api/services/serviceStore";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
-import { primaryServiceDetails } from "./serviceData";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Послуги — Здорова Родина",
@@ -9,7 +15,11 @@ export const metadata: Metadata = {
     "МРТ, КТ, УЗД, лабораторні дослідження та консультації лікарів у Рівному.",
 };
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const services = (await listManagedServices().catch(() => getDefaultManagedServices()))
+    .filter((service) => service.active && service.showOnServicesPage)
+    .sort((first, second) => first.sortOrder - second.sortOrder);
+
   return (
     <main className="inner-page">
       <SiteHeader active="services" />
@@ -34,12 +44,18 @@ export default function ServicesPage() {
         id="services-list"
         aria-label="Перелік послуг"
       >
-        {primaryServiceDetails.map((item) => (
+        {services.map((item) => {
+          const art = item.imageKey
+            ? `/api/services/image?key=${encodeURIComponent(item.imageKey)}`
+            : item.imagePath || "/service-cards/lab-glass-v3.jpg";
+
+          return (
           <Link
             className={`service-card service-card--${item.slug}`}
-            key={item.slug}
-            href={`/services/${item.slug}`}
+            key={item.id}
+            href={item.href}
             aria-label={`${item.shortTitle}: дізнатися більше`}
+            style={{ "--service-art": `url("${art}")` } as CSSProperties}
           >
             <span className="service-card-copy">
               <strong>{item.shortTitle}</strong>
@@ -49,7 +65,8 @@ export default function ServicesPage() {
               →
             </span>
           </Link>
-        ))}
+          );
+        })}
       </section>
       <section className="subpage-cta">
         <div>

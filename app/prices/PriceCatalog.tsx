@@ -25,6 +25,7 @@ import {
   prepareCalculatorPdf,
   shareCalculatorSelection,
 } from "./calculatorExport";
+import { useModalDialog } from "../components/useModalDialog";
 import { calculateCitoSurcharge } from "./citoPolicy";
 
 const ANALYSIS_CATEGORIES = new Set<PriceItem["category"]>([
@@ -186,12 +187,21 @@ export function PriceCatalog({
   const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
   const [selectionHydrated, setSelectionHydrated] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const calculatorDialogRef = useRef<HTMLElement>(null);
+  const calculatorCloseRef = useRef<HTMLButtonElement>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<
     Set<PriceItem["category"]>
   >(() => new Set());
   const [expandedPreviewCategories, setExpandedPreviewCategories] = useState<
     Set<PriceItem["category"]>
   >(() => new Set());
+
+  useModalDialog({
+    open: calculatorOpen,
+    dialogRef: calculatorDialogRef,
+    onClose: () => setCalculatorOpen(false),
+    initialFocusRef: calculatorCloseRef,
+  });
 
   const visibleItems = useMemo(() => {
     const normalized = normalizeMedicalSearch(query);
@@ -572,17 +582,6 @@ export function PriceCatalog({
     return () =>
       window.removeEventListener(PRICE_CALCULATOR_OPEN_EVENT, openCalculator);
   }, [selectedIds.length, selectionHydrated]);
-
-  useEffect(() => {
-    if (!calculatorOpen) return;
-
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setCalculatorOpen(false);
-    };
-
-    document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [calculatorOpen]);
 
   useEffect(() => {
     if (!calculatorOpen) return;
@@ -1063,10 +1062,12 @@ export function PriceCatalog({
           }}
         >
           <section
+            ref={calculatorDialogRef}
             className="calculator-dialog"
             role="dialog"
             aria-modal="true"
             aria-labelledby="calculator-title"
+            tabIndex={-1}
           >
             <div className="calculator-dialog-head">
               <div>
@@ -1074,6 +1075,7 @@ export function PriceCatalog({
                 <h2 id="calculator-title">Калькулятор вартості</h2>
               </div>
               <button
+                ref={calculatorCloseRef}
                 className="calculator-close"
                 type="button"
                 aria-label="Закрити калькулятор"

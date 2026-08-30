@@ -29,6 +29,7 @@ type BannerRow = {
   action_label: string;
   href: string;
   theme: string;
+  image_key: string | null;
   is_active: number;
   sort_order: number;
 };
@@ -48,11 +49,17 @@ async function ensureBannersTable() {
       action_label TEXT NOT NULL,
       href TEXT NOT NULL,
       theme TEXT NOT NULL,
+      image_key TEXT,
       is_active INTEGER NOT NULL DEFAULT 1,
       sort_order INTEGER NOT NULL DEFAULT 0,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `).run();
+
+  const columns = await db().prepare("PRAGMA table_info(home_banners)").all<{ name: string }>();
+  if (!(columns.results ?? []).some((column) => column.name === "image_key")) {
+    await db().prepare("ALTER TABLE home_banners ADD COLUMN image_key TEXT").run();
+  }
 
   const count = await db().prepare("SELECT COUNT(*) AS count FROM home_banners").first<{ count: number }>();
   if (Number(count?.count ?? 0) === 0) {
@@ -71,6 +78,7 @@ function rowToBanner(row: BannerRow): PromoSlide {
     action: row.action_label,
     href: row.href,
     theme: (validThemes.has(row.theme) ? row.theme : "laboratory") as PromoTheme,
+    imageKey: row.image_key ?? undefined,
     active: Boolean(row.is_active),
     sortOrder: Number(row.sort_order),
   };
@@ -95,6 +103,7 @@ function normalizeBanner(payload: Partial<PromoSlide>, existing?: PromoSlide): P
     action: required(payload.action ?? existing?.action, "Текст кнопки"),
     href: required(payload.href ?? existing?.href, "Посилання"),
     theme: theme as PromoTheme,
+    imageKey: String(payload.imageKey ?? existing?.imageKey ?? "").trim() || undefined,
     active: payload.active ?? existing?.active ?? true,
     sortOrder: Number.isFinite(Number(payload.sortOrder))
       ? Number(payload.sortOrder)
@@ -106,11 +115,11 @@ async function insertBanner(slide: PromoSlide) {
   await db().prepare(`
     INSERT INTO home_banners (
       id, eyebrow, title, body_text, note, accent, action_label, href,
-      theme, is_active, sort_order, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      theme, image_key, is_active, sort_order, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
   `).bind(
     slide.id, slide.eyebrow, slide.title, slide.text, slide.note,
-    slide.accent ?? null, slide.action, slide.href, slide.theme,
+    slide.accent ?? null, slide.action, slide.href, slide.theme, slide.imageKey ?? null,
     slide.active ? 1 : 0, slide.sortOrder,
   ).run();
 }
@@ -138,11 +147,11 @@ export async function updateBanner(id: string, payload: Partial<PromoSlide>) {
   const banner = normalizeBanner(payload, existing);
   await db().prepare(`
     UPDATE home_banners SET eyebrow = ?, title = ?, body_text = ?, note = ?,
-      accent = ?, action_label = ?, href = ?, theme = ?, is_active = ?,
+      accent = ?, action_label = ?, href = ?, theme = ?, image_key = ?, is_active = ?,
       sort_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
   `).bind(
     banner.eyebrow, banner.title, banner.text, banner.note,
-    banner.accent ?? null, banner.action, banner.href, banner.theme,
+    banner.accent ?? null, banner.action, banner.href, banner.theme, banner.imageKey ?? null,
     banner.active ? 1 : 0, banner.sortOrder, id,
   ).run();
   return banner;

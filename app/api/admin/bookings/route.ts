@@ -1,5 +1,6 @@
 import { isAuthorizedAdmin, unauthorizedAdminResponse } from "../adminAuth";
 import {
+  deleteBooking,
   listBookings,
   updateBookingStatus,
   type BookingStatus,
@@ -21,6 +22,30 @@ export async function GET(request: Request) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Не вдалося завантажити заявки";
+    return Response.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
+
+  try {
+    const payload = (await request.json()) as { id?: string };
+    const id = payload.id?.trim() ?? "";
+
+    if (!id) {
+      return Response.json({ error: "Не вказано заявку" }, { status: 400 });
+    }
+
+    const deleted = await deleteBooking(id);
+    if (!deleted) {
+      return Response.json({ error: "Заявку не знайдено" }, { status: 404 });
+    }
+
+    return Response.json({ bookings: await listBookings() });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Не вдалося видалити заявку";
     return Response.json({ error: message }, { status: 500 });
   }
 }

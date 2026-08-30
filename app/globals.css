@@ -25,7 +25,7 @@
 .consultation-cinematic-backdrop {
   z-index: -3;
   background-color: #063c41;
-  background-image: url("/service-heroes/consultation-cinematic-v1.png");
+  background-image: url("/service-heroes/consultation-cinematic-v1.webp");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -786,7 +786,7 @@
 .wart-removal-cinematic-backdrop {
   z-index: -3;
   background-color: #022f34;
-  background-image: url("/service-heroes/wart-removal-cinematic-v1.png");
+  background-image: url("/service-heroes/wart-removal-cinematic-v1.webp");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -1072,10 +1072,15 @@
 :root {
   --ink: #073f46;
   --ink-dark: #153035;
+  --text-muted: #536a6e;
   --teal: #08787c;
   --teal-mid: #2d9293;
   --teal-soft: #dceeed;
   --orange: #ff7900;
+  --border-soft: #d4e2e1;
+  --surface-soft: #f7faf9;
+  --radius-control: 14px;
+  --radius-card: 20px;
   --paper: #ffffff;
   --white: #ffffff;
 }
@@ -1137,6 +1142,7 @@ footer {
 .site-header {
   position: relative;
   z-index: 40;
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: minmax(250px, 1fr) auto minmax(250px, 1fr);
   align-items: center;
@@ -1321,8 +1327,8 @@ footer {
 .header-support {
   display: grid;
   place-items: center;
-  width: 43px;
-  height: 43px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -1979,7 +1985,7 @@ footer {
   overflow: hidden;
   border-radius: 52% 0 0 52%;
   background-color: #eef8f7;
-  background-image: url("/hero-family-v4.png");
+  background-image: url("/hero-family-v4.webp");
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
@@ -2103,31 +2109,31 @@ footer {
 }
 
 .promo-slide--laboratory {
-  --promo-photo: url("/promo/laboratory-photo-v1.png");
+  --promo-photo: url("/promo/laboratory-photo-v1.webp");
 }
 
 .promo-slide--home {
-  --promo-photo: url("/promo/home-nurse-photo-v1.png");
+  --promo-photo: url("/promo/home-nurse-photo-v1.webp");
 }
 
 .promo-slide--heart {
-  --promo-photo: url("/promo/cardiology-photo-v1.png");
+  --promo-photo: url("/promo/cardiology-photo-v1.webp");
 }
 
 .promo-slide--mri {
-  --promo-photo: url("/promo/mri-photo-flow-plus-v2.png");
+  --promo-photo: url("/promo/mri-photo-flow-plus-v2.webp");
 }
 
 .promo-slide--doctors {
-  --promo-photo: url("/promo/doctors-photo-v1.png");
+  --promo-photo: url("/promo/doctors-photo-v1.webp");
 }
 
 .promo-slide--dermoscopy {
-  --promo-photo: url("/promo/dermoscopy-photo-v1.png");
+  --promo-photo: url("/promo/dermoscopy-photo-v1.webp");
 }
 
 .promo-slide--ct-photo {
-  --promo-photo: url("/promo/ct-banner-photo-v3.png");
+  --promo-photo: url("/promo/ct-banner-photo-v3.webp");
 }
 
 .promo-slide--laboratory::after,
@@ -4088,24 +4094,24 @@ footer {
 }
 
 .page-hero {
-  padding: 82px 0 58px;
+  padding: 64px 0 44px;
 }
 
 .page-hero h1 {
-  max-width: 880px;
+  max-width: 820px;
   margin: 0;
   color: var(--ink);
-  font-size: clamp(44px, 5.2vw, 70px);
+  font-size: clamp(42px, 4.5vw, 60px);
   line-height: 1.03;
   letter-spacing: -0.05em;
 }
 
 .page-hero p {
   max-width: 680px;
-  margin: 26px 0 0;
-  color: #4d6064;
-  font-size: 17px;
-  line-height: 1.65;
+  margin: 20px 0 0;
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 .route-grid {
@@ -4903,6 +4909,8 @@ footer {
 
 .doctor-detail-back {
   display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   margin-bottom: 18px;
   color: var(--teal);
   font-size: 11px;
@@ -7969,6 +7977,10 @@ body.calculator-is-open .site-header {
 }
 
 .admin-booking-list article {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
   padding: 24px;
   border: 1px solid #dce7e6;
   border-radius: 22px;
@@ -7990,6 +8002,61 @@ body.calculator-is-open .site-header {
   letter-spacing: 0.06em;
 }
 
+.admin-booking-type {
+  display: grid;
+  gap: 3px;
+  width: calc(100% + 48px);
+  margin: 18px -24px 0;
+  padding: 13px 24px 14px;
+  color: #fff;
+}
+
+.admin-booking-type span {
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.admin-booking-type strong {
+  overflow-wrap: anywhere;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.admin-booking-type--callback {
+  background: #167d7d;
+}
+
+.admin-booking-type--declaration {
+  background: #49766b;
+}
+
+.admin-booking-type--doctor {
+  background: #3e7089;
+}
+
+.admin-booking-type--mri {
+  background: #696188;
+}
+
+.admin-booking-type--ct {
+  background: #ad6538;
+}
+
+.admin-booking-type--ultrasound {
+  background: #337d87;
+}
+
+.admin-booking-type--laboratory {
+  background: #4c7b61;
+}
+
+.admin-booking-type--other {
+  background: #66777a;
+}
+
 .admin-booking-list h2 {
   margin: 22px 0 4px;
   color: var(--ink);
@@ -8004,7 +8071,7 @@ body.calculator-is-open .site-header {
 .admin-booking-list dl {
   display: grid;
   gap: 12px;
-  margin: 20px 0;
+  margin: 20px 0 24px;
 }
 
 .admin-booking-list dl div {
@@ -8027,7 +8094,17 @@ body.calculator-is-open .site-header {
   line-height: 1.5;
 }
 
-.admin-booking-list article > label {
+.admin-booking-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid #e4eceb;
+}
+
+.admin-booking-status {
   display: grid;
   gap: 7px;
   color: var(--ink);
@@ -9314,8 +9391,8 @@ body.calculator-is-open .site-header {
   }
 
   .pricing-grid.pricing-carousel-track {
-    width: calc(100vw - 14px);
-    margin-right: calc(50% - 50vw);
+    width: 100%;
+    margin-right: 0;
     grid-template-columns: none;
     grid-auto-columns: min(82vw, 330px);
     gap: 14px;
@@ -11160,7 +11237,7 @@ body.calculator-is-open .site-header {
 .laboratory-cinematic-backdrop {
   z-index: -3;
   background-color: #063f45;
-  background-image: url("/service-heroes/laboratory-cinematic-v1.png");
+  background-image: url("/service-heroes/laboratory-cinematic-v1.webp");
   background-position: center;
   background-size: cover;
   transform: scale(1.012);
@@ -11420,7 +11497,7 @@ body.calculator-is-open .site-header {
 
 .audiometry-cinematic-backdrop {
   z-index: -3;
-  background-image: url("/service-heroes/audiometry-cinematic-v1.png");
+  background-image: url("/service-heroes/audiometry-cinematic-v1.webp");
   background-position: center;
   background-size: cover;
   transform: scale(1.018);
@@ -12831,6 +12908,9 @@ body.calculator-is-open .site-header {
 }
 
 .service-breadcrumbs a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   color: var(--teal);
   font-weight: 700;
 }
@@ -13870,7 +13950,7 @@ body.calculator-is-open .site-header {
 
 .holter-cinematic-backdrop {
   z-index: -3;
-  background-image: url("/service-heroes/holter-cinematic-v1.png");
+  background-image: url("/service-heroes/holter-cinematic-v1.webp");
   background-position: center;
   background-size: cover;
   transform: scale(1.025);
@@ -14052,7 +14132,7 @@ body.calculator-is-open .site-header {
 
 .ct-cinematic-backdrop {
   z-index: -3;
-  background-image: url("/service-heroes/ct-cinematic-v1.png");
+  background-image: url("/service-heroes/ct-cinematic-v1.webp");
   background-position: center;
   background-size: cover;
   transform: scale(1.015);
@@ -14255,7 +14335,7 @@ body.calculator-is-open .site-header {
 
 .mri-cinematic-backdrop {
   z-index: -3;
-  background-image: url("/service-heroes/mri-cinematic-v1.png");
+  background-image: url("/service-heroes/mri-cinematic-v1.webp");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -14508,7 +14588,7 @@ body.calculator-is-open .site-header {
   z-index: -3;
   inset: -1px;
   background-color: #021c22;
-  background-image: url("/service-heroes/ultrasound-technological-v1.png");
+  background-image: url("/service-heroes/ultrasound-technological-v1.webp");
   background-position: right center;
   background-repeat: no-repeat;
   background-size: auto 100%;
@@ -14699,7 +14779,7 @@ body.calculator-is-open .site-header {
 
 .cardiology-cinematic-backdrop {
   z-index: -3;
-  background-image: url("/service-heroes/cardiology-cinematic-v1.png");
+  background-image: url("/service-heroes/cardiology-cinematic-v1.webp");
   background-position: center;
   background-size: cover;
   transform: scale(1.015);
@@ -14817,7 +14897,7 @@ body.calculator-is-open .site-header {
 .home-nurse-cinematic-backdrop {
   z-index: -3;
   background-color: #063f42;
-  background-image: url("/service-heroes/home-nurse-cinematic-v2.png");
+  background-image: url("/service-heroes/home-nurse-cinematic-v2.webp");
   background-position: center;
   background-size: cover;
   transform: scale(1.012);
@@ -15874,7 +15954,7 @@ body.calculator-is-open .site-header {
 }
 
 .home-search-suggestions button {
-  min-height: 34px;
+  min-height: 44px;
   padding: 0 14px;
   border: 1px solid #d6e5e3;
   border-radius: 999px;
@@ -15923,6 +16003,7 @@ body.calculator-is-open .site-header {
   gap: 9px;
   width: fit-content;
   margin-top: 12px;
+  min-height: 44px;
   padding: 5px 2px;
   color: var(--teal);
   font-size: 11px;
@@ -16042,7 +16123,7 @@ body.calculator-is-open .site-header {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  min-height: 34px;
+  min-height: 44px;
   margin-right: 10px;
   padding: 0 10px;
   border: 1px solid #bad8d5;
@@ -16303,7 +16384,7 @@ body.calculator-is-open .site-header {
 
   .home-search-suggestions button {
     flex: 0 0 auto;
-    min-height: 38px;
+    min-height: 44px;
   }
 
   .home-search-groups {
@@ -16317,7 +16398,7 @@ body.calculator-is-open .site-header {
   }
 
   .home-search-group-all {
-    min-height: 40px;
+    min-height: 44px;
     margin-top: 8px;
     font-size: 12px;
   }
@@ -16351,15 +16432,15 @@ body.calculator-is-open .site-header {
     display: grid;
     place-items: center;
     gap: 0;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     min-height: 0;
     padding: 0;
     line-height: 1;
   }
 
   .home-search-result-action.is-add {
-    min-width: 40px;
+    min-width: 44px;
   }
 
   .home-search-result-action-label {
@@ -16483,7 +16564,7 @@ body.calculator-is-open .site-header {
 .dermoscopy-cinematic-backdrop {
   z-index: -3;
   background-color: #022e34;
-  background-image: url("/service-heroes/dermoscopy-cinematic-v1.png");
+  background-image: url("/service-heroes/dermoscopy-cinematic-v1.webp");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -17098,7 +17179,7 @@ body.calculator-is-open .site-header {
 .ear-piercing-cinematic-backdrop {
   z-index: -3;
   background-color: #022e34;
-  background-image: url("/service-heroes/ear-piercing-cinematic-v2.png");
+  background-image: url("/service-heroes/ear-piercing-cinematic-v2.webp");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -17928,6 +18009,7 @@ body.calculator-is-open .site-header {
 }
 
 .doctor-card-photo-toggle,
+.doctor-card-details-toggle,
 .doctor-book-on-photo {
   display: none;
 }
@@ -17985,11 +18067,26 @@ body.calculator-is-open .site-header {
 }
 
 .doctor-card-photo-identity b {
+  display: block;
+  min-width: 0;
   max-width: 100%;
   font-size: clamp(25px, 2vw, 34px);
   font-weight: 650;
   line-height: 1;
   letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+@media (min-width: 1181px) {
+  .doctor-card-photo-identity {
+    right: 22px;
+    left: 22px;
+  }
+
+  .doctor-card-photo-identity b {
+    font-size: clamp(24px, 1.45vw, 28px);
+  }
 }
 
 .doctor-card-photo-identity small {
@@ -18339,7 +18436,7 @@ body.calculator-is-open .site-header {
   .doctor-mobile-view-picker button {
     display: flex;
     min-width: 0;
-    min-height: 42px;
+    min-height: 44px;
     align-items: center;
     justify-content: center;
     gap: 7px;
@@ -18694,6 +18791,103 @@ body.calculator-is-open .site-header {
     grid-column: 1 / -1;
   }
 
+  .doctors-directory-v2.is-mobile-view-double > .doctor-profile-card-v2.is-focused,
+  .doctors-directory-v2.is-mobile-view-quad > .doctor-profile-card-v2.is-focused {
+    height: min(78svh, 720px);
+    min-height: 540px;
+    grid-column: 1 / -1;
+  }
+
+  .doctors-directory-v2.is-mobile-view-double .doctor-profile-card-v2.is-focused .doctor-book-on-photo,
+  .doctors-directory-v2.is-mobile-view-quad .doctor-profile-card-v2.is-focused .doctor-book-on-photo {
+    display: flex;
+  }
+
+  .doctors-directory-v2.is-mobile-view-double .doctor-profile-card-v2.is-focused .doctor-card-photo-identity,
+  .doctors-directory-v2.is-mobile-view-quad .doctor-profile-card-v2.is-focused .doctor-card-photo-identity {
+    right: 22px;
+    bottom: 98px;
+    left: 22px;
+  }
+
+  .doctors-directory-v2.is-mobile-view-double .doctor-profile-card-v2.is-focused .doctor-card-photo-identity b,
+  .doctors-directory-v2.is-mobile-view-quad .doctor-profile-card-v2.is-focused .doctor-card-photo-identity b {
+    display: block;
+    overflow: visible;
+    font-size: clamp(28px, 8vw, 36px);
+    line-height: 1;
+    -webkit-line-clamp: initial;
+  }
+
+  .doctors-directory-v2.is-mobile-view-double .doctor-profile-card-v2.is-focused .doctor-card-photo-identity small,
+  .doctors-directory-v2.is-mobile-view-quad .doctor-profile-card-v2.is-focused .doctor-card-photo-identity small {
+    display: block;
+    overflow: visible;
+    font-size: 13px;
+    line-height: 1.35;
+    -webkit-line-clamp: initial;
+  }
+
+  .doctors-directory-v2.is-mobile-view-double .doctor-profile-card-v2.is-focused .doctor-card-details-toggle,
+  .doctors-directory-v2.is-mobile-view-quad .doctor-profile-card-v2.is-focused .doctor-card-details-toggle {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    z-index: 7;
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.68);
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.94);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.72),
+      inset 0 -8px 14px rgba(28, 34, 38, 0.05),
+      0 7px 18px rgba(18, 24, 28, 0.13);
+    -webkit-backdrop-filter: blur(18px) saturate(110%);
+    backdrop-filter: blur(18px) saturate(110%);
+    cursor: pointer;
+    transform: translateX(-50%);
+    transition:
+      color 180ms ease,
+      background-color 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .doctor-card-details-toggle span {
+    display: block;
+    width: 11px;
+    height: 11px;
+    border-top: 2px solid currentColor;
+    border-left: 2px solid currentColor;
+    transform: translateY(3px) rotate(45deg);
+    transition: transform 260ms ease;
+  }
+
+  .doctor-profile-card-v2.is-focused:not(.is-expanded) .doctor-card-details-toggle {
+    animation: doctor-details-nudge 2.6s ease-in-out infinite;
+  }
+
+  .doctor-profile-card-v2.is-expanded .doctor-card-details-toggle span {
+    transform: translateY(-3px) rotate(225deg);
+  }
+
+  .doctor-card-details-toggle:hover,
+  .doctor-card-details-toggle:focus-visible {
+    border-color: rgba(255, 255, 255, 0.82);
+    color: #ffffff;
+    outline: none;
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      inset 0 -8px 14px rgba(28, 34, 38, 0.06),
+      0 8px 20px rgba(18, 24, 28, 0.14);
+  }
+
   .doctors-directory-v2.is-mobile-view-double .doctor-card-photo-link,
   .doctors-directory-v2.is-mobile-view-quad .doctor-card-photo-link {
     border-radius: 19px;
@@ -18756,7 +18950,7 @@ body.calculator-is-open .site-header {
   }
 
   .doctors-directory-v2.is-mobile-view-quad .doctor-profile-card-v2.is-expanded .doctor-card-photo-identity b {
-    font-size: 30px;
+    font-size: clamp(28px, 8vw, 36px);
   }
 
   .doctors-directory-v2.is-mobile-view-quad .doctor-profile-card-v2.is-expanded .doctor-card-photo-identity small {
@@ -18805,6 +18999,24 @@ body.calculator-is-open .site-header {
   .doctor-book-on-photo::before {
     animation: none;
   }
+
+  .doctor-profile-card-v2.is-focused:not(.is-expanded) .doctor-card-details-toggle {
+    animation: none;
+  }
+}
+
+@keyframes doctor-details-nudge {
+  0%,
+  72%,
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  82% {
+    transform: translate3d(-50%, -2px, 0);
+  }
+  91% {
+    transform: translate3d(-50%, 0.5px, 0);
+  }
 }
 
 /* Family medicine: dedicated NSZU and declaration journey */
@@ -18833,7 +19045,7 @@ body.calculator-is-open .site-header {
 
 .family-medicine-backdrop {
   z-index: -2;
-  background: url("/service-heroes/family-cinematic-v1.png") 62% center / cover no-repeat;
+  background: url("/service-heroes/family-cinematic-v1.webp") 62% center / cover no-repeat;
   transform: scale(1.012);
 }
 
@@ -19945,6 +20157,9 @@ body.calculator-is-open .site-header {
 }
 
 .contacts-overview__support a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   width: fit-content;
   color: #fff;
   font-size: clamp(15px, 1vw, 18px);
@@ -19957,6 +20172,15 @@ body.calculator-is-open .site-header {
 
 .contacts-overview__support a:hover {
   color: #ffad62;
+}
+
+.contacts-overview__support a:focus-visible,
+.doctor-detail-back:focus-visible,
+.service-breadcrumbs a:focus-visible,
+.preparation-breadcrumbs a:focus-visible,
+.faq-breadcrumbs a:focus-visible {
+  outline: 3px solid rgb(244 119 11 / 42%);
+  outline-offset: 3px;
 }
 
 .branch-service-tags {
@@ -20383,6 +20607,554 @@ body.calculator-is-open .site-header {
   .admin-editor-actions { align-items: stretch; flex-direction: column; }
   .admin-editor-actions > div,
   .admin-editor-actions button { width: 100%; }
+}
+
+/* Banner editor: compact CMS layout and live preview */
+.admin-banners-editor-page .admin-page-heading,
+.admin-banners-editor-page .admin-editor-layout {
+  width: min(1200px, calc(100% - 48px));
+}
+
+.admin-banners-editor-page .admin-editor-layout {
+  grid-template-columns: 260px minmax(0, 1fr);
+  align-items: start;
+}
+
+.admin-editor-sidebar__heading > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.admin-editor-sidebar__heading > div > span {
+  color: #7a898b;
+  font-size: 10px;
+}
+
+.admin-banner-create-button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--teal);
+  color: #fff;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.admin-banner-create-button:hover:not(:disabled) {
+  background: #006f72;
+  transform: translateY(-1px);
+}
+
+.admin-banner-create-button:disabled {
+  opacity: 0.58;
+  cursor: wait;
+}
+
+.admin-banner-create-button span:first-child {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.admin-banner-editor-panel {
+  display: grid;
+  gap: 28px;
+  padding: 24px;
+}
+
+.admin-banner-preview {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e2ebea;
+}
+
+.admin-banner-preview__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.admin-banner-preview__header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.admin-banner-preview__header strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.admin-banner-preview__header div span {
+  color: #748588;
+  font-size: 10px;
+}
+
+.admin-banner-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 11px;
+  border: 1px solid #d4dfde;
+  border-radius: 999px;
+  color: #748588;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.admin-banner-status.is-active {
+  border-color: #b9d8d4;
+  background: #edf7f5;
+  color: var(--teal);
+}
+
+.admin-banner-preview__viewport {
+  overflow: hidden;
+  border-radius: 18px;
+  background: #075e65;
+}
+
+.admin-banner-preview__viewport .promo-slide {
+  grid-template-columns: minmax(0, 1.45fr) minmax(250px, 0.75fr);
+  min-height: 250px;
+  border-radius: 0;
+}
+
+.admin-banner-preview__viewport .promo-copy {
+  padding: 28px 34px;
+}
+
+.admin-banner-preview__viewport .promo-eyebrow {
+  margin-bottom: 10px;
+  font-size: 9px;
+}
+
+.admin-banner-preview__viewport .promo-copy h2 {
+  font-size: clamp(25px, 3.3vw, 42px);
+}
+
+.admin-banner-preview__viewport .promo-cito {
+  margin-top: 10px;
+  padding: 7px 12px;
+  font-size: 10px;
+}
+
+.admin-banner-preview__viewport .promo-copy > p {
+  margin: 12px 0 16px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.admin-banner-preview__viewport .promo-button {
+  min-height: 36px;
+  padding: 0 16px;
+  font-size: 10px;
+}
+
+.admin-banner-preview__viewport .promo-note {
+  font-size: 9px;
+}
+
+.admin-banner-media-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding-top: 2px;
+}
+
+.admin-banner-media-toolbar__copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.admin-banner-media-toolbar__copy strong {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.admin-banner-media-toolbar__copy span {
+  color: #748588;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.admin-banner-media-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.admin-banner-upload-button {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 14px;
+  border: 1px solid #9bcaca;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--teal);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.admin-banner-upload-button:hover:not(:disabled) {
+  border-color: var(--teal);
+  background: #eef8f7;
+}
+
+.admin-banner-upload-button:disabled {
+  opacity: 0.58;
+  cursor: wait;
+}
+
+.admin-banner-media-reset {
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: #6f8082;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-banner-media-reset:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.admin-booking-delete {
+  min-height: 44px;
+  padding: 0 15px;
+  border: 1px solid #d99a97;
+  border-radius: 11px;
+  background: transparent;
+  color: #a6413c;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.admin-booking-delete:hover {
+  border-color: #bd5b55;
+  background: #fff6f5;
+}
+
+.admin-booking-delete:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.admin-banner-preview__viewport .promo-visual {
+  min-height: 250px;
+}
+
+.admin-banner-form {
+  display: grid;
+  gap: 26px;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.admin-banner-form-section {
+  display: grid;
+  gap: 15px;
+}
+
+.admin-banner-form-section + .admin-banner-form-section {
+  padding-top: 24px;
+  border-top: 1px solid #e2ebea;
+}
+
+.admin-banner-form-section h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.admin-banner-form .admin-editor-grid {
+  gap: 16px 18px;
+}
+
+.admin-banner-settings {
+  gap: 14px;
+  padding: 18px 20px !important;
+  border: 1px solid #dce7e6 !important;
+  border-radius: 16px;
+  background: #f6faf9;
+}
+
+.admin-banner-settings__row {
+  display: flex;
+  align-items: end;
+  gap: 24px;
+}
+
+.admin-banner-order-field {
+  display: grid;
+  flex: 0 0 140px;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.admin-banner-order-field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid #cbdcda;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.admin-banner-order-field input:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(0, 133, 133, 0.1);
+}
+
+.admin-toggle-row {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 44px;
+  margin-left: auto;
+  cursor: pointer;
+}
+
+.admin-toggle-row > span:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.admin-toggle-row strong {
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.admin-toggle-row small {
+  color: #748588;
+  font-size: 9px;
+}
+
+.admin-toggle-row input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.admin-toggle {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 28px;
+  padding: 3px;
+  border: 1px solid #cbdcda;
+  border-radius: 999px;
+  background: #dfe8e7;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.admin-toggle span {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(4, 70, 74, 0.2);
+  transition: transform 180ms ease;
+}
+
+.admin-toggle-row input:checked + .admin-toggle {
+  border-color: var(--teal);
+  background: var(--teal);
+}
+
+.admin-toggle-row input:checked + .admin-toggle span {
+  transform: translateX(20px);
+}
+
+.admin-toggle-row input:focus-visible + .admin-toggle {
+  box-shadow: 0 0 0 3px rgba(0, 133, 133, 0.16);
+}
+
+.admin-banner-action-bar {
+  margin-top: 0;
+  padding-top: 22px;
+  border-top: 1px solid #dfe8e7;
+}
+
+.admin-banner-action-bar .admin-danger-button,
+.admin-banner-action-bar .admin-save-button {
+  min-width: 150px;
+  min-height: 46px;
+}
+
+.admin-banner-save-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: transform 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+}
+
+.admin-banner-save-button:hover:not(:disabled) {
+  background: #057474;
+  box-shadow: 0 10px 22px rgba(0, 128, 128, 0.18);
+  transform: translateY(-1px);
+}
+
+.admin-banner-save-button:active:not(:disabled) {
+  box-shadow: none;
+  transform: translateY(1px);
+}
+
+.admin-banner-save-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.admin-button-loader {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: admin-button-spin 700ms linear infinite;
+}
+
+@keyframes admin-button-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 900px) {
+  .admin-banners-editor-page .admin-page-heading,
+  .admin-banners-editor-page .admin-editor-layout {
+    width: min(100% - 28px, 760px);
+  }
+
+  .admin-banners-editor-page .admin-editor-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-banner-preview__viewport .promo-slide {
+    grid-template-columns: minmax(0, 1.25fr) minmax(210px, 0.75fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .admin-banner-editor-panel {
+    gap: 22px;
+    padding: 16px;
+  }
+
+  .admin-banner-preview {
+    padding-bottom: 20px;
+  }
+
+  .admin-banner-preview__header {
+    align-items: flex-start;
+  }
+
+  .admin-banner-media-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-banner-media-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .admin-banner-upload-button {
+    flex: 1;
+  }
+
+  .admin-banner-preview__viewport {
+    border-radius: 14px;
+  }
+
+  .admin-banner-preview__viewport .promo-slide {
+    grid-template-columns: 1fr;
+    min-height: 300px;
+  }
+
+  .admin-banner-preview__viewport .promo-copy {
+    padding: 24px;
+  }
+
+  .admin-banner-preview__viewport .promo-copy h2 {
+    max-width: 92%;
+    font-size: clamp(25px, 9vw, 36px);
+  }
+
+  .admin-banner-form,
+  .admin-banner-form-section {
+    gap: 18px;
+  }
+
+  .admin-banner-form-section + .admin-banner-form-section {
+    padding-top: 20px;
+  }
+
+  .admin-banner-settings {
+    padding: 16px !important;
+  }
+
+  .admin-banner-settings__row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .admin-banner-order-field {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  .admin-banner-order-field input {
+    max-width: 150px;
+  }
+
+  .admin-toggle-row {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .admin-banner-action-bar {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .admin-banner-action-bar .admin-danger-button,
+  .admin-banner-action-bar .admin-save-button {
+    width: 100%;
+  }
 }
 
 /* Patients navigation and compact information page */
@@ -20911,6 +21683,9 @@ body.calculator-is-open .site-header {
 }
 
 .preparation-breadcrumbs a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   color: var(--teal);
   font-weight: 650;
   text-decoration: none;
@@ -21574,6 +22349,9 @@ body.calculator-is-open .site-header {
 }
 
 .faq-breadcrumbs a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   color: var(--teal);
   font-weight: 650;
   text-decoration: none;
@@ -21688,8 +22466,8 @@ body.calculator-is-open .site-header {
 }
 
 .faq-search button {
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -21708,7 +22486,7 @@ body.calculator-is-open .site-header {
 }
 
 .faq-categories button {
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 14px;
   border: 1px solid rgb(12 67 70 / 14%);
   border-radius: 999px;
@@ -21994,7 +22772,7 @@ body.calculator-is-open .site-header {
   }
 
   .faq-categories button {
-    min-height: 36px;
+    min-height: 44px;
     padding: 0 12px;
     font-size: 11px;
   }
@@ -22685,6 +23463,8 @@ body.calculator-is-open .site-header {
 
   .main-nav > a,
   .main-nav-group-toggle {
+    min-width: 44px;
+    min-height: 44px;
     white-space: nowrap;
   }
 
@@ -22703,6 +23483,7 @@ body.calculator-is-open .site-header {
     align-items: center;
     justify-content: center;
     justify-self: center;
+    min-height: 44px;
     padding: 9px 10px;
     text-align: center;
   }
@@ -22716,4 +23497,225 @@ body.calculator-is-open .site-header {
   background: transparent;
   color: inherit;
 }
+
+}
+
+@media (max-width: 360px) {
+  .site-header {
+    gap: 6px;
+    padding-inline: 10px;
+  }
+
+  .site-header .logo {
+    width: 166px;
+  }
+
+  .header-mobile-controls {
+    gap: 2px;
+  }
+
+  .header-support,
+  .menu-button {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* 2026 responsive audit: calmer hierarchy, denser content and clearer copy. */
+.preparation-shell,
+.faq-shell {
+  margin-bottom: 88px;
+}
+
+.preparation-hero,
+.faq-hero {
+  gap: 56px;
+  padding: 36px 0 44px;
+}
+
+.preparation-hero h1,
+.faq-hero h1 {
+  font-size: clamp(40px, 4.25vw, 56px);
+  line-height: 1.02;
+}
+
+.preparation-hero-copy > p:first-child,
+.faq-hero-copy p {
+  color: var(--text-muted);
+  font-size: 17px;
+  line-height: 1.58;
+}
+
+.preparation-directory {
+  padding: 48px 0;
+}
+
+.preparation-directory-heading {
+  gap: 36px;
+}
+
+.preparation-accordion-item,
+.faq-item {
+  border-color: var(--border-soft);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(15 52 54 / 3%);
+}
+
+.preparation-accordion-item:hover,
+.faq-item:hover {
+  border-color: rgb(8 110 112 / 24%);
+  box-shadow: 0 10px 28px rgb(15 52 54 / 5%);
+}
+
+.preparation-accordion-item[open],
+.faq-item.is-open {
+  border-color: rgb(8 110 112 / 24%);
+  background: var(--surface-soft);
+  box-shadow: 0 12px 32px rgb(15 52 54 / 5%);
+}
+
+.preparation-accordion-item summary {
+  min-height: 82px;
+}
+
+.preparation-accordion-title small,
+.faq-question-copy small {
+  color: #687b7e;
+}
+
+.preparation-advice-grid article {
+  min-height: 154px;
+  border-color: var(--border-soft);
+  background: #fff;
+  box-shadow: none;
+}
+
+.preparation-advice-grid p,
+.preparation-group-note,
+.preparation-checklist li small,
+.faq-answer p {
+  color: var(--text-muted);
+}
+
+.preparation-checklist {
+  padding: 40px 0;
+}
+
+.preparation-checklist li {
+  border-color: var(--border-soft);
+  background: #fff;
+}
+
+.faq-directory {
+  padding: 36px 0 56px;
+}
+
+.faq-question {
+  min-height: 80px;
+}
+
+@media (max-width: 1080px) {
+  .page-hero {
+    padding: 48px 0 36px;
+  }
+
+  .page-hero h1 {
+    font-size: clamp(40px, 6vw, 54px);
+  }
+}
+
+@media (max-width: 720px) {
+  .page-hero {
+    padding: 28px 0 22px;
+  }
+
+  .page-hero h1 {
+    font-size: clamp(32px, 10.2vw, 40px);
+    line-height: 1.04;
+  }
+
+  .page-hero p {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .preparation-shell,
+  .faq-shell {
+    width: min(100% - 32px, 560px);
+    margin-bottom: 56px;
+  }
+
+  .preparation-hero,
+  .faq-hero {
+    gap: 18px;
+    padding: 24px 0 28px;
+  }
+
+  .preparation-hero h1,
+  .faq-hero h1 {
+    font-size: clamp(34px, 9.6vw, 40px);
+    line-height: 1.04;
+  }
+
+  .preparation-hero-copy > p:first-child,
+  .faq-hero-copy p {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .preparation-directory,
+  .faq-directory {
+    padding: 36px 0 42px;
+  }
+
+  .preparation-directory-heading,
+  .preparation-checklist {
+    gap: 20px;
+  }
+
+  .preparation-directory-heading h2,
+  .preparation-checklist h2,
+  .preparation-contact-note h2 {
+    font-size: 28px;
+  }
+
+  .preparation-accordion-item summary,
+  .faq-question {
+    min-height: 74px;
+    padding-block: 14px;
+  }
+
+  .preparation-accordion-title strong,
+  .faq-question-copy strong {
+    font-size: 16px;
+  }
+
+  .preparation-accordion-title small,
+  .faq-question-copy small {
+    font-size: 11px;
+  }
+
+  .preparation-checklist {
+    padding: 34px 0;
+  }
+
+  .faq-answer p {
+    font-size: 13px;
+  }
+
+  .doctors-directory-v2.is-mobile-view-quad > .doctor-profile-card-v2 {
+    min-height: clamp(250px, 72vw, 315px);
+  }
+
+  .doctors-directory-v2.is-mobile-view-quad .doctor-card-photo-identity b {
+    font-size: clamp(16px, 4.5vw, 19px);
+    line-height: 1.08;
+    -webkit-line-clamp: 3;
+  }
+
+  .doctors-directory-v2.is-mobile-view-quad .doctor-card-photo-identity small {
+    font-size: 11px;
+    line-height: 1.35;
+  }
 }

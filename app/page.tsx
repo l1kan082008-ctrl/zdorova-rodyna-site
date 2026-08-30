@@ -1,7 +1,12 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { listPopularBookingServices } from "./api/bookings/bookingStore";
 import { listDoctors } from "./api/doctors/doctorStore";
 import { listPublicPriceItems } from "./api/prices/priceStore";
+import {
+  getDefaultManagedServices,
+  listManagedServices,
+} from "./api/services/serviceStore";
 import { DoctorsShowcase } from "./components/DoctorsShowcase";
 import { GlowPriceCard } from "./components/GlowPriceCard";
 import { HomeSearch, type HomeSearchItem } from "./components/HomeSearch";
@@ -17,25 +22,9 @@ import {
   resolvePriceItem,
   type PriceReference,
 } from "./prices/priceReferences";
-import { primaryServiceDetails } from "./services/serviceData";
 import { serviceDetails } from "./services/serviceData";
 
 export const dynamic = "force-dynamic";
-
-const homeServiceOrder = ["lab", "ct", "mri", "consultation"] as const;
-
-const homeServiceDetails = homeServiceOrder.map((slug) => {
-  const service = primaryServiceDetails.find((item) => item.slug === slug);
-  if (!service) throw new Error(`Missing home service: ${slug}`);
-
-  return slug === "lab"
-    ? {
-        ...service,
-        shortTitle: "Аналізи",
-        cardDescription: "Лабораторні дослідження",
-      }
-    : service;
-});
 
 const advantages = [
   {
@@ -313,11 +302,15 @@ function LineIcon({ type }: { type: string }) {
 }
 
 export default async function Home() {
-  const [priceDirections, doctors, priceItems] = await Promise.all([
+  const [priceDirections, doctors, priceItems, managedServices] = await Promise.all([
     getPopularPriceDirections(),
     listDoctors().catch(() => defaultDoctors),
     listPublicPriceItems().catch(() => catalogItems),
+    listManagedServices().catch(() => getDefaultManagedServices()),
   ]);
+  const homeServiceDetails = managedServices
+    .filter((service) => service.active && service.showOnHome)
+    .sort((first, second) => first.sortOrder - second.sortOrder);
   const showcaseDoctors = doctors.sort((first, second) => {
     const firstIndex = featuredDoctorOrder.indexOf(first.id);
     const secondIndex = featuredDoctorOrder.indexOf(second.id);
@@ -432,12 +425,18 @@ export default async function Home() {
           </Link>
         </div>
         <div className="services-grid" id="services-grid">
-          {homeServiceDetails.map((service) => (
+          {homeServiceDetails.map((service) => {
+            const art = service.imageKey
+              ? `/api/services/image?key=${encodeURIComponent(service.imageKey)}`
+              : service.imagePath || "/service-cards/lab-glass-v3.jpg";
+
+            return (
             <Link
               className={`service-card service-card--${service.slug}`}
-              key={service.slug}
-              href={`/services/${service.slug}`}
+              key={service.id}
+              href={service.href}
               aria-label={`${service.shortTitle}: дізнатися більше`}
+              style={{ "--service-art": `url("${art}")` } as CSSProperties}
             >
               <span className="service-card-copy">
                 <strong>{service.shortTitle}</strong>
@@ -449,7 +448,8 @@ export default async function Home() {
                 →
               </span>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </section>
 

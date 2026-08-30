@@ -95,6 +95,7 @@ export function DoctorsDirectory({
   const doctors = initialDoctors;
   const [query, setQuery] = useState("");
   const [specialty, setSpecialty] = useState("all");
+  const [focusedDoctorId, setFocusedDoctorId] = useState<string | null>(null);
   const [expandedDoctorId, setExpandedDoctorId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<MobileDoctorView>("single");
 
@@ -107,12 +108,39 @@ export function DoctorsDirectory({
 
   const changeMobileView = (nextView: MobileDoctorView) => {
     setMobileView(nextView);
+    setFocusedDoctorId(null);
     setExpandedDoctorId(null);
     window.localStorage.setItem(mobileDoctorViewStorageKey, nextView);
   };
 
+  const focusDoctorPhoto = (doctorId: string) => {
+    if (mobileView === "single") {
+      toggleDoctorDetails(doctorId);
+      return;
+    }
+
+    if (focusedDoctorId === doctorId) {
+      setFocusedDoctorId(null);
+      setExpandedDoctorId(null);
+      return;
+    }
+
+    setFocusedDoctorId(doctorId);
+    setExpandedDoctorId(null);
+
+    window.setTimeout(() => {
+      document.getElementById(`doctor-card-${doctorId}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 80);
+  };
+
   const toggleDoctorDetails = (doctorId: string) => {
     const willExpand = expandedDoctorId !== doctorId;
+    if (mobileView !== "single") {
+      setFocusedDoctorId(doctorId);
+    }
     setExpandedDoctorId(willExpand ? doctorId : null);
 
     if (willExpand && mobileView !== "single") {
@@ -263,6 +291,7 @@ export function DoctorsDirectory({
             );
             const profileHref = `/doctors/${doctor.id}`;
             const bookingHref = `/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`;
+            const isFocused = focusedDoctorId === doctor.id;
             const isExpanded = expandedDoctorId === doctor.id;
             const patientGroups = doctorPatientGroupOptions
               .filter((option) => doctor.patientGroups?.includes(option.value))
@@ -271,7 +300,7 @@ export function DoctorsDirectory({
 
             return (
               <article
-                className={`doctor-profile-card doctor-profile-card-v2${isExpanded ? " is-expanded" : ""}`}
+                className={`doctor-profile-card doctor-profile-card-v2${isFocused ? " is-focused" : ""}${isExpanded ? " is-expanded" : ""}`}
                 key={doctor.id}
                 id={`doctor-card-${doctor.id}`}
               >
@@ -298,10 +327,23 @@ export function DoctorsDirectory({
                   <button
                     className="doctor-card-photo-toggle"
                     type="button"
-                    aria-expanded={isExpanded}
-                    aria-label={`${isExpanded ? "Сховати" : "Показати"} інформацію про лікаря ${doctor.name}`}
-                    onClick={() => toggleDoctorDetails(doctor.id)}
+                    aria-label={
+                      mobileView === "single"
+                        ? `${isExpanded ? "Сховати" : "Показати"} інформацію про лікаря ${doctor.name}`
+                        : `Збільшити фотографію лікаря ${doctor.name}`
+                    }
+                    onClick={() => focusDoctorPhoto(doctor.id)}
                   />
+
+                  <button
+                    className="doctor-card-details-toggle"
+                    type="button"
+                    aria-expanded={isExpanded}
+                    aria-label={`${isExpanded ? "Згорнути" : "Розкрити"} інформацію про лікаря ${doctor.name}`}
+                    onClick={() => toggleDoctorDetails(doctor.id)}
+                  >
+                    <span aria-hidden="true" />
+                  </button>
 
                   <span className="doctor-card-photo-identity">
                     <span>

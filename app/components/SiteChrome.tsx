@@ -10,6 +10,7 @@ import {
   PRICE_CALCULATOR_STORAGE_KEY,
   readPriceCalculatorSelection,
 } from "../prices/calculatorSelection";
+import { useModalDialog } from "./useModalDialog";
 
 const footerNavigation = [
   { href: "/services", label: "Послуги", key: "services" },
@@ -96,6 +97,26 @@ export function SiteHeader({ active }: { active?: string }) {
   const [supportSubmitted, setSupportSubmitted] = useState(false);
   const [selectedServiceCount, setSelectedServiceCount] = useState(0);
   const supportButtonRef = useRef<HTMLButtonElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const supportDialogRef = useRef<HTMLElement>(null);
+  const supportPhoneRef = useRef<HTMLInputElement>(null);
+
+  useModalDialog({
+    open: menuOpen,
+    dialogRef: headerRef,
+    onClose: () => setMenuOpen(false),
+    initialFocusRef: menuButtonRef,
+    restoreFocusRef: menuButtonRef,
+  });
+
+  useModalDialog({
+    open: supportOpen,
+    dialogRef: supportDialogRef,
+    onClose: () => setSupportOpen(false),
+    initialFocusRef: supportPhoneRef,
+    restoreFocusRef: supportButtonRef,
+  });
 
   useEffect(() => {
     const closeForSearch = () => setMenuOpen(false);
@@ -154,15 +175,9 @@ export function SiteHeader({ active }: { active?: string }) {
     if (!menuOpen) return;
 
     const previousOverflow = document.body.style.overflow;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
-    };
-
     document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", closeOnEscape);
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", closeOnEscape);
     };
   }, [menuOpen]);
 
@@ -174,16 +189,10 @@ export function SiteHeader({ active }: { active?: string }) {
     if (!supportOpen) return;
 
     const previousOverflow = document.body.style.overflow;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSupportOpen(false);
-    };
-
     document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", closeOnEscape);
 
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", closeOnEscape);
     };
   }, [supportOpen]);
 
@@ -228,7 +237,14 @@ export function SiteHeader({ active }: { active?: string }) {
         aria-hidden="true"
         onClick={() => setMenuOpen(false)}
       />
-      <header className={menuOpen ? "site-header inner-header is-menu-open" : "site-header inner-header"}>
+      <header
+        ref={headerRef}
+        className={menuOpen ? "site-header inner-header is-menu-open" : "site-header inner-header"}
+        role={menuOpen ? "dialog" : undefined}
+        aria-modal={menuOpen ? "true" : undefined}
+        aria-label={menuOpen ? "Меню сайту" : undefined}
+        tabIndex={menuOpen ? -1 : undefined}
+      >
       <Link className="logo" href="/" aria-label="Здорова Родина — на головну">
         <Image
           src="/zdorova-rodyna-logo-cropped.png"
@@ -383,6 +399,7 @@ export function SiteHeader({ active }: { active?: string }) {
           </svg>
         </button>
         <button
+          ref={menuButtonRef}
           className="menu-button"
           type="button"
           aria-label={menuOpen ? "Закрити меню" : "Відкрити меню"}
@@ -416,10 +433,12 @@ export function SiteHeader({ active }: { active?: string }) {
           }}
         >
           <section
+            ref={supportDialogRef}
             className="support-dialog"
             role="dialog"
             aria-modal="true"
             aria-label="Зворотний зв’язок"
+            tabIndex={-1}
           >
             <button
               className="support-dialog-close"
@@ -457,6 +476,7 @@ export function SiteHeader({ active }: { active?: string }) {
                     >
                       <span className="support-phone-prefix">+38</span>
                       <input
+                        ref={supportPhoneRef}
                         id="support-phone"
                         type="tel"
                         inputMode="numeric"

@@ -151,3 +151,12 @@ export async function updateBookingStatus(id: string, status: BookingStatus) {
 
   return result.meta.changes > 0;
 }
+
+export async function deleteBooking(id: string) {
+  await ensureBookingsTable();
+  const result = await env.DB.prepare("DELETE FROM bookings WHERE id = ?")
+    .bind(id)
+    .run();
+
+  return result.meta.changes > 0;
+}

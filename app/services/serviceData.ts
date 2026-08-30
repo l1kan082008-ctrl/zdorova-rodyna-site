@@ -564,7 +564,7 @@ export const serviceDetails: ServiceDetail[] = [
     centerTitle: "Спокійна перевірка у комфортних умовах",
     centerDescription:
       "Дослідження проводять у тихому кабінеті на професійному аудіометричному обладнанні. Фахівець пояснює кожен етап, контролює точність відповідей і допомагає правильно інтерпретувати аудіограму.",
-    image: "/service-heroes/audiometry-cinematic-v1.png",
+    image: "/service-heroes/audiometry-cinematic-v1.webp",
     facts: ["Без болю", "Для дорослих і дітей", "Точна аудіограма", "Результат одразу"],
     indicationsTitle: "Коли варто перевірити слух",
     indications: [

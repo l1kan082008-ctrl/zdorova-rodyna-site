@@ -113,12 +113,20 @@
 }
 
 .back {
-  display: block;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
   margin-top: 20px;
   color: #527174;
   text-align: center;
   text-decoration: none;
   font-size: 14px;
+}
+
+.back:focus-visible {
+  outline: 3px solid rgb(8 127 130 / 24%);
+  outline-offset: 3px;
 }
 
 @media (max-width: 520px) {

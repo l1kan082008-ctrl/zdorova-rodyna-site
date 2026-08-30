@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { defaultPromoSlides, type PromoSlide } from "./promoData";
 
 export function PromoSlider() {
@@ -88,6 +88,9 @@ export function PromoSlider() {
               className={`promo-slide promo-slide--${slide.theme}`}
               key={slide.id}
               aria-hidden={activeSlide !== index}
+              style={slide.imageKey ? ({
+                "--promo-photo": `url("/api/banners/image?key=${encodeURIComponent(slide.imageKey)}")`,
+              } as CSSProperties) : undefined}
             >
               <div className="promo-copy">
                 <span className="promo-eyebrow">{slide.eyebrow}</span>

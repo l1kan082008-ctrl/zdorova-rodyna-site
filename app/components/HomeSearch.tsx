@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import {
   addPriceCalculatorSelection,
@@ -15,6 +15,7 @@ import {
   normalizeMedicalSearch,
   scoreMedicalSearch,
 } from "../search/medicalSearch";
+import { useModalDialog } from "./useModalDialog";
 
 const HOME_SEARCH_OPEN_EVENT = "zdorova-rodyna-home-search-open";
 const SITE_MENU_OPEN_EVENT = "zdorova-rodyna-site-menu-open";
@@ -69,10 +70,33 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPriceIds, setSelectedPriceIds] = useState<string[]>([]);
+  const [mobileViewport, setMobileViewport] = useState(false);
   const shellRef = useRef<HTMLElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
+  const suppressRestoredFocusRef = useRef(false);
+
+  const closeSearch = useCallback(() => {
+    if (isOpen && mobileViewport) suppressRestoredFocusRef.current = true;
+    setIsOpen(false);
+  }, [isOpen, mobileViewport]);
+
+  useModalDialog({
+    open: isOpen && mobileViewport,
+    dialogRef: panelRef,
+    onClose: closeSearch,
+    initialFocusRef: mobileInputRef,
+    restoreFocusRef: desktopInputRef,
+  });
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 720px)");
+    const updateViewport = () => setMobileViewport(media.matches);
+    updateViewport();
+    media.addEventListener("change", updateViewport);
+    return () => media.removeEventListener("change", updateViewport);
+  }, []);
 
   const groups = useMemo(() => {
     const normalizedQuery = normalizeMedicalSearch(query);
@@ -108,12 +132,17 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
   );
 
   const openSearch = () => {
+    if (suppressRestoredFocusRef.current) {
+      suppressRestoredFocusRef.current = false;
+      return;
+    }
+
     setIsOpen(true);
     window.dispatchEvent(new Event(HOME_SEARCH_OPEN_EVENT));
   };
 
   useEffect(() => {
-    const closeForMenu = () => setIsOpen(false);
+    const closeForMenu = () => closeSearch();
     const updateSelectedPrices = (event: Event) => {
       const selectedIds = (event as CustomEvent<unknown>).detail;
       setSelectedPriceIds(
@@ -136,7 +165,7 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
         updateSelectedPrices,
       );
     };
-  }, []);
+  }, [closeSearch]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -153,11 +182,11 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
         shellRef.current &&
         !shellRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
+        closeSearch();
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsOpen(false);
+      if (event.key === "Escape") closeSearch();
     };
 
     document.addEventListener("pointerdown", handlePointerDown);
@@ -167,7 +196,7 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen]);
+  }, [closeSearch, isOpen]);
 
   useEffect(() => {
     if (!isOpen || !window.matchMedia("(max-width: 720px)").matches) return;
@@ -231,7 +260,7 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
   const openCalculator = () => {
     if (selectedPriceIds.length === 0) return;
 
-    setIsOpen(false);
+    closeSearch();
     if (window.location.pathname === "/prices") {
       window.requestAnimationFrame(() => {
         window.dispatchEvent(new Event(PRICE_CALCULATOR_OPEN_EVENT));
@@ -266,7 +295,6 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
           onFocus={openSearch}
           placeholder="Послуга, лікар, аналіз або відділення"
           autoComplete="off"
-          aria-expanded={isOpen}
           aria-controls="home-search-results"
         />
         {query ? (
@@ -286,6 +314,10 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
           className="home-search-panel"
           id="home-search-results"
           ref={panelRef}
+          role={mobileViewport ? "dialog" : "region"}
+          aria-modal={mobileViewport ? "true" : undefined}
+          aria-label={mobileViewport ? "Пошук по сайту" : "Результати пошуку"}
+          tabIndex={-1}
         >
           <div className="home-search-mobile-head">
             <form role="search" onSubmit={submit}>
@@ -311,7 +343,7 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
             <button
               type="button"
               className="home-search-close"
-              onClick={() => setIsOpen(false)}
+              onClick={closeSearch}
               aria-label="Закрити пошук"
             >
               ×
@@ -350,7 +382,7 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
                             item.kind === "doctor" ? " has-photo" : ""
                           }`}
                           href={item.href}
-                          onClick={() => setIsOpen(false)}
+                          onClick={closeSearch}
                         >
                           {item.kind === "doctor" ? (
                             <span className="home-search-result-mark is-doctor">
@@ -412,7 +444,7 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
                           <Link
                             className="home-search-result-action"
                             href={item.actionHref}
-                            onClick={() => setIsOpen(false)}
+                            onClick={closeSearch}
                           >
                             <span className="home-search-result-action-label">
                               {item.kind === "doctor"
@@ -439,7 +471,7 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
                         ? `/prices?search=${encodeURIComponent(query)}`
                         : groupAllLinks[group.kind]
                     }
-                    onClick={() => setIsOpen(false)}
+                    onClick={closeSearch}
                   >
                     {groupAllLabels[group.kind]} <span aria-hidden="true">→</span>
                   </Link>
@@ -450,7 +482,7 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
             <div className="home-search-empty">
               <strong>Нічого не знайшли за цим запитом</strong>
               <p>Спробуйте коротшу назву або зверніться до адміністратора.</p>
-              <Link href="/contacts#booking" onClick={() => setIsOpen(false)}>
+              <Link href="/contacts#booking" onClick={closeSearch}>
                 Допомога адміністратора <span>→</span>
               </Link>
             </div>

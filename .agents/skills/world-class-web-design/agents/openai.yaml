@@ -1,0 +1,6 @@
+interface:
+  display_name: "World-Class Web Design"
+  short_description: "Strict premium UI/UX design and visual QA"
+  default_prompt: "Use $world-class-web-design to design and validate a cohesive, responsive, premium website experience."
+policy:
+  allow_implicit_invocation: true

@@ -15,6 +15,7 @@ import {
 import { getServiceDetail, serviceDetails } from "../serviceData";
 import { FamilyDeclarationForm } from "./FamilyDeclarationForm";
 import { ConsultationExperience } from "./ConsultationExperience";
+import { CtServicePage } from "./CtServicePage";
 
 export const dynamic = "force-dynamic";
 
@@ -134,6 +135,34 @@ export default async function ServiceDetailPage({
     "dermoscopy",
     "audiometry",
   ].includes(service.slug);
+  if (isCinematicCt) {
+    const [doctors, prices] = await Promise.all([
+      listDoctors().catch(() => defaultDoctors),
+      listPublicPriceItems().catch(() => catalogItems),
+    ]);
+    const radiologists = doctors.filter((doctor) =>
+      doctor.specialty.toLocaleLowerCase("uk-UA").includes("рентгенолог"),
+    );
+    const fallbackRadiologists = defaultDoctors.filter((doctor) =>
+      doctor.specialty.toLocaleLowerCase("uk-UA").includes("рентгенолог"),
+    );
+    const ctPrices = prices.filter(
+      (item) => item.category === "ct" && item.isActive !== false,
+    );
+    const fallbackCtPrices = catalogItems.filter(
+      (item) => item.category === "ct" && item.isActive !== false,
+    );
+
+    return (
+      <CtServicePage
+        service={service}
+        doctors={radiologists.length > 0 ? radiologists : fallbackRadiologists}
+        prices={ctPrices.length > 0 ? ctPrices : fallbackCtPrices}
+        bookingHref={bookingHref}
+        priceHref={priceHref}
+      />
+    );
+  }
   const relevantDoctors = isCardiology || isFamilyMedicine
     ? await listDoctors().catch(() => defaultDoctors)
     : [];

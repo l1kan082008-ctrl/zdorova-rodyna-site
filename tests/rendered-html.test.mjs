@@ -700,7 +700,10 @@ test("CITO availability is configured per study while the surcharge is calculate
     catalog,
     /if \(isInlineOverview\)[\s\S]*?setExpandedPreviewCategories[\s\S]*?return;/,
   );
-  assert.match(catalog, /"Згорнути"[\s\S]*?"Показати всі дослідження"/);
+  assert.match(
+    catalog,
+    /"Згорнути до короткого списку"[\s\S]*?"Розгорнути повний список"/,
+  );
   assert.match(
     catalog,
     /setCitoOnly\(nextCitoOnly\)[\s\S]*?setCollapsedCategories\(new Set\(\)\)/,
@@ -749,7 +752,7 @@ test("all-services overview expands and collapses categories inline", async () =
   );
   assert.match(
     catalog,
-    /isInlineOverview[\s\S]*?isPreviewExpanded[\s\S]*?"Згорнути"[\s\S]*?"Показати всі дослідження"/,
+    /isInlineOverview[\s\S]*?isPreviewExpanded[\s\S]*?"Згорнути до короткого списку"[\s\S]*?"Розгорнути повний список"/,
   );
 });
 

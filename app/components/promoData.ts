@@ -17,6 +17,7 @@ export type PromoSlide = {
   text: string;
   note: string;
   accent?: string;
+  imageKey?: string;
   action: string;
   href: string;
   theme: PromoTheme;

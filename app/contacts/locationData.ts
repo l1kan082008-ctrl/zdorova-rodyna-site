@@ -53,7 +53,7 @@ export const centerLocations: CenterLocation[] = [
     coordinates: { lat: 50.6031702, lng: 26.2797542 },
     gallery: [
       {
-        src: "/locations/stelmakha-18m.png",
+        src: "/locations/stelmakha-18m.webp",
         alt: "Фасад медичного центру «Здорова Родина» на вулиці Стельмаха",
         caption: "Головний вхід з вул. Володимира Стельмаха",
       },

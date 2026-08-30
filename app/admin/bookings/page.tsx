@@ -21,12 +21,49 @@ type ApiPayload = {
   error?: string;
 };
 
+type BookingKind =
+  | "callback"
+  | "declaration"
+  | "doctor"
+  | "mri"
+  | "ct"
+  | "ultrasound"
+  | "laboratory"
+  | "other";
+
+const bookingKindLabels: Record<BookingKind, string> = {
+  callback: "Зворотний дзвінок",
+  declaration: "Декларація із сімейним лікарем",
+  doctor: "Запис до лікаря",
+  mri: "Запис на МРТ",
+  ct: "Запис на КТ",
+  ultrasound: "Запис на УЗД",
+  laboratory: "Лабораторні дослідження",
+  other: "Інша заявка",
+};
+
+function getBookingKind(booking: Booking): BookingKind {
+  const value = `${booking.service} ${booking.doctor ?? ""} ${booking.comment ?? ""}`
+    .toLocaleLowerCase("uk")
+    .replace(/ґ/g, "г");
+
+  if (/зворотн|передзвон|дзвінок/.test(value)) return "callback";
+  if (/декларац/.test(value)) return "declaration";
+  if (/(^|[^а-яіїєґ])мрт([^а-яіїєґ]|$)|магнітно-резонанс/.test(value)) return "mri";
+  if (/(^|[^а-яіїєґ])кт([^а-яіїєґ]|$)|комп['’`]?ютерн|коронарограф/.test(value)) return "ct";
+  if (/(^|[^а-яіїєґ])узд([^а-яіїєґ]|$)|ультразвук/.test(value)) return "ultrasound";
+  if (/аналіз|лаборатор|забір/.test(value)) return "laboratory";
+  if (booking.doctor || /лікар|консультац|прийом/.test(value)) return "doctor";
+  return "other";
+}
+
 export default function BookingsAdminPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [savingId, setSavingId] = useState("");
+  const [deletingId, setDeletingId] = useState("");
 
   useEffect(() => {
     fetch("/api/admin/bookings")
@@ -74,6 +111,32 @@ export default function BookingsAdminPage() {
     }
   };
 
+  const removeBooking = async (booking: Booking) => {
+    const confirmed = window.confirm(
+      `Видалити заявку ${booking.reference}? Цю дію неможливо скасувати.`,
+    );
+    if (!confirmed) return;
+
+    setDeletingId(booking.id);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/bookings", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: booking.id }),
+      });
+      const payload = (await response.json()) as ApiPayload;
+      if (!response.ok || !payload.bookings) {
+        throw new Error(payload.error || "Не вдалося видалити заявку");
+      }
+      setBookings(payload.bookings);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Сталася помилка");
+    } finally {
+      setDeletingId("");
+    }
+  };
+
   return (
     <main className="admin-bookings-page">
       <header className="admin-topbar">
@@ -100,21 +163,27 @@ export default function BookingsAdminPage() {
           <div className="admin-state">Завантажуємо заявки…</div>
         ) : filteredBookings.length ? (
           <div className="admin-booking-list">
-            {filteredBookings.map((booking) => (
-              <article key={booking.id}>
+            {filteredBookings.map((booking) => {
+              const kind = getBookingKind(booking);
+              const showService =
+                booking.service.trim().toLocaleLowerCase("uk") !==
+                bookingKindLabels[kind].toLocaleLowerCase("uk");
+
+              return (
+                <article className="admin-booking-card" key={booking.id}>
                 <div className="admin-booking-heading">
                   <span>{booking.reference}</span>
                   <time dateTime={booking.createdAt}>
                     {new Date(`${booking.createdAt}Z`).toLocaleString("uk-UA")}
                   </time>
                 </div>
+                <div className={`admin-booking-type admin-booking-type--${kind}`}>
+                  <span>{bookingKindLabels[kind]}</span>
+                  {showService ? <strong>{booking.service}</strong> : null}
+                </div>
                 <h2>{booking.patientName}</h2>
                 <a href={`tel:${booking.phone}`}>{booking.phone}</a>
                 <dl>
-                  <div>
-                    <dt>Послуга</dt>
-                    <dd>{booking.service}</dd>
-                  </div>
                   {booking.doctor ? (
                     <div>
                       <dt>Лікар</dt>
@@ -128,27 +197,38 @@ export default function BookingsAdminPage() {
                     </div>
                   ) : null}
                 </dl>
-                <label>
-                  Статус
-                  <select
-                    value={booking.status}
-                    disabled={savingId === booking.id}
-                    onChange={(event) =>
-                      changeStatus(
-                        booking.id,
-                        event.target.value as BookingStatus,
-                      )
-                    }
+                <div className="admin-booking-actions">
+                  <label className="admin-booking-status">
+                    Статус
+                    <select
+                      value={booking.status}
+                      disabled={savingId === booking.id || deletingId === booking.id}
+                      onChange={(event) =>
+                        changeStatus(
+                          booking.id,
+                          event.target.value as BookingStatus,
+                        )
+                      }
+                    >
+                      {statusOptions.map((option) => (
+                        <option value={option.value} key={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    className="admin-booking-delete"
+                    type="button"
+                    disabled={deletingId === booking.id || savingId === booking.id}
+                    onClick={() => removeBooking(booking)}
                   >
-                    {statusOptions.map((option) => (
-                      <option value={option.value} key={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </article>
-            ))}
+                    {deletingId === booking.id ? "Видаляємо…" : "Видалити"}
+                  </button>
+                </div>
+                </article>
+              );
+            })}
           </div>
         ) : (
           <div className="admin-state">Заявок поки немає.</div>

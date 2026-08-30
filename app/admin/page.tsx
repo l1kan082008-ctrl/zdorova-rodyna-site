@@ -3,10 +3,11 @@ import styles from "./AdminDashboard.module.css";
 
 const cards = [
   { href: "/admin/doctors", number: "01", title: "Лікарі", text: "Профілі, фотографії та спеціальності" },
-  { href: "/admin/bookings", number: "02", title: "Заявки", text: "Нові звернення пацієнтів" },
-  { href: "/admin/prices", number: "03", title: "Прайс", text: "Послуги, аналізи та актуальні ціни" },
-  { href: "/admin/locations", number: "04", title: "Відділення", text: "Адреси, графік і доступні послуги" },
-  { href: "/admin/banners", number: "05", title: "Банери", text: "Головні повідомлення сайту" },
+  { href: "/admin/services", number: "02", title: "Послуги", text: "Картки напрямів і сторінки послуг" },
+  { href: "/admin/bookings", number: "03", title: "Заявки", text: "Нові звернення пацієнтів" },
+  { href: "/admin/prices", number: "04", title: "Прайс", text: "Послуги, аналізи та актуальні ціни" },
+  { href: "/admin/locations", number: "05", title: "Відділення", text: "Адреси, графік і доступні послуги" },
+  { href: "/admin/banners", number: "06", title: "Банери", text: "Головні повідомлення сайту" },
 ];
 
 export default function AdminPage() {
