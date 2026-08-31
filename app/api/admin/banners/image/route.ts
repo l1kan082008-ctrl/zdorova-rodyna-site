@@ -1,19 +1,15 @@
 import { env } from "cloudflare:workers";
 import { isAuthorizedAdmin, unauthorizedAdminResponse } from "../../adminAuth";
+import { readBoundedFormData } from "@/lib/requestBody";
+import { readSafeRasterImage } from "@/lib/safeImage";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const IMAGE_TYPES = new Map([
-  ["image/jpeg", "jpg"],
-  ["image/png", "png"],
-  ["image/webp", "webp"],
-  ["image/avif", "avif"],
-]);
 
 export async function POST(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
 
   try {
-    const formData = await request.formData();
+    const formData = await readBoundedFormData(request, MAX_IMAGE_BYTES + 256 * 1024);
     const image = formData.get("image");
     const bannerId = String(formData.get("bannerId") ?? "draft");
 
@@ -21,27 +17,20 @@ export async function POST(request: Request) {
       return Response.json({ error: "Оберіть зображення." }, { status: 400 });
     }
 
-    const extension = IMAGE_TYPES.get(image.type);
-    if (!extension) {
+    const safeImage = await readSafeRasterImage(image, MAX_IMAGE_BYTES);
+    if (!safeImage) {
       return Response.json(
-        { error: "Підтримуються JPG, PNG, WEBP та AVIF." },
-        { status: 400 },
-      );
-    }
-
-    if (image.size > MAX_IMAGE_BYTES) {
-      return Response.json(
-        { error: "Файл завеликий. Максимальний розмір — 8 МБ." },
+        { error: "Файл має бути справжнім JPG, PNG, WEBP або AVIF до 8 МБ." },
         { status: 400 },
       );
     }
 
     const safeBannerId =
       bannerId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80) || "draft";
-    const imageKey = `banners/${safeBannerId}/${crypto.randomUUID()}.${extension}`;
+    const imageKey = `banners/${safeBannerId}/${crypto.randomUUID()}.${safeImage.extension}`;
 
-    await env.DOCTOR_MEDIA.put(imageKey, image.stream(), {
-      httpMetadata: { contentType: image.type },
+    await env.DOCTOR_MEDIA.put(imageKey, safeImage.bytes, {
+      httpMetadata: { contentType: safeImage.contentType },
       customMetadata: { bannerId: safeBannerId },
     });
 

@@ -4,7 +4,15 @@ export async function GET() {
   try {
     return Response.json({ services: await listManagedServices() });
   } catch (error) {
-    return Response.json({ error: error instanceof Error ? error.message : "Не вдалося завантажити послуги." }, { status: 500 });
+    const incidentId = crypto.randomUUID();
+    console.error(JSON.stringify({
+      event: "public_services_load_failed",
+      incidentId,
+      error: error instanceof Error ? error.message : "unknown",
+    }));
+    return Response.json(
+      { error: "Не вдалося завантажити послуги.", incidentId },
+      { status: 500, headers: { "cache-control": "no-store" } },
+    );
   }
 }
-

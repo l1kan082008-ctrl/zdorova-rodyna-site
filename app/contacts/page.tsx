@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
+import { TurnstileField } from "../components/TurnstileField";
 import { clearPriceCalculatorSelection } from "../prices/calculatorSelection";
 import { LocationsExplorer } from "./LocationsExplorer";
 import { centerLocations, type CenterLocation } from "./locationData";
@@ -116,6 +117,7 @@ export default function ContactsPage() {
   const [bookingReference, setBookingReference] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [selectedLocationId, setSelectedLocationId] = useState(
     centerLocations[0].id,
   );
@@ -123,8 +125,10 @@ export default function ContactsPage() {
   useEffect(() => {
     let active = true;
     fetch("/api/locations")
-      .then((response) => (response.ok ? response.json() : null))
-      .then((payload: { locations?: CenterLocation[] } | null) => {
+      .then(async (response): Promise<{ locations?: CenterLocation[] } | null> =>
+        response.ok ? (await response.json()) as { locations?: CenterLocation[] } : null,
+      )
+      .then((payload) => {
         if (active && payload?.locations?.length) setLocations(payload.locations);
       })
       .catch(() => undefined);
@@ -219,6 +223,10 @@ export default function ContactsPage() {
             .filter(Boolean)
             .join(" "),
           website: formData.get("website"),
+          source: "contacts",
+          consent: formData.get("consent") === "on",
+          consentVersion: "contacts-v1",
+          turnstileToken,
         }),
       });
       const payload = (await response.json()) as BookingResponse;
@@ -404,6 +412,7 @@ export default function ContactsPage() {
                   Погоджуюся на обробку контактних даних для організації запису.
                 </span>
               </label>
+              <TurnstileField onToken={setTurnstileToken} />
               <label className="booking-honeypot" aria-hidden="true">
                 Ваш сайт
                 <input name="website" tabIndex={-1} autoComplete="off" />

@@ -11,6 +11,7 @@ import {
   readPriceCalculatorSelection,
 } from "../prices/calculatorSelection";
 import { useModalDialog } from "./useModalDialog";
+import { TurnstileField } from "./TurnstileField";
 
 const footerNavigation = [
   { href: "/services", label: "Послуги", key: "services" },
@@ -43,7 +44,14 @@ const footerDoctorLinks = [
   { href: "/doctors?specialty=Хірургія та урологія", label: "Хірургія та урологія" },
 ];
 
-const navigation = [
+type NavigationItem = {
+  href: string;
+  label: string;
+  key: string;
+  children?: Array<{ href: string; label: string }>;
+};
+
+const navigation: NavigationItem[] = [
   {
     href: "/services",
     label: "Послуги",
@@ -95,6 +103,7 @@ export function SiteHeader({ active }: { active?: string }) {
   const [supportError, setSupportError] = useState("");
   const [supportSubmitting, setSupportSubmitting] = useState(false);
   const [supportSubmitted, setSupportSubmitted] = useState(false);
+  const [supportTurnstileToken, setSupportTurnstileToken] = useState("");
   const [selectedServiceCount, setSelectedServiceCount] = useState(0);
   const supportButtonRef = useRef<HTMLButtonElement>(null);
   const headerRef = useRef<HTMLElement>(null);
@@ -148,6 +157,10 @@ export function SiteHeader({ active }: { active?: string }) {
           doctor: "",
           comment: "Заявка з форми швидкого зв’язку у шапці сайту.",
           website: "",
+          source: "callback",
+          consent: true,
+          consentVersion: "callback-v1",
+          turnstileToken: supportTurnstileToken,
         }),
       });
       const payload = (await response.json().catch(() => ({}))) as {
@@ -498,6 +511,7 @@ export function SiteHeader({ active }: { active?: string }) {
                       {supportError}
                     </p>
                   ) : null}
+                  <TurnstileField onToken={setSupportTurnstileToken} />
                   <button
                     className="support-callback-submit"
                     type="submit"
@@ -505,6 +519,10 @@ export function SiteHeader({ active }: { active?: string }) {
                   >
                     {supportSubmitting ? "Надсилаємо…" : "Подзвоніть мені"}
                   </button>
+                  <small className="support-consent-note">
+                    Натискаючи кнопку, ви погоджуєтеся на обробку номера телефону
+                    лише для зворотного дзвінка.
+                  </small>
                 </form>
 
                 <div className="support-dialog-separator">

@@ -12,6 +12,7 @@ import {
   DEFAULT_CITO_SURCHARGE,
   usesDefaultCitoPolicy,
 } from "../../../../prices/citoPolicy";
+import { readBoundedJson } from "@/lib/requestBody";
 
 const MAX_ITEMS = 5000;
 const categoryById = new Map(
@@ -83,7 +84,7 @@ export async function POST(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
 
   try {
-    const payload = (await request.json()) as { items?: unknown[] };
+    const payload = (await readBoundedJson(request, 5 * 1024 * 1024)) as { items?: unknown[] };
     if (!Array.isArray(payload.items) || !payload.items.length) {
       throw new Error("Файл не містить позицій для імпорту.");
     }

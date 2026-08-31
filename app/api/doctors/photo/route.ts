@@ -1,4 +1,5 @@
 import { env } from "cloudflare:workers";
+import { secureImageHeaders } from "@/lib/safeImage";
 
 export async function GET(request: Request) {
   const key = new URL(request.url).searchParams.get("key")?.trim() ?? "";
@@ -12,6 +13,6 @@ export async function GET(request: Request) {
   const headers = new Headers();
   object.writeHttpMetadata(headers);
   headers.set("etag", object.httpEtag);
-  headers.set("cache-control", "public, max-age=3600");
+  secureImageHeaders(headers, "public, max-age=3600");
   return new Response(object.body, { headers });
 }

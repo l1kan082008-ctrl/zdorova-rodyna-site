@@ -4097,6 +4097,19 @@ footer {
   padding: 64px 0 44px;
 }
 
+.support-consent-note {
+  display: block;
+  color: var(--muted, #587276);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.turnstile-field {
+  width: 100%;
+  min-height: 1px;
+}
+
 .page-hero h1 {
   max-width: 820px;
   margin: 0;

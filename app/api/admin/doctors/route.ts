@@ -10,6 +10,7 @@ import type {
   DoctorPatientGroup,
   DoctorSchedule,
 } from "../../../doctors/doctorData";
+import { readBoundedJson } from "@/lib/requestBody";
 
 const availabilityStatuses = new Set<DoctorAvailabilityStatus>([
   "accepting",
@@ -44,7 +45,7 @@ export async function PUT(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
 
   try {
-    const payload = (await request.json()) as {
+    const payload = (await readBoundedJson(request, 256 * 1024)) as {
       id?: string;
       name?: string;
       specialty?: string;
@@ -123,7 +124,7 @@ export async function PUT(request: Request) {
 export async function POST(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
-    const payload = (await request.json()) as { name?: string; specialty?: string };
+    const payload = (await readBoundedJson(request, 32 * 1024)) as { name?: string; specialty?: string };
     const name = payload.name?.trim() ?? "";
     const specialty = payload.specialty?.trim() ?? "";
     if (!name || !specialty) {

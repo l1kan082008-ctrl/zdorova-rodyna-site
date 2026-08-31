@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useMemo, useRef, useState } from "react";
+import { TurnstileField } from "@/app/components/TurnstileField";
 
 type FamilyDoctorOption = {
   id: string;
@@ -122,6 +123,7 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
   const [birthDateError, setBirthDateError] = useState("");
   const [comment, setComment] = useState("");
   const [consent, setConsent] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [status, setStatus] = useState<
     { type: "idle" } | { type: "loading" } | { type: "success"; text: string } | { type: "error"; text: string }
   >({ type: "idle" });
@@ -159,6 +161,8 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
       return;
     }
 
+    if (!selectedDoctor) return;
+
     if (!consent) {
       setStatus({
         type: "error",
@@ -185,6 +189,10 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
           ]
             .filter(Boolean)
             .join(" "),
+          source: "family-declaration",
+          consent,
+          consentVersion: "family-declaration-v1",
+          turnstileToken,
         }),
       });
 
@@ -491,6 +499,8 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
               щодо декларації.
             </span>
           </label>
+
+          <TurnstileField onToken={setTurnstileToken} />
 
           {status.type === "success" ? (
             <div

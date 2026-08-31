@@ -15,5 +15,6 @@ type AdminNavigationProps = {
 // Навігація тепер централізована в app/admin/layout.tsx.
 // Компонент залишено тимчасово, щоб сторінки не потребували масового переписування.
 export default function AdminNavigation(_props: AdminNavigationProps) {
+  void _props;
   return null;
 }

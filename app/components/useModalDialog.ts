@@ -31,7 +31,7 @@ function collectBackgroundSiblings(dialog: HTMLElement) {
   let activeBranch: HTMLElement | null = dialog;
 
   while (activeBranch?.parentElement && activeBranch.parentElement !== document.body) {
-    const parent = activeBranch.parentElement;
+    const parent: HTMLElement = activeBranch.parentElement;
 
     Array.from(parent.children).forEach((child) => {
       if (!(child instanceof HTMLElement) || child === activeBranch) return;

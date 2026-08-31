@@ -170,9 +170,7 @@ export function DoctorsDirectory({
 
     const normalizedRequested = requestedSpecialty.toLocaleLowerCase("uk");
     const matchingGroup = groupedSpecialties.find((group) =>
-      group.urlAliases.includes(
-        normalizedRequested as (typeof group.urlAliases)[number],
-      ),
+      group.urlAliases.some((alias) => alias === normalizedRequested),
     );
 
     if (matchingGroup) {

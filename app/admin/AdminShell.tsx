@@ -45,7 +45,11 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   if (pathname === "/admin/login") return children;
 
   const logout = async () => {
-    await fetch("/api/admin/session", { method: "DELETE" });
+    await fetch("/api/admin/session", {
+      method: "DELETE",
+      credentials: "same-origin",
+      cache: "no-store",
+    });
     router.replace("/admin/login");
     router.refresh();
   };

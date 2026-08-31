@@ -13,8 +13,15 @@ export async function GET(request: Request) {
 
     return Response.json({ doctors: await listDoctors() });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Не вдалося завантажити лікарів";
-    return Response.json({ error: message }, { status: 500 });
+    const incidentId = crypto.randomUUID();
+    console.error(JSON.stringify({
+      event: "public_doctors_load_failed",
+      incidentId,
+      error: error instanceof Error ? error.message : "unknown",
+    }));
+    return Response.json(
+      { error: "Не вдалося завантажити лікарів.", incidentId },
+      { status: 500, headers: { "cache-control": "no-store" } },
+    );
   }
 }

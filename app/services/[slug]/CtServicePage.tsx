@@ -112,13 +112,24 @@ export function CtServicePage({ service, doctors, prices, bookingHref, priceHref
       <section className={styles.hero} aria-labelledby="ct-title">
         <Image className={styles.heroImage} src="/service-heroes/ct-cinematic-v1.webp" alt="Комп’ютерний томограф Philips Brilliance 64" fill priority unoptimized sizes="(max-width: 760px) 100vw, 94vw" />
         <div className={styles.heroShade} />
+        <div className={styles.scanGraphic} aria-hidden="true">
+          <svg viewBox="0 0 260 260" focusable="false">
+            <circle className={styles.scanRingOuter} cx="130" cy="130" r="116" />
+            <circle className={styles.scanRingInner} cx="130" cy="130" r="91" />
+            <path className={styles.scanCorners} d="M38 78V42h36M186 42h36v36M222 182v36h-36M74 218H38v-36" />
+            <g className={styles.scanSweep}>
+              <path d="M26 130h208" />
+              <circle cx="130" cy="130" r="5" />
+            </g>
+          </svg>
+          <span className={styles.scanReadout}><strong>64</strong><small>зрізи</small></span>
+        </div>
         <div className={styles.heroContent}>
           <nav aria-label="Хлібні крихти"><Link href="/services">Послуги</Link><span>/</span><span>КТ</span></nav>
           <span className={styles.eyebrow}>Променева діагностика</span>
           <h1 id="ct-title">Комп’ютерна<br />томографія</h1>
           <p>{service.lead}</p>
           <div className={styles.heroActions}><Link className={styles.primaryButton} href={bookingHref}>Записатися <span>→</span></Link><Link className={styles.secondaryButton} href={priceHref}>Переглянути вартість <span>→</span></Link></div>
-          <div className={styles.heroMeta}><span>◷ Від 5 хвилин</span><span>⌖ {locations.length} відділення</span><span>◉ Philips Brilliance 64</span></div>
         </div>
       </section>
 
@@ -172,8 +183,8 @@ export function CtServicePage({ service, doctors, prices, bookingHref, priceHref
 
       <section className={`${styles.section} ${styles.equipmentDoctors}`} id="ct-doctors">
         <article className={styles.equipmentCard}>
-          <Image className={styles.equipmentImage} src="/service-heroes/ct-philips-brilliance-64-studio-v2.webp" alt="Комп’ютерний томограф Philips Brilliance 64" fill unoptimized sizes="(max-width: 760px) 100vw, 44vw" />
-          <div><span>Наше обладнання</span><h2>Philips Brilliance 64</h2><p>64-зрізовий томограф для швидкого пошарового сканування, точних 3D-реконструкцій і контрольованого променевого навантаження.</p></div>
+          <div className={styles.equipmentMedia}><Image className={styles.equipmentImage} src="/service-heroes/ct-philips-brilliance-64-studio-v2.webp" alt="Комп’ютерний томограф Philips Brilliance 64" fill unoptimized sizes="(max-width: 760px) 100vw, 44vw" /></div>
+          <div className={styles.equipmentCopy}><span>Наше обладнання</span><h2>Philips Brilliance 64</h2><p>64-зрізовий томограф для швидкого пошарового сканування, точних 3D-реконструкцій і контрольованого променевого навантаження.</p></div>
         </article>
         <div>
           <SectionTitle title="Наші лікарі-рентгенологи" lead="Реальні фахівці центру, які працюють із діагностичними зображеннями." />

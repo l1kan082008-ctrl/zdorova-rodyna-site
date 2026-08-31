@@ -1,6 +1,7 @@
 import { isAuthorizedAdmin, unauthorizedAdminResponse } from "../adminAuth";
 import { createBanner, deleteBanner, listBanners, updateBanner } from "../../banners/bannerStore";
 import type { PromoSlide } from "../../../components/promoData";
+import { readBoundedJson } from "@/lib/requestBody";
 
 export async function GET(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
@@ -14,7 +15,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
-    return Response.json({ banner: await createBanner(await request.json() as Partial<PromoSlide>) }, { status: 201 });
+    return Response.json({ banner: await createBanner(await readBoundedJson(request, 64 * 1024) as Partial<PromoSlide>) }, { status: 201 });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "Не вдалося створити банер." }, { status: 400 });
   }
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
-    const payload = await request.json() as Partial<PromoSlide> & { id?: string };
+    const payload = await readBoundedJson(request, 64 * 1024) as Partial<PromoSlide> & { id?: string };
     if (!payload.id) return Response.json({ error: "Не вказано банер." }, { status: 400 });
     return Response.json({ banner: await updateBanner(payload.id, payload) });
   } catch (error) {

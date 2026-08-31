@@ -15,6 +15,10 @@ export type Booking = {
   service: string;
   doctor: string;
   comment: string;
+  source: string;
+  consentVersion: string;
+  consentAt: string;
+  retentionUntil: string;
   status: BookingStatus;
   createdAt: string;
 };
@@ -27,6 +31,10 @@ type BookingRow = {
   service: string;
   doctor: string;
   comment: string;
+  source: string;
+  consent_version: string;
+  consent_at: string;
+  retention_until: string;
   status: BookingStatus;
   created_at: string;
 };
@@ -40,6 +48,10 @@ const createBookingsTable = `
     service TEXT NOT NULL,
     doctor TEXT NOT NULL DEFAULT '',
     comment TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT 'legacy',
+    consent_version TEXT NOT NULL DEFAULT '',
+    consent_at TEXT NOT NULL DEFAULT '',
+    retention_until TEXT NOT NULL DEFAULT '',
     status TEXT NOT NULL DEFAULT 'new',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -48,9 +60,43 @@ const createBookingsTable = `
 
 export async function ensureBookingsTable() {
   await env.DB.prepare(createBookingsTable).run();
+  const columns = await env.DB.prepare("PRAGMA table_info(bookings)")
+    .all<{ name: string }>();
+  const names = new Set(columns.results.map((column) => column.name));
+  if (!names.has("source")) {
+    await env.DB.prepare(
+      "ALTER TABLE bookings ADD COLUMN source TEXT NOT NULL DEFAULT 'legacy'",
+    ).run();
+  }
+  if (!names.has("consent_version")) {
+    await env.DB.prepare(
+      "ALTER TABLE bookings ADD COLUMN consent_version TEXT NOT NULL DEFAULT ''",
+    ).run();
+  }
+  if (!names.has("consent_at")) {
+    await env.DB.prepare(
+      "ALTER TABLE bookings ADD COLUMN consent_at TEXT NOT NULL DEFAULT ''",
+    ).run();
+  }
+  if (!names.has("retention_until")) {
+    await env.DB.prepare(
+      "ALTER TABLE bookings ADD COLUMN retention_until TEXT NOT NULL DEFAULT ''",
+    ).run();
+  }
   await env.DB.prepare(
     "CREATE INDEX IF NOT EXISTS bookings_created_at_idx ON bookings (created_at DESC)",
   ).run();
+  await env.DB.prepare(
+    "CREATE INDEX IF NOT EXISTS bookings_retention_idx ON bookings (retention_until)",
+  ).run();
+  await env.DB.prepare(`
+    DELETE FROM bookings
+    WHERE (
+      retention_until <> ''
+      AND datetime(retention_until) <= datetime('now')
+      AND status IN ('closed', 'cancelled')
+    ) OR datetime(created_at) <= datetime('now', '-365 days')
+  `).run();
 }
 
 function toBooking(row: BookingRow): Booking {
@@ -62,6 +108,10 @@ function toBooking(row: BookingRow): Booking {
     service: row.service,
     doctor: row.doctor,
     comment: row.comment,
+    source: row.source,
+    consentVersion: row.consent_version,
+    consentAt: row.consent_at,
+    retentionUntil: row.retention_until,
     status: row.status,
     createdAt: row.created_at,
   };
@@ -73,17 +123,23 @@ export async function createBooking(values: {
   service: string;
   doctor: string;
   comment: string;
+  source: string;
+  consentVersion: string;
 }) {
   await ensureBookingsTable();
   const id = crypto.randomUUID();
   const reference = `ZR-${Date.now().toString(36).slice(-6).toUpperCase()}-${id
     .slice(0, 3)
     .toUpperCase()}`;
+  const consentAt = new Date().toISOString();
+  const retentionUntil = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
+    .toISOString();
 
   await env.DB.prepare(
     `INSERT INTO bookings
-      (id, reference, patient_name, phone, service, doctor, comment)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      (id, reference, patient_name, phone, service, doctor, comment,
+       source, consent_version, consent_at, retention_until)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       id,
@@ -93,6 +149,10 @@ export async function createBooking(values: {
       values.service,
       values.doctor,
       values.comment,
+      values.source,
+      values.consentVersion,
+      consentAt,
+      retentionUntil,
     )
     .run();
 
@@ -102,7 +162,8 @@ export async function createBooking(values: {
 export async function listBookings() {
   await ensureBookingsTable();
   const result = await env.DB.prepare(
-    `SELECT id, reference, patient_name, phone, service, doctor, comment, status, created_at
+    `SELECT id, reference, patient_name, phone, service, doctor, comment,
+            source, consent_version, consent_at, retention_until, status, created_at
      FROM bookings
      ORDER BY created_at DESC
      LIMIT 250`,

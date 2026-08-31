@@ -2,6 +2,7 @@ import {
   isAuthorizedAdmin,
   unauthorizedAdminResponse,
 } from "../../adminAuth";
+import { readBoundedJson } from "@/lib/requestBody";
 
 type ToolRequest = {
   name?: string;
@@ -118,11 +119,11 @@ function findTestSlots(args: JsonRecord) {
 }
 
 export async function POST(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
 
   let payload: ToolRequest;
   try {
-    payload = (await request.json()) as ToolRequest;
+    payload = (await readBoundedJson(request, 32 * 1024)) as ToolRequest;
   } catch {
     return Response.json({ error: "Некоректний JSON." }, { status: 400 });
   }

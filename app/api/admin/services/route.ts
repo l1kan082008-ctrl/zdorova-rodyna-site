@@ -6,6 +6,7 @@ import {
   updateManagedService,
   type ManagedService,
 } from "../../services/serviceStore";
+import { readBoundedJson } from "@/lib/requestBody";
 
 export async function GET(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
-    const service = await createManagedService((await request.json()) as Partial<ManagedService>);
+    const service = await createManagedService((await readBoundedJson(request, 128 * 1024)) as Partial<ManagedService>);
     return Response.json({ service }, { status: 201 });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "Не вдалося створити послугу." }, { status: 400 });
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
-    const payload = (await request.json()) as Partial<ManagedService> & { id?: string };
+    const payload = (await readBoundedJson(request, 128 * 1024)) as Partial<ManagedService> & { id?: string };
     if (!payload.id) return Response.json({ error: "Не вказано послугу." }, { status: 400 });
     return Response.json({ service: await updateManagedService(payload.id, payload) });
   } catch (error) {
@@ -48,4 +49,3 @@ export async function DELETE(request: Request) {
     return Response.json({ error: error instanceof Error ? error.message : "Не вдалося видалити послугу." }, { status: 400 });
   }
 }
-

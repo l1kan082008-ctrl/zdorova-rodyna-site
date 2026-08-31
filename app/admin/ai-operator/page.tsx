@@ -51,8 +51,6 @@ export default function AiOperatorPage() {
     return () => window.clearInterval(timer);
   }, [state]);
 
-  useEffect(() => () => stopMedia(), []);
-
   const append = (entry: TranscriptEntry) => {
     setLog((current) => [...current, entry].slice(-60));
   };
@@ -68,6 +66,8 @@ export default function AiOperatorPage() {
     setActiveTool("");
     if (audioRef.current) audioRef.current.srcObject = null;
   };
+
+  useEffect(() => () => stopMedia(), []);
 
   const executeToolCall = async (event: RealtimeEvent) => {
     if (!event.name || !event.call_id) return;

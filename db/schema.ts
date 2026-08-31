@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const doctors = sqliteTable("doctors", {
   id: text("id").primaryKey(),
@@ -26,6 +26,10 @@ export const bookings = sqliteTable("bookings", {
   service: text("service").notNull(),
   doctor: text("doctor").notNull().default(""),
   comment: text("comment").notNull().default(""),
+  source: text("source").notNull().default("legacy"),
+  consentVersion: text("consent_version").notNull().default(""),
+  consentAt: text("consent_at").notNull().default(""),
+  retentionUntil: text("retention_until").notNull().default(""),
   status: text("status").notNull().default("new"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -51,3 +55,33 @@ export const priceCatalogMeta = sqliteTable("price_catalog_meta", {
   value: text("value").notNull(),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const adminSessions = sqliteTable("admin_sessions", {
+  tokenHash: text("token_hash").primaryKey(),
+  expiresAt: integer("expires_at").notNull(),
+  idleExpiresAt: integer("idle_expires_at").notNull(),
+  createdAt: integer("created_at").notNull(),
+  lastSeenAt: integer("last_seen_at").notNull(),
+}, (table) => [
+  index("admin_sessions_expiry_idx").on(table.expiresAt),
+]);
+
+export const adminLoginAttempts = sqliteTable("admin_login_attempts", {
+  fingerprint: text("fingerprint").primaryKey(),
+  attempts: integer("attempts").notNull(),
+  windowStartedAt: integer("window_started_at").notNull(),
+  blockedUntil: integer("blocked_until").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+}, (table) => [
+  index("admin_login_attempts_updated_idx").on(table.updatedAt),
+]);
+
+export const publicSubmissionAttempts = sqliteTable("public_submission_attempts", {
+  fingerprint: text("fingerprint").primaryKey(),
+  attempts: integer("attempts").notNull(),
+  windowStartedAt: integer("window_started_at").notNull(),
+  blockedUntil: integer("blocked_until").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+}, (table) => [
+  index("public_submission_attempts_updated_idx").on(table.updatedAt),
+]);

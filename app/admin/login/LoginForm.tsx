@@ -55,6 +55,7 @@ export default function LoginForm() {
             autoFocus
             className={styles.input}
             id="admin-password"
+            maxLength={256}
             onChange={(event) => setPassword(event.target.value)}
             required
             type="password"

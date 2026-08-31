@@ -6,6 +6,7 @@ import {
   updateLocation,
 } from "../../locations/locationStore";
 import type { CenterLocation } from "../../../contacts/locationData";
+import { readBoundedJson } from "@/lib/requestBody";
 
 export async function GET(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
-    const payload = (await request.json()) as Partial<CenterLocation>;
+    const payload = (await readBoundedJson(request, 256 * 1024)) as Partial<CenterLocation>;
     const location = await createLocation(payload);
     return Response.json({ location }, { status: 201 });
   } catch (error) {
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
-    const payload = (await request.json()) as Partial<CenterLocation> & { id?: string };
+    const payload = (await readBoundedJson(request, 256 * 1024)) as Partial<CenterLocation> & { id?: string };
     if (!payload.id) return Response.json({ error: "Не вказано відділення." }, { status: 400 });
     const location = await updateLocation(payload.id, payload);
     return Response.json({ location });

@@ -5,6 +5,7 @@ import {
   updateBookingStatus,
   type BookingStatus,
 } from "../../bookings/bookingStore";
+import { readBoundedJson } from "@/lib/requestBody";
 
 const statuses = new Set<BookingStatus>([
   "new",
@@ -30,7 +31,7 @@ export async function DELETE(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
 
   try {
-    const payload = (await request.json()) as { id?: string };
+    const payload = (await readBoundedJson(request, 4 * 1024)) as { id?: string };
     const id = payload.id?.trim() ?? "";
 
     if (!id) {
@@ -54,7 +55,7 @@ export async function PATCH(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
 
   try {
-    const payload = (await request.json()) as {
+    const payload = (await readBoundedJson(request, 4 * 1024)) as {
       id?: string;
       status?: BookingStatus;
     };

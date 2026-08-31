@@ -5,6 +5,7 @@ import {
   type PromoSlide,
   type PromoTheme,
 } from "../../components/promoData";
+import { normalizeInternalHref, normalizeMediaKey } from "@/lib/publicUrl";
 
 type D1DatabaseLike = {
   prepare(query: string): {
@@ -101,9 +102,13 @@ function normalizeBanner(payload: Partial<PromoSlide>, existing?: PromoSlide): P
     note: String(payload.note ?? existing?.note ?? "").trim(),
     accent: String(payload.accent ?? existing?.accent ?? "").trim() || undefined,
     action: required(payload.action ?? existing?.action, "Текст кнопки"),
-    href: required(payload.href ?? existing?.href, "Посилання"),
+    href: normalizeInternalHref(payload.href ?? existing?.href, "Посилання"),
     theme: theme as PromoTheme,
-    imageKey: String(payload.imageKey ?? existing?.imageKey ?? "").trim() || undefined,
+    imageKey: normalizeMediaKey(
+      payload.imageKey ?? existing?.imageKey,
+      "banners",
+      "Зображення",
+    ) || undefined,
     active: payload.active ?? existing?.active ?? true,
     sortOrder: Number.isFinite(Number(payload.sortOrder))
       ? Number(payload.sortOrder)
@@ -126,10 +131,17 @@ async function insertBanner(slide: PromoSlide) {
 
 export async function listBanners(activeOnly = false) {
   await ensureBannersTable();
-  const where = activeOnly ? "WHERE is_active = 1" : "";
-  const result = await db().prepare(
-    `SELECT * FROM home_banners ${where} ORDER BY sort_order, updated_at`,
-  ).all<BannerRow>();
+  const result = activeOnly
+    ? await db()
+        .prepare(
+          "SELECT * FROM home_banners WHERE is_active = 1 ORDER BY sort_order, updated_at",
+        )
+        .all<BannerRow>()
+    : await db()
+        .prepare(
+          "SELECT * FROM home_banners ORDER BY sort_order, updated_at",
+        )
+        .all<BannerRow>();
   return (result.results ?? []).map(rowToBanner);
 }
 
@@ -154,10 +166,29 @@ export async function updateBanner(id: string, payload: Partial<PromoSlide>) {
     banner.accent ?? null, banner.action, banner.href, banner.theme, banner.imageKey ?? null,
     banner.active ? 1 : 0, banner.sortOrder, id,
   ).run();
+  if (existing.imageKey && existing.imageKey !== banner.imageKey) {
+    await deleteMediaObject(existing.imageKey, "banners/");
+  }
   return banner;
 }
 
 export async function deleteBanner(id: string) {
   await ensureBannersTable();
+  const existing = (await listBanners()).find((banner) => banner.id === id);
   await db().prepare("DELETE FROM home_banners WHERE id = ?").bind(id).run();
+  if (existing?.imageKey) await deleteMediaObject(existing.imageKey, "banners/");
+}
+
+async function deleteMediaObject(key: string, prefix: string) {
+  if (!key.startsWith(prefix)) return;
+  const bucket = (env as unknown as { DOCTOR_MEDIA?: R2Bucket }).DOCTOR_MEDIA;
+  if (!bucket) return;
+  try {
+    await bucket.delete(key);
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: "orphaned_banner_media_cleanup_failed",
+      error: error instanceof Error ? error.message : "unknown",
+    }));
+  }
 }

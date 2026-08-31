@@ -3,6 +3,8 @@ import {
   isAuthorizedAdmin,
   unauthorizedAdminResponse,
 } from "../../adminAuth";
+import { readBoundedText, requestBodyErrorResponse } from "@/lib/requestBody";
+import { checkPublicSubmissionRateLimit, isSameOriginSubmission } from "@/lib/publicSubmissionSecurity";
 
 const MODEL = "gpt-realtime-2.1-mini";
 
@@ -95,7 +97,29 @@ const TOOLS = [
 ] as const;
 
 export async function POST(request: Request) {
-  if (!isAuthorizedAdmin(request)) return unauthorizedAdminResponse();
+  if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
+  if (!isSameOriginSubmission(request)) {
+    return Response.json({ error: "Запит відхилено." }, { status: 403 });
+  }
+
+  const rateLimit = await checkPublicSubmissionRateLimit(request, {
+    scope: "admin-ai-realtime",
+    maxAttempts: 12,
+    windowMs: 10 * 60 * 1000,
+    blockMs: 30 * 60 * 1000,
+  });
+  if (!rateLimit.allowed) {
+    return Response.json(
+      { error: rateLimit.configured ? "Забагато спроб. Спробуйте пізніше." : "Сервіс тимчасово недоступний." },
+      {
+        status: rateLimit.configured ? 429 : 503,
+        headers: {
+          "cache-control": "no-store",
+          "retry-after": String(rateLimit.retryAfter),
+        },
+      },
+    );
+  }
 
   const runtimeEnv = env as unknown as { OPENAI_API_KEY?: string };
   const apiKey = runtimeEnv.OPENAI_API_KEY?.trim();
@@ -110,7 +134,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const sdp = await request.text();
+  let sdp: string;
+  try {
+    sdp = await readBoundedText(request, 64 * 1024, "application/sdp");
+  } catch (error) {
+    return requestBodyErrorResponse(error, "Некоректний WebRTC SDP-запит.")
+      ?? Response.json({ error: "Некоректний WebRTC SDP-запит." }, { status: 400 });
+  }
   if (!sdp.trim()) {
     return Response.json({ error: "Порожній WebRTC SDP offer." }, { status: 400 });
   }
@@ -153,31 +183,49 @@ export async function POST(request: Request) {
     "session.json",
   );
 
-  const openaiResponse = await fetch("https://api.openai.com/v1/realtime/calls", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: form,
-  });
-
-  const body = await openaiResponse.text();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15_000);
+  let openaiResponse: Response;
+  try {
+    openaiResponse = await fetch("https://api.openai.com/v1/realtime/calls", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: form,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    const incidentId = crypto.randomUUID();
+    console.error(JSON.stringify({
+      event: "openai_realtime_request_failed",
+      incidentId,
+      error: error instanceof Error ? error.name : "unknown",
+    }));
+    return Response.json(
+      { error: "Не вдалося створити голосову сесію OpenAI.", incidentId },
+      { status: 502, headers: { "cache-control": "no-store" } },
+    );
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!openaiResponse.ok) {
-    console.error("OpenAI Realtime session error", {
+    const incidentId = crypto.randomUUID();
+    console.error(JSON.stringify({
+      event: "openai_realtime_upstream_rejected",
+      incidentId,
       status: openaiResponse.status,
-      body,
-    });
+      requestId: openaiResponse.headers.get("x-request-id"),
+    }));
+    await openaiResponse.body?.cancel();
     return Response.json(
-      {
-        error: "Не вдалося створити голосову сесію OpenAI.",
-        detail: body.slice(0, 1200),
-      },
-      { status: openaiResponse.status },
+      { error: "Не вдалося створити голосову сесію OpenAI.", incidentId },
+      { status: 502, headers: { "cache-control": "no-store" } },
     );
   }
 
-  return new Response(body, {
+  return new Response(openaiResponse.body, {
     status: 201,
     headers: {
       "content-type": "application/sdp",

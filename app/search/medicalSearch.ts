@@ -63,8 +63,8 @@ export const normalizeMedicalSearch = (value: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const tokenize = (value: string) =>
-  normalizeMedicalSearch(value).match(/[\p{L}\p{N}]+/gu) ?? [];
+const tokenize = (value: string): string[] =>
+  Array.from(normalizeMedicalSearch(value).match(/[\p{L}\p{N}]+/gu) ?? []);
 
 const fixKeyboardLayout = (value: string) =>
   normalizeMedicalSearch(value)

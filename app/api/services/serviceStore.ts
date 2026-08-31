@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { primaryServiceDetails } from "../../services/serviceData";
+import { normalizeInternalHref, normalizeMediaKey, normalizeMediaUrl } from "@/lib/publicUrl";
 
 type D1DatabaseLike = {
   prepare(query: string): {
@@ -135,10 +136,11 @@ function normalizeSlug(value: unknown) {
 
 function normalizeService(payload: Partial<ManagedService>, existing?: ManagedService): ManagedService {
   const slug = normalizeSlug(payload.slug ?? existing?.slug);
-  const href = requiredText(payload.href ?? existing?.href ?? `/services/${slug}`, "Посилання");
-  if (!href.startsWith("/") && !href.startsWith("http://") && !href.startsWith("https://")) {
-    throw new Error("Посилання має починатися з / або https://.");
-  }
+  const href = normalizeInternalHref(
+    payload.href ?? existing?.href ?? `/services/${slug}`,
+    "Посилання",
+  );
+  const rawImagePath = String(payload.imagePath ?? existing?.imagePath ?? "").trim();
 
   return {
     id: existing?.id ?? String(payload.id || crypto.randomUUID()),
@@ -146,8 +148,12 @@ function normalizeService(payload: Partial<ManagedService>, existing?: ManagedSe
     shortTitle: requiredText(payload.shortTitle ?? existing?.shortTitle, "Назва"),
     cardDescription: String(payload.cardDescription ?? existing?.cardDescription ?? "").trim(),
     href,
-    imageKey: String(payload.imageKey ?? existing?.imageKey ?? "").trim() || null,
-    imagePath: String(payload.imagePath ?? existing?.imagePath ?? "").trim() || null,
+    imageKey: normalizeMediaKey(
+      payload.imageKey ?? existing?.imageKey,
+      "services",
+      "Зображення",
+    ) || null,
+    imagePath: rawImagePath ? normalizeMediaUrl(rawImagePath, "Шлях зображення") : null,
     sortOrder: Number.isFinite(Number(payload.sortOrder)) ? Number(payload.sortOrder) : existing?.sortOrder ?? 0,
     showOnServicesPage: payload.showOnServicesPage ?? existing?.showOnServicesPage ?? true,
     showOnHome: payload.showOnHome ?? existing?.showOnHome ?? false,
@@ -178,8 +184,17 @@ async function insertService(service: ManagedService) {
 
 export async function listManagedServices(options?: { includeInactive?: boolean }) {
   await ensureServicesTable();
-  const where = options?.includeInactive ? "" : "WHERE active = 1";
-  const result = await db().prepare(`SELECT * FROM managed_services ${where} ORDER BY sort_order, short_title`).all<ServiceRow>();
+  const result = options?.includeInactive
+    ? await db()
+        .prepare(
+          "SELECT * FROM managed_services ORDER BY sort_order, short_title",
+        )
+        .all<ServiceRow>()
+    : await db()
+        .prepare(
+          "SELECT * FROM managed_services WHERE active = 1 ORDER BY sort_order, short_title",
+        )
+        .all<ServiceRow>();
   return (result.results ?? []).map(rowToService);
 }
 
@@ -215,10 +230,30 @@ export async function updateManagedService(id: string, payload: Partial<ManagedS
     service.active ? 1 : 0,
     id,
   ).run();
+  if (existing.imageKey && existing.imageKey !== service.imageKey) {
+    await deleteMediaObject(existing.imageKey, "services/");
+  }
   return service;
 }
 
 export async function deleteManagedService(id: string) {
   await ensureServicesTable();
+  const existing = (await listManagedServices({ includeInactive: true }))
+    .find((service) => service.id === id);
   await db().prepare("DELETE FROM managed_services WHERE id = ?").bind(id).run();
+  if (existing?.imageKey) await deleteMediaObject(existing.imageKey, "services/");
+}
+
+async function deleteMediaObject(key: string, prefix: string) {
+  if (!key.startsWith(prefix)) return;
+  const bucket = (env as unknown as { DOCTOR_MEDIA?: R2Bucket }).DOCTOR_MEDIA;
+  if (!bucket) return;
+  try {
+    await bucket.delete(key);
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: "orphaned_service_media_cleanup_failed",
+      error: error instanceof Error ? error.message : "unknown",
+    }));
+  }
 }

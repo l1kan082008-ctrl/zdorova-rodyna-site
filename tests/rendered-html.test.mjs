@@ -5,6 +5,70 @@ import test from "node:test";
 const readSource = (path) =>
   readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
+test("database stores keep values out of SQL text", async () => {
+  const storePaths = [
+    "app/api/banners/bannerStore.ts",
+    "app/api/bookings/bookingStore.ts",
+    "app/api/doctors/doctorStore.ts",
+    "app/api/locations/branchServiceStore.ts",
+    "app/api/locations/locationStore.ts",
+    "app/api/prices/priceStore.ts",
+    "app/api/services/serviceStore.ts",
+  ];
+  const stores = await Promise.all(storePaths.map(readSource));
+
+  for (const [index, source] of stores.entries()) {
+    assert.doesNotMatch(
+      source,
+      /\.prepare\(\s*`[^`]*\$\{/,
+      `${storePaths[index]} must not interpolate values into SQL`,
+    );
+  }
+
+  const catalog = stores.join("\n");
+  assert.match(catalog, /VALUES\s*\(\s*(?:\?,\s*){5,}\?/);
+  assert.match(catalog, /WHERE id = \?[\s\S]*?\.bind\(id\)/);
+  assert.match(catalog, /SET status = \?[\s\S]*?\.bind\(status, id\)/);
+  assert.doesNotMatch(catalog, /const where = .*WHERE/);
+});
+
+test("AI operator API awaits the admin authorization check", async () => {
+  const routes = await Promise.all([
+    readSource("app/api/admin/ai-operator/realtime/route.ts"),
+    readSource("app/api/admin/ai-operator/tools/route.ts"),
+  ]);
+
+  for (const route of routes) {
+    assert.match(route, /await isAuthorizedAdmin\(request\)/);
+    assert.doesNotMatch(route, /if \(!isAuthorizedAdmin\(request\)\)/);
+  }
+});
+
+test("admin authentication is hardened end to end", async () => {
+  const [session, route, auth, worker, migration] = await Promise.all([
+    readSource("lib/adminSession.ts"),
+    readSource("app/api/admin/session/route.ts"),
+    readSource("app/api/admin/adminAuth.ts"),
+    readSource("worker/index.ts"),
+    readSource("drizzle/0010_outgoing_scorpion.sql"),
+  ]);
+
+  assert.match(session, /pbkdf2-sha256/);
+  assert.match(session, /PASSWORD_HASH_ITERATIONS = 100_000/);
+  assert.doesNotMatch(route, /ADMIN_PASSWORD\??:/);
+  assert.match(route, /ADMIN_PASSWORD_HASH/);
+  assert.match(session, /__Host-zr_admin_session/);
+  assert.match(session, /SameSite=Strict/);
+  assert.match(session, /crypto\.getRandomValues/);
+  assert.match(session, /CREATE TABLE IF NOT EXISTS admin_sessions/);
+  assert.match(session, /CREATE TABLE IF NOT EXISTS admin_login_attempts/);
+  assert.match(route, /jsonError\([^;]*429/s);
+  assert.match(auth, /isTrustedAdminMutation/);
+  assert.match(worker, /frame-ancestors 'none'/);
+  assert.match(migration, /CREATE TABLE IF NOT EXISTS `admin_sessions`/);
+  assert.match(migration, /CREATE TABLE IF NOT EXISTS `admin_login_attempts`/);
+});
+
 test("mobile homepage keeps section copy in the viewport", async () => {
   const css = await readSource("app/globals.css");
 

@@ -13,6 +13,7 @@ import {
   DEFAULT_CITO_SURCHARGE,
   usesDefaultCitoPolicy,
 } from "../../../prices/citoPolicy";
+import { readBoundedJson } from "@/lib/requestBody";
 
 const categoryIds = new Set(categoryOptions.map((category) => category.id));
 
@@ -79,7 +80,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
-    const values = parseValues((await request.json()) as Record<string, unknown>);
+    const values = parseValues((await readBoundedJson(request, 64 * 1024)) as Record<string, unknown>);
     await createManagedPriceItem(values);
     return Response.json({ items: await listManagedPriceItems() });
   } catch (error) {
@@ -93,7 +94,7 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
   try {
-    const payload = (await request.json()) as Record<string, unknown>;
+    const payload = (await readBoundedJson(request, 64 * 1024)) as Record<string, unknown>;
     const id = typeof payload.id === "string" ? payload.id.trim() : "";
     if (!id) throw new Error("Не вказано позицію прайса");
     const updated = await updateManagedPriceItem(id, parseValues(payload));
@@ -115,7 +116,7 @@ export async function DELETE(request: Request) {
   }
 
   try {
-    const payload = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+    const payload = (await readBoundedJson(request, 64 * 1024).catch(() => ({}))) as Record<string, unknown>;
     const id = typeof payload.id === "string" ? payload.id.trim() : "";
     if (!id) {
       throw new Error("Не вказано позицію прайса");

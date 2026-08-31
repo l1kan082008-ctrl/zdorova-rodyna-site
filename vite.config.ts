@@ -2,18 +2,12 @@ import vinext from "vinext";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
-import hostingConfig from "./.openai/hosting.json";
-import { sites } from "./build/sites-vite-plugin";
-
-const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
-  "00000000-0000-4000-8000-000000000000";
-
-const { d1, r2 } = hostingConfig;
+import { sites } from "./build/sites-vite-plugin.ts";
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 
-function readLocalAdminVars() {
+function readLocalAdminVars(): Record<string, string> {
   try {
     const values = Object.fromEntries(
       readFileSync(resolve(process.cwd(), ".dev.vars"), "utf8")
@@ -32,10 +26,10 @@ function readLocalAdminVars() {
         }),
     );
 
-    return {
-      ADMIN_PASSWORD: values.ADMIN_PASSWORD,
-      ADMIN_SESSION_SECRET: values.ADMIN_SESSION_SECRET,
-    };
+    const localVars: Record<string, string> = {};
+    if (values.ADMIN_PASSWORD_HASH) localVars.ADMIN_PASSWORD_HASH = values.ADMIN_PASSWORD_HASH;
+    if (values.ADMIN_SESSION_SECRET) localVars.ADMIN_SESSION_SECRET = values.ADMIN_SESSION_SECRET;
+    return localVars;
   } catch {
     return {};
   }
@@ -51,25 +45,6 @@ export default defineConfig(async ({ command }) => {
   // Wrangler snapshots its log path while the Cloudflare plugin is imported.
   const { cloudflare } = await import("@cloudflare/vite-plugin");
   const localBindingConfig = {
-    main: "./worker/index.ts",
-    compatibility_flags: ["nodejs_compat"],
-    d1_databases: d1
-      ? [
-          {
-            binding: d1,
-            database_name: "site-creator-d1",
-            database_id: SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
-          },
-        ]
-      : [],
-    r2_buckets: r2
-      ? [
-          {
-            binding: r2,
-            bucket_name: "site-creator-r2",
-          },
-        ]
-      : [],
     // `.dev.vars` is ignored by Git and is only injected into the local dev
     // worker. Production secrets remain managed by Cloudflare.
     ...(command === "serve" ? { vars: readLocalAdminVars() } : {}),

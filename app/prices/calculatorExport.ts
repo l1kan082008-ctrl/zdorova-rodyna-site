@@ -398,9 +398,7 @@ export async function downloadCalculatorPdf(
   const link = document.createElement("a");
   link.href = url;
   link.download = `zdorova-rodyna-doslidzhennia-${new Date().toISOString().slice(0, 10)}.pdf`;
-  document.body.append(link);
   link.click();
-  link.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 

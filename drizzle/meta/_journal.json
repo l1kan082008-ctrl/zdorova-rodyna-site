@@ -71,6 +71,13 @@
       "when": 1785618000000,
       "tag": "0009_enable_cito_general",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1788199130435,
+      "tag": "0010_outgoing_scorpion",
+      "breakpoints": true
     }
   ]
 }

@@ -5,6 +5,7 @@ import {
   type BranchServiceId,
   type CenterLocation,
 } from "../../contacts/locationData";
+import { normalizeMediaUrl } from "@/lib/publicUrl";
 
 type D1DatabaseLike = {
   prepare(query: string): {
@@ -128,10 +129,12 @@ function normalizeLocation(payload: Partial<CenterLocation>, existing?: CenterLo
   const gallery = (Array.isArray(payload.gallery) ? payload.gallery : existing?.gallery ?? [])
     .filter((item) => item && typeof item.src === "string" && item.src.trim())
     .map((item) => ({
-      src: item.src.trim(),
+      src: normalizeMediaUrl(item.src, "Фото відділення"),
       alt: String(item.alt ?? "").trim(),
       caption: String(item.caption ?? "").trim(),
     }));
+
+  const rawVideoUrl = String(payload.videoUrl ?? existing?.videoUrl ?? "").trim();
 
   return {
     id: existing?.id ?? String(payload.id || crypto.randomUUID()),
@@ -147,7 +150,7 @@ function normalizeLocation(payload: Partial<CenterLocation>, existing?: CenterLo
     services,
     coordinates: { lat, lng },
     gallery,
-    videoUrl: String(payload.videoUrl ?? existing?.videoUrl ?? "").trim() || undefined,
+    videoUrl: rawVideoUrl ? normalizeMediaUrl(rawVideoUrl, "Відео") : undefined,
   };
 }
 
