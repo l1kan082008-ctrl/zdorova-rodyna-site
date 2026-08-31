@@ -12,6 +12,13 @@ const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 
 export async function POST(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
+  const bucket = (env as unknown as { DOCTOR_MEDIA?: R2Bucket }).DOCTOR_MEDIA;
+  if (!bucket) {
+    return Response.json(
+      { error: "Сховище зображень тимчасово недоступне." },
+      { status: 503 },
+    );
+  }
 
   try {
     const formData = await readBoundedFormData(request, MAX_PHOTO_BYTES + 256 * 1024);
@@ -39,18 +46,18 @@ export async function POST(request: Request) {
     const photoKey = `doctors/${safeDoctorId}/${crypto.randomUUID()}.${safeImage.extension}`;
     const previousPhotoKey = await getDoctorPhotoKey(doctorId);
 
-    await env.DOCTOR_MEDIA.put(photoKey, safeImage.bytes, {
+    await bucket.put(photoKey, safeImage.bytes, {
       httpMetadata: { contentType: safeImage.contentType },
       customMetadata: { doctorId: safeDoctorId },
     });
 
     const updated = await updateDoctorPhotoKey(doctorId, photoKey);
     if (!updated) {
-      await env.DOCTOR_MEDIA.delete(photoKey);
+      await bucket.delete(photoKey);
       return Response.json({ error: "Лікаря не знайдено" }, { status: 404 });
     }
 
-    if (previousPhotoKey) await env.DOCTOR_MEDIA.delete(previousPhotoKey);
+    if (previousPhotoKey) await bucket.delete(previousPhotoKey);
 
     return Response.json({ doctors: await listDoctors() });
   } catch (error) {

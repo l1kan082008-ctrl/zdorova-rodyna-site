@@ -7,6 +7,13 @@ const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 export async function POST(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
+  const bucket = (env as unknown as { DOCTOR_MEDIA?: R2Bucket }).DOCTOR_MEDIA;
+  if (!bucket) {
+    return Response.json(
+      { error: "Сховище зображень тимчасово недоступне." },
+      { status: 503 },
+    );
+  }
   try {
     const formData = await readBoundedFormData(request, MAX_IMAGE_BYTES + 256 * 1024);
     const image = formData.get("image");
@@ -16,7 +23,7 @@ export async function POST(request: Request) {
     if (!safeImage) return Response.json({ error: "Файл має бути справжнім JPG, PNG, WEBP або AVIF до 8 МБ." }, { status: 400 });
     const safeId = serviceId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80) || "draft";
     const imageKey = `services/${safeId}/${crypto.randomUUID()}.${safeImage.extension}`;
-    await env.DOCTOR_MEDIA.put(imageKey, safeImage.bytes, {
+    await bucket.put(imageKey, safeImage.bytes, {
       httpMetadata: { contentType: safeImage.contentType }, customMetadata: { serviceId: safeId },
     });
     return Response.json({ imageKey });

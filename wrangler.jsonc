@@ -19,12 +19,6 @@
       "database_id": "470ea3c1-607a-4386-b80e-39ea382a0568"
     }
   ],
-  "r2_buckets": [
-    {
-      "binding": "DOCTOR_MEDIA",
-      "bucket_name": "site-creator-r2"
-    }
-  ],
   "images": {
     "binding": "IMAGES"
   }
