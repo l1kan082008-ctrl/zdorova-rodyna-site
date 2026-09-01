@@ -345,8 +345,8 @@
 .equipmentDoctors > div > .sectionTitle h2 { font-size: clamp(30px, 2.6vw, 42px); }
 .equipmentDoctors > div > .sectionTitle p { margin-inline: 0; }
 .doctorRail { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-.doctorCard { min-width: 0; padding: 12px; border: 1px solid var(--ct-border); border-radius: 18px; color: var(--ct-ink); background: #fff; }
-.doctorPhoto { position: relative; aspect-ratio: 1.08; overflow: hidden; border-radius: 13px; background: var(--ct-surface); }
+.doctorCard { min-width: 0; padding: 0; border: 0; border-radius: 0; color: var(--ct-ink); background: transparent; }
+.doctorPhoto { position: relative; aspect-ratio: 1.08; overflow: hidden; border-radius: 18px; background: var(--ct-surface); }
 .doctorPhoto img { object-fit: cover; object-position: top center; }
 .doctorCard strong { display: block; margin: 14px 2px 5px; font-size: 16px; line-height: 1.2; }
 .doctorCard > span { display: block; margin: 0 2px 2px; color: var(--ct-muted); font-size: 13px; }

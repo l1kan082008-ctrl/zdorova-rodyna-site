@@ -90,6 +90,16 @@ test("mobile homepage keeps section copy in the viewport", async () => {
   );
 });
 
+test("CT doctor portraits are presented without framed cards", async () => {
+  const css = await readSource("app/services/[slug]/CtServicePage.module.css");
+
+  assert.match(
+    css,
+    /\.doctorCard\s*\{[^}]*padding:\s*0;[^}]*border:\s*0;[^}]*background:\s*transparent;/,
+  );
+  assert.match(css, /\.doctorPhoto\s*\{[^}]*border-radius:\s*18px;/);
+});
+
 test("homepage search covers services, doctors, prices and locations", async () => {
   const [page, search, smartSearch, css] = await Promise.all([
     readSource("app/page.tsx"),
