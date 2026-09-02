@@ -10,34 +10,7 @@ export const weekDays = [
 
 export type DayKey = (typeof weekDays)[number]["key"];
 export type DoctorSchedule = Partial<Record<DayKey, string>>;
-export type DoctorAvailabilityStatus =
-  | "accepting"
-  | "by-confirmation"
-  | "paused";
 export type DoctorPatientGroup = "adults" | "children";
-
-export const doctorAvailabilityOptions: Array<{
-  value: DoctorAvailabilityStatus;
-  label: string;
-  description: string;
-}> = [
-  {
-    value: "accepting",
-    label: "Приймає пацієнтів",
-    description: "Пацієнт може одразу перейти до запису.",
-  },
-  {
-    value: "by-confirmation",
-    label: "Прийом за уточненням",
-    description: "Пацієнту запропонуємо уточнити можливість прийому.",
-  },
-  {
-    value: "paused",
-    label: "Тимчасово не приймає",
-    description:
-      "Пацієнт зможе уточнити можливість прийому в адміністратора.",
-  },
-];
 
 export const doctorPatientGroupOptions: Array<{
   value: DoctorPatientGroup;
@@ -58,7 +31,6 @@ export type Doctor = {
   patientGroups: DoctorPatientGroup[];
   schedule: DoctorSchedule;
   photoUrl: string;
-  availabilityStatus: DoctorAvailabilityStatus;
 };
 
 export const doctorPhotoUrls: Record<string, string> = {
@@ -83,6 +55,7 @@ export const doctorPhotoUrls: Record<string, string> = {
   "iziumska-olena": "/doctors/iziumska-olena.webp",
   "stoliarska-nataliia": "/doctors/stoliarska-nataliia.webp",
   "zhyber-kostiantyn": "/doctors/zhyber-kostiantyn.webp",
+  "verchenko-dmytro": "/doctors/verchenko-dmytro.webp",
   "meretskyi-viktor": "/doctors/meretskyi-viktor.webp",
   bevztetiana: "/doctors/bevztetiana.webp",
   "martyniuk-halyna": "/doctors/martyniuk-halyna.webp",
@@ -117,7 +90,6 @@ const doctor = (
   patientGroups: [],
   schedule: {},
   photoUrl: doctorPhotoUrls[id] ?? "",
-  availabilityStatus: "accepting",
 });
 
 export const defaultDoctors: Doctor[] = [
@@ -141,6 +113,7 @@ export const defaultDoctors: Doctor[] = [
   doctor("iziumska-olena", "Ізюмська Олена Вікторівна", "Сімейний лікар, терапевт, невролог"),
   doctor("stoliarska-nataliia", "Столярська Наталія Анатоліївна", "Кардіолог, лікар УЗД серця"),
   doctor("zhyber-kostiantyn", "Жибер Костянтин Олександрович", "Рентгенолог"),
+  doctor("verchenko-dmytro", "Верченко Дмитро Ігорович", "Рентгенолог"),
   doctor("meretskyi-viktor", "Мерецький Віктор Миколайович", "Ортопед-травматолог, д.м.н., професор"),
   doctor("bevztetiana", "Бевз Тетяна Ігорівна", "Гастроентеролог"),
   doctor("martyniuk-halyna", "Мартинюк Галина Андріївна", "Гастроентеролог, інфекціоніст, гепатолог"),
@@ -178,15 +151,6 @@ export function getScheduleSummary(schedule: DoctorSchedule) {
   }
 
   return `${activeDays[0].short}–${activeDays.at(-1)?.short} · за графіком`;
-}
-
-export function getDoctorAvailability(
-  status: DoctorAvailabilityStatus | undefined,
-) {
-  return (
-    doctorAvailabilityOptions.find((option) => option.value === status) ??
-    doctorAvailabilityOptions[0]
-  );
 }
 
 export function getDoctorPatientGroups(groups: DoctorPatientGroup[]) {

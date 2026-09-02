@@ -562,25 +562,31 @@ export function SiteHeader({ active }: { active?: string }) {
 }
 
 export function SiteFooter() {
+  const [openFooterSection, setOpenFooterSection] = useState<string | null>(null);
+
+  const toggleFooterSection = (section: string) => {
+    setOpenFooterSection((current) => current === section ? null : section);
+  };
+
   return (
     <footer className="site-footer-minimal">
       <div className="footer-directory-grid">
         <section className="footer-brand-column">
           <div className="footer-brand">
-          <Link className="footer-mark" href="/" aria-label="Здорова Родина — на головну">
-            <Image
-              src="/zdorova-rodyna-mark.jpg"
-              alt=""
-              width={2500}
-              height={2500}
-              sizes="72px"
-              unoptimized
-            />
-          </Link>
-          <div>
-            <strong>Здорова Родина</strong>
-            <p>Медичний центр у Рівному</p>
-          </div>
+            <Link className="footer-mark" href="/" aria-label="Здорова Родина — на головну">
+              <Image
+                src="/zdorova-rodyna-mark.jpg"
+                alt=""
+                width={2500}
+                height={2500}
+                sizes="72px"
+                unoptimized
+              />
+            </Link>
+            <div>
+              <strong>Здорова Родина</strong>
+              <p>Медичний центр у Рівному</p>
+            </div>
           </div>
           <p className="footer-brand-note">
             Діагностика, лабораторія та консультації для всієї родини.
@@ -594,7 +600,14 @@ export function SiteFooter() {
                 rel="noopener noreferrer"
                 aria-label="Здорова Родина у Facebook"
               >
-                <span className="social-icon-facebook" aria-hidden="true">f</span>
+                <svg
+                  className="footer-social-icon footer-social-icon-facebook"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M13.7 21v-8h2.7l.4-3h-3.1V8.1c0-.9.3-1.5 1.6-1.5H17V3.9c-.8-.1-1.5-.2-2.3-.2-2.3 0-3.9 1.4-3.9 4.1V10H8.2v3h2.6v8h2.9Z" />
+                </svg>
               </a>
               <a
                 className="footer-social-link"
@@ -603,15 +616,33 @@ export function SiteFooter() {
                 rel="noopener noreferrer"
                 aria-label="Здорова Родина в Instagram"
               >
-                <span className="social-icon-instagram" aria-hidden="true" />
+                <svg
+                  className="footer-social-icon footer-social-icon-instagram"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <rect x="3.75" y="3.75" width="16.5" height="16.5" rx="5" />
+                  <circle cx="12" cy="12" r="3.65" />
+                  <circle className="footer-social-icon-dot" cx="17.35" cy="6.8" r="1" />
+                </svg>
               </a>
             </div>
           </div>
         </section>
 
-        <section className="footer-directory-column">
+        <section className={`footer-directory-column${openFooterSection === "services" ? " is-open" : ""}`}>
           <h2><Link href="/services">Послуги</Link></h2>
-          <nav aria-label="Послуги">
+          <button
+            className="footer-mobile-section-toggle"
+            type="button"
+            aria-expanded={openFooterSection === "services"}
+            aria-controls="footer-services-links"
+            onClick={() => toggleFooterSection("services")}
+          >
+            <span>Послуги</span><span className="footer-toggle-icon" aria-hidden="true" />
+          </button>
+          <nav id="footer-services-links" aria-label="Послуги">
             {footerServiceLinks.map((item) => (
               <Link href={item.href} key={item.href}>{item.label}</Link>
             ))}
@@ -619,9 +650,18 @@ export function SiteFooter() {
           </nav>
         </section>
 
-        <section className="footer-directory-column">
+        <section className={`footer-directory-column${openFooterSection === "doctors" ? " is-open" : ""}`}>
           <h2><Link href="/doctors">Лікарі</Link></h2>
-          <nav aria-label="Лікарі за напрямами">
+          <button
+            className="footer-mobile-section-toggle"
+            type="button"
+            aria-expanded={openFooterSection === "doctors"}
+            aria-controls="footer-doctor-links"
+            onClick={() => toggleFooterSection("doctors")}
+          >
+            <span>Лікарі</span><span className="footer-toggle-icon" aria-hidden="true" />
+          </button>
+          <nav id="footer-doctor-links" aria-label="Лікарі за напрямами">
             {footerDoctorLinks.map((item) => (
               <Link href={item.href} key={item.href}>{item.label}</Link>
             ))}
@@ -629,18 +669,36 @@ export function SiteFooter() {
           </nav>
         </section>
 
-        <section className="footer-directory-column">
+        <section className={`footer-directory-column${openFooterSection === "patients" ? " is-open" : ""}`}>
           <h2><Link href="/patients">Пацієнтам</Link></h2>
-          <nav aria-label="Інформація пацієнтам">
+          <button
+            className="footer-mobile-section-toggle"
+            type="button"
+            aria-expanded={openFooterSection === "patients"}
+            aria-controls="footer-patient-links"
+            onClick={() => toggleFooterSection("patients")}
+          >
+            <span>Пацієнтам</span><span className="footer-toggle-icon" aria-hidden="true" />
+          </button>
+          <nav id="footer-patient-links" aria-label="Інформація пацієнтам">
             {footerPatientLinks.map((item) => (
               <Link href={item.href} key={item.href}>{item.label}</Link>
             ))}
           </nav>
         </section>
 
-        <section className="footer-directory-column">
+        <section className={`footer-directory-column${openFooterSection === "about" ? " is-open" : ""}`}>
           <h2><Link href="/about">Про центр</Link></h2>
-          <nav aria-label="Про медичний центр">
+          <button
+            className="footer-mobile-section-toggle"
+            type="button"
+            aria-expanded={openFooterSection === "about"}
+            aria-controls="footer-about-links"
+            onClick={() => toggleFooterSection("about")}
+          >
+            <span>Про центр</span><span className="footer-toggle-icon" aria-hidden="true" />
+          </button>
+          <nav id="footer-about-links" aria-label="Про медичний центр">
             <Link href="/about">Про Здорову Родину</Link>
             <Link href="/contacts">Наші відділення</Link>
             <Link href="/prices">Вартість послуг</Link>

@@ -1,6 +1,13 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import AdminNavigation from "../AdminNavigation";
 import {
@@ -11,20 +18,57 @@ import {
   type DoctorPatientGroup,
   type DoctorSchedule,
 } from "../../doctors/doctorData";
+import { useAdminSafeSave } from "../useAdminSafeSave";
+import AdminRevisionHistory from "../AdminRevisionHistory";
 
 type ApiPayload = {
   doctors?: Doctor[];
   error?: string;
 };
 
+type DoctorProfileDraft = {
+  id: string;
+  name: string;
+  specialty: string;
+  experienceYears: string;
+  branch: string;
+  description: string;
+  biography: string;
+  patientGroups: DoctorPatientGroup[];
+  schedule: DoctorSchedule;
+};
+
+function doctorProfileDraft(doctor: Doctor): DoctorProfileDraft {
+  return {
+    id: doctor.id,
+    name: doctor.name,
+    specialty: doctor.specialty,
+    experienceYears: doctor.experienceYears?.toString() ?? "",
+    branch: doctor.branch,
+    description: doctor.description,
+    biography: doctor.biography,
+    patientGroups: doctor.patientGroups,
+    schedule: doctor.schedule,
+  };
+}
+
+function formatSaveTime(timestamp: number) {
+  return new Intl.DateTimeFormat("uk-UA", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(timestamp);
+}
+
 function DoctorEditor({
   doctor,
   onUpdated,
   onDeleted,
+  onRegisterGuard,
 }: {
   doctor: Doctor;
   onUpdated: (doctors: Doctor[]) => void;
   onDeleted: (doctors: Doctor[]) => void;
+  onRegisterGuard: (guard: (() => boolean) | null) => void;
 }) {
   const [name, setName] = useState(doctor.name);
   const [specialty, setSpecialty] = useState(doctor.specialty);
@@ -40,27 +84,48 @@ function DoctorEditor({
   const [schedule, setSchedule] = useState<DoctorSchedule>(doctor.schedule);
   const [photo, setPhoto] = useState<File | null>(null);
   const [status, setStatus] = useState("");
+  const [hasError, setHasError] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const saveProfile = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const baseline = useMemo(() => doctorProfileDraft(doctor), [doctor]);
+  const draft = useMemo<DoctorProfileDraft>(() => ({
+    id: doctor.id,
+    name,
+    specialty,
+    experienceYears,
+    branch,
+    description,
+    biography,
+    patientGroups,
+    schedule,
+  }), [
+    biography,
+    branch,
+    description,
+    doctor.id,
+    experienceYears,
+    name,
+    patientGroups,
+    schedule,
+    specialty,
+  ]);
+
+  const saveProfile = useCallback(async () => {
     setSaving(true);
     setStatus("");
+    setHasError(false);
 
     try {
       const response = await fetch("/api/admin/doctors", {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          id: doctor.id,
-          name,
-          specialty,
-          experienceYears: experienceYears ? Number(experienceYears) : null,
-          branch,
-          description,
-          biography,
-          patientGroups,
-          schedule,
+          ...draft,
+          experienceYears: draft.experienceYears
+            ? Number(draft.experienceYears)
+            : null,
         }),
       });
       const payload = (await response.json()) as ApiPayload;
@@ -69,17 +134,50 @@ function DoctorEditor({
       }
       onUpdated(payload.doctors);
       setStatus("Профіль і графік збережено");
+      setLastSavedAt(Date.now());
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Сталася помилка");
+      setHasError(true);
     } finally {
       setSaving(false);
     }
-  };
+  }, [draft, onUpdated]);
+
+  const requestProfileSave = useCallback(() => {
+    if (formRef.current?.reportValidity() === false) return;
+    return saveProfile();
+  }, [saveProfile]);
+
+  const safeSave = useAdminSafeSave<DoctorProfileDraft>({
+    storageKey: `admin-safe-draft:doctor:${doctor.id}`,
+    value: draft,
+    baseline,
+    onRestore: (restored) => {
+      setName(restored.name);
+      setSpecialty(restored.specialty);
+      setExperienceYears(restored.experienceYears);
+      setBranch(restored.branch);
+      setDescription(restored.description);
+      setBiography(restored.biography);
+      setPatientGroups(restored.patientGroups);
+      setSchedule(restored.schedule);
+      setStatus("");
+      setHasError(false);
+    },
+    onSave: requestProfileSave,
+    busy: saving,
+  });
+
+  useEffect(() => {
+    onRegisterGuard(safeSave.confirmDiscard);
+    return () => onRegisterGuard(null);
+  }, [onRegisterGuard, safeSave.confirmDiscard]);
 
   const uploadPhoto = async () => {
     if (!photo) return;
     setSaving(true);
     setStatus("");
+    setHasError(false);
 
     try {
       const formData = new FormData();
@@ -98,10 +196,52 @@ function DoctorEditor({
       setStatus("Фотографію оновлено");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Сталася помилка");
+      setHasError(true);
     } finally {
       setSaving(false);
     }
   };
+
+  const deleteProfile = async () => {
+    if (!window.confirm(`Видалити профіль «${doctor.name}»?`)) return;
+    setSaving(true);
+    setStatus("");
+    setHasError(false);
+    try {
+      const response = await fetch(
+        `/api/admin/doctors?id=${encodeURIComponent(doctor.id)}`,
+        { method: "DELETE" },
+      );
+      const payload = (await response.json()) as ApiPayload;
+      if (!response.ok || !payload.doctors) {
+        throw new Error(payload.error || "Не вдалося видалити лікаря");
+      }
+      safeSave.clearStoredDraft();
+      onDeleted(payload.doctors);
+    } catch (reason) {
+      setStatus(reason instanceof Error ? reason.message : "Сталася помилка");
+      setHasError(true);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveStateLabel = saving
+    ? "Зберігаємо зміни…"
+    : hasError
+      ? "Збереження потребує уваги"
+      : safeSave.dirty
+        ? "Є незбережені зміни"
+        : lastSavedAt
+          ? `Збережено о ${formatSaveTime(lastSavedAt)}`
+          : "Усі зміни збережено";
+  const saveStateDetail = hasError
+    ? status
+    : safeSave.recoveredAt
+      ? `Відновлено чернетку о ${formatSaveTime(safeSave.recoveredAt)} · Ctrl+S`
+      : safeSave.dirty
+        ? "Чернетка зберігається у цьому браузері · Ctrl+S"
+        : status || "Можна безпечно перейти до іншого профілю.";
 
   return (
     <div className="admin-doctor-editor">
@@ -123,6 +263,45 @@ function DoctorEditor({
         <div>
           <span>Редагування профілю</span>
           <h1>{doctor.name}</h1>
+        </div>
+      </div>
+
+      <div className="admin-editor-actions admin-safe-save-bar admin-doctor-safe-save-bar">
+        <div className="admin-safe-save-summary" role="status" aria-live="polite">
+          <span className={`admin-safe-save-state${hasError ? " is-error" : safeSave.dirty ? " is-dirty" : " is-saved"}`}>
+            <i aria-hidden="true" />
+            {saveStateLabel}
+          </span>
+          <small>{saveStateDetail}</small>
+        </div>
+        <div className="admin-safe-save-buttons">
+          <AdminRevisionHistory
+            entityType="doctor"
+            entityId={doctor.id}
+            entityLabel={doctor.name}
+            draftStorageKey={`admin-safe-draft:doctor:${doctor.id}`}
+            disabled={saving}
+            hasUnsavedChanges={safeSave.dirty}
+          />
+          <button
+            className="admin-danger-button"
+            type="button"
+            disabled={saving}
+            onClick={deleteProfile}
+          >
+            Видалити профіль
+          </button>
+          <button
+            className="admin-save-button admin-safe-save-button"
+            type="submit"
+            form="admin-doctor-profile-form"
+            disabled={!safeSave.dirty || saving}
+            aria-busy={saving}
+            aria-keyshortcuts="Control+S Meta+S"
+          >
+            {saving ? <span className="admin-button-loader" aria-hidden="true" /> : null}
+            {saving ? "Збереження..." : "Зберегти профіль"}
+          </button>
         </div>
       </div>
 
@@ -149,7 +328,15 @@ function DoctorEditor({
         </button>
       </section>
 
-      <form className="admin-doctor-form" onSubmit={saveProfile}>
+      <form
+        ref={formRef}
+        id="admin-doctor-profile-form"
+        className="admin-doctor-form"
+        onSubmit={(event: FormEvent<HTMLFormElement>) => {
+          event.preventDefault();
+          void saveProfile();
+        }}
+      >
         <div className="admin-form-grid">
           <label>
             Ім’я та прізвище лікаря
@@ -259,40 +446,6 @@ function DoctorEditor({
           </div>
         </fieldset>
 
-        <div className="admin-form-actions">
-          <p role="status">{status}</p>
-          <button
-            className="admin-danger-button"
-            type="button"
-            disabled={saving}
-            onClick={async () => {
-              if (!window.confirm(`Видалити профіль «${doctor.name}»?`)) return;
-              setSaving(true);
-              setStatus("");
-              try {
-                const response = await fetch(
-                  `/api/admin/doctors?id=${encodeURIComponent(doctor.id)}`,
-                  { method: "DELETE" },
-                );
-                const payload = (await response.json()) as ApiPayload;
-                if (!response.ok || !payload.doctors) {
-                  throw new Error(payload.error || "Не вдалося видалити лікаря");
-                }
-                onDeleted(payload.doctors);
-              } catch (reason) {
-                setStatus(reason instanceof Error ? reason.message : "Сталася помилка");
-              } finally {
-                setSaving(false);
-              }
-            }}
-          >
-            Видалити профіль
-          </button>
-          <button className="book-button" type="submit" disabled={saving}>
-            {saving ? "Зберігаємо…" : "Зберегти профіль"}
-            <span>→</span>
-          </button>
-        </div>
       </form>
     </div>
   );
@@ -305,6 +458,7 @@ export default function DoctorsAdminPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const editorGuardRef = useRef<(() => boolean) | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/doctors")
@@ -334,11 +488,19 @@ export default function DoctorsAdminPage() {
 
   const selectedDoctor = doctors.find((doctor) => doctor.id === selectedId);
 
-  const updateDoctors = (updatedDoctors: Doctor[]) => {
+  const updateDoctors = useCallback((updatedDoctors: Doctor[]) => {
     setDoctors(updatedDoctors);
-  };
+  }, []);
+
+  const registerEditorGuard = useCallback(
+    (guard: (() => boolean) | null) => {
+      editorGuardRef.current = guard;
+    },
+    [],
+  );
 
   const createDoctor = async () => {
+    if (editorGuardRef.current?.() === false) return;
     setCreating(true);
     setError("");
     try {
@@ -418,7 +580,14 @@ export default function DoctorsAdminPage() {
                 <button
                   type="button"
                   className={doctor.id === selectedId ? "is-active" : undefined}
-                  onClick={() => setSelectedId(doctor.id)}
+                  onClick={() => {
+                    if (
+                      doctor.id === selectedId ||
+                      editorGuardRef.current?.() !== false
+                    ) {
+                      setSelectedId(doctor.id);
+                    }
+                  }}
                   key={doctor.id}
                 >
                   <span>{getDoctorInitials(doctor.name)}</span>
@@ -436,6 +605,7 @@ export default function DoctorsAdminPage() {
               key={selectedDoctor.id}
               doctor={selectedDoctor}
               onUpdated={updateDoctors}
+              onRegisterGuard={registerEditorGuard}
               onDeleted={(updatedDoctors) => {
                 setDoctors(updatedDoctors);
                 setSelectedId(updatedDoctors[0]?.id ?? "");

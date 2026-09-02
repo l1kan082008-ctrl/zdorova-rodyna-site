@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -15,6 +16,8 @@ import {
   type PromoSlide,
   type PromoTheme,
 } from "../../components/promoData";
+import { useAdminSafeSave } from "../useAdminSafeSave";
+import AdminRevisionHistory from "../AdminRevisionHistory";
 
 type Payload = { banners?: PromoSlide[]; banner?: PromoSlide; error?: string };
 
@@ -43,6 +46,13 @@ function emptyBanner(order: number): PromoSlide {
   };
 }
 
+function formatSaveTime(timestamp: number) {
+  return new Intl.DateTimeFormat("uk-UA", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(timestamp);
+}
+
 export default function BannersAdminPage() {
   const [banners, setBanners] = useState<PromoSlide[]>([]);
   const [selectedId, setSelectedId] = useState("");
@@ -51,9 +61,10 @@ export default function BannersAdminPage() {
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [error, setError] = useState("");
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const activeSelectionRef = useRef("");
 
   const selected = useMemo(
     () => banners.find((banner) => banner.id === selectedId) ?? null,
@@ -74,17 +85,55 @@ export default function BannersAdminPage() {
 
   useEffect(() => {
     if (!selected) return;
+    if (activeSelectionRef.current !== selected.id) {
+      setLastSavedAt(null);
+      activeSelectionRef.current = selected.id;
+    }
     setDraft(structuredClone(selected));
-    setSaved(false);
     setError("");
   }, [selected]);
 
   const update = <K extends keyof PromoSlide>(key: K, value: PromoSlide[K]) => {
     setDraft((current) => current ? { ...current, [key]: value } : current);
-    setSaved(false);
   };
 
+  const save = useCallback(async () => {
+    if (!draft) return;
+    setSaving(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/banners", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(draft),
+      });
+      const payload = await response.json() as Payload;
+      if (!response.ok || !payload.banner) throw new Error(payload.error || "Не вдалося зберегти банер.");
+      setBanners((current) => current.map((item) => item.id === payload.banner!.id ? payload.banner! : item));
+      setLastSavedAt(Date.now());
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Сталася помилка.");
+    } finally {
+      setSaving(false);
+    }
+  }, [draft]);
+
+  const safeSave = useAdminSafeSave({
+    storageKey: selected ? `admin-safe-draft:banner:${selected.id}` : null,
+    value: draft,
+    baseline: selected,
+    onRestore: (restored) => {
+      if (selected && restored.id === selected.id) {
+        setDraft(restored);
+        setError("");
+      }
+    },
+    onSave: save,
+    busy: saving || uploadingImage,
+  });
+
   const create = async () => {
+    if (!safeSave.confirmDiscard()) return;
     setCreating(true);
     setError("");
     try {
@@ -104,28 +153,6 @@ export default function BannersAdminPage() {
     }
   };
 
-  const save = async () => {
-    if (!draft) return;
-    setSaving(true);
-    setSaved(false);
-    setError("");
-    try {
-      const response = await fetch("/api/admin/banners", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(draft),
-      });
-      const payload = await response.json() as Payload;
-      if (!response.ok || !payload.banner) throw new Error(payload.error || "Не вдалося зберегти банер.");
-      setBanners((current) => current.map((item) => item.id === payload.banner!.id ? payload.banner! : item));
-      setSaved(true);
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Сталася помилка.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const remove = async () => {
     if (!draft || !window.confirm(`Видалити банер «${draft.title}»?`)) return;
     setSaving(true);
@@ -135,6 +162,7 @@ export default function BannersAdminPage() {
       const payload = await response.json() as { error?: string };
       if (!response.ok) throw new Error(payload.error || "Не вдалося видалити банер.");
       const remaining = banners.filter((item) => item.id !== draft.id);
+      safeSave.clearStoredDraft();
       setBanners(remaining);
       setSelectedId(remaining[0]?.id ?? "");
       setDraft(null);
@@ -150,7 +178,6 @@ export default function BannersAdminPage() {
     if (!image || !draft) return;
 
     setUploadingImage(true);
-    setSaved(false);
     setError("");
     try {
       const formData = new FormData();
@@ -172,6 +199,23 @@ export default function BannersAdminPage() {
       event.target.value = "";
     }
   };
+
+  const saveStateLabel = saving
+    ? "Зберігаємо зміни…"
+    : error
+      ? "Збереження потребує уваги"
+      : safeSave.dirty
+        ? "Є незбережені зміни"
+        : lastSavedAt
+          ? `Збережено о ${formatSaveTime(lastSavedAt)}`
+          : "Усі зміни збережено";
+  const saveStateDetail = safeSave.recoveredAt
+    ? `Відновлено чернетку о ${formatSaveTime(safeSave.recoveredAt)} · Ctrl+S`
+    : safeSave.dirty
+      ? "Чернетка зберігається у цьому браузері · Ctrl+S"
+      : lastSavedAt
+        ? "Зміни вже доступні на головній сторінці."
+        : "Можна безпечно перейти до іншого розділу.";
 
   return (
     <main className="admin-editor-page admin-banners-editor-page">
@@ -201,7 +245,14 @@ export default function BannersAdminPage() {
               key={banner.id}
               type="button"
               className={`admin-editor-list-item${selectedId === banner.id ? " is-active" : ""}`}
-              onClick={() => setSelectedId(banner.id)}
+              onClick={() => {
+                if (
+                  selectedId === banner.id ||
+                  safeSave.confirmDiscard()
+                ) {
+                  setSelectedId(banner.id);
+                }
+              }}
             >
               <strong>{banner.title}</strong>
               <span>{banner.active ? "Опублікований" : "Прихований"} · позиція {banner.sortOrder + 1}</span>
@@ -212,6 +263,37 @@ export default function BannersAdminPage() {
         <section className="admin-editor-panel admin-banner-editor-panel">
           {!draft ? <p className="admin-editor-empty">Оберіть банер або створіть новий.</p> : (
             <>
+              <div className="admin-editor-actions admin-banner-action-bar admin-safe-save-bar">
+                <div className="admin-safe-save-summary" role="status" aria-live="polite">
+                  <span className={`admin-safe-save-state${error ? " is-error" : safeSave.dirty ? " is-dirty" : " is-saved"}`}>
+                    <i aria-hidden="true" />
+                    {saveStateLabel}
+                  </span>
+                  <small>{saveStateDetail}</small>
+                </div>
+                <div className="admin-safe-save-buttons">
+                  <AdminRevisionHistory
+                    entityType="banner"
+                    entityId={draft.id}
+                    entityLabel={draft.title}
+                    draftStorageKey={`admin-safe-draft:banner:${draft.id}`}
+                    disabled={saving || uploadingImage}
+                    hasUnsavedChanges={safeSave.dirty}
+                  />
+                  <button className="admin-danger-button" type="button" onClick={remove} disabled={saving || uploadingImage}>Видалити банер</button>
+                  <button
+                    className="admin-save-button admin-banner-save-button"
+                    type="button"
+                    onClick={save}
+                    disabled={!safeSave.dirty || saving || uploadingImage}
+                    aria-busy={saving}
+                    aria-keyshortcuts="Control+S Meta+S"
+                  >
+                    {saving ? <span className="admin-button-loader" aria-hidden="true" /> : null}
+                    {saving ? "Збереження..." : "Зберегти"}
+                  </button>
+                </div>
+              </div>
               <section className="admin-banner-preview" aria-label="Попередній перегляд банера">
                 <header className="admin-banner-preview__header">
                   <div>
@@ -315,14 +397,6 @@ export default function BannersAdminPage() {
                 </section>
               </div>
               {error ? <p className="admin-editor-state is-error">{error}</p> : null}
-              {saved ? <p className="admin-editor-state is-success">Зміни збережено і вже доступні на головній сторінці.</p> : null}
-              <div className="admin-editor-actions admin-banner-action-bar">
-                <button className="admin-danger-button" type="button" onClick={remove} disabled={saving || uploadingImage}>Видалити банер</button>
-                <button className="admin-save-button admin-banner-save-button" type="button" onClick={save} disabled={saving || uploadingImage} aria-busy={saving}>
-                  {saving ? <span className="admin-button-loader" aria-hidden="true" /> : null}
-                  {saving ? "Збереження..." : "Зберегти"}
-                </button>
-              </div>
             </>
           )}
         </section>

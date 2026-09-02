@@ -3,7 +3,6 @@ import {
   defaultDoctors,
   doctorPhotoUrls,
   type Doctor,
-  type DoctorAvailabilityStatus,
   type DoctorPatientGroup,
   type DoctorSchedule,
 } from "../../doctors/doctorData";
@@ -19,7 +18,6 @@ type DoctorRow = {
   patient_groups: string;
   schedule: string;
   photo_key: string;
-  availability_status: DoctorAvailabilityStatus;
 };
 
 const createDoctorsTable = `
@@ -34,20 +32,52 @@ const createDoctorsTable = `
     patient_groups TEXT NOT NULL DEFAULT '[]',
     schedule TEXT NOT NULL DEFAULT '{}',
     photo_key TEXT NOT NULL DEFAULT '',
-    availability_status TEXT NOT NULL DEFAULT 'accepting',
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )
 `;
+
+const requiredDefaultDoctorIds = new Set(["verchenko-dmytro"]);
+
+function prepareDefaultDoctorInsert(doctor: Doctor) {
+  return env.DB.prepare(
+    `INSERT OR IGNORE INTO doctors
+      (id, name, specialty, experience_years, branch, description, biography, patient_groups, schedule, photo_key)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '')`,
+  ).bind(
+    doctor.id,
+    doctor.name,
+    doctor.specialty,
+    doctor.experienceYears,
+    doctor.branch,
+    doctor.description,
+    doctor.biography,
+    JSON.stringify(doctor.patientGroups),
+    JSON.stringify(doctor.schedule),
+  );
+}
 
 export async function ensureDoctorsTable() {
   await env.DB.prepare(createDoctorsTable).run();
   const columns = await env.DB.prepare("PRAGMA table_info(doctors)").all<{
     name: string;
   }>();
-  if (!columns.results.some((column) => column.name === "availability_status")) {
-    await env.DB.prepare(
-      "ALTER TABLE doctors ADD COLUMN availability_status TEXT NOT NULL DEFAULT 'accepting'",
-    ).run();
+  if (columns.results.some((column) => column.name === "availability_status")) {
+    try {
+      await env.DB.prepare(
+        "ALTER TABLE doctors DROP COLUMN availability_status",
+      ).run();
+    } catch (error) {
+      const currentColumns = await env.DB.prepare(
+        "PRAGMA table_info(doctors)",
+      ).all<{ name: string }>();
+      if (
+        currentColumns.results.some(
+          (column) => column.name === "availability_status",
+        )
+      ) {
+        throw error;
+      }
+    }
   }
   if (!columns.results.some((column) => column.name === "biography")) {
     await env.DB.prepare(
@@ -63,28 +93,12 @@ export async function ensureDoctorsTable() {
     "SELECT COUNT(*) AS total FROM doctors",
   ).first<{ total: number }>();
 
-  if ((count?.total ?? 0) > 0) return;
+  const doctorsToSeed =
+    (count?.total ?? 0) > 0
+      ? defaultDoctors.filter((doctor) => requiredDefaultDoctorIds.has(doctor.id))
+      : defaultDoctors;
 
-  await env.DB.batch(
-    defaultDoctors.map((doctor) =>
-      env.DB.prepare(
-        `INSERT OR IGNORE INTO doctors
-          (id, name, specialty, experience_years, branch, description, biography, patient_groups, schedule, photo_key, availability_status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '', ?)`,
-      ).bind(
-        doctor.id,
-        doctor.name,
-        doctor.specialty,
-        doctor.experienceYears,
-        doctor.branch,
-        doctor.description,
-        doctor.biography,
-        JSON.stringify(doctor.patientGroups),
-        JSON.stringify(doctor.schedule),
-        doctor.availabilityStatus,
-      ),
-    ),
-  );
+  await env.DB.batch(doctorsToSeed.map(prepareDefaultDoctorInsert));
 }
 
 function parseSchedule(value: string): DoctorSchedule {
@@ -119,7 +133,6 @@ function toDoctor(row: DoctorRow): Doctor {
     biography: row.biography,
     patientGroups: parsePatientGroups(row.patient_groups),
     schedule: parseSchedule(row.schedule),
-    availabilityStatus: row.availability_status ?? "accepting",
     photoUrl: row.photo_key
       ? `/api/doctors/photo?key=${encodeURIComponent(row.photo_key)}`
       : doctorPhotoUrls[row.id] ?? "",
@@ -130,7 +143,7 @@ export async function listDoctors() {
   await ensureDoctorsTable();
   const result = await env.DB.prepare(
     `SELECT id, name, specialty, experience_years, branch, description, biography,
-            patient_groups, schedule, photo_key, availability_status
+            patient_groups, schedule, photo_key
      FROM doctors
      ORDER BY name COLLATE NOCASE`,
   ).all<DoctorRow>();
@@ -142,7 +155,7 @@ export async function getDoctorById(id: string) {
   await ensureDoctorsTable();
   const row = await env.DB.prepare(
     `SELECT id, name, specialty, experience_years, branch, description, biography,
-            patient_groups, schedule, photo_key, availability_status
+            patient_groups, schedule, photo_key
      FROM doctors
      WHERE id = ?`,
   )
@@ -173,7 +186,6 @@ export async function updateDoctor(
     biography: string;
     patientGroups: DoctorPatientGroup[];
     schedule: DoctorSchedule;
-    availabilityStatus: DoctorAvailabilityStatus;
   },
 ) {
   await ensureDoctorsTable();
@@ -181,7 +193,7 @@ export async function updateDoctor(
     `UPDATE doctors
      SET name = ?, specialty = ?, experience_years = ?, branch = ?, description = ?,
          biography = ?, patient_groups = ?, schedule = ?,
-         availability_status = ?, updated_at = CURRENT_TIMESTAMP
+         updated_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
   )
     .bind(
@@ -193,7 +205,6 @@ export async function updateDoctor(
       values.biography,
       JSON.stringify(values.patientGroups),
       JSON.stringify(values.schedule),
-      values.availabilityStatus,
       id,
     )
     .run();
@@ -201,13 +212,13 @@ export async function updateDoctor(
   return result.meta.changes > 0;
 }
 
-export async function createDoctor(values: { name: string; specialty: string }) {
+export async function createDoctor(values: { name: string; specialty: string; id?: string }) {
   await ensureDoctorsTable();
-  const id = `doctor-${crypto.randomUUID()}`;
+  const id = values.id?.trim() || `doctor-${crypto.randomUUID()}`;
   await env.DB.prepare(
     `INSERT INTO doctors
-      (id, name, specialty, experience_years, branch, description, biography, patient_groups, schedule, photo_key, availability_status)
-     VALUES (?, ?, ?, NULL, '', '', '', '[]', '{}', '', 'by-confirmation')`,
+      (id, name, specialty, experience_years, branch, description, biography, patient_groups, schedule, photo_key)
+     VALUES (?, ?, ?, NULL, '', '', '', '[]', '{}', '')`,
   )
     .bind(id, values.name, values.specialty)
     .run();

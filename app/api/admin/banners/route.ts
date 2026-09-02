@@ -2,6 +2,7 @@ import { isAuthorizedAdmin, unauthorizedAdminResponse } from "../adminAuth";
 import { createBanner, deleteBanner, listBanners, updateBanner } from "../../banners/bannerStore";
 import type { PromoSlide } from "../../../components/promoData";
 import { readBoundedJson } from "@/lib/requestBody";
+import { changedSnapshotFields, recordContentRevision } from "../revisions/revisionStore";
 
 export async function GET(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
@@ -26,6 +27,19 @@ export async function PUT(request: Request) {
   try {
     const payload = await readBoundedJson(request, 64 * 1024) as Partial<PromoSlide> & { id?: string };
     if (!payload.id) return Response.json({ error: "Не вказано банер." }, { status: 400 });
+    const existing = (await listBanners()).find((banner) => banner.id === payload.id);
+    if (!existing) return Response.json({ error: "Банер не знайдено." }, { status: 404 });
+    await recordContentRevision({
+      entityType: "banner",
+      entityId: existing.id,
+      entityLabel: existing.title,
+      action: "update",
+      snapshot: existing as unknown as Record<string, unknown>,
+      changedFields: changedSnapshotFields(
+        existing as unknown as Record<string, unknown>,
+        { ...existing, ...payload } as unknown as Record<string, unknown>,
+      ),
+    });
     return Response.json({ banner: await updateBanner(payload.id, payload) });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "Не вдалося зберегти банер." }, { status: 400 });
@@ -37,6 +51,16 @@ export async function DELETE(request: Request) {
   const id = new URL(request.url).searchParams.get("id");
   if (!id) return Response.json({ error: "Не вказано банер." }, { status: 400 });
   try {
+    const existing = (await listBanners()).find((banner) => banner.id === id);
+    if (!existing) return Response.json({ error: "Банер не знайдено." }, { status: 404 });
+    await recordContentRevision({
+      entityType: "banner",
+      entityId: existing.id,
+      entityLabel: existing.title,
+      action: "delete",
+      snapshot: existing as unknown as Record<string, unknown>,
+      changedFields: ["record"],
+    });
     await deleteBanner(id);
     return Response.json({ ok: true });
   } catch (error) {

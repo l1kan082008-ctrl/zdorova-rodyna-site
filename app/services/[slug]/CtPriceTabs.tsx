@@ -106,13 +106,21 @@ function pairItems(items: PriceItem[], groupId: CtPriceGroupId): PricePair[] {
   return Array.from(pairs.values());
 }
 
-function PriceOption({ item, label }: { item?: PriceItem; label: string }) {
+function PriceOption({
+  item,
+  label,
+  contrast = false,
+}: {
+  item?: PriceItem;
+  label: string;
+  contrast?: boolean;
+}) {
   return (
     <div className={styles.priceVariant} role="cell">
       <span className={styles.priceVariantLabel}>{label}</span>
       {item && requiresSeparateBooking(item) ? (
         <Link
-          className={styles.priceBooking}
+          className={`${styles.priceBooking}${contrast ? ` ${styles.priceBookingContrast}` : ""}`}
           href={`/contacts?service=${encodeURIComponent(item.name)}#booking`}
           aria-label={`Записатися на ${item.name}`}
         >
@@ -230,6 +238,7 @@ export function CtPriceTabs({ items }: Props) {
   return (
     <div className={styles.pricePanel}>
       <div className={styles.priceTabsViewport}>
+        <span className={styles.priceTabsLabel}>Категорії досліджень</span>
         <div className={styles.priceMobileNav} ref={mobileNavRef}>
           <span className={styles.priceMobileLabel} id="ct-price-category-label">Категорія досліджень</span>
           <span className={styles.priceSelectWrap}>
@@ -305,7 +314,7 @@ export function CtPriceTabs({ items }: Props) {
           <div className={styles.priceRow} key={item.id} role="row">
             <strong className={styles.priceTitle} role="rowheader">{item.name}</strong>
             <PriceOption item={item.withoutContrast} label="Без контрасту" />
-            <PriceOption item={item.withContrast} label="З контрастом" />
+            <PriceOption item={item.withContrast} label="З контрастом" contrast />
           </div>
         ))}
       </div>

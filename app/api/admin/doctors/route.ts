@@ -2,21 +2,17 @@ import { isAuthorizedAdmin, unauthorizedAdminResponse } from "../adminAuth";
 import {
   createDoctor,
   deleteDoctor,
+  getDoctorById,
   listDoctors,
   updateDoctor,
 } from "../../doctors/doctorStore";
 import type {
-  DoctorAvailabilityStatus,
   DoctorPatientGroup,
   DoctorSchedule,
 } from "../../../doctors/doctorData";
 import { readBoundedJson } from "@/lib/requestBody";
+import { changedSnapshotFields, recordContentRevision } from "../revisions/revisionStore";
 
-const availabilityStatuses = new Set<DoctorAvailabilityStatus>([
-  "accepting",
-  "by-confirmation",
-  "paused",
-]);
 const patientGroupValues = new Set<DoctorPatientGroup>([
   "adults",
   "children",
@@ -55,17 +51,11 @@ export async function PUT(request: Request) {
       biography?: string;
       patientGroups?: DoctorPatientGroup[];
       schedule?: DoctorSchedule;
-      availabilityStatus?: DoctorAvailabilityStatus;
     };
 
     const id = payload.id?.trim() ?? "";
     const name = payload.name?.trim() ?? "";
     const specialty = payload.specialty?.trim() ?? "";
-    const availabilityStatus = availabilityStatuses.has(
-      payload.availabilityStatus ?? "accepting",
-    )
-      ? (payload.availabilityStatus ?? "accepting")
-      : "accepting";
     if (!id || !name || !specialty) {
       return Response.json(
         { error: "Ім’я лікаря та спеціальність є обов’язковими" },
@@ -92,6 +82,22 @@ export async function PUT(request: Request) {
       );
     }
 
+    const existing = await getDoctorById(id);
+    if (!existing) {
+      return Response.json({ error: "Лікаря не знайдено" }, { status: 404 });
+    }
+    await recordContentRevision({
+      entityType: "doctor",
+      entityId: existing.id,
+      entityLabel: existing.name,
+      action: "update",
+      snapshot: existing as unknown as Record<string, unknown>,
+      changedFields: changedSnapshotFields(
+        existing as unknown as Record<string, unknown>,
+        { ...existing, ...payload } as unknown as Record<string, unknown>,
+      ),
+    });
+
     const updated = await updateDoctor(id, {
       name,
       specialty,
@@ -106,7 +112,6 @@ export async function PUT(request: Request) {
         ? payload.patientGroups.filter((group) => patientGroupValues.has(group))
         : [],
       schedule: payload.schedule ?? {},
-      availabilityStatus,
     });
 
     if (!updated) {
@@ -146,6 +151,16 @@ export async function DELETE(request: Request) {
   try {
     const id = new URL(request.url).searchParams.get("id")?.trim() ?? "";
     if (!id) return Response.json({ error: "Не вказано лікаря" }, { status: 400 });
+    const existing = await getDoctorById(id);
+    if (!existing) return Response.json({ error: "Лікаря не знайдено" }, { status: 404 });
+    await recordContentRevision({
+      entityType: "doctor",
+      entityId: existing.id,
+      entityLabel: existing.name,
+      action: "delete",
+      snapshot: existing as unknown as Record<string, unknown>,
+      changedFields: ["record"],
+    });
     if (!(await deleteDoctor(id))) {
       return Response.json({ error: "Лікаря не знайдено" }, { status: 404 });
     }

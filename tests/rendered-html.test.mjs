@@ -100,6 +100,55 @@ test("CT doctor portraits are presented without framed cards", async () => {
   assert.match(css, /\.doctorPhoto\s*\{[^}]*border-radius:\s*18px;/);
 });
 
+test("CT prices separate categories and highlight contrast booking", async () => {
+  const [tabs, css] = await Promise.all([
+    readSource("app/services/[slug]/CtPriceTabs.tsx"),
+    readSource("app/services/[slug]/CtServicePage.module.css"),
+  ]);
+
+  assert.match(tabs, /className=\{styles\.priceTabsLabel\}>Категорії досліджень/);
+  assert.match(tabs, /item=\{item\.withContrast\} label="З контрастом" contrast/);
+  assert.match(css, /\.priceTabsViewport\s*\{[^}]*background:\s*#eaf5f4;/);
+  assert.match(
+    css,
+    /\.priceBookingContrast \.priceBookingAction\s*\{[^}]*color:\s*#fff;[^}]*background:\s*var\(--ct-orange\);/,
+  );
+});
+
+test("CT support callout prioritizes a phone consultation on mobile", async () => {
+  const [page, css] = await Promise.all([
+    readSource("app/services/[slug]/CtServicePage.tsx"),
+    readSource("app/services/[slug]/CtServicePage.module.css"),
+  ]);
+
+  assert.match(page, /className=\{styles\.finalCallButton\}[\s\S]*?href="tel:\+380676714444"/);
+  assert.match(page, /<strong>Зателефонувати<\/strong>[\s\S]*?<small>\+38 \(067\) 671-44-44<\/small>/);
+  assert.match(page, /className=\{styles\.finalRequestLink\}[\s\S]*?Залишити заявку/);
+  assert.doesNotMatch(page, /styles\.finalCallIcon|styles\.finalCallArrow/);
+  assert.doesNotMatch(page, /Залишити заявку\s*<span/);
+  assert.match(css, /\.finalCallButton\s*\{[^}]*background:\s*var\(--ct-orange\);/);
+  assert.match(css, /\.finalCta\s*\{[^}]*background:\s*var\(--ct-teal\);/);
+  assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.finalCta\s*\{[^}]*grid-template-columns:\s*1fr;/);
+});
+
+test("mobile footer uses compact accessible navigation sections", async () => {
+  const [chrome, css] = await Promise.all([
+    readSource("app/components/SiteChrome.tsx"),
+    readSource("app/globals.css"),
+  ]);
+
+  assert.match(chrome, /className="footer-mobile-section-toggle"/);
+  assert.match(chrome, /className="footer-social-icon footer-social-icon-facebook"/);
+  assert.match(chrome, /className="footer-social-icon footer-social-icon-instagram"/);
+  assert.doesNotMatch(chrome, /className="social-icon-facebook"[^>]*>f</);
+  assert.match(chrome, /aria-expanded=\{openFooterSection === "services"\}/);
+  assert.match(chrome, /aria-controls="footer-services-links"/);
+  assert.match(css, /@media \(max-width: 720px\)[\s\S]*\.footer-directory-column\.is-open nav\s*\{[^}]*display:\s*grid;/);
+  assert.match(css, /@media \(max-width: 720px\)[\s\S]*\.site-footer-minimal\s*\{[^}]*background:\s*#fff;/);
+  assert.match(css, /@media \(max-width: 720px\)[\s\S]*\.site-footer-minimal\s*\{[^}]*border-radius:\s*0;/);
+  assert.match(css, /@media \(max-width: 720px\)[\s\S]*\.footer-mobile-section-toggle\s*\{[^}]*min-height:\s*52px;/);
+});
+
 test("homepage search covers services, doctors, prices and locations", async () => {
   const [page, search, smartSearch, css] = await Promise.all([
     readSource("app/page.tsx"),

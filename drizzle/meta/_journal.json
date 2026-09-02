@@ -78,6 +78,13 @@
       "when": 1788199130435,
       "tag": "0010_outgoing_scorpion",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1788386400000,
+      "tag": "0011_admin_content_revisions",
+      "breakpoints": true
     }
   ]
 }

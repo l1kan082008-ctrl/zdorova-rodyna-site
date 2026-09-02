@@ -7,6 +7,7 @@ import {
 } from "../../locations/locationStore";
 import type { CenterLocation } from "../../../contacts/locationData";
 import { readBoundedJson } from "@/lib/requestBody";
+import { changedSnapshotFields, recordContentRevision } from "../revisions/revisionStore";
 
 export async function GET(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
@@ -33,6 +34,19 @@ export async function PUT(request: Request) {
   try {
     const payload = (await readBoundedJson(request, 256 * 1024)) as Partial<CenterLocation> & { id?: string };
     if (!payload.id) return Response.json({ error: "Не вказано відділення." }, { status: 400 });
+    const existing = (await listLocations()).find((location) => location.id === payload.id);
+    if (!existing) return Response.json({ error: "Відділення не знайдено." }, { status: 404 });
+    await recordContentRevision({
+      entityType: "location",
+      entityId: existing.id,
+      entityLabel: existing.name,
+      action: "update",
+      snapshot: existing as unknown as Record<string, unknown>,
+      changedFields: changedSnapshotFields(
+        existing as unknown as Record<string, unknown>,
+        { ...existing, ...payload } as unknown as Record<string, unknown>,
+      ),
+    });
     const location = await updateLocation(payload.id, payload);
     return Response.json({ location });
   } catch (error) {
@@ -45,6 +59,16 @@ export async function DELETE(request: Request) {
   const id = new URL(request.url).searchParams.get("id");
   if (!id) return Response.json({ error: "Не вказано відділення." }, { status: 400 });
   try {
+    const existing = (await listLocations()).find((location) => location.id === id);
+    if (!existing) return Response.json({ error: "Відділення не знайдено." }, { status: 404 });
+    await recordContentRevision({
+      entityType: "location",
+      entityId: existing.id,
+      entityLabel: existing.name,
+      action: "delete",
+      snapshot: existing as unknown as Record<string, unknown>,
+      changedFields: ["record"],
+    });
     await deleteLocation(id);
     return Response.json({ ok: true });
   } catch (error) {

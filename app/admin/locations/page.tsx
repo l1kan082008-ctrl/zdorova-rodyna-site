@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   branchServiceCatalog,
   type BranchServiceId,
   type CenterLocation,
 } from "../../contacts/locationData";
 import styles from "./locations.module.css";
+import { useAdminSafeSave } from "../useAdminSafeSave";
+import AdminRevisionHistory from "../AdminRevisionHistory";
 
 type ApiPayload = { locations?: CenterLocation[]; location?: CenterLocation; error?: string };
 
@@ -42,6 +44,18 @@ function parseGallery(value: string): CenterLocation["gallery"] {
     .filter((item) => item.src);
 }
 
+type LocationDraft = {
+  location: CenterLocation;
+  galleryText: string;
+};
+
+function formatSaveTime(timestamp: number) {
+  return new Intl.DateTimeFormat("uk-UA", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(timestamp);
+}
+
 export default function LocationsAdminPage() {
   const [locations, setLocations] = useState<CenterLocation[]>([]);
   const [selectedId, setSelectedId] = useState("");
@@ -50,7 +64,7 @@ export default function LocationsAdminPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [error, setError] = useState("");
 
   const selected = useMemo(
@@ -74,12 +88,11 @@ export default function LocationsAdminPage() {
     if (!selected) return;
     setDraft(structuredClone(selected));
     setGalleryText(galleryToText(selected.gallery));
-    setSaved(false);
+    setLastSavedAt(null);
     setError("");
   }, [selected]);
 
   const update = <K extends keyof CenterLocation>(key: K, value: CenterLocation[K]) => {
-    setSaved(false);
     setDraft((current) => (current ? { ...current, [key]: value } : current));
   };
 
@@ -91,7 +104,7 @@ export default function LocationsAdminPage() {
     update("services", next);
   };
 
-  const save = async () => {
+  const save = useCallback(async () => {
     if (!draft) return;
     setSaving(true);
     setError("");
@@ -106,15 +119,41 @@ export default function LocationsAdminPage() {
       setLocations((current) => current.map((item) => (item.id === payload.location!.id ? payload.location! : item)));
       setDraft(payload.location);
       setGalleryText(galleryToText(payload.location.gallery));
-      setSaved(true);
+      setLastSavedAt(Date.now());
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Сталася помилка.");
     } finally {
       setSaving(false);
     }
-  };
+  }, [draft, galleryText]);
+
+  const draftValue = useMemo<LocationDraft | null>(
+    () => draft ? { location: draft, galleryText } : null,
+    [draft, galleryText],
+  );
+  const baselineValue = useMemo<LocationDraft | null>(
+    () => selected
+      ? { location: selected, galleryText: galleryToText(selected.gallery) }
+      : null,
+    [selected],
+  );
+  const safeSave = useAdminSafeSave<LocationDraft>({
+    storageKey: selected ? `admin-safe-draft:location:${selected.id}` : null,
+    value: draftValue,
+    baseline: baselineValue,
+    onRestore: (restored) => {
+      if (selected && restored.location.id === selected.id) {
+        setDraft(restored.location);
+        setGalleryText(restored.galleryText);
+        setError("");
+      }
+    },
+    onSave: save,
+    busy: saving,
+  });
 
   const create = async () => {
+    if (!safeSave.confirmDiscard()) return;
     setCreating(true);
     setError("");
     try {
@@ -143,6 +182,7 @@ export default function LocationsAdminPage() {
       const payload = (await response.json()) as ApiPayload;
       if (!response.ok) throw new Error(payload.error || "Не вдалося видалити відділення.");
       const remaining = locations.filter((item) => item.id !== draft.id);
+      safeSave.clearStoredDraft();
       setLocations(remaining);
       setSelectedId(remaining[0]?.id ?? "");
       setDraft(null);
@@ -152,6 +192,23 @@ export default function LocationsAdminPage() {
       setSaving(false);
     }
   };
+
+  const saveStateLabel = saving
+    ? "Зберігаємо зміни…"
+    : error
+      ? "Збереження потребує уваги"
+      : safeSave.dirty
+        ? "Є незбережені зміни"
+        : lastSavedAt
+          ? `Збережено о ${formatSaveTime(lastSavedAt)}`
+          : "Усі зміни збережено";
+  const saveStateDetail = error
+    ? error
+    : safeSave.recoveredAt
+      ? `Відновлено чернетку о ${formatSaveTime(safeSave.recoveredAt)} · Ctrl+S`
+      : safeSave.dirty
+        ? "Чернетка зберігається у цьому браузері · Ctrl+S"
+        : "Можна безпечно перейти до іншого відділення.";
 
   return (
     <main className={styles.page}>
@@ -186,7 +243,14 @@ export default function LocationsAdminPage() {
                   key={location.id}
                   type="button"
                   className={`${styles.locationItem}${location.id === selectedId ? ` ${styles.locationItemActive}` : ""}`}
-                  onClick={() => setSelectedId(location.id)}
+                  onClick={() => {
+                    if (
+                      location.id === selectedId ||
+                      safeSave.confirmDiscard()
+                    ) {
+                      setSelectedId(location.id);
+                    }
+                  }}
                 >
                   <span className={styles.locationNumber}>{String(index + 1).padStart(2, "0")}</span>
                   <span className={styles.locationCopy}>
@@ -212,9 +276,6 @@ export default function LocationsAdminPage() {
                   <span className={styles.editorLabel}>Редагування</span>
                   <h2>{draft.address}</h2>
                 </div>
-                <span className={`${styles.saveState}${saved ? ` ${styles.saveStateVisible}` : ""}`} aria-live="polite">
-                  <span aria-hidden="true">✓</span> Зміни збережено
-                </span>
               </div>
 
               <section className={styles.formSection}>
@@ -278,14 +339,39 @@ export default function LocationsAdminPage() {
                   <div><h3>Фото та відео</h3><p>Матеріали для сторінки контактів.</p></div>
                 </div>
                 <div className={styles.formGrid}>
-                  <label className={styles.wideField}>Фотографії <small>Один рядок: шлях | опис | підпис</small><textarea value={galleryText} onChange={(event) => { setGalleryText(event.target.value); setSaved(false); }} placeholder="/images/location.jpg | Вхід до пункту | Центральний вхід" /></label>
+                  <label className={styles.wideField}>Фотографії <small>Один рядок: шлях | опис | підпис</small><textarea value={galleryText} onChange={(event) => setGalleryText(event.target.value)} placeholder="/images/location.jpg | Вхід до пункту | Центральний вхід" /></label>
                   <label className={styles.wideField}>Посилання на відео<input value={draft.videoUrl ?? ""} onChange={(event) => update("videoUrl", event.target.value)} placeholder="https://…" /></label>
                 </div>
               </section>
 
-              <footer className={styles.actions}>
-                <button className={styles.deleteButton} type="button" onClick={remove} disabled={saving}>Видалити відділення</button>
-                <button className={styles.saveButton} type="button" onClick={save} disabled={saving}>{saving ? "Зберігаємо…" : "Зберегти зміни"}</button>
+              <footer className={`${styles.actions} admin-safe-catalog-action-bar`}>
+                <div className="admin-safe-save-summary" role="status" aria-live="polite">
+                  <span className={`admin-safe-save-state${error ? " is-error" : safeSave.dirty ? " is-dirty" : " is-saved"}`}>
+                    <i aria-hidden="true" />{saveStateLabel}
+                  </span>
+                  <small>{saveStateDetail}</small>
+                </div>
+                <div className="admin-safe-save-buttons">
+                  <AdminRevisionHistory
+                    entityType="location"
+                    entityId={draft.id}
+                    entityLabel={draft.name}
+                    draftStorageKey={`admin-safe-draft:location:${draft.id}`}
+                    disabled={saving}
+                    hasUnsavedChanges={safeSave.dirty}
+                  />
+                  <button className={styles.deleteButton} type="button" onClick={remove} disabled={saving}>Видалити відділення</button>
+                  <button
+                    className={styles.saveButton}
+                    type="button"
+                    onClick={() => void save()}
+                    disabled={!safeSave.dirty || saving}
+                    aria-keyshortcuts="Control+S Meta+S"
+                    aria-busy={saving}
+                  >
+                    {saving ? "Зберігаємо…" : "Зберегти зміни"}
+                  </button>
+                </div>
               </footer>
             </article>
           ) : (

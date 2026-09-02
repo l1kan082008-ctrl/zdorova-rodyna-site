@@ -12,9 +12,6 @@ export const doctors = sqliteTable("doctors", {
   patientGroups: text("patient_groups").notNull().default("[]"),
   schedule: text("schedule").notNull().default("{}"),
   photoKey: text("photo_key").notNull().default(""),
-  availabilityStatus: text("availability_status")
-    .notNull()
-    .default("accepting"),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -84,4 +81,21 @@ export const publicSubmissionAttempts = sqliteTable("public_submission_attempts"
   updatedAt: integer("updated_at").notNull(),
 }, (table) => [
   index("public_submission_attempts_updated_idx").on(table.updatedAt),
+]);
+
+export const adminContentRevisions = sqliteTable("admin_content_revisions", {
+  id: text("id").primaryKey(),
+  entityType: text("entity_type").notNull(),
+  entityId: text("entity_id").notNull(),
+  entityLabel: text("entity_label").notNull(),
+  action: text("action").notNull(),
+  snapshotJson: text("snapshot_json").notNull(),
+  changedFieldsJson: text("changed_fields_json").notNull().default("[]"),
+  createdAt: integer("created_at").notNull(),
+}, (table) => [
+  index("admin_content_revisions_entity_idx").on(
+    table.entityType,
+    table.entityId,
+    table.createdAt,
+  ),
 ]);

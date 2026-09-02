@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AdminNavigation from "../AdminNavigation";
 import {
   categoryOptions,
@@ -10,6 +10,8 @@ import {
 } from "../../prices/priceData";
 import { DEFAULT_CITO_SURCHARGE } from "../../prices/citoPolicy";
 import PriceImportPanel from "./PriceImportPanel";
+import { useAdminSafeSave } from "../useAdminSafeSave";
+import AdminRevisionHistory from "../AdminRevisionHistory";
 
 type ManagedPriceItem = PriceItem & {
   isActive: boolean;
@@ -20,6 +22,18 @@ type ApiPayload = {
   items?: ManagedPriceItem[];
   error?: string;
 };
+
+type PriceDraft = {
+  item: ManagedPriceItem;
+  aliases: string;
+};
+
+function formatSaveTime(timestamp: number) {
+  return new Intl.DateTimeFormat("uk-UA", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(timestamp);
+}
 
 const emptyItem: ManagedPriceItem = {
   id: "",
@@ -39,21 +53,34 @@ function PriceEditor({
   item,
   onSaved,
   onDeleted,
+  onRegisterGuard,
 }: {
   item: ManagedPriceItem;
   onSaved: (items: ManagedPriceItem[]) => void;
   onDeleted: (items: ManagedPriceItem[]) => void;
+  onRegisterGuard: (guard: (() => boolean) | null) => void;
 }) {
   const [draft, setDraft] = useState(item);
   const [aliases, setAliases] = useState((item.aliases ?? []).join(", "));
   const [status, setStatus] = useState("");
+  const [hasError, setHasError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const save = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const draftValue = useMemo<PriceDraft>(
+    () => ({ item: draft, aliases }),
+    [aliases, draft],
+  );
+  const baselineValue = useMemo<PriceDraft>(
+    () => ({ item, aliases: (item.aliases ?? []).join(", ") }),
+    [item],
+  );
+
+  async function save() {
     setSaving(true);
     setStatus("");
+    setHasError(false);
     try {
       const response = await fetch("/api/admin/prices", {
         method: draft.id ? "PATCH" : "POST",
@@ -67,14 +94,47 @@ function PriceEditor({
       if (!response.ok || !payload.items) {
         throw new Error(payload.error || "Не вдалося зберегти позицію");
       }
+      const savedItem = draft.id
+        ? payload.items.find((candidate) => candidate.id === draft.id)
+        : payload.items.find((candidate) => candidate.name === draft.name) ?? payload.items.at(-1);
+      if (savedItem) {
+        setDraft(savedItem);
+        setAliases((savedItem.aliases ?? []).join(", "));
+      }
+      safeSave.clearStoredDraft();
       onSaved(payload.items);
       setStatus(draft.id ? "Зміни збережено" : "Позицію додано");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Сталася помилка");
+      setHasError(true);
     } finally {
       setSaving(false);
     }
-  };
+  }
+
+  function requestSave() {
+    if (formRef.current?.reportValidity() === false) return;
+    return save();
+  }
+
+  const safeSave = useAdminSafeSave<PriceDraft>({
+    storageKey: `admin-safe-draft:price:${item.id || "new"}`,
+    value: draftValue,
+    baseline: baselineValue,
+    onRestore: (restored) => {
+      setDraft(restored.item);
+      setAliases(restored.aliases);
+      setStatus("");
+      setHasError(false);
+    },
+    onSave: requestSave,
+    busy: saving || deleting,
+  });
+
+  useEffect(() => {
+    onRegisterGuard(safeSave.confirmDiscard);
+    return () => onRegisterGuard(null);
+  }, [onRegisterGuard, safeSave.confirmDiscard]);
 
   const deleteItem = async () => {
     if (!draft.id || !window.confirm(`Видалити «${draft.name}»? Цю дію неможливо скасувати.`)) {
@@ -83,6 +143,7 @@ function PriceEditor({
 
     setDeleting(true);
     setStatus("");
+    setHasError(false);
     try {
       const response = await fetch("/api/admin/prices", {
         method: "DELETE",
@@ -93,16 +154,41 @@ function PriceEditor({
       if (!response.ok || !payload.items) {
         throw new Error(payload.error || "Не вдалося видалити позицію");
       }
+      safeSave.clearStoredDraft();
       onDeleted(payload.items);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Помилка видалення");
+      setHasError(true);
     } finally {
       setDeleting(false);
     }
   };
 
+  const saveStateLabel = saving
+    ? "Зберігаємо зміни…"
+    : hasError
+      ? "Збереження потребує уваги"
+      : safeSave.dirty
+        ? "Є незбережені зміни"
+        : status || "Усі зміни збережено";
+  const saveStateDetail = hasError
+    ? status
+    : safeSave.recoveredAt
+      ? `Відновлено чернетку о ${formatSaveTime(safeSave.recoveredAt)} · Ctrl+S`
+      : safeSave.dirty
+        ? "Чернетка зберігається у цьому браузері · Ctrl+S"
+        : status || "Можна безпечно перейти до іншої позиції.";
+
   return (
-    <form className="admin-price-editor" onSubmit={save}>
+    <form
+      ref={formRef}
+      id="admin-price-editor-form"
+      className="admin-price-editor"
+      onSubmit={(event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        void save();
+      }}
+    >
       <div className="admin-price-editor-heading">
         <div>
           <span>{draft.id ? "Редагування" : "Нова позиція"}</span>
@@ -235,22 +321,43 @@ function PriceEditor({
         <small>Вводьте синоніми через кому — пацієнт зможе знайти послугу за кожним із них.</small>
       </label>
 
-      <div className="admin-price-actions">
-        <p role="status">{status}</p>
-        <div className="admin-price-action-buttons">
+      <div className="admin-price-actions admin-safe-catalog-action-bar">
+        <div className="admin-safe-save-summary" role="status" aria-live="polite">
+          <span className={`admin-safe-save-state${hasError ? " is-error" : safeSave.dirty ? " is-dirty" : " is-saved"}`}>
+            <i aria-hidden="true" />{saveStateLabel}
+          </span>
+          <small>{saveStateDetail}</small>
+        </div>
+        <div className="admin-price-action-buttons admin-safe-save-buttons">
           {draft.id ? (
-            <button
-              className="admin-danger-button"
-              type="button"
-              onClick={deleteItem}
-              disabled={saving || deleting}
-            >
-              {deleting ? "Видаляємо…" : "Видалити"}
-            </button>
+            <>
+              <AdminRevisionHistory
+                entityType="price"
+                entityId={draft.id}
+                entityLabel={draft.name}
+                draftStorageKey={`admin-safe-draft:price:${draft.id}`}
+                disabled={saving || deleting}
+                hasUnsavedChanges={safeSave.dirty}
+              />
+              <button
+                className="admin-danger-button"
+                type="button"
+                onClick={deleteItem}
+                disabled={saving || deleting}
+              >
+                {deleting ? "Видаляємо…" : "Видалити"}
+              </button>
+            </>
           ) : null}
-          <button className="book-button" type="submit" disabled={saving || deleting}>
+          <button
+            className="admin-save-button admin-safe-save-button"
+            type="submit"
+            disabled={!safeSave.dirty || saving || deleting}
+            aria-keyshortcuts="Control+S Meta+S"
+            aria-busy={saving}
+          >
+            {saving ? <span className="admin-button-loader" aria-hidden="true" /> : null}
             {saving ? "Зберігаємо…" : "Зберегти"}
-            <span>→</span>
           </button>
         </div>
       </div>
@@ -264,6 +371,7 @@ export default function PricesAdminPage() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const editorGuardRef = useRef<(() => boolean) | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/prices")
@@ -295,6 +403,13 @@ export default function PricesAdminPage() {
     selectedId === "new"
       ? emptyItem
       : items.find((item) => item.id === selectedId);
+
+  const registerEditorGuard = useCallback(
+    (guard: (() => boolean) | null) => {
+      editorGuardRef.current = guard;
+    },
+    [],
+  );
 
   const handleSaved = (updatedItems: ManagedPriceItem[]) => {
     const previousName = selectedItem?.name;
@@ -364,7 +479,14 @@ export default function PricesAdminPage() {
                 <button
                   className="outline-button"
                   type="button"
-                  onClick={() => setSelectedId("new")}
+                  onClick={() => {
+                    if (
+                      selectedId === "new" ||
+                      editorGuardRef.current?.() !== false
+                    ) {
+                      setSelectedId("new");
+                    }
+                  }}
                 >
                   + Додати позицію
                 </button>
@@ -374,7 +496,14 @@ export default function PricesAdminPage() {
                   <button
                     type="button"
                     className={item.id === selectedId ? "is-active" : undefined}
-                    onClick={() => setSelectedId(item.id)}
+                    onClick={() => {
+                      if (
+                        item.id === selectedId ||
+                        editorGuardRef.current?.() !== false
+                      ) {
+                        setSelectedId(item.id);
+                      }
+                    }}
                     key={item.id}
                   >
                     <span>
@@ -401,6 +530,7 @@ export default function PricesAdminPage() {
                 item={selectedItem}
                 onSaved={handleSaved}
                 onDeleted={handleDeleted}
+                onRegisterGuard={registerEditorGuard}
               />
             ) : null}
           </section>

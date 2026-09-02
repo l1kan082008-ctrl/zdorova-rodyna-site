@@ -6,6 +6,7 @@ import { centerLocations, getDirectionsUrl } from "../../contacts/locationData";
 import type { Doctor } from "../../doctors/doctorData";
 import type { PriceItem } from "../../prices/priceData";
 import type { ServiceDetail } from "../serviceData";
+import { CtFaqAccordion } from "./CtFaqAccordion";
 import { CtPriceTabs } from "./CtPriceTabs";
 import { CT_PRICE_GROUPS, type CtPriceGroupId } from "./ctPriceGroups";
 import styles from "./CtServicePage.module.css";
@@ -49,11 +50,11 @@ const important = [
 const faq = [
   ["Чи потрібне направлення на КТ?", "Направлення бажане: воно допомагає обрати правильну зону та протокол. Якщо його немає, адміністратор підкаже, як коректно записатися."],
   ["Чи потрібно здавати креатинін?", "Для КТ із внутрішньовенним контрастуванням може знадобитися актуальний результат креатиніну. Це уточнюють під час запису."],
-  ["Скільки триває дослідження?", "Саме сканування зазвичай коротке, однак загальний час залежить від зони, підготовки та потреби у контрастуванні."],
-  ["Як швидко буде готовий висновок?", "Термін підготовки висновку залежить від складності дослідження. Орієнтовний час повідомить адміністратор."],
+  ["Скільки триває дослідження?", "Саме КТ-сканування може тривати від кількох секунд до 5 хвилин. Разом із позиціонуванням і підготовкою дослідження без контрасту зазвичай займає 10–15 хвилин, із контрастуванням — приблизно 20–40 хвилин. Час залежить від зони та протоколу; точну тривалість повідомить адміністратор під час запису."],
+  ["Як швидко буде готовий висновок?", "Висновок КТ зазвичай готуємо протягом 1–2 днів після дослідження. Для складних або об’ємних досліджень термін може відрізнятися — точний час повідомить адміністратор."],
   ["Коли потрібен контраст?", "Рішення приймає лікар відповідно до клінічного запиту. Контраст не є автоматичною частиною кожного КТ."],
-  ["Чим КТ відрізняється від МРТ?", "КТ використовує рентгенівське випромінювання та особливо інформативна для легень, кісток і невідкладних станів. МРТ працює на основі магнітного поля."],
-];
+  ["Чим КТ відрізняється від МРТ?", "КТ створює пошарові зображення за допомогою рентгенівського випромінювання. Дослідження триває швидко й особливо добре показує легені, кістки, судини, травми, крововиливи та інші гострі стани. МРТ використовує магнітне поле, не має іонізуючого випромінювання та детальніше візуалізує головний і спинний мозок, зв’язки, суглоби й інші м’які тканини, але зазвичай потребує більше часу. КТ обмежують під час вагітності, а МРТ може мати обмеження за наявності певних металевих імплантів або електронних пристроїв. Контрастні препарати для КТ і МРТ також різні. Оптимальний метод обирає лікар залежно від симптомів і ділянки обстеження: ці методи не замінюють, а доповнюють один одного."],
+] as const;
 
 const pageAnchors = [
   { href: "#ct-areas", label: "Що можна обстежити" },
@@ -99,11 +100,12 @@ export function CtServicePage({ service, doctors, prices, bookingHref, priceHref
     ["rohalskyi-vitalii", 0],
     ["zhyber-kostiantyn", 1],
     ["pysarchuk-taras", 2],
-    ["novak-bohdana", 3],
+    ["verchenko-dmytro", 3],
+    ["novak-bohdana", 4],
   ]);
   const shownDoctors = [...doctors]
     .sort((left, right) => (doctorOrder.get(left.id) ?? 99) - (doctorOrder.get(right.id) ?? 99))
-    .slice(0, 4);
+    .slice(0, 5);
 
   return (
     <main className={styles.page}>
@@ -183,12 +185,12 @@ export function CtServicePage({ service, doctors, prices, bookingHref, priceHref
 
       <section className={`${styles.section} ${styles.equipmentDoctors}`} id="ct-doctors">
         <article className={styles.equipmentCard}>
-          <div className={styles.equipmentMedia}><Image className={styles.equipmentImage} src="/service-heroes/ct-philips-brilliance-64-studio-v2.webp" alt="Комп’ютерний томограф Philips Brilliance 64" fill unoptimized sizes="(max-width: 760px) 100vw, 44vw" /></div>
+          <div className={styles.equipmentMedia}><div className={styles.equipmentImageFrame}><Image className={styles.equipmentImage} src="/service-heroes/ct-philips-brilliance-64-cutout-v2.webp" alt="Комп’ютерний томограф Philips Brilliance 64" fill unoptimized style={{ objectFit: "var(--equipment-image-fit)" }} sizes="(max-width: 760px) 100vw, 42vw" /></div></div>
           <div className={styles.equipmentCopy}><span>Наше обладнання</span><h2>Philips Brilliance 64</h2><p>64-зрізовий томограф для швидкого пошарового сканування, точних 3D-реконструкцій і контрольованого променевого навантаження.</p></div>
         </article>
-        <div>
+        <div className={styles.doctorsPanel}>
           <SectionTitle title="Наші лікарі-рентгенологи" lead="Реальні фахівці центру, які працюють із діагностичними зображеннями." />
-          <div className={styles.doctorRail}>{shownDoctors.map((doctor) => <article className={styles.doctorCard} key={doctor.id}><div className={styles.doctorPhoto}><Image src={doctor.photoUrl} alt={doctor.name} fill unoptimized sizes="(max-width: 760px) 58vw, 220px" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></article>)}</div>
+          <div className={styles.doctorRail}>{shownDoctors.map((doctor) => <article className={styles.doctorCard} data-doctor-id={doctor.id} key={doctor.id}><div className={styles.doctorPhoto}><Image src={doctor.photoUrl} alt={doctor.name} fill unoptimized sizes="(max-width: 760px) 70vw, (max-width: 1100px) 31vw, 19vw" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></article>)}</div>
         </div>
       </section>
 
@@ -204,7 +206,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref, priceHref
 
       <section className={styles.section}>
         <SectionTitle title="Часті запитання про КТ" />
-        <div className={styles.faqGrid}>{faq.map(([question, answer]) => <details key={question}><summary><span>{question}</span><b aria-hidden="true">+</b></summary><p>{answer}</p></details>)}</div>
+        <CtFaqAccordion items={faq} />
       </section>
 
       <section className={styles.section} id="ct-prices">
@@ -212,10 +214,27 @@ export function CtServicePage({ service, doctors, prices, bookingHref, priceHref
         <CtPriceTabs items={prices} />
       </section>
 
-      <section className={styles.finalCta}>
-        <div><span>Потрібно уточнити дослідження або обрати зручний час?</span><p>Залиште заявку або зателефонуйте — допоможемо обрати потрібне КТ та підготовку.</p></div>
-        <Link className={styles.primaryButton} href={bookingHref}>Записатися на КТ <span>→</span></Link>
-        <a href="tel:+380676714444">+38 (067) 671-44-44</a>
+      <section className={styles.finalCta} aria-labelledby="ct-support-title">
+        <div className={styles.finalCtaCopy}>
+          <span className={styles.finalCtaEyebrow}>Допоможемо з вибором</span>
+          <h2 id="ct-support-title">Не впевнені, яке КТ обрати?</h2>
+          <p>Зателефонуйте адміністратору — уточнимо дослідження, підготовку та зручний час.</p>
+        </div>
+        <div className={styles.finalCtaActions}>
+          <a
+            className={styles.finalCallButton}
+            href="tel:+380676714444"
+            aria-label="Зателефонувати до медичного центру: +38 (067) 671-44-44"
+          >
+            <span className={styles.finalCallText}>
+              <strong>Зателефонувати</strong>
+              <small>+38 (067) 671-44-44</small>
+            </span>
+          </a>
+          <Link className={styles.finalRequestLink} href={bookingHref}>
+            Залишити заявку
+          </Link>
+        </div>
       </section>
 
       <SiteFooter />

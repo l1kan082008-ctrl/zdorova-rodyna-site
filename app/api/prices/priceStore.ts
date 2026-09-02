@@ -215,9 +215,9 @@ export async function createManagedPriceItem(values: {
   citoSurcharge: number;
   aliases: string[];
   isActive: boolean;
-}) {
+}, options?: { id?: string; sortOrder?: number }) {
   await ensurePriceItemsTable();
-  const id = `price-${crypto.randomUUID()}`;
+  const id = options?.id?.trim() || `price-${crypto.randomUUID()}`;
   const maximum = await env.DB.prepare(
     "SELECT COALESCE(MAX(sort_order), 0) AS value FROM price_items",
   ).first<{ value: number }>();
@@ -238,7 +238,9 @@ export async function createManagedPriceItem(values: {
       values.citoAvailable ? values.citoSurcharge : 0,
       JSON.stringify(values.aliases),
       values.isActive ? 1 : 0,
-      (maximum?.value ?? 0) + 1,
+      Number.isFinite(options?.sortOrder)
+        ? Math.max(0, Math.round(options?.sortOrder ?? 0))
+        : (maximum?.value ?? 0) + 1,
     )
     .run();
 

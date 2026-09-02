@@ -14,6 +14,7 @@ import {
   usesDefaultCitoPolicy,
 } from "../../../prices/citoPolicy";
 import { readBoundedJson } from "@/lib/requestBody";
+import { changedSnapshotFields, recordContentRevision } from "../revisions/revisionStore";
 
 const categoryIds = new Set(categoryOptions.map((category) => category.id));
 
@@ -97,7 +98,21 @@ export async function PATCH(request: Request) {
     const payload = (await readBoundedJson(request, 64 * 1024)) as Record<string, unknown>;
     const id = typeof payload.id === "string" ? payload.id.trim() : "";
     if (!id) throw new Error("Не вказано позицію прайса");
-    const updated = await updateManagedPriceItem(id, parseValues(payload));
+    const existing = (await listManagedPriceItems()).find((item) => item.id === id);
+    if (!existing) return Response.json({ error: "Позицію не знайдено" }, { status: 404 });
+    const values = parseValues(payload);
+    await recordContentRevision({
+      entityType: "price",
+      entityId: existing.id,
+      entityLabel: existing.name,
+      action: "update",
+      snapshot: existing as unknown as Record<string, unknown>,
+      changedFields: changedSnapshotFields(
+        existing as unknown as Record<string, unknown>,
+        { ...existing, ...values } as unknown as Record<string, unknown>,
+      ),
+    });
+    const updated = await updateManagedPriceItem(id, values);
     if (!updated) {
       return Response.json({ error: "Позицію не знайдено" }, { status: 404 });
     }
@@ -121,6 +136,17 @@ export async function DELETE(request: Request) {
     if (!id) {
       throw new Error("Не вказано позицію прайса");
     }
+
+    const existing = (await listManagedPriceItems()).find((item) => item.id === id);
+    if (!existing) return Response.json({ error: "Позицію не знайдено" }, { status: 404 });
+    await recordContentRevision({
+      entityType: "price",
+      entityId: existing.id,
+      entityLabel: existing.name,
+      action: "delete",
+      snapshot: existing as unknown as Record<string, unknown>,
+      changedFields: ["record"],
+    });
 
     const deleted = await deleteManagedPriceItem(id);
     if (!deleted) {

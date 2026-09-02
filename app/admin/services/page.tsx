@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import type { ManagedService } from "../../api/services/serviceStore";
+import { useAdminSafeSave } from "../useAdminSafeSave";
+import AdminRevisionHistory from "../AdminRevisionHistory";
 import styles from "./services.module.css";
 
 type ApiPayload = { services?: ManagedService[]; service?: ManagedService; error?: string };
@@ -26,6 +28,13 @@ function imageUrl(service: ManagedService) {
     : service.imagePath || "/service-cards/lab-glass-v3.jpg";
 }
 
+function formatSaveTime(timestamp: number) {
+  return new Intl.DateTimeFormat("uk-UA", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(timestamp);
+}
+
 export default function ServicesAdminPage() {
   const [services, setServices] = useState<ManagedService[]>([]);
   const [selectedId, setSelectedId] = useState("");
@@ -34,9 +43,10 @@ export default function ServicesAdminPage() {
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [error, setError] = useState("");
   const fileInput = useRef<HTMLInputElement>(null);
+  const editorForm = useRef<HTMLFormElement>(null);
 
   const selected = useMemo(
     () => services.find((service) => service.id === selectedId) ?? null,
@@ -63,16 +73,16 @@ export default function ServicesAdminPage() {
 
   useEffect(() => {
     setDraft(selected ? structuredClone(selected) : null);
-    setSaved(false);
+    setLastSavedAt(null);
     setError("");
   }, [selected]);
 
   const update = <K extends keyof ManagedService>(key: K, value: ManagedService[K]) => {
-    setSaved(false);
     setDraft((current) => current ? { ...current, [key]: value } : current);
   };
 
   const create = async () => {
+    if (!safeSave.confirmDiscard()) return;
     setCreating(true);
     setError("");
     try {
@@ -92,11 +102,9 @@ export default function ServicesAdminPage() {
     }
   };
 
-  const save = async (event?: FormEvent) => {
-    event?.preventDefault();
+  const save = useCallback(async () => {
     if (!draft || saving) return;
     setSaving(true);
-    setSaved(false);
     setError("");
     try {
       const response = await fetch("/api/admin/services", {
@@ -110,13 +118,32 @@ export default function ServicesAdminPage() {
         .map((item) => item.id === payload.service!.id ? payload.service! : item)
         .sort((a, b) => a.sortOrder - b.sortOrder));
       setDraft(payload.service);
-      setSaved(true);
+      setLastSavedAt(Date.now());
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Сталася помилка.");
     } finally {
       setSaving(false);
     }
-  };
+  }, [draft, saving]);
+
+  const requestSave = useCallback(() => {
+    if (editorForm.current?.reportValidity() === false) return;
+    return save();
+  }, [save]);
+
+  const safeSave = useAdminSafeSave<ManagedService>({
+    storageKey: selected ? `admin-safe-draft:service:${selected.id}` : null,
+    value: draft,
+    baseline: selected,
+    onRestore: (restored) => {
+      if (selected && restored.id === selected.id) {
+        setDraft(restored);
+        setError("");
+      }
+    },
+    onSave: requestSave,
+    busy: saving || uploading,
+  });
 
   const remove = async () => {
     if (!draft || !confirm(`Видалити послугу «${draft.shortTitle}»?`)) return;
@@ -127,6 +154,7 @@ export default function ServicesAdminPage() {
       const payload = (await response.json()) as ApiPayload;
       if (!response.ok) throw new Error(payload.error || "Не вдалося видалити послугу.");
       const remaining = services.filter((item) => item.id !== draft.id);
+      safeSave.clearStoredDraft();
       setServices(remaining);
       setSelectedId(remaining[0]?.id ?? "");
       setDraft(null);
@@ -136,6 +164,23 @@ export default function ServicesAdminPage() {
       setSaving(false);
     }
   };
+
+  const saveStateLabel = saving
+    ? "Зберігаємо зміни…"
+    : error
+      ? "Збереження потребує уваги"
+      : safeSave.dirty
+        ? "Є незбережені зміни"
+        : lastSavedAt
+          ? `Збережено о ${formatSaveTime(lastSavedAt)}`
+          : "Усі зміни збережено";
+  const saveStateDetail = error
+    ? error
+    : safeSave.recoveredAt
+      ? `Відновлено чернетку о ${formatSaveTime(safeSave.recoveredAt)} · Ctrl+S`
+      : safeSave.dirty
+        ? "Чернетка зберігається у цьому браузері · Ctrl+S"
+        : "Можна безпечно перейти до іншої послуги.";
 
   const uploadImage = async (file?: File) => {
     if (!file || !draft) return;
@@ -186,7 +231,14 @@ export default function ServicesAdminPage() {
                   type="button"
                   key={service.id}
                   className={`${styles.serviceItem}${service.id === selectedId ? ` ${styles.serviceItemActive}` : ""}`}
-                  onClick={() => setSelectedId(service.id)}
+                  onClick={() => {
+                    if (
+                      service.id === selectedId ||
+                      safeSave.confirmDiscard()
+                    ) {
+                      setSelectedId(service.id);
+                    }
+                  }}
                 >
                   <span className={styles.order}>{String(index + 1).padStart(2, "0")}</span>
                   <span className={styles.serviceCopy}>
@@ -201,10 +253,16 @@ export default function ServicesAdminPage() {
           </aside>
 
           {draft ? (
-            <form className={styles.editor} onSubmit={save}>
+            <form
+              ref={editorForm}
+              className={styles.editor}
+              onSubmit={(event: FormEvent<HTMLFormElement>) => {
+                event.preventDefault();
+                void save();
+              }}
+            >
               <div className={styles.editorHeader}>
                 <div><span className={styles.editorLabel}>Редагування</span><h2>{draft.shortTitle}</h2></div>
-                <span className={`${styles.saveState}${saved ? ` ${styles.saveStateVisible}` : ""}`} aria-live="polite">✓ Зміни збережено</span>
               </div>
 
               <section className={styles.previewSection} aria-label="Попередній перегляд картки">
@@ -252,11 +310,33 @@ export default function ServicesAdminPage() {
                 </div>
               </section>
 
-              <div className={styles.actionBar}>
-                <button className={styles.deleteButton} type="button" onClick={remove} disabled={saving}>Видалити послугу</button>
-                <button className={styles.saveButton} type="submit" disabled={saving || uploading}>
-                  {saving ? <><span className={styles.spinner} aria-hidden="true" /> Збереження…</> : "Зберегти"}
-                </button>
+              <div className={`${styles.actionBar} admin-safe-catalog-action-bar`}>
+                <div className="admin-safe-save-summary" role="status" aria-live="polite">
+                  <span className={`admin-safe-save-state${error ? " is-error" : safeSave.dirty ? " is-dirty" : " is-saved"}`}>
+                    <i aria-hidden="true" />{saveStateLabel}
+                  </span>
+                  <small>{saveStateDetail}</small>
+                </div>
+                <div className="admin-safe-save-buttons">
+                  <AdminRevisionHistory
+                    entityType="service"
+                    entityId={draft.id}
+                    entityLabel={draft.shortTitle}
+                    draftStorageKey={`admin-safe-draft:service:${draft.id}`}
+                    disabled={saving || uploading}
+                    hasUnsavedChanges={safeSave.dirty}
+                  />
+                  <button className={styles.deleteButton} type="button" onClick={remove} disabled={saving}>Видалити послугу</button>
+                  <button
+                    className={styles.saveButton}
+                    type="submit"
+                    disabled={!safeSave.dirty || saving || uploading}
+                    aria-keyshortcuts="Control+S Meta+S"
+                    aria-busy={saving}
+                  >
+                    {saving ? <><span className={styles.spinner} aria-hidden="true" /> Збереження…</> : "Зберегти"}
+                  </button>
+                </div>
               </div>
             </form>
           ) : (
