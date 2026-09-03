@@ -55,7 +55,7 @@ const nextVars = [
 const credentialNotice = [
   "ЗДОРОВА РОДИНА — АДМІНПАНЕЛЬ",
   "",
-  "URL=https://zdorova-rodyna-site.zdorova-rodyna.workers.dev/admin/login",
+  "URL=https://zdorova-rodyna-site.vercel.app/admin/login",
   `PASSWORD=${password}`,
   "",
   "Перенесіть пароль у менеджер паролів і видаліть цей файл.",

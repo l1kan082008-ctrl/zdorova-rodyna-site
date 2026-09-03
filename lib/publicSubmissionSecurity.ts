@@ -11,6 +11,7 @@ type SubmissionRateRow = {
 type SubmissionSecurityEnv = {
   DB?: AppDatabase;
   ADMIN_SESSION_SECRET?: string;
+  FORM_RATE_LIMIT_SECRET?: string;
   PUBLIC_FORM_RATE_LIMIT_SECRET?: string;
   TURNSTILE_SECRET_KEY?: string;
 };
@@ -73,7 +74,8 @@ export async function checkPublicSubmissionRateLimit(
 ) {
   const configured = runtimeEnv();
   const db = configured.DB;
-  const secret = configured.PUBLIC_FORM_RATE_LIMIT_SECRET
+  const secret = configured.FORM_RATE_LIMIT_SECRET
+    ?? configured.PUBLIC_FORM_RATE_LIMIT_SECRET
     ?? configured.ADMIN_SESSION_SECRET;
   if (!db || !secret) return { allowed: false, retryAfter: 60, configured: false };
 
