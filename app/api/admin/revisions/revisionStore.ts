@@ -1,6 +1,7 @@
 import "server-only";
 
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/runtimeEnv";
+import type { AppDatabase } from "@/lib/database";
 
 export const contentEntityTypes = [
   "banner",
@@ -39,7 +40,7 @@ const MAX_SNAPSHOT_BYTES = 512 * 1024;
 const validEntityTypes = new Set<string>(contentEntityTypes);
 
 function database() {
-  return (env as unknown as { DB: D1Database }).DB;
+  return (env as unknown as { DB: AppDatabase }).DB;
 }
 
 export function parseContentEntityType(value: unknown): ContentEntityType {

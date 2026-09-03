@@ -38,6 +38,9 @@
     "backups",
     "work",
     "ct-page-shots",
-    "drizzle.config.ts"
+    "drizzle.config.ts",
+    "worker",
+    "worker-configuration.d.ts",
+    "examples"
   ]
 }

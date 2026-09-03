@@ -1,11 +1,12 @@
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/runtimeEnv";
 import {
   defaultPromoSlides,
   promoThemes,
   type PromoSlide,
   type PromoTheme,
 } from "../../components/promoData";
-import { normalizeInternalHref, normalizeMediaKey } from "@/lib/publicUrl";
+import { normalizeInternalHref } from "@/lib/publicUrl";
+import { deleteMediaReference, normalizeMediaReference } from "@/lib/mediaStorage";
 
 type D1DatabaseLike = {
   prepare(query: string): {
@@ -63,7 +64,7 @@ async function ensureBannersTable() {
   }
 
   const count = await db().prepare("SELECT COUNT(*) AS count FROM home_banners").first<{ count: number }>();
-  if (Number(count?.count ?? 0) === 0) {
+  if (Number(count?.count ?? 0) === 0 && process.env.BOOTSTRAP_DEFAULT_CONTENT === "true") {
     for (const slide of defaultPromoSlides) await insertBanner(slide);
   }
 }
@@ -104,7 +105,7 @@ function normalizeBanner(payload: Partial<PromoSlide>, existing?: PromoSlide): P
     action: required(payload.action ?? existing?.action, "Текст кнопки"),
     href: normalizeInternalHref(payload.href ?? existing?.href, "Посилання"),
     theme: theme as PromoTheme,
-    imageKey: normalizeMediaKey(
+    imageKey: normalizeMediaReference(
       payload.imageKey ?? existing?.imageKey,
       "banners",
       "Зображення",
@@ -180,11 +181,8 @@ export async function deleteBanner(id: string) {
 }
 
 async function deleteMediaObject(key: string, prefix: string) {
-  if (!key.startsWith(prefix)) return;
-  const bucket = (env as unknown as { DOCTOR_MEDIA?: R2Bucket }).DOCTOR_MEDIA;
-  if (!bucket) return;
   try {
-    await bucket.delete(key);
+    await deleteMediaReference(key, prefix.replace(/\/$/u, ""));
   } catch (error) {
     console.error(JSON.stringify({
       event: "orphaned_banner_media_cleanup_failed",

@@ -185,7 +185,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref, priceHref
 
       <section className={`${styles.section} ${styles.equipmentDoctors}`} id="ct-doctors">
         <article className={styles.equipmentCard}>
-          <div className={styles.equipmentMedia}><div className={styles.equipmentImageFrame}><Image className={styles.equipmentImage} src="/service-heroes/ct-philips-brilliance-64-cutout-v2.webp" alt="Комп’ютерний томограф Philips Brilliance 64" fill unoptimized style={{ objectFit: "var(--equipment-image-fit)" }} sizes="(max-width: 760px) 100vw, 42vw" /></div></div>
+          <div className={styles.equipmentMedia}><div className={styles.equipmentImageFrame}><Image className={styles.equipmentImage} src="/service-heroes/ct-philips-brilliance-64-cutout-v2.webp" alt="Комп’ютерний томограф Philips Brilliance 64" fill unoptimized sizes="(max-width: 760px) 100vw, 42vw" /></div></div>
           <div className={styles.equipmentCopy}><span>Наше обладнання</span><h2>Philips Brilliance 64</h2><p>64-зрізовий томограф для швидкого пошарового сканування, точних 3D-реконструкцій і контрольованого променевого навантаження.</p></div>
         </article>
         <div className={styles.doctorsPanel}>

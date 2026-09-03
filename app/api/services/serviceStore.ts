@@ -1,6 +1,7 @@
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/runtimeEnv";
 import { primaryServiceDetails } from "../../services/serviceData";
-import { normalizeInternalHref, normalizeMediaKey, normalizeMediaUrl } from "@/lib/publicUrl";
+import { normalizeInternalHref, normalizeMediaUrl } from "@/lib/publicUrl";
+import { deleteMediaReference, normalizeMediaReference } from "@/lib/mediaStorage";
 
 type D1DatabaseLike = {
   prepare(query: string): {
@@ -97,7 +98,7 @@ async function ensureServicesTable() {
   `).run();
 
   const count = await db().prepare("SELECT COUNT(*) AS count FROM managed_services").first<{ count: number }>();
-  if (Number(count?.count ?? 0) > 0) return;
+  if (Number(count?.count ?? 0) > 0 || process.env.BOOTSTRAP_DEFAULT_CONTENT !== "true") return;
 
   for (const service of getDefaultManagedServices()) {
     await insertService(service);
@@ -148,7 +149,7 @@ function normalizeService(payload: Partial<ManagedService>, existing?: ManagedSe
     shortTitle: requiredText(payload.shortTitle ?? existing?.shortTitle, "Назва"),
     cardDescription: String(payload.cardDescription ?? existing?.cardDescription ?? "").trim(),
     href,
-    imageKey: normalizeMediaKey(
+    imageKey: normalizeMediaReference(
       payload.imageKey ?? existing?.imageKey,
       "services",
       "Зображення",
@@ -245,11 +246,8 @@ export async function deleteManagedService(id: string) {
 }
 
 async function deleteMediaObject(key: string, prefix: string) {
-  if (!key.startsWith(prefix)) return;
-  const bucket = (env as unknown as { DOCTOR_MEDIA?: R2Bucket }).DOCTOR_MEDIA;
-  if (!bucket) return;
   try {
-    await bucket.delete(key);
+    await deleteMediaReference(key, prefix.replace(/\/$/u, ""));
   } catch (error) {
     console.error(JSON.stringify({
       event: "orphaned_service_media_cleanup_failed",

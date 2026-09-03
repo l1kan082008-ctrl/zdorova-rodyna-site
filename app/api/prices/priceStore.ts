@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/runtimeEnv";
 import {
   catalogItems,
   type CategoryId,
@@ -150,18 +150,17 @@ export async function ensurePriceItemsTable() {
       .run();
   }
 
-  const seededVersion = await env.DB.prepare(
-    "SELECT value FROM price_catalog_meta WHERE key = 'official_seed_version'",
-  ).first<{ value: string }>();
-  if (seededVersion?.value === officialCatalogSource.version) return;
-
-  await env.DB.prepare("DELETE FROM price_items").run();
+  const count = await env.DB.prepare(
+    "SELECT COUNT(*) AS total FROM price_items",
+  ).first<{ total: number }>();
+  if (Number(count?.total ?? 0) > 0 || process.env.BOOTSTRAP_DEFAULT_CONTENT !== "true") return;
 
   const statements = catalogItems.map((item, index) =>
     env.DB.prepare(
-      `INSERT OR IGNORE INTO price_items
+       `INSERT INTO price_items
        (id, name, category, category_label, amount, turnaround, cito_available, cito_surcharge, aliases, is_active, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+       ON CONFLICT(id) DO NOTHING`,
     ).bind(
       item.id,
       item.name,

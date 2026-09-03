@@ -1,20 +1,12 @@
-import { env } from "cloudflare:workers";
 import { isAuthorizedAdmin, unauthorizedAdminResponse } from "../../adminAuth";
 import { readBoundedFormData } from "@/lib/requestBody";
 import { readSafeRasterImage } from "@/lib/safeImage";
+import { uploadPublicImage } from "@/lib/mediaStorage";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 export async function POST(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
-  const bucket = (env as unknown as { DOCTOR_MEDIA?: R2Bucket }).DOCTOR_MEDIA;
-  if (!bucket) {
-    return Response.json(
-      { error: "Сховище зображень тимчасово недоступне." },
-      { status: 503 },
-    );
-  }
-
   try {
     const formData = await readBoundedFormData(request, MAX_IMAGE_BYTES + 256 * 1024);
     const image = formData.get("image");
@@ -34,12 +26,8 @@ export async function POST(request: Request) {
 
     const safeBannerId =
       bannerId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80) || "draft";
-    const imageKey = `banners/${safeBannerId}/${crypto.randomUUID()}.${safeImage.extension}`;
-
-    await bucket.put(imageKey, safeImage.bytes, {
-      httpMetadata: { contentType: safeImage.contentType },
-      customMetadata: { bannerId: safeBannerId },
-    });
+    const imagePath = `banners/${safeBannerId}/${crypto.randomUUID()}.${safeImage.extension}`;
+    const imageKey = await uploadPublicImage(imagePath, safeImage.bytes, safeImage.contentType);
 
     return Response.json({ imageKey });
   } catch (error) {

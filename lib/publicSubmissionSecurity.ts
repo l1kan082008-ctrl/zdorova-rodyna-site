@@ -1,4 +1,5 @@
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/runtimeEnv";
+import type { AppDatabase } from "@/lib/database";
 export { isSameOriginSubmission } from "./requestOrigin";
 
 type SubmissionRateRow = {
@@ -8,7 +9,7 @@ type SubmissionRateRow = {
 };
 
 type SubmissionSecurityEnv = {
-  DB?: D1Database;
+  DB?: AppDatabase;
   ADMIN_SESSION_SECRET?: string;
   PUBLIC_FORM_RATE_LIMIT_SECRET?: string;
   TURNSTILE_SECRET_KEY?: string;
@@ -50,7 +51,7 @@ async function fingerprint(request: Request, secret: string, scope: string) {
   return toBase64Url(new Uint8Array(signature));
 }
 
-async function ensureRateLimitTable(db: D1Database) {
+async function ensureRateLimitTable(db: AppDatabase) {
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS public_submission_attempts (
       fingerprint TEXT PRIMARY KEY,

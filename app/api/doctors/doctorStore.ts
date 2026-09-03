@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/runtimeEnv";
 import {
   defaultDoctors,
   doctorPhotoUrls,
@@ -35,8 +35,6 @@ const createDoctorsTable = `
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )
 `;
-
-const requiredDefaultDoctorIds = new Set(["verchenko-dmytro"]);
 
 function prepareDefaultDoctorInsert(doctor: Doctor) {
   return env.DB.prepare(
@@ -93,12 +91,9 @@ export async function ensureDoctorsTable() {
     "SELECT COUNT(*) AS total FROM doctors",
   ).first<{ total: number }>();
 
-  const doctorsToSeed =
-    (count?.total ?? 0) > 0
-      ? defaultDoctors.filter((doctor) => requiredDefaultDoctorIds.has(doctor.id))
-      : defaultDoctors;
-
-  await env.DB.batch(doctorsToSeed.map(prepareDefaultDoctorInsert));
+  if (Number(count?.total ?? 0) === 0 && process.env.BOOTSTRAP_DEFAULT_CONTENT === "true") {
+    await env.DB.batch(defaultDoctors.map(prepareDefaultDoctorInsert));
+  }
 }
 
 function parseSchedule(value: string): DoctorSchedule {

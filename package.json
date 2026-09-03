@@ -1,5 +1,5 @@
 {
-  "name": "site-creator-vinext-starter",
+  "name": "zdorova-rodyna-vercel",
   "version": "0.1.0",
   "private": true,
   "packageManager": "npm@11.17.0",
@@ -7,17 +7,21 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "vinext dev",
+    "dev": "next dev",
     "build": "node scripts/secure-build.mjs",
-    "start": "vinext start",
+    "start": "next start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "test:security": "node --experimental-strip-types --test tests/*security.test.mjs",
     "typecheck": "tsc --noEmit",
     "security:audit": "npm audit --omit=dev --audit-level=high",
     "security:ci": "npm run test:security && npm run typecheck && npm run security:audit",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern backups --ignore-pattern work"
+    "db:schema": "node scripts/apply-postgres-schema.mjs",
+    "db:import:d1": "node scripts/import-d1-export-to-postgres.mjs",
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .wrangler --ignore-pattern backups --ignore-pattern examples --ignore-pattern work --ignore-pattern worker"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "@vercel/blob": "^2.8.0",
     "drizzle-orm": "0.45.2",
     "next": "16.3.3",
     "react": "19.2.8",
@@ -25,21 +29,15 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "1.54.2",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "6.0.2",
-    "@vitejs/plugin-rsc": "0.5.34",
     "eslint": "9.39.4",
     "eslint-config-next": "16.3.3",
     "react-server-dom-webpack": "19.2.8",
     "tailwindcss": "4.2.1",
-    "typescript": "5.9.3",
-    "vinext": "1.0.0-beta.8",
-    "vite": "8.2.2",
-    "wrangler": "4.127.1"
+    "typescript": "5.9.3"
   },
   "overrides": {
     "nanoid": "3.3.18"

@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const projectRoot = resolve(import.meta.dirname, "..");
-const outputRoot = resolve(projectRoot, "dist");
+const outputRoot = resolve(projectRoot, ".next");
 const forbiddenNames = new Set([
   ".dev.vars",
   ".env",
@@ -29,7 +29,7 @@ function removeForbiddenFiles(directory) {
 
 const result = spawnSync(
   process.execPath,
-  [resolve(projectRoot, "node_modules/vinext/dist/cli.js"), "build"],
+  [resolve(projectRoot, "node_modules/next/dist/bin/next"), "build"],
   { cwd: projectRoot, stdio: "inherit", shell: false },
 );
 

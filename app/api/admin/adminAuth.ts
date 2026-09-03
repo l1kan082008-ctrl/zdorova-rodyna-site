@@ -1,11 +1,12 @@
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/runtimeEnv";
+import type { AppDatabase } from "@/lib/database";
 
 import { isTrustedAdminMutation, verifyAdminRequest } from "@/lib/adminSession";
 
 export async function isAuthorizedAdmin(request: Request) {
   const runtimeEnv = env as unknown as {
     ADMIN_SESSION_SECRET?: string;
-    DB?: D1Database;
+    DB?: AppDatabase;
   };
   if (!isTrustedAdminMutation(request)) return false;
   return verifyAdminRequest(request, runtimeEnv.ADMIN_SESSION_SECRET, runtimeEnv.DB);

@@ -1,4 +1,6 @@
-export const ADMIN_SESSION_COOKIE = "__Host-zr_admin_session";
+import { ADMIN_SESSION_COOKIE } from "./adminCookie.ts";
+
+export { ADMIN_SESSION_COOKIE } from "./adminCookie.ts";
 
 const encoder = new TextEncoder();
 const PASSWORD_HASH_PREFIX = "pbkdf2-sha256";
@@ -135,7 +137,7 @@ export async function verifyAdminPassword(password: string, encodedHash: string)
   return timingSafeEqual(actual, expected);
 }
 
-export async function ensureAdminSecuritySchema(db: D1Database) {
+export async function ensureAdminSecuritySchema(db: AppDatabase) {
   await db.batch([
     db.prepare(`
       CREATE TABLE IF NOT EXISTS admin_sessions (
@@ -166,7 +168,7 @@ export async function ensureAdminSecuritySchema(db: D1Database) {
   ]);
 }
 
-export async function createAdminSession(secret: string, db: D1Database) {
+export async function createAdminSession(secret: string, db: AppDatabase) {
   const now = Date.now();
   const expiresAt = now + SESSION_DURATION_MS;
   const sessionId = secureRandomToken();
@@ -193,7 +195,7 @@ export async function createAdminSession(secret: string, db: D1Database) {
 export async function verifyAdminSession(
   token: string | undefined,
   secret: string | undefined,
-  db: D1Database | undefined,
+  db: AppDatabase | undefined,
 ) {
   if (!token || token.length > 512 || !secret || !db) return false;
   const parts = token.split(".");
@@ -223,21 +225,32 @@ export async function verifyAdminSession(
       FROM admin_sessions
       WHERE token_hash = ?
     `).bind(tokenHash).first<SessionRow>();
-    if (!row || row.expires_at !== expiresAt) return false;
-    if (row.expires_at <= now || row.idle_expires_at <= now) {
+    if (!row) return false;
+    // PostgreSQL drivers may expose BIGINT columns as strings. Normalize the
+    // persisted timestamps before strict comparisons and session arithmetic.
+    const persistedExpiresAt = Number(row.expires_at);
+    const idleExpiresAt = Number(row.idle_expires_at);
+    const lastSeenAt = Number(row.last_seen_at);
+    if (
+      !Number.isSafeInteger(persistedExpiresAt) ||
+      !Number.isSafeInteger(idleExpiresAt) ||
+      !Number.isSafeInteger(lastSeenAt) ||
+      persistedExpiresAt !== expiresAt
+    ) return false;
+    if (persistedExpiresAt <= now || idleExpiresAt <= now) {
       await db.prepare("DELETE FROM admin_sessions WHERE token_hash = ?")
         .bind(tokenHash)
         .run();
       return false;
     }
-    if (now - row.last_seen_at >= SESSION_REFRESH_INTERVAL_MS) {
+    if (now - lastSeenAt >= SESSION_REFRESH_INTERVAL_MS) {
       await db.prepare(`
         UPDATE admin_sessions
         SET last_seen_at = ?, idle_expires_at = ?
         WHERE token_hash = ?
       `).bind(
         now,
-        Math.min(row.expires_at, now + SESSION_IDLE_DURATION_MS),
+        Math.min(persistedExpiresAt, now + SESSION_IDLE_DURATION_MS),
         tokenHash,
       ).run();
     }
@@ -268,12 +281,12 @@ export function readCookie(request: Request, name: string) {
 export async function verifyAdminRequest(
   request: Request,
   secret: string | undefined,
-  db: D1Database | undefined,
+  db: AppDatabase | undefined,
 ) {
   return verifyAdminSession(readCookie(request, ADMIN_SESSION_COOKIE), secret, db);
 }
 
-export async function revokeAdminSession(request: Request, db: D1Database | undefined) {
+export async function revokeAdminSession(request: Request, db: AppDatabase | undefined) {
   const token = readCookie(request, ADMIN_SESSION_COOKIE);
   const parts = token?.split(".");
   const sessionId = parts?.length === 4 ? parts[1] : undefined;
@@ -306,7 +319,7 @@ async function loginFingerprint(request: Request, secret: string) {
 export async function checkAdminLoginRateLimit(
   request: Request,
   secret: string,
-  db: D1Database,
+  db: AppDatabase,
 ) {
   const fingerprint = await loginFingerprint(request, secret);
   const now = Date.now();
@@ -326,7 +339,7 @@ export async function checkAdminLoginRateLimit(
   return { allowed: true, fingerprint, retryAfter: 0 };
 }
 
-export async function recordFailedAdminLogin(fingerprint: string, db: D1Database) {
+export async function recordFailedAdminLogin(fingerprint: string, db: AppDatabase) {
   const now = Date.now();
   await db.batch([
     db.prepare(`
@@ -372,7 +385,7 @@ export async function recordFailedAdminLogin(fingerprint: string, db: D1Database
   };
 }
 
-export async function clearAdminLoginFailures(fingerprint: string, db: D1Database) {
+export async function clearAdminLoginFailures(fingerprint: string, db: AppDatabase) {
   await db.prepare("DELETE FROM admin_login_attempts WHERE fingerprint = ?")
     .bind(fingerprint)
     .run();
@@ -401,3 +414,4 @@ export function expiredAdminSessionCookie() {
     "Max-Age=0",
   ].join("; ");
 }
+import type { AppDatabase } from "./database";

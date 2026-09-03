@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/runtimeEnv";
 import {
   branchServiceCatalog,
   centerLocations,
@@ -69,7 +69,7 @@ async function ensureLocationsTable() {
     .prepare("SELECT COUNT(*) AS count FROM center_locations")
     .first<{ count: number }>();
 
-  if (Number(count?.count ?? 0) === 0) {
+  if (Number(count?.count ?? 0) === 0 && process.env.BOOTSTRAP_DEFAULT_CONTENT === "true") {
     for (const [index, location] of centerLocations.entries()) {
       await insertLocation(location, index);
     }

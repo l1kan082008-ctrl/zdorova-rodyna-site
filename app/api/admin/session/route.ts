@@ -1,4 +1,5 @@
-import { env } from "cloudflare:workers";
+import { env } from "@/lib/runtimeEnv";
+import type { AppDatabase } from "@/lib/database";
 import {
   adminSessionCookie,
   checkAdminLoginRateLimit,
@@ -15,7 +16,7 @@ import {
 type AdminEnv = {
   ADMIN_PASSWORD_HASH?: string;
   ADMIN_SESSION_SECRET?: string;
-  DB?: D1Database;
+  DB?: AppDatabase;
 };
 
 const responseHeaders = {

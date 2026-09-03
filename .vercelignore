@@ -1,0 +1,9 @@
+.dev.vars*
+.admin-credentials.local
+.openai
+backups
+dist
+examples
+worker
+worker-configuration.d.ts
+wrangler.jsonc
