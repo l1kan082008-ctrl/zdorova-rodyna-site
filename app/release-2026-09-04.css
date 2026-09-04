@@ -1,0 +1,139 @@
+/*
+ * Release overrides are kept in a separate entry so the production build emits
+ * a fresh immutable CSS asset instead of reusing the stale pre-release bundle.
+ */
+
+:root {
+  --surface-neutral: #f1f3f5;
+}
+
+.consultation-direction-panel {
+  margin-top: 0;
+}
+
+.doctor-biography-empty,
+.doctor-detail-schedule {
+  background: var(--surface-neutral);
+}
+
+@media (max-width: 720px) {
+  .promo-slide--ct-photo::after {
+    background-position: center, right bottom;
+  }
+}
+
+.home-search-shell.is-open {
+  z-index: 100;
+}
+
+@media (min-width: 721px) {
+  body.home-search-open #top > :not(.home-search-shell) {
+    filter: blur(18px);
+  }
+}
+
+.home-search-backdrop {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  background: rgba(242, 248, 247, 0.16);
+  backdrop-filter: blur(42px);
+  -webkit-backdrop-filter: blur(42px);
+}
+
+.home-search-bar,
+.home-search-panel {
+  z-index: 2;
+}
+
+.home-search-label {
+  display: flex;
+  align-items: center;
+}
+
+.home-search-panel::-webkit-scrollbar {
+  width: 9px;
+}
+
+.home-search-panel::-webkit-scrollbar-track {
+  margin-block: 64px;
+  background: transparent;
+}
+
+.home-search-panel::-webkit-scrollbar-thumb {
+  --home-search-scroll-color: rgba(8, 127, 130, 0.56);
+
+  border-inline: 2px solid transparent;
+  border-radius: 999px;
+  background:
+    radial-gradient(
+      circle at center calc(50% - 45px),
+      var(--home-search-scroll-color) 0 2.5px,
+      transparent 3px
+    ),
+    radial-gradient(
+      circle at center calc(50% + 45px),
+      var(--home-search-scroll-color) 0 2.5px,
+      transparent 3px
+    ),
+    linear-gradient(
+      to bottom,
+      transparent calc(50% - 45px),
+      var(--home-search-scroll-color) calc(50% - 45px) calc(50% + 45px),
+      transparent calc(50% + 45px)
+    );
+  background-clip: content-box;
+}
+
+.home-search-panel::-webkit-scrollbar-thumb:hover {
+  --home-search-scroll-color: rgba(8, 127, 130, 0.78);
+}
+
+.home-search-panel::-webkit-scrollbar-button,
+.home-search-panel::-webkit-scrollbar-button:vertical:start:decrement,
+.home-search-panel::-webkit-scrollbar-button:vertical:end:increment {
+  display: none;
+  width: 0;
+  height: 0;
+  appearance: none;
+  visibility: hidden;
+  border: 0;
+  background: transparent;
+  color: transparent;
+}
+
+.home-search-result-action.is-added,
+.home-search-result-action.is-added:hover,
+.home-search-result-action.is-added:focus-visible {
+  border-color: var(--teal);
+  background: var(--teal);
+  color: #fff;
+}
+
+.doctor-card-photo-identity .doctor-card-consultation-price {
+  display: inline-flex;
+  width: max-content;
+  max-width: 100%;
+  margin-top: 4px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  background: rgba(2, 55, 59, 0.5);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 760;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@media (max-width: 720px) {
+  .home-search-backdrop {
+    display: none;
+  }
+
+  .home-search-shell.is-open {
+    z-index: 1400;
+  }
+}
