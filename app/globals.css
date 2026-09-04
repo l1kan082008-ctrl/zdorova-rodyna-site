@@ -5892,10 +5892,10 @@ footer {
 
 .price-catalog-shell {
   display: grid;
-  grid-template-columns: 255px minmax(0, 1fr);
+  grid-template-columns: 240px minmax(0, 1fr);
   grid-template-areas: "categories prices";
   gap: 22px;
-  width: min(1180px, calc(100% - 48px));
+  width: min(1240px, calc(100% - 48px));
   margin: 0 auto 30px;
 }
 
@@ -5969,18 +5969,21 @@ footer {
   color: var(--ink);
 }
 
-.price-category-symbol,
 .medical-price-group-icon {
   display: grid;
   place-items: center;
-  border-radius: 13px;
-  background: #edf6f5;
+  border-radius: 0;
+  background: transparent;
   color: var(--teal);
 }
 
 .price-category-symbol {
+  display: grid;
+  place-items: center;
   width: 44px;
   height: 44px;
+  background: transparent;
+  color: var(--teal);
 }
 
 .price-category-symbol svg,
@@ -6274,11 +6277,35 @@ footer {
   padding: 0;
 }
 
-.medical-price-row {
+.medical-price-group-rows > .medical-price-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(125px, 150px) 95px 132px;
-  gap: 16px;
+  grid-template-columns:
+    minmax(260px, 1fr)
+    108px
+    118px
+    76px
+    128px;
+  gap: 14px;
   align-items: center;
+}
+
+.medical-price-column-head {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 108px 118px 76px 128px;
+  gap: 14px;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 24px;
+  border-bottom: 1px solid #e2ecea;
+  color: #7c8d8f;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.medical-price-column-cito {
+  justify-self: center;
 }
 
 .medical-price-group {
@@ -6316,6 +6343,8 @@ footer {
 .medical-price-group-icon {
   width: 50px;
   height: 50px;
+  border-radius: 0;
+  background: transparent;
 }
 
 .medical-price-group-head h3 {
@@ -6456,7 +6485,17 @@ footer {
 }
 
 .price-cito-control {
-  margin-top: 1px;
+  justify-self: center;
+}
+
+.medical-price-cito {
+  display: grid;
+  min-width: 0;
+  justify-items: center;
+}
+
+.medical-price-cito.is-empty {
+  min-height: 1px;
 }
 
 .medical-price-duration {
@@ -8015,8 +8054,13 @@ body.calculator-is-open .site-header {
     grid-template-columns: 220px minmax(0, 1fr);
   }
 
-  .medical-price-row {
-    grid-template-columns: minmax(0, 1fr) 116px 82px 112px;
+  .medical-price-group-rows > .medical-price-row {
+    grid-template-columns: minmax(0, 1fr) 96px 104px 72px 108px;
+    gap: 12px;
+  }
+
+  .medical-price-column-head {
+    grid-template-columns: minmax(0, 1fr) 96px 104px 72px 108px;
     gap: 12px;
   }
 
@@ -8672,7 +8716,8 @@ body.calculator-is-open .site-header {
   .medical-price-group-icon {
     width: 42px;
     height: 42px;
-    border-radius: 12px;
+    border-radius: 0;
+    background: transparent;
   }
 
   .medical-price-group-icon svg {
@@ -8691,17 +8736,22 @@ body.calculator-is-open .site-header {
     font-size: 10px;
   }
 
-  .medical-price-row {
-    grid-template-columns: minmax(0, 1fr) auto;
+  .medical-price-group-rows > .medical-price-row {
+    grid-template-columns: minmax(64px, 1fr) 42px minmax(48px, auto) 100px;
     width: 100%;
     min-width: 0;
-    gap: 13px 16px;
+    align-items: center;
+    gap: 12px 10px;
     min-height: auto;
     padding: 16px 14px;
     border: 0;
     border-bottom: 1px solid #e5eceb;
     border-radius: 0;
     background: #fff;
+  }
+
+  .medical-price-column-head {
+    display: none;
   }
 
   .medical-price-row:last-child {
@@ -8723,10 +8773,22 @@ body.calculator-is-open .site-header {
   }
 
   .medical-price-duration {
-    grid-column: 1 / -1;
+    grid-column: 1;
+    grid-row: 2;
     display: flex;
     align-items: baseline;
     gap: 7px;
+  }
+
+  .medical-price-cito {
+    grid-column: 2;
+    grid-row: 2;
+    display: grid;
+    justify-items: center;
+  }
+
+  .medical-price-cito.is-empty {
+    display: none;
   }
 
   .medical-price-duration span {
@@ -8739,22 +8801,42 @@ body.calculator-is-open .site-header {
 
   .medical-price-value {
     display: grid;
+    grid-column: 3;
+    grid-row: 2;
     gap: 6px;
+    white-space: nowrap;
   }
 
   .medical-price-value {
-    justify-items: start;
-    text-align: left;
+    justify-items: end;
+    text-align: right;
   }
 
   .medical-price-row .price-row-action {
     display: flex;
-    grid-column: 2;
+    grid-column: 4;
+    grid-row: 2;
     width: auto;
-    min-width: 112px;
+    min-width: 100px;
     min-height: 44px;
-    padding: 0 14px;
+    padding: 0 12px;
     font-size: 11px;
+  }
+
+  .medical-price-row.has-cito .price-row-action {
+    grid-row: 2;
+  }
+
+  @media (max-width: 360px) {
+    .medical-price-group-rows > .medical-price-row {
+      grid-template-columns: minmax(54px, 1fr) 42px minmax(44px, auto) 96px;
+      column-gap: 6px;
+    }
+
+    .medical-price-row .price-row-action {
+      min-width: 96px;
+      padding-inline: 10px;
+    }
   }
 
   .price-group-view-all {
@@ -24198,5 +24280,30 @@ body.calculator-is-open .site-header {
   .doctors-directory-v2.is-mobile-view-quad .doctor-card-photo-identity small {
     font-size: 11px;
     line-height: 1.35;
+  }
+}
+
+/* Keep the price table on one shared desktop grid, even when CITO is unavailable. */
+@media (min-width: 1081px) {
+  .medical-price-group-rows > .medical-price-row,
+  .medical-price-group-rows > .medical-price-column-head {
+    grid-template-columns: minmax(260px, 1fr) 108px 118px 76px 128px;
+    gap: 14px;
+  }
+
+  .medical-price-group-rows .medical-price-cito {
+    display: grid;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1080px) {
+  .medical-price-group-rows > .medical-price-row,
+  .medical-price-group-rows > .medical-price-column-head {
+    grid-template-columns: minmax(0, 1fr) 96px 104px 72px 108px;
+    gap: 12px;
+  }
+
+  .medical-price-group-rows .medical-price-cito {
+    display: grid;
   }
 }

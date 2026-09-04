@@ -17,7 +17,7 @@ const footerNavigation = [
   { href: "/services", label: "Послуги", key: "services" },
   { href: "/doctors", label: "Лікарі", key: "doctors" },
   { href: "/about", label: "Про центр", key: "about" },
-  { href: "/prices", label: "Вартість", key: "prices" },
+  { href: "/prices", label: "Ціни", key: "prices" },
   { href: "/contacts", label: "Контакти", key: "contacts" },
 ];
 

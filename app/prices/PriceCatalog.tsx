@@ -840,6 +840,7 @@ export function PriceCatalog({
                   0,
                 );
                 const rowsId = `price-group-rows-${group.category}`;
+                const hasCito = group.items.some((item) => item.citoAvailable);
 
                 return (
                   <section
@@ -867,22 +868,40 @@ export function PriceCatalog({
                     </button>
 
                     {!isCollapsed ? (
-                      <div className="medical-price-group-rows" id={rowsId}>
+                      <div
+                        className={`medical-price-group-rows${hasCito ? " has-cito" : ""}`}
+                        id={rowsId}
+                      >
+                        <div className="medical-price-column-head" aria-hidden="true">
+                          <span />
+                          <span>Термін</span>
+                          <span className="medical-price-column-cito">
+                            {hasCito ? "CITO до 2 годин" : null}
+                          </span>
+                          <span>Вартість</span>
+                          <span />
+                        </div>
                         {group.items.map((item) => {
                           const isSelected = selectedIds.includes(item.id);
                           const citoSelected = citoSelectedIds.includes(item.id);
 
                           return (
-                            <article className="medical-price-row" key={item.id}>
+                            <article
+                              className={`medical-price-row${item.citoAvailable ? " has-cito" : ""}`}
+                              key={item.id}
+                            >
                               <div className="medical-price-service">
                                 <span className="mobile-price-label">Послуга</span>
                                 <strong>{item.name}</strong>
+                              </div>
+                              <div className="medical-price-duration">
+                                <strong>{getTurnaround(item)}</strong>
+                              </div>
+                              <div
+                                className={`medical-price-cito${item.citoAvailable ? "" : " is-empty"}`}
+                              >
                                 {item.citoAvailable ? (
                                   <div className={`cito-control price-cito-control${citoSelected ? " is-active" : ""}`}>
-                                    <span className="cito-control-copy">
-                                      <b>CITO</b>
-                                      <small>до 2 годин</small>
-                                    </span>
                                     <button
                                       className="cito-switch"
                                       type="button"
@@ -897,10 +916,6 @@ export function PriceCatalog({
                                     </button>
                                   </div>
                                 ) : null}
-                              </div>
-                              <div className="medical-price-duration">
-                                <span>Термін</span>
-                                <strong>{getTurnaround(item)}</strong>
                               </div>
                               <div className="medical-price-value">
                                 <span className="mobile-price-label">Вартість</span>

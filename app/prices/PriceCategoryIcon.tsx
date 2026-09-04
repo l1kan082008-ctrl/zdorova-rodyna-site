@@ -4,10 +4,12 @@ type IconKind =
   | "allergy"
   | "bone"
   | "brain"
+  | "catalog"
   | "complex"
   | "ct"
   | "dna"
   | "doctor"
+  | "doppler"
   | "drop"
   | "flask"
   | "heart"
@@ -22,13 +24,14 @@ type IconKind =
   | "scan"
   | "shield"
   | "stomach"
+  | "ultrasound"
   | "vessel"
   | "virus";
 
 const categoryIcons: Record<CategoryId, IconKind> = {
-  ultrasound: "scan",
+  ultrasound: "ultrasound",
   heart: "heart",
-  doppler: "vessel",
+  doppler: "doppler",
   ct: "ct",
   mri: "mri",
   general: "flask",
@@ -64,10 +67,26 @@ export function PriceCategoryIcon({
 }: {
   category: CategoryId | "all";
 }) {
-  const kind = category === "all" ? "flask" : categoryIcons[category];
+  const kind = category === "all" ? "catalog" : categoryIcons[category];
 
   const content = (() => {
     switch (kind) {
+      case "catalog":
+        return (
+          <>
+            <rect x="9" y="10" width="20" height="20" rx="5" />
+            <rect
+              x="35"
+              y="8"
+              width="20"
+              height="20"
+              rx="5"
+              transform="rotate(14 45 18)"
+            />
+            <rect x="9" y="36" width="20" height="20" rx="5" />
+            <rect x="35" y="36" width="20" height="20" rx="5" />
+          </>
+        );
       case "drop":
         return (
           <>
@@ -82,20 +101,31 @@ export function PriceCategoryIcon({
             <path d="M9 18h10M45 18h10M9 50h10M45 50h10" />
           </>
         );
+      case "doppler":
+        return (
+          <>
+            <path d="M8 20c9-7 17-7 25 0s14 7 23 0" />
+            <path d="M8 44c9-7 17-7 25 0s14 7 23 0" />
+            <path d="M15 32h32" />
+            <path d="m40 25 7 7-7 7" />
+          </>
+        );
       case "ct":
         return (
           <>
-            <circle cx="32" cy="27" r="20" />
-            <circle cx="32" cy="27" r="10" />
-            <path d="M8 56h48M18 48h28v8M12 44h26c6 0 10 4 10 10" />
+            <rect x="8" y="8" width="48" height="39" rx="8" />
+            <circle cx="32" cy="27" r="12" />
+            <path d="M32 39v5M17 47h30M13 53h38M21 53v4M43 53v4" />
           </>
         );
       case "mri":
         return (
           <>
-            <path d="M12 45V25a20 20 0 0 1 40 0v20" />
-            <circle cx="32" cy="25" r="10" />
-            <path d="M7 56h50M22 48h30v8M12 45h19" />
+            <circle cx="32" cy="27" r="22" />
+            <circle cx="32" cy="27" r="13" />
+            <path d="M27 9h10" />
+            <path d="M22 31h20l8 16H14l8-16Z" />
+            <path d="M14 47h36v6H14zM22 53v5M42 53v5M17 58h30" />
           </>
         );
       case "molecule":
@@ -160,7 +190,9 @@ export function PriceCategoryIcon({
       case "needle":
         return (
           <>
-            <path d="m39 8 17 17-7 7-17-17 7-7ZM34 19 16 37M11 32l21 21M16 37 8 55M32 53l-6 6" />
+            <path d="M15 10h34v9H15z" />
+            <path d="M19 19h26v30a8 8 0 0 1-8 8H27a8 8 0 0 1-8-8V19Z" />
+            <path d="M32 28v19M23 37h18" />
           </>
         );
       case "ribbon":
@@ -212,9 +244,23 @@ export function PriceCategoryIcon({
       case "doctor":
         return (
           <>
-            <circle cx="32" cy="15" r="8" />
-            <path d="M13 57v-9c0-11 8-19 19-19s19 8 19 19v9M22 32v9a10 10 0 0 0 20 0v-9M19 57V45M45 57V45" />
-            <circle cx="42" cy="43" r="3" />
+            <circle cx="22" cy="15" r="7" />
+            <path d="M9 42v-3c0-10 6-17 13-17s13 7 13 17v3" />
+            <path d="M16 25v10a6 6 0 0 0 12 0V25" />
+            <path d="M35 14h20M45 4v20" />
+            <path d="M35 40v4a10 10 0 0 0 20 0V33" />
+            <circle cx="55" cy="29" r="4" />
+            <path d="M9 56h46" />
+          </>
+        );
+      case "ultrasound":
+        return (
+          <>
+            <path d="M17 18c8-8 22-8 30 0" />
+            <path d="M22 23c5-5 15-5 20 0" />
+            <path d="M27 28c3-3 7-3 10 0" />
+            <path d="M17 33h30v5c0 6-4 10-9 12v7H26v-7c-5-2-9-6-9-12v-5Z" />
+            <path d="M17 38h30M32 57v4" />
           </>
         );
       case "scan":
