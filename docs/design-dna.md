@@ -10,6 +10,7 @@ Warm, trustworthy and precise medical care. The public site feels calm and human
 - Brand teal: `#087f82`
 - Accent orange: shared site token `--orange` (`#ff7900`) for brand accents and primary actions
 - Soft surface: `#f5f9f8`
+- Neutral information surface: `#f1f3f5`, used where a calm grey background should not carry a teal tint
 - Canvas: `#ffffff`
 - Border: `#d5e4e2`
 - Muted text: `#587276` on white; lighter teal-grey values are reserved for non-text decoration

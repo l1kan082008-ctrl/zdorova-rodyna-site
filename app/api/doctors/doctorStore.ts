@@ -12,6 +12,7 @@ type DoctorRow = {
   name: string;
   specialty: string;
   experience_years: number | null;
+  consultation_price: number | null;
   branch: string;
   description: string;
   biography: string;
@@ -26,6 +27,7 @@ const createDoctorsTable = `
     name TEXT NOT NULL,
     specialty TEXT NOT NULL,
     experience_years INTEGER,
+    consultation_price INTEGER,
     branch TEXT NOT NULL DEFAULT '',
     description TEXT NOT NULL DEFAULT '',
     biography TEXT NOT NULL DEFAULT '',
@@ -39,13 +41,14 @@ const createDoctorsTable = `
 function prepareDefaultDoctorInsert(doctor: Doctor) {
   return env.DB.prepare(
     `INSERT OR IGNORE INTO doctors
-      (id, name, specialty, experience_years, branch, description, biography, patient_groups, schedule, photo_key)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '')`,
+      (id, name, specialty, experience_years, consultation_price, branch, description, biography, patient_groups, schedule, photo_key)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '')`,
   ).bind(
     doctor.id,
     doctor.name,
     doctor.specialty,
     doctor.experienceYears,
+    doctor.consultationPrice,
     doctor.branch,
     doctor.description,
     doctor.biography,
@@ -80,6 +83,11 @@ export async function ensureDoctorsTable() {
   if (!columns.results.some((column) => column.name === "biography")) {
     await env.DB.prepare(
       "ALTER TABLE doctors ADD COLUMN biography TEXT NOT NULL DEFAULT ''",
+    ).run();
+  }
+  if (!columns.results.some((column) => column.name === "consultation_price")) {
+    await env.DB.prepare(
+      "ALTER TABLE doctors ADD COLUMN consultation_price INTEGER",
     ).run();
   }
   if (!columns.results.some((column) => column.name === "patient_groups")) {
@@ -123,6 +131,7 @@ function toDoctor(row: DoctorRow): Doctor {
     name: row.name,
     specialty: row.specialty,
     experienceYears: row.experience_years,
+    consultationPrice: row.consultation_price,
     branch: row.branch,
     description: row.description,
     biography: row.biography,
@@ -137,7 +146,7 @@ function toDoctor(row: DoctorRow): Doctor {
 export async function listDoctors() {
   await ensureDoctorsTable();
   const result = await env.DB.prepare(
-    `SELECT id, name, specialty, experience_years, branch, description, biography,
+    `SELECT id, name, specialty, experience_years, consultation_price, branch, description, biography,
             patient_groups, schedule, photo_key
      FROM doctors
      ORDER BY name COLLATE NOCASE`,
@@ -149,7 +158,7 @@ export async function listDoctors() {
 export async function getDoctorById(id: string) {
   await ensureDoctorsTable();
   const row = await env.DB.prepare(
-    `SELECT id, name, specialty, experience_years, branch, description, biography,
+    `SELECT id, name, specialty, experience_years, consultation_price, branch, description, biography,
             patient_groups, schedule, photo_key
      FROM doctors
      WHERE id = ?`,
@@ -176,6 +185,7 @@ export async function updateDoctor(
     name: string;
     specialty: string;
     experienceYears: number | null;
+    consultationPrice: number | null;
     branch: string;
     description: string;
     biography: string;
@@ -186,7 +196,7 @@ export async function updateDoctor(
   await ensureDoctorsTable();
   const result = await env.DB.prepare(
     `UPDATE doctors
-     SET name = ?, specialty = ?, experience_years = ?, branch = ?, description = ?,
+     SET name = ?, specialty = ?, experience_years = ?, consultation_price = ?, branch = ?, description = ?,
          biography = ?, patient_groups = ?, schedule = ?,
          updated_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
@@ -195,6 +205,7 @@ export async function updateDoctor(
       values.name,
       values.specialty,
       values.experienceYears,
+      values.consultationPrice,
       values.branch,
       values.description,
       values.biography,
@@ -212,8 +223,8 @@ export async function createDoctor(values: { name: string; specialty: string; id
   const id = values.id?.trim() || `doctor-${crypto.randomUUID()}`;
   await env.DB.prepare(
     `INSERT INTO doctors
-      (id, name, specialty, experience_years, branch, description, biography, patient_groups, schedule, photo_key)
-     VALUES (?, ?, ?, NULL, '', '', '', '[]', '{}', '')`,
+      (id, name, specialty, experience_years, consultation_price, branch, description, biography, patient_groups, schedule, photo_key)
+     VALUES (?, ?, ?, NULL, NULL, '', '', '', '[]', '{}', '')`,
   )
     .bind(id, values.name, values.specialty)
     .run();

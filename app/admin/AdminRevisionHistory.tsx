@@ -35,6 +35,7 @@ const fieldLabels: Record<string, string> = {
   shortTitle: "назва",
   specialty: "спеціальність",
   experienceYears: "досвід",
+  consultationPrice: "вартість консультації",
   branch: "відділення",
   description: "опис",
   biography: "біографія",

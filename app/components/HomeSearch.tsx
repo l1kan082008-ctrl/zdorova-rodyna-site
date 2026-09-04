@@ -91,6 +91,16 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
   });
 
   useEffect(() => {
+    if (!isOpen || mobileViewport) {
+      document.body.classList.remove("home-search-open");
+      return;
+    }
+
+    document.body.classList.add("home-search-open");
+    return () => document.body.classList.remove("home-search-open");
+  }, [isOpen, mobileViewport]);
+
+  useEffect(() => {
     const media = window.matchMedia("(max-width: 720px)");
     const updateViewport = () => setMobileViewport(media.matches);
     updateViewport();
@@ -277,11 +287,17 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
       ref={shellRef}
       aria-label="Пошук по сайту"
     >
+      {isOpen ? (
+        <div
+          className="home-search-backdrop"
+          aria-hidden="true"
+          onPointerDown={closeSearch}
+        />
+      ) : null}
       <form className="home-search-bar" role="search" onSubmit={submit}>
         <span className="home-search-icon" aria-hidden="true" />
         <label className="home-search-label" htmlFor="home-search-input">
           <strong>Знайти потрібне</strong>
-          <span>у медичному центрі</span>
         </label>
         <input
           id="home-search-input"

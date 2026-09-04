@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   doctorPatientGroupOptions,
   getDoctorInitials,
+  formatDoctorConsultationPrice,
   getScheduleSummary,
   weekDays,
   type Doctor,
@@ -347,6 +348,9 @@ export function DoctorsDirectory({
                     <span>
                       <b>{doctor.name}</b>
                       <small>{formatDoctorSpecialty(doctor.specialty)}</small>
+                      <span className="doctor-card-consultation-price">
+                        Консультація · {formatDoctorConsultationPrice(doctor.consultationPrice)}
+                      </span>
                     </span>
                   </span>
 
@@ -372,6 +376,10 @@ export function DoctorsDirectory({
                     <div>
                       <span>Відділення</span>
                       <strong>{formatDoctorBranch(doctor.branch)}</strong>
+                    </div>
+                    <div>
+                      <span>Консультація</span>
+                      <strong>{formatDoctorConsultationPrice(doctor.consultationPrice)}</strong>
                     </div>
                   </div>
 

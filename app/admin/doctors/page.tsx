@@ -31,6 +31,7 @@ type DoctorProfileDraft = {
   name: string;
   specialty: string;
   experienceYears: string;
+  consultationPrice: string;
   branch: string;
   description: string;
   biography: string;
@@ -44,6 +45,7 @@ function doctorProfileDraft(doctor: Doctor): DoctorProfileDraft {
     name: doctor.name,
     specialty: doctor.specialty,
     experienceYears: doctor.experienceYears?.toString() ?? "",
+    consultationPrice: doctor.consultationPrice?.toString() ?? "",
     branch: doctor.branch,
     description: doctor.description,
     biography: doctor.biography,
@@ -75,6 +77,9 @@ function DoctorEditor({
   const [experienceYears, setExperienceYears] = useState(
     doctor.experienceYears?.toString() ?? "",
   );
+  const [consultationPrice, setConsultationPrice] = useState(
+    doctor.consultationPrice?.toString() ?? "",
+  );
   const [branch, setBranch] = useState(doctor.branch);
   const [description, setDescription] = useState(doctor.description);
   const [biography, setBiography] = useState(doctor.biography);
@@ -95,6 +100,7 @@ function DoctorEditor({
     name,
     specialty,
     experienceYears,
+    consultationPrice,
     branch,
     description,
     biography,
@@ -106,6 +112,7 @@ function DoctorEditor({
     description,
     doctor.id,
     experienceYears,
+    consultationPrice,
     name,
     patientGroups,
     schedule,
@@ -125,6 +132,9 @@ function DoctorEditor({
           ...draft,
           experienceYears: draft.experienceYears
             ? Number(draft.experienceYears)
+            : null,
+          consultationPrice: draft.consultationPrice
+            ? Number(draft.consultationPrice)
             : null,
         }),
       });
@@ -156,6 +166,7 @@ function DoctorEditor({
       setName(restored.name);
       setSpecialty(restored.specialty);
       setExperienceYears(restored.experienceYears);
+      setConsultationPrice(restored.consultationPrice ?? "");
       setBranch(restored.branch);
       setDescription(restored.description);
       setBiography(restored.biography);
@@ -364,6 +375,19 @@ function DoctorEditor({
               onChange={(event) => setExperienceYears(event.target.value)}
               placeholder="Не вказано"
             />
+          </label>
+          <label>
+            Вартість консультації, ₴
+            <input
+              type="number"
+              min="0"
+              max="100000"
+              step="1"
+              value={consultationPrice}
+              onChange={(event) => setConsultationPrice(event.target.value)}
+              placeholder="Не вказано"
+            />
+            <small>Залиште порожнім, якщо вартість потрібно уточнювати.</small>
           </label>
         </div>
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   getDoctorInitials,
+  formatDoctorConsultationPrice,
   getDoctorPatientGroups,
   weekDays,
   type Doctor,
@@ -70,6 +71,10 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
               <div>
                 <dt>Місце прийому</dt>
                 <dd>{doctor.branch || "Відділення уточнюйте"}</dd>
+              </div>
+              <div>
+                <dt>Вартість консультації</dt>
+                <dd>{formatDoctorConsultationPrice(doctor.consultationPrice)}</dd>
               </div>
             </dl>
 

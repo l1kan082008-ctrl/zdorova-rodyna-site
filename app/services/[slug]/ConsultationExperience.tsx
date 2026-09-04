@@ -53,37 +53,12 @@ const consultationDirections = [
 
 export function ConsultationExperience() {
   return (
-    <section className="consultation-experience" aria-labelledby="consultation-title">
-      <div className="consultation-price-intro">
-        <div>
-          <span className="section-kicker">Вартість консультації</span>
-          <h2 id="consultation-title">Зрозумілий формат прийому</h2>
-          <p>
-            Вартість залежить від спеціаліста та формату візиту. Нижче вказана базова ціна для більшості лікарів центру.
-          </p>
-        </div>
-        <div className="consultation-price-grid" aria-label="Базова вартість консультації">
-          <article className="consultation-price-card">
-            <span>Первинна консультація</span>
-            <strong>700 грн</strong>
-            <small>Знайомство, огляд і план подальших дій</small>
-          </article>
-          <article className="consultation-price-card consultation-price-card--secondary">
-            <span>Повторна консультація</span>
-            <strong>500 грн</strong>
-            <small>Контроль результатів і коригування рекомендацій</small>
-          </article>
-        </div>
-        <p className="consultation-price-note">
-          Точну вартість прийому обраного спеціаліста видно в його профілі або підкаже адміністратор.
-        </p>
-      </div>
-
+    <section className="consultation-experience" aria-labelledby="consultation-directions-title">
       <div className="consultation-direction-panel" id="consultation-directions">
         <div className="consultation-direction-heading">
           <div>
             <span className="section-kicker">Напрями консультацій</span>
-            <h2>З чим можна звернутися</h2>
+            <h2 id="consultation-directions-title">З чим можна звернутися</h2>
             <p>
               Оберіть напрям за вашим запитом. Конкретного спеціаліста та його біографію можна переглянути в єдиному розділі «Лікарі».
             </p>

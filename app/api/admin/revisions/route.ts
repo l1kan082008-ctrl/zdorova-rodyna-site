@@ -62,6 +62,9 @@ function doctorValues(snapshot: Record<string, unknown>) {
     experienceYears: typeof snapshot.experienceYears === "number"
       ? Math.max(0, Math.round(snapshot.experienceYears))
       : null,
+    consultationPrice: typeof snapshot.consultationPrice === "number"
+      ? Math.min(100_000, Math.max(0, Math.round(snapshot.consultationPrice)))
+      : null,
     branch: String(snapshot.branch ?? "").trim(),
     description: String(snapshot.description ?? "").trim(),
     biography: String(snapshot.biography ?? "").trim(),

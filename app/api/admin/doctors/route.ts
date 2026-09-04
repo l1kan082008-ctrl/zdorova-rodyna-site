@@ -46,6 +46,7 @@ export async function PUT(request: Request) {
       name?: string;
       specialty?: string;
       experienceYears?: number | null;
+      consultationPrice?: number | null;
       branch?: string;
       description?: string;
       biography?: string;
@@ -104,6 +105,11 @@ export async function PUT(request: Request) {
       experienceYears:
         typeof payload.experienceYears === "number"
           ? Math.max(0, Math.round(payload.experienceYears))
+          : null,
+      consultationPrice:
+        typeof payload.consultationPrice === "number" &&
+        Number.isFinite(payload.consultationPrice)
+          ? Math.min(100_000, Math.max(0, Math.round(payload.consultationPrice)))
           : null,
       branch: payload.branch?.trim() ?? "",
       description: payload.description?.trim() ?? "",

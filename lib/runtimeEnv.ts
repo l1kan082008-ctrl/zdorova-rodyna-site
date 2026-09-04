@@ -8,6 +8,9 @@ export type RuntimeEnvironment = {
   PUBLIC_FORM_RATE_LIMIT_SECRET?: string;
   TURNSTILE_SECRET_KEY?: string;
   OPENAI_API_KEY?: string;
+  RESEND_API_KEY?: string;
+  BOOKING_NOTIFICATION_TO?: string;
+  BOOKING_NOTIFICATION_FROM?: string;
   BLOB_READ_WRITE_TOKEN?: string;
 };
 

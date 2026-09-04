@@ -25,6 +25,7 @@ export type Doctor = {
   name: string;
   specialty: string;
   experienceYears: number | null;
+  consultationPrice: number | null;
   branch: string;
   description: string;
   biography: string;
@@ -84,6 +85,7 @@ const doctor = (
   name,
   specialty,
   experienceYears: null,
+  consultationPrice: null,
   branch: "",
   description,
   biography: "",
@@ -139,6 +141,11 @@ export function getDoctorInitials(name: string) {
     .map((part) => part[0])
     .join("")
     .toUpperCase();
+}
+
+export function formatDoctorConsultationPrice(price: number | null) {
+  if (price === null) return "Уточнюйте";
+  return `${new Intl.NumberFormat("uk-UA").format(price)} ₴`;
 }
 
 export function getScheduleSummary(schedule: DoctorSchedule) {

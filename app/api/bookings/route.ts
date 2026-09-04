@@ -5,6 +5,7 @@ import {
   verifyTurnstileIfConfigured,
 } from "@/lib/publicSubmissionSecurity";
 import { createBooking } from "./bookingStore";
+import { sendBookingNotification } from "@/lib/bookingNotification";
 
 const brokenEncodingPattern = /[\u0080-\u009f\u00c2\u00c3\u00d0\u00d1\ufffd]/u;
 const allowedSources = new Map([
@@ -115,6 +116,26 @@ export async function POST(request: Request) {
       source,
       consentVersion,
     });
+
+    try {
+      await sendBookingNotification({
+        reference,
+        patientName,
+        phone,
+        service,
+        doctor,
+        comment,
+        source,
+      });
+    } catch (notificationError) {
+      console.error(JSON.stringify({
+        event: "booking_email_failed",
+        reference,
+        error: notificationError instanceof Error
+          ? notificationError.message
+          : "unknown",
+      }));
+    }
 
     return Response.json(
       { reference },
