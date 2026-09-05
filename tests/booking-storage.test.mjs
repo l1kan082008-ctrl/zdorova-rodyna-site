@@ -11,14 +11,14 @@ function loadModule(path, env) {
   const { outputText } = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   });
-  const module = { exports: {} };
+  const loadedModule = { exports: {} };
   const require = (name) => {
     if (name === "server-only") return {};
     if (name.endsWith("runtimeEnv")) return { env };
     throw new Error(`Unexpected test dependency: ${name}`);
   };
-  new Function("require", "module", "exports", outputText)(require, module, module.exports);
-  return module.exports;
+  new Function("require", "module", "exports", outputText)(require, loadedModule, loadedModule.exports);
+  return loadedModule.exports;
 }
 
 function temporaryDatabase() {
