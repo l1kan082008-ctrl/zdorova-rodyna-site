@@ -1,4 +1,5 @@
 "use client";
+import { CloseIcon } from "../components/CloseIcon";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -221,7 +222,7 @@ export default function AdminRevisionHistory({
                 <p>Зберігаємо до 20 попередніх версій тексту й налаштувань.</p>
               </div>
               <button ref={closeRef} type="button" onClick={close} aria-label="Закрити історію">
-                <span aria-hidden="true">×</span>
+                <CloseIcon />
               </button>
             </header>
 

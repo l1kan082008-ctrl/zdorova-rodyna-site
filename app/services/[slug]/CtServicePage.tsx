@@ -19,20 +19,13 @@ type Props = {
   priceHref: string;
 };
 
-const benefits = [
-  ["Швидке сканування", "Сучасне обстеження з мінімальним часом позиціонування."],
-  ["Точна деталізація", "Пошарові зображення органів, судин, кісток і м’яких тканин."],
-  ["Лікарі-рентгенологи", "Зображення аналізує лікар та готує структурований висновок."],
-  ["3D-реконструкції", "Додаткова візуалізація допомагає оцінити складні анатомічні ділянки."],
-];
-
-const areaDetails: Record<CtPriceGroupId, { text: string; artwork: string }> = {
+const areaDetails: Record<CtPriceGroupId, { title?: string; text: string; artwork: string }> = {
   head: { text: "Головний мозок, приносові пазухи та лицевий скелет.", artwork: "/ct-area-cards/head.webp" },
   bones: { text: "Хребет, кістки таза, кінцівки та великі суглоби.", artwork: "/ct-area-cards/bones.webp" },
   neck: { text: "М’які тканини шиї, глотка, гортань і лімфовузли.", artwork: "/ct-area-cards/neck.webp" },
-  chest: { text: "Легені, середостіння та інші органи грудної клітки.", artwork: "/ct-area-cards/chest.webp" },
-  abdomen: { text: "Органи черевної порожнини, сечовидільна система та малий таз.", artwork: "/ct-area-cards/abdomen.webp" },
-  combined: { text: "Кілька анатомічних ділянок в одному узгодженому протоколі.", artwork: "/ct-area-cards/combined.webp" },
+  chest: { title: "Грудна клітина", text: "Легені, середостіння та інші органи грудної клітки (ОГК).", artwork: "/ct-area-cards/chest.webp" },
+  abdomen: { title: "Живіт і малий таз", text: "Черевна порожнина, заочеревинний простір і органи малого таза.", artwork: "/ct-area-cards/abdomen.webp" },
+  combined: { title: "Кілька ділянок", text: "Комбіновані дослідження в одному узгодженому протоколі.", artwork: "/ct-area-cards/combined.webp" },
   angiography: { text: "Судини голови, шиї, аорти та верхніх або нижніх кінцівок.", artwork: "/ct-area-cards/angiography.webp" },
   heart: { text: "Коронарні судини, кальцієвий індекс та КТ з ЕКГ-синхронізацією.", artwork: "/ct-area-cards/heart.webp" },
   additional: { text: "Денситометрія, контрастування та супровідні позиції КТ.", artwork: "/ct-area-cards/additional.webp" },
@@ -56,40 +49,11 @@ const faq = [
   ["Чим КТ відрізняється від МРТ?", "КТ створює пошарові зображення за допомогою рентгенівського випромінювання. Дослідження триває швидко й особливо добре показує легені, кістки, судини, травми, крововиливи та інші гострі стани. МРТ використовує магнітне поле, не має іонізуючого випромінювання та детальніше візуалізує головний і спинний мозок, зв’язки, суглоби й інші м’які тканини, але зазвичай потребує більше часу. КТ обмежують під час вагітності, а МРТ може мати обмеження за наявності певних металевих імплантів або електронних пристроїв. Контрастні препарати для КТ і МРТ також різні. Оптимальний метод обирає лікар залежно від симптомів і ділянки обстеження: ці методи не замінюють, а доповнюють один одного."],
 ] as const;
 
-const pageAnchors = [
-  { href: "#ct-areas", label: "Що можна обстежити" },
-  { href: "#ct-indications", label: "Показання" },
-  { href: "#ct-preparation", label: "Підготовка" },
-  { href: "#ct-doctors", label: "Наші фахівці" },
-  { href: "#ct-locations", label: "Адреси" },
-  { href: "#ct-prices", label: "Ціни та запис", accent: true },
-];
-
-function AnchorMark({ accent = false }: { accent?: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      {accent
-        ? <path d="M7 20V5m0 1h9.5l-1.6 3 1.6 3H7" />
-        : <path d="m6.5 12.5 3.3 3.3 7.7-8" />}
-    </svg>
-  );
-}
-
 function SectionTitle({ eyebrow, title, lead }: { eyebrow?: string; title: string; lead?: string }) {
   return <header className={styles.sectionTitle}>{eyebrow && <span>{eyebrow}</span>}<h2>{title}</h2>{lead && <p>{lead}</p>}</header>;
 }
 
-function IconMark({ index }: { index: number }) {
-  const paths = [
-    <path key="a" d="M5 12h3l2-5 4 10 2-5h3" />,
-    <path key="b" d="M5 7l7-3 7 3-7 3-7-3Zm0 5 7 3 7-3M5 17l7 3 7-3" />,
-    <path key="c" d="M9 19v-2a3 3 0 0 1 6 0v2M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z" />,
-    <path key="d" d="m5 8 7-4 7 4v8l-7 4-7-4V8Zm0 0 7 4 7-4M12 12v8" />,
-  ];
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7">{paths[index]}</g></svg>;
-}
-
-export function CtServicePage({ service, doctors, prices, bookingHref, priceHref }: Props) {
+export function CtServicePage({ service, doctors, prices, bookingHref }: Props) {
   const ctLocationIds = new Set([
     "stelmakha-18m",
     "olesia-13",
@@ -131,24 +95,9 @@ export function CtServicePage({ service, doctors, prices, bookingHref, priceHref
           <span className={styles.eyebrow}>Променева діагностика</span>
           <h1 id="ct-title">Комп’ютерна<br />томографія</h1>
           <p>{service.lead}</p>
-          <div className={styles.heroActions}><Link className={styles.primaryButton} href={bookingHref}>Записатися <span>→</span></Link><Link className={styles.secondaryButton} href={priceHref}>Переглянути вартість <span>→</span></Link></div>
+          <div className={styles.heroActions}><Link className={styles.primaryButton} href={bookingHref}>Записатися <span>→</span></Link><Link className={styles.secondaryButton} href="#ct-prices">Переглянути вартість <span>→</span></Link></div>
         </div>
       </section>
-
-      <section className={styles.benefits} aria-label="Переваги КТ">
-        {benefits.map(([title, text], index) => <article key={title}><IconMark index={index} /><div><h2>{title}</h2><p>{text}</p></div></article>)}
-      </section>
-
-      <nav className={styles.anchorNav} aria-label="Навігація розділами сторінки КТ">
-        <div className={styles.anchorTrack}>
-          {pageAnchors.map((item) => (
-            <a className={item.accent ? styles.anchorAccent : undefined} href={item.href} key={item.href}>
-              <span className={styles.anchorMark}><AnchorMark accent={item.accent} /></span>
-              <span className={styles.anchorLabel}>{item.label}</span>
-            </a>
-          ))}
-        </div>
-      </nav>
 
       <section className={styles.section} id="ct-areas">
         <SectionTitle title="Що можна обстежити на КТ" lead="КТ дає детальне пошарове зображення різних органів і систем." />
@@ -166,7 +115,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref, priceHref
               </div>
               <div className={styles.areaContent}>
                 <span className={styles.areaNumber}>{String(index + 1).padStart(2, "0")}</span>
-                <h3>{area.label}</h3>
+                <h3>{area.title ?? area.label}</h3>
                 <p>{area.text}</p>
               </div>
             </a>
@@ -174,12 +123,9 @@ export function CtServicePage({ service, doctors, prices, bookingHref, priceHref
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.infoColumns}`}>
-        <div id="ct-indications"><SectionTitle title={service.indicationsTitle} />
+      <section className={styles.section}>
+        <div id="ct-indications" className={styles.indications}><SectionTitle title={service.indicationsTitle} />
           <ul className={styles.checkList}>{service.indications.map((item) => <li key={item}>{item}</li>)}</ul>
-        </div>
-        <div id="ct-preparation"><SectionTitle title="Що важливо знати перед записом" />
-          <ul className={styles.infoList}>{important.map((item) => <li key={item}>{item}</li>)}</ul>
         </div>
       </section>
 
@@ -189,14 +135,22 @@ export function CtServicePage({ service, doctors, prices, bookingHref, priceHref
           <div className={styles.equipmentCopy}><span>Наше обладнання</span><h2>Philips Brilliance 64</h2><p>64-зрізовий томограф для швидкого пошарового сканування, точних 3D-реконструкцій і контрольованого променевого навантаження.</p></div>
         </article>
         <div className={styles.doctorsPanel}>
-          <SectionTitle title="Наші лікарі-рентгенологи" lead="Реальні фахівці центру, які працюють із діагностичними зображеннями." />
+          <SectionTitle title="Наші лікарі-рентгенологи" />
           <div className={styles.doctorRail}>{shownDoctors.map((doctor) => <article className={styles.doctorCard} data-doctor-id={doctor.id} key={doctor.id}><div className={styles.doctorPhoto}><Image src={doctor.photoUrl} alt={doctor.name} fill unoptimized sizes="(max-width: 760px) 70vw, (max-width: 1100px) 31vw, 19vw" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></article>)}</div>
         </div>
       </section>
 
-      <section className={styles.section}>
-        <SectionTitle title="Як усе відбувається" />
-        <div className={styles.processGrid}>{service.process.map((step, index) => <article key={step.title}><span>0{index + 1}</span><IconMark index={Math.min(index, 3)} /><div><h3>{step.title}</h3><p>{step.text}</p></div></article>)}</div>
+      <section className={styles.section} id="ct-preparation">
+        <SectionTitle title="Підготовка та обстеження" />
+        <div className={styles.preparationGrid}>
+          <div>
+            <h3 className={styles.preparationLabel}>Перед візитом</h3>
+            <ul className={styles.infoList}>{important.map((item) => <li key={item}>{item}</li>)}</ul>
+          </div>
+          <ol className={styles.preparationSteps} aria-label="Етапи обстеження">
+            {service.process.map((step) => <li key={step.title}><h3>{step.title}</h3><p>{step.text}</p></li>)}
+          </ol>
+        </div>
       </section>
 
       <section className={styles.section} id="ct-locations">

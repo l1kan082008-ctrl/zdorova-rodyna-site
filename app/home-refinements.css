@@ -1,0 +1,137 @@
+/* Homepage only. The approved doctor showcase is intentionally untouched. */
+@media (min-width: 721px) and (max-width: 1080px) {
+  .home-page .hero-art { right: 0; width: auto; }
+}
+.home-page .services-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.home-page :is(.about-section, .quick-strip) { box-shadow: none; }
+.home-page .advantages { border: 0; box-shadow: 0 18px 50px rgb(24 73 76 / 8%); }
+.home-page .services-section { padding-top: 40px; }
+.home-page .service-card { box-shadow: inset 0 1px 0 #fff, 0 4px 12px rgb(29 72 73 / 4%); }
+.home-page .service-card:hover,
+.home-page .service-card:focus-visible { box-shadow: inset 0 1px 0 #fff, 0 8px 18px rgb(29 72 73 / 8%); }
+.home-page .promo-slider { box-shadow: 0 8px 24px rgb(29 72 73 / 8%); }
+.home-page :is(.service-card--ct, .service-card--mri)::before { opacity: .9; filter: saturate(.94) contrast(1.08); }
+.home-page :is(.advantage p, .service-description, .about-copy > p) { color: #587276; }
+.home-page .quick-strip article { display: block; padding: 0; }
+.home-page .home-quick-action {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 12px;
+  height: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  color: #fff;
+  text-decoration: none;
+  transition: background-color 160ms ease;
+}
+.home-page .home-quick-action:hover { background-color: rgb(255 255 255 / 10%); }
+.home-page .home-quick-action:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+.home-page .quick-strip .quick-icon { width: 36px; height: 36px; }
+/* Shared content rows keep every price aligned, including long service names. */
+.home-page .pricing-heading { margin-bottom: 16px; }
+.home-page .pricing-carousel { display: flex; flex-direction: column; }
+.home-page .pricing-carousel-toolbar {
+  order: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+  margin: 0 2px;
+}
+.home-page .pricing-carousel-controls { display: flex; }
+.home-page .pricing-carousel-toolbar button { width: 44px; height: 44px; }
+.home-page .pricing-carousel-count { color: #587276; font-size: 13px; font-variant-numeric: tabular-nums; }
+.home-page .pricing-grid.pricing-carousel-track {
+  grid-template-rows: auto auto 1fr auto;
+  row-gap: 0;
+}
+.home-page .pricing-carousel-track > .price-card {
+  display: grid;
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+}
+.home-page .doctor-hint-mobile { display: none; }
+@media (max-width: 720px) {
+  .home-page .pricing-heading { gap: 8px; margin-bottom: 16px; }
+  .home-page .pricing-heading > p { font-size: 13px; line-height: 1.5; }
+  .home-page .pricing-grid.pricing-carousel-track { padding-bottom: 16px; }
+  .home-page .doctor-hint-desktop { display: none; }
+  .home-page .doctor-hint-mobile { display: inline; }
+  .home-page .hero { min-height: 0; padding-bottom: 20px; }
+  .home-page .hero-copy { padding: 24px 6px 8px; }
+  .home-page .hero h1 { font-size: clamp(34px, 9vw, 40px); line-height: 1.08; letter-spacing: -0.045em; }
+  .home-page .hero-lead { margin: 16px 0 20px; }
+  .home-page .hero-actions { gap: 12px; }
+  .home-page .hero-art { position: relative; inset: auto; width: 100%; height: auto; aspect-ratio: 5 / 4; min-height: 0; margin-top: 24px; background-size: auto 100%; background-position: right center; }
+  .home-page .hero-art::before { content: none; }
+  .home-page .promo-slide { grid-template-rows: auto minmax(280px, 1fr); min-height: 0; background: #075f67; }
+  .home-page .promo-slide::before { content: none; }
+  .home-page .promo-copy { align-self: stretch; padding: 24px 24px 12px; }
+  .home-page .promo-copy h2 { font-size: clamp(28px, 8vw, 34px); line-height: 1.12; }
+  .home-page .promo-eyebrow { margin-bottom: 12px; }
+  .home-page .promo-copy > p { margin: 14px 0 18px; line-height: 1.5; color: #e0f0ef; }
+  .home-page .promo-actions { gap: 12px; }
+  .home-page .promo-note { color: #e0f0ef; }
+  .home-page .promo-slider-section { margin-top: 24px; margin-bottom: 24px; }
+  .home-page .about-section { margin-top: 40px; margin-bottom: 40px; }
+  .home-page .promo-visual { display: none; }
+  .home-page .promo-slide::after {
+    position: relative;
+    grid-row: 2;
+    inset: auto;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    background:
+      linear-gradient(180deg, transparent 55%, rgb(0 30 35 / 36%) 100%),
+      var(--promo-photo) var(--promo-mobile-position, center) / cover no-repeat;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgb(0 0 0 / 8%) 8%, rgb(0 0 0 / 30%) 18%, rgb(0 0 0 / 65%) 30%, #000 46%);
+    mask-image: linear-gradient(180deg, transparent 0%, rgb(0 0 0 / 8%) 8%, rgb(0 0 0 / 30%) 18%, rgb(0 0 0 / 65%) 30%, #000 46%);
+  }
+  .home-page .promo-slide--laboratory { --promo-mobile-position: right center; }
+  .home-page .promo-slide--home { --promo-mobile-position: right center; }
+  .home-page .promo-slide--heart { --promo-mobile-position: right center; }
+  .home-page .promo-slide--mri { --promo-mobile-position: right center; }
+  .home-page .promo-slide--doctors { --promo-mobile-position: right center; }
+  .home-page .promo-slide--dermoscopy { --promo-mobile-position: right center; }
+  .home-page .promo-slide--ct-photo { --promo-mobile-position: right center; }
+  .home-page .promo-pagination { bottom: 18px; left: 24px; }
+  .home-page .advantages { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px; gap: 0; }
+  .home-page .advantage { grid-template-columns: 28px minmax(0, 1fr); gap: 8px; min-height: 0; padding: 14px 8px; border: 0; }
+  .home-page .advantage-icon { width: 28px; height: 28px; }
+  .home-page .advantage h2 { margin: 0 0 6px; font-size: 14px; }
+  .home-page .advantage p { font-size: 12px; line-height: 1.5; }
+  .home-page .services-section { padding-top: 32px; padding-bottom: 0; }
+  .home-page .services-grid { grid-template-columns: 1fr; gap: 12px; }
+  .home-page .service-card { min-height: 124px; }
+  .home-page .service-card::before {
+    left: 40%;
+    background-size: cover;
+    background-position: right center;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 15%) 15%, rgb(0 0 0 / 65%) 40%, #000 70%);
+    mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 15%) 15%, rgb(0 0 0 / 65%) 40%, #000 70%);
+  }
+  .home-page .quick-strip { padding: 8px; }
+  .home-page .quick-strip article { padding: 0; }
+  .home-page :is(.hero-art, .promo-slider, .about-section) { border-radius: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-page .home-quick-action { transition: none; }
+}
+.header-home-action { display: grid; justify-self: end; width: 220px; height: 48px; }
+.header-home-action > a { grid-area: 1 / 1; width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 10px; white-space: nowrap; transition: opacity 180ms ease, visibility 180ms ease; }
+.home-page .header-home-action > .header-home-phone { justify-content: flex-end; gap: 10px; color: #073f45; font-size: 15px; font-weight: 400; font-style: normal; font-variant-numeric: lining-nums tabular-nums; letter-spacing: 0; border-radius: 8px; }
+.home-page .header-home-phone span { color: inherit; font-weight: inherit; }
+@media (min-width: 1081px) {
+  .home-page .site-header { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: clamp(20px, 2.4vw, 36px); }
+  .home-page .site-header > .main-nav { justify-self: center; gap: clamp(18px, 1.8vw, 28px); }
+  .home-page .header-home-action { width: 200px; }
+  .home-page .header-home-action > .header-book { padding-inline: 16px; }
+}
+.header-home-phone svg { flex: 0 0 20px; color: var(--teal); }
+.header-home-phone:hover { color: var(--teal); }
+.header-home-phone:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+.header-home-action > .is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+@media (max-width: 1080px) { .header-home-action { display: none; } }
+@media (prefers-reduced-motion: reduce) { .header-home-action > a { transition: none; } }

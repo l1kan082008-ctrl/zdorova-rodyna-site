@@ -1,4 +1,5 @@
 "use client";
+import { CloseIcon } from "../../components/CloseIcon";
 
 import { useMemo, useState } from "react";
 
@@ -255,7 +256,7 @@ export function FaqDirectory() {
           />
           {query ? (
             <button type="button" onClick={() => setQuery("")} aria-label="Очистити пошук">
-              ×
+              <CloseIcon />
             </button>
           ) : null}
         </label>

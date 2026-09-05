@@ -1293,7 +1293,7 @@ footer {
   background: rgba(2, 33, 37, 0.42);
   -webkit-backdrop-filter: blur(14px) saturate(0.85);
   backdrop-filter: blur(14px) saturate(0.85);
-  animation: support-backdrop-in 180ms ease-out both;
+  animation: support-backdrop-in 220ms ease-out both;
 }
 
 .support-dialog {
@@ -1302,13 +1302,12 @@ footer {
   overflow: hidden;
   padding: 54px 58px 48px;
   border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 44px;
+  border-radius: 28px;
   background: #fff;
-  box-shadow: 0 34px 100px rgba(2, 40, 44, 0.27);
+  box-shadow: 0 16px 48px rgba(2, 40, 44, 0.14);
   color: var(--ink);
   transform-origin: center;
-  will-change: transform, opacity, border-radius;
-  animation: support-dialog-from-trigger 440ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: support-dialog-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .support-dialog-close {
@@ -1631,27 +1630,34 @@ footer {
   }
 }
 
-@keyframes support-dialog-from-trigger {
+@keyframes support-dialog-in {
   from {
     opacity: 0;
-    border-radius: 999px;
-    transform: translate3d(
-        calc(var(--support-origin-x, calc(100vw - 64px)) - 50vw),
-        calc(var(--support-origin-y, 64px) - 50vh),
-        0
-      )
-      scale(0.055);
-  }
-
-  36% {
-    opacity: 1;
+    transform: translateY(12px);
   }
 
   to {
     opacity: 1;
-    border-radius: 28px;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translateY(0);
   }
+}
+
+.support-dialog-backdrop.is-closing {
+  animation: support-backdrop-out 180ms ease-in both;
+}
+
+.support-dialog-backdrop.is-closing .support-dialog {
+  animation: support-dialog-out 180ms ease-in both;
+}
+
+@keyframes support-backdrop-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes support-dialog-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(8px); }
 }
 
 @media (max-width: 520px) {
@@ -1747,7 +1753,9 @@ footer {
 
 @media (prefers-reduced-motion: reduce) {
   .support-dialog-backdrop,
-  .support-dialog {
+  .support-dialog,
+  .support-dialog-backdrop.is-closing,
+  .support-dialog-backdrop.is-closing .support-dialog {
     animation: none;
   }
 
@@ -3452,6 +3460,7 @@ footer {
 }
 
 .reception-photo {
+  position: relative;
   min-height: 405px;
   border-radius: 25px;
   background-image: url("/center-reception.webp");
@@ -3459,6 +3468,8 @@ footer {
   background-position: center;
   background-size: cover;
 }
+
+.about-route-photo { position: relative; }
 
 .quick-strip {
   display: grid;
@@ -7085,13 +7096,13 @@ body.calculator-is-open .site-header {
   gap: 18px;
 }
 
-.calculator-total > div span {
+.calculator-total > div > span {
   color: #61787a;
   font-size: 12px;
   font-weight: 700;
 }
 
-.calculator-total > div strong {
+.calculator-total > div > strong {
   color: var(--ink);
   font-size: 30px;
   line-height: 1;

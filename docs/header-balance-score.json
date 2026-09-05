@@ -1,0 +1,13 @@
+{
+  "scope": "Home header balance only; visual checks at 390, 1081, 1355 and 1440 CSS pixels. Not a full-site accessibility or performance audit.",
+  "visualCoherence": 9,
+  "componentConsistency": 9,
+  "responsive": 9,
+  "typography": 9,
+  "layoutSpacing": 9,
+  "accessibility": 9,
+  "performance": 10,
+  "motion": 9,
+  "contentFlow": 9,
+  "stateCoverage": 9
+}

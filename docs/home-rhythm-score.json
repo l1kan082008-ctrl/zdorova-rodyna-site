@@ -1,0 +1,13 @@
+{
+  "scope": "Incremental homepage spacing and contrast refinement, not a full-site score. Mobile 320/390, tablet 1024, desktop 1440 inspected. Tablet hero overflow fixed. No new assets, dependencies or motion. Existing doctor showcase preserved.",
+  "visualCoherence": 9,
+  "componentConsistency": 9,
+  "responsive": 9,
+  "typography": 9,
+  "layoutSpacing": 9,
+  "accessibility": 8,
+  "performance": 10,
+  "motion": 9,
+  "contentFlow": 9,
+  "stateCoverage": 9
+}

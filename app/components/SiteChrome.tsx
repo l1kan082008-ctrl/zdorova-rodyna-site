@@ -1,7 +1,8 @@
 "use client";
+import { CloseIcon } from "./CloseIcon";
 
 import { useEffect, useRef, useState } from "react";
-import type { CSSProperties, FormEvent } from "react";
+import type { FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -63,7 +64,25 @@ const navigation: NavigationItem[] = [
       { href: "/services/consultation", label: "Консультації лікарів" },
     ],
   },
-  ...footerNavigation.slice(1, 3),
+  {
+    href: "/doctors",
+    label: "Лікарі",
+    key: "doctors",
+    children: [
+      { href: "/doctors", label: "Усі лікарі" },
+      ...[
+        "Сімейна медицина",
+        "Педіатрія",
+        "Кардіологія",
+        "Неврологія",
+        "Гастроентерологія",
+        "Дерматологія",
+        "Гінекологія",
+        "Хірургія та урологія",
+      ].map((label) => ({ href: `/doctors?specialty=${encodeURIComponent(label)}`, label })),
+    ],
+  },
+  footerNavigation[2],
   {
     href: "/patients",
     label: "Пацієнтам",
@@ -94,11 +113,12 @@ function formatSupportPhone(value: string) {
     .join(" ");
 }
 
-export function SiteHeader({ active }: { active?: string }) {
+export function SiteHeader({ active, home = false }: { active?: string; home?: boolean }) {
+  const [heroPassed, setHeroPassed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openNavigationMenu, setOpenNavigationMenu] = useState<string | null>(null);
   const [supportOpen, setSupportOpen] = useState(false);
-  const [supportOrigin, setSupportOrigin] = useState({ x: 0, y: 0 });
+  const [supportClosing, setSupportClosing] = useState(false);
   const [supportPhone, setSupportPhone] = useState("");
   const [supportError, setSupportError] = useState("");
   const [supportSubmitting, setSupportSubmitting] = useState(false);
@@ -111,6 +131,34 @@ export function SiteHeader({ active }: { active?: string }) {
   const supportDialogRef = useRef<HTMLElement>(null);
   const supportPhoneRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (!home) return;
+    const hero = document.getElementById("home-hero");
+    if (!hero) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      setHeroPassed(entry.boundingClientRect.bottom <= (entry.rootBounds?.top ?? 0));
+    }, { rootMargin: `-${headerRef.current?.offsetHeight ?? 96}px 0px 0px 0px` });
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, [home]);
+
+  const closeSupport = () => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setSupportOpen(false);
+    } else {
+      setSupportClosing(true);
+    }
+  };
+
+  useEffect(() => {
+    if (!supportClosing) return;
+    const timer = window.setTimeout(() => {
+      setSupportOpen(false);
+      setSupportClosing(false);
+    }, 180);
+    return () => window.clearTimeout(timer);
+  }, [supportClosing]);
+
   useModalDialog({
     open: menuOpen,
     dialogRef: headerRef,
@@ -122,7 +170,7 @@ export function SiteHeader({ active }: { active?: string }) {
   useModalDialog({
     open: supportOpen,
     dialogRef: supportDialogRef,
-    onClose: () => setSupportOpen(false),
+    onClose: closeSupport,
     initialFocusRef: supportPhoneRef,
     restoreFocusRef: supportButtonRef,
   });
@@ -350,9 +398,23 @@ export function SiteHeader({ active }: { active?: string }) {
             <strong>{selectedServiceCount}</strong>
           </a>
         ) : null}
-        <a className="book-button header-book" href="/contacts#booking">
-          Записатися на прийом
-        </a>
+        {home ? (
+          <div className="header-home-action">
+            <a className={`header-home-phone${heroPassed ? " is-hidden" : ""}`} href="tel:+380676714444" aria-hidden={heroPassed} tabIndex={heroPassed ? -1 : 0}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.69 2.79a2 2 0 0 1-.45 2.11L8.09 9.89a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.89.33 1.83.56 2.79.69A2 2 0 0 1 22 16.92Z" />
+              </svg>
+              <span>+38 (067) 671-44-44</span>
+            </a>
+            <a className={`book-button header-book${heroPassed ? "" : " is-hidden"}`} href="/contacts#booking" aria-hidden={!heroPassed} tabIndex={heroPassed ? 0 : -1}>
+              Записатися на прийом
+            </a>
+          </div>
+        ) : (
+          <a className="book-button header-book" href="/contacts#booking">
+            Записатися на прийом
+          </a>
+        )}
       </div>
       <div className="header-mobile-controls">
         <button
@@ -363,15 +425,7 @@ export function SiteHeader({ active }: { active?: string }) {
           aria-haspopup="dialog"
           aria-expanded={supportOpen}
           onClick={() => {
-            const triggerBounds = supportButtonRef.current?.getBoundingClientRect();
-
-            if (triggerBounds) {
-              setSupportOrigin({
-                x: triggerBounds.left + triggerBounds.width / 2,
-                y: triggerBounds.top + triggerBounds.height / 2,
-              });
-            }
-
+            setSupportClosing(false);
             setMenuOpen(false);
             setOpenNavigationMenu(null);
             setSupportError("");
@@ -434,15 +488,9 @@ export function SiteHeader({ active }: { active?: string }) {
 
       {supportOpen ? (
         <div
-          className="support-dialog-backdrop"
-          style={
-            {
-              "--support-origin-x": `${supportOrigin.x}px`,
-              "--support-origin-y": `${supportOrigin.y}px`,
-            } as CSSProperties
-          }
+          className={`support-dialog-backdrop${supportClosing ? " is-closing" : ""}`}
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setSupportOpen(false);
+            if (event.target === event.currentTarget) closeSupport();
           }}
         >
           <section
@@ -457,10 +505,9 @@ export function SiteHeader({ active }: { active?: string }) {
               className="support-dialog-close"
               type="button"
               aria-label="Закрити вікно"
-              onClick={() => setSupportOpen(false)}
+              onClick={closeSupport}
             >
-              <span />
-              <span />
+              <CloseIcon />
             </button>
 
             {supportSubmitted ? (
@@ -468,7 +515,7 @@ export function SiteHeader({ active }: { active?: string }) {
                 <span aria-hidden="true">✓</span>
                 <strong>Заявку прийнято</strong>
                 <p>Адміністратор зателефонує вам найближчим часом.</p>
-                <button type="button" onClick={() => setSupportOpen(false)}>
+                <button type="button" onClick={closeSupport}>
                   Готово
                 </button>
               </div>

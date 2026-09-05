@@ -1,4 +1,5 @@
 "use client";
+import { CloseIcon } from "../components/CloseIcon";
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -85,6 +86,7 @@ export function LocationsExplorer({
   const [mediaMode, setMediaMode] = useState<MediaMode>("photos");
   const [photoIndex, setPhotoIndex] = useState(0);
   const [currentDay, setCurrentDay] = useState<number | null>(null);
+  const [mobileMapOpen, setMobileMapOpen] = useState(false);
   const cityNavRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLElement>(null);
 
@@ -193,9 +195,7 @@ export function LocationsExplorer({
       <section className="branch-directory" aria-labelledby="locations-title">
         <div className="branch-directory-heading">
           <div>
-            <span className="section-kicker">Відділення</span>
             <h2 id="locations-title">Оберіть місто та адресу</h2>
-            <p>Одразу бачите доступні послуги, графік і маршрут.</p>
           </div>
         </div>
 
@@ -266,7 +266,8 @@ export function LocationsExplorer({
             aria-live="polite"
             ref={mapRef}
           >
-            <div className="branch-navigator-map-frame">
+            <button className="branch-map-toggle outline-button" type="button" aria-expanded={mobileMapOpen} aria-controls="branch-map-frame" onClick={() => setMobileMapOpen((value) => !value)}>{mobileMapOpen ? "Згорнути мапу" : "Показати на мапі"}</button>
+            <div id="branch-map-frame" className={`branch-navigator-map-frame${mobileMapOpen ? " is-mobile-open" : ""}`}>
               <iframe
                 key={selectedLocation.id}
                 src={getMapEmbedUrl(selectedLocation)}
@@ -296,7 +297,9 @@ export function LocationsExplorer({
                 ) : null}
               </div>
               <div className="branch-navigator-actions">
+                <a className="book-button" href={`/contacts?location=${encodeURIComponent(selectedLocation.id)}#booking`}>Записатися сюди <span aria-hidden="true">→</span></a>
                 <a
+                  className="outline-button"
                   href={getDirectionsUrl(selectedLocation)}
                   target="_blank"
                   rel="noreferrer"
@@ -343,7 +346,7 @@ export function LocationsExplorer({
                 onClick={() => setOpenLocationId(null)}
                 aria-label="Закрити перегляд відділення"
               >
-                ×
+                <CloseIcon />
               </button>
             </div>
 

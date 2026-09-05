@@ -1,0 +1,13 @@
+{
+  "scope": "Mobile promotional slide composition only. Seven photo crops inspected at 390px; text geometry checked at 320px. Desktop CSS untouched. Not a full-page accessibility/performance audit; tablet document overflow needs separate investigation.",
+  "visualCoherence": 9,
+  "componentConsistency": 9,
+  "responsive": 9,
+  "typography": 9,
+  "layoutSpacing": 9,
+  "accessibility": 8,
+  "performance": 10,
+  "motion": 9,
+  "contentFlow": 9,
+  "stateCoverage": 9
+}

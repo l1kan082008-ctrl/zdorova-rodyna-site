@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
 import "./release-2026-09-04.css";
+import "./booking.css";
+import "./overlays.css";
+import "./search-improvements.css";
+import "./close-controls.css";
+import { Suspense } from "react";
+import { BookingLauncher } from "./components/BookingLauncher";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -59,7 +65,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="uk">
-      <body>{children}</body>
+      <body>{children}<Suspense fallback={null}><BookingLauncher /></Suspense></body>
     </html>
   );
 }

@@ -1,0 +1,90 @@
+/* One background treatment for interactive overlays; decorative image filters are separate. */
+:root {
+  --dialog-enter-duration: 300ms;
+  --overlay-blur: 24px;
+  --overlay-tint: rgba(235, 242, 248, 0.32);
+}
+
+/* Shared form/dialog reveal, matching the restrained zoom-and-rise reference. */
+.support-dialog,
+.quick-booking[open],
+.calculator-dialog,
+.branch-modal,
+.admin-history-dialog {
+  animation: dialog-zoom-in-up var(--dialog-enter-duration) ease both;
+}
+
+.support-dialog-backdrop:not(.is-closing),
+.calculator-dialog-backdrop,
+.branch-modal-backdrop,
+.admin-history-backdrop,
+.quick-booking[open]::backdrop {
+  animation: dialog-backdrop-in 300ms ease both;
+}
+
+@keyframes dialog-zoom-in-up {
+  from { opacity: 0; transform: scale(.975) translate3d(0, 16px, 0); }
+  to { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+}
+
+@keyframes dialog-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .support-dialog,
+  .quick-booking[open],
+  .calculator-dialog,
+  .branch-modal,
+  .admin-history-dialog,
+  .support-dialog-backdrop:not(.is-closing),
+  .calculator-dialog-backdrop,
+  .branch-modal-backdrop,
+  .admin-history-backdrop,
+  .quick-booking[open]::backdrop { animation: none; }
+}
+
+.home-search-backdrop,
+.site-menu-backdrop,
+.support-dialog-backdrop,
+.calculator-dialog-backdrop,
+.branch-modal-backdrop,
+.quick-booking::backdrop {
+  background: var(--overlay-tint);
+  -webkit-backdrop-filter: blur(var(--overlay-blur));
+  backdrop-filter: blur(var(--overlay-blur));
+}
+
+/* Do not compound a content blur with the overlay's backdrop blur. */
+body.home-search-open #top > :not(.home-search-shell) {
+  filter: none;
+}
+
+@media (min-width: 1081px) {
+  .site-menu-backdrop:has(+ .site-header .main-nav-group:is(.is-expanded, :hover, :focus-within)) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1099;
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .site-header:has(.main-nav-group:is(.is-expanded, :hover, :focus-within)) { z-index: 1100; }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .home-search-backdrop,
+  .site-menu-backdrop,
+  .support-dialog-backdrop,
+  .calculator-dialog-backdrop,
+  .branch-modal-backdrop,
+  .quick-booking::backdrop { background: rgba(235, 242, 248, 0.92); }
+}
+
+@media (max-width: 1080px) {
+  .main-nav-group.is-expanded #main-nav-submenu-doctors {
+    max-height: 480px;
+  }
+}

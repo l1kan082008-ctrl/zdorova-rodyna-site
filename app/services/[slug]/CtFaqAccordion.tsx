@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import styles from "./CtServicePage.module.css";
 
 type Props = {
   items: readonly (readonly [question: string, answer: string])[];
@@ -10,7 +11,7 @@ export function CtFaqAccordion({ items }: Props) {
   const [openItem, setOpenItem] = useState<number | null>(null);
 
   return (
-    <div className="faq-list">
+    <div className={`faq-list ${styles.compactFaq}`}>
       {items.map(([question, answer], index) => {
         const isOpen = openItem === index;
         const itemId = `ct-faq-answer-${index + 1}`;
@@ -24,9 +25,7 @@ export function CtFaqAccordion({ items }: Props) {
               aria-controls={itemId}
               onClick={() => setOpenItem(isOpen ? null : index)}
             >
-              <span className="faq-number">{String(index + 1).padStart(2, "0")}</span>
               <span className="faq-question-copy">
-                <small>КТ та МРТ</small>
                 <strong>{question}</strong>
               </span>
               <span className="faq-toggle" aria-hidden="true" />

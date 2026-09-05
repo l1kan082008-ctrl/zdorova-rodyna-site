@@ -1,4 +1,5 @@
 import Link from "next/link";
+import "./home-refinements.css";
 import type { CSSProperties } from "react";
 import { listPopularBookingServices } from "./api/bookings/bookingStore";
 import { listDoctors } from "./api/doctors/doctorStore";
@@ -28,24 +29,24 @@ export const dynamic = "force-dynamic";
 
 const advantages = [
   {
-    icon: "shield",
-    title: "Точність",
-    text: "Автоматизоване високоточне обладнання",
+    icon: "mri",
+    title: "МРТ 1,5 Тесла",
+    text: "Siemens MAGNETOM Flow Plus",
   },
   {
     icon: "team",
-    title: "Фахівці",
-    text: "Лікарі для дорослих і дітей",
+    title: "Дорослим і дітям",
+    text: "Сімейні лікарі, терапевти та педіатри",
   },
   {
     icon: "heart",
-    title: "Турбота",
-    text: "Зрозумілий супровід на кожному етапі",
+    title: "Діагностика серця",
+    text: "ЕКГ, ЕхоКГ та Холтер-моніторинг",
   },
   {
     icon: "lab",
-    title: "Лабораторія",
-    text: "Дослідження за європейськими стандартами",
+    title: "Власна лабораторія",
+    text: "Лабораторні дослідження у нашому центрі",
   },
 ];
 
@@ -54,21 +55,25 @@ const quickItems = [
     icon: "calendar",
     title: "Зручний запис",
     text: "Телефоном +38 (067) 671-44-44",
+    href: "tel:+380676714444",
   },
   {
-    icon: "message",
+    icon: "home",
     title: "Аналізи вдома",
     text: "Виїзд медсестри для забору матеріалу",
+    href: "/contacts?service=Аналізи%20вдома#booking",
   },
   {
     icon: "document",
     title: "Результати дистанційно",
     text: "Електронною поштою, Viber або Telegram",
+    href: "/patients#results",
   },
   {
     icon: "headset",
     title: "Підтримка",
     text: "Підкажемо підготовку та оберемо час",
+    href: "/contacts#booking",
   },
 ];
 
@@ -100,7 +105,7 @@ const fallbackPriceDirectionDefinitions: Array<{
   },
   {
     reference: priceReferences.thyroidUltrasound,
-    note: "Актуальність ціни підтвердить адміністратор.",
+    note: "Оцінка розмірів і структури щитоподібної залози.",
   },
   {
     reference: priceReferences.ctBrain,
@@ -209,6 +214,13 @@ async function getPopularPriceDirections() {
 function LineIcon({ type }: { type: string }) {
   const content = (() => {
     switch (type) {
+      case "mri":
+        return (
+          <>
+            <path d="M17 47a25 25 0 1 1 30 0M24 36a13 13 0 1 1 16 0" />
+            <path d="M26 34h12l9 17H17l9-17ZM22 51v7h20v-7M28 12h8" />
+          </>
+        );
       case "shield":
         return (
           <>
@@ -246,11 +258,11 @@ function LineIcon({ type }: { type: string }) {
             <path d="M8 25h48M20 7v10M44 7v10M19 35h3M31 35h3M43 35h3M19 45h3M31 45h3M43 45h3" />
           </>
         );
-      case "message":
+      case "home":
         return (
           <>
-            <path d="M55 29c0 12-10 21-23 21-4 0-8-1-11-3L8 55l4-14c-2-4-3-8-3-12C9 17 19 8 32 8s23 9 23 21Z" />
-            <path d="M21 29h22" />
+            <path d="m7 29 25-21 25 21M13 24v32h38V24" />
+            <path d="M25 56V37h14v19" />
           </>
         );
       case "document":
@@ -309,7 +321,7 @@ export default async function Home() {
     listManagedServices().catch(() => getDefaultManagedServices()),
   ]);
   const homeServiceDetails = managedServices
-    .filter((service) => service.active && service.showOnHome)
+    .filter((service) => service.active && (service.showOnHome || service.slug === "ultrasound"))
     .sort((first, second) => first.sortOrder - second.sortOrder);
   const showcaseDoctors = doctors.sort((first, second) => {
     const firstIndex = featuredDoctorOrder.indexOf(first.id);
@@ -372,13 +384,13 @@ export default async function Home() {
   ];
 
   return (
-    <main id="top">
-      <SiteHeader />
+    <main id="top" className="home-page">
+      <SiteHeader home />
       <HomeSearch items={searchItems} />
 
-      <section className="hero" aria-labelledby="hero-title">
+      <section id="home-hero" className="hero" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="eyebrow">Медичний центр для всієї родини</p>
+          <p className="eyebrow">Медичний центр у Рівному</p>
           <h1 id="hero-title">
             <span className="hero-title-line">
               Здорова родина<span className="hero-title-dash"> —</span>
@@ -386,8 +398,7 @@ export default async function Home() {
             <span className="hero-title-line">здорове майбутнє</span>
           </h1>
           <p className="hero-lead">
-            Сучасна діагностика, власна лабораторія та досвідчені лікарі,
-            яким довіряють найцінніше.
+            Аналізи, КТ, МРТ, УЗД та консультації лікарів у Рівному — для дорослих і дітей.
           </p>
           <div className="hero-actions">
             <Link className="book-button" href="/contacts#booking">
@@ -414,8 +425,6 @@ export default async function Home() {
           </article>
         ))}
       </section>
-
-      <PromoSlider />
 
       <section className="services-section" id="services">
         <div className="section-heading">
@@ -453,6 +462,8 @@ export default async function Home() {
         </div>
       </section>
 
+      <PromoSlider />
+
       <section className="doctors-section" id="doctors">
         <div className="section-heading doctors-heading">
           <div>
@@ -460,11 +471,41 @@ export default async function Home() {
             <h2>Наші лікарі</h2>
           </div>
           <p>
+            <span className="doctor-hint-desktop">
             Наведіть на фотографію, щоб виділити лікаря. Натисніть, щоб розкрити
             картку, або скористайтеся стрілками для перегляду всієї команди.
+            </span>
+            <span className="doctor-hint-mobile">Гортайте та натисніть на фото</span>
           </p>
         </div>
         <DoctorsShowcase doctors={showcaseDoctors} />
+      </section>
+
+      <section className="pricing-section" id="prices">
+        <div className="section-heading pricing-heading">
+          <div>
+            <span className="section-kicker">Вартість</span>
+            <h2>Популярні послуги</h2>
+          </div>
+          <p>
+            Остаточну вартість підтвердить адміністратор під час запису.
+          </p>
+        </div>
+        <HorizontalCardScroller label="Популярні послуги">
+          {priceDirections.map((item) => (
+            <GlowPriceCard key={item.priceItemId} className="price-card--plain">
+              <h3>{item.title}</h3>
+              <strong>{item.text}</strong>
+              <p>{item.note}</p>
+              <Link
+                className="outline-button"
+                href={`/contacts?service=${encodeURIComponent(item.title)}#booking`}
+              >
+                Записатися <span>→</span>
+              </Link>
+            </GlowPriceCard>
+          ))}
+        </HorizontalCardScroller>
       </section>
 
       <section className="about-section" id="about">
@@ -483,13 +524,14 @@ export default async function Home() {
         <div
           className="reception-photo"
           role="img"
-          aria-label="Світла рецепція медичного центру Здорова Родина"
+          aria-label="Візуалізація інтер’єру рецепції, не фотографія центру"
         />
       </section>
 
       <section className="quick-strip" aria-label="Зручності для пацієнтів">
         {quickItems.map((item) => (
           <article key={item.title}>
+            <Link className="home-quick-action" href={item.href}>
             <span className="quick-icon" aria-hidden="true">
               <LineIcon type={item.icon} />
             </span>
@@ -497,36 +539,9 @@ export default async function Home() {
               <h2>{item.title}</h2>
               <p>{item.text}</p>
             </div>
+            </Link>
           </article>
         ))}
-      </section>
-
-      <section className="pricing-section" id="prices">
-        <div className="section-heading pricing-heading">
-          <div>
-            <span className="section-kicker">Вартість</span>
-            <h2>Популярні послуги</h2>
-          </div>
-          <p>
-            Добірка оновлюється за підтвердженими записами за останні 30 днів.
-            Актуальну вартість остаточно підтвердить адміністратор.
-          </p>
-        </div>
-        <HorizontalCardScroller label="Популярні послуги">
-          {priceDirections.map((item) => (
-            <GlowPriceCard key={item.priceItemId} className="price-card--plain">
-              <h3>{item.title}</h3>
-              <strong>{item.text}</strong>
-              <p>{item.note}</p>
-              <Link
-                className="outline-button"
-                href={`/contacts?service=${encodeURIComponent(item.title)}#booking`}
-              >
-                Уточнити вартість <span>→</span>
-              </Link>
-            </GlowPriceCard>
-          ))}
-        </HorizontalCardScroller>
       </section>
 
       <SiteFooter />

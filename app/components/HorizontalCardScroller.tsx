@@ -26,9 +26,9 @@ export function HorizontalCardScroller({
     if (cards.length === 0) return;
 
     const nextIndex = cards.reduce((closestIndex, card, index) => {
-      const currentDistance = Math.abs(card.offsetLeft - track.scrollLeft);
+      const currentDistance = Math.abs(card.offsetLeft - cards[0].offsetLeft - track.scrollLeft);
       const closestDistance = Math.abs(
-        cards[closestIndex].offsetLeft - track.scrollLeft,
+        cards[closestIndex].offsetLeft - cards[0].offsetLeft - track.scrollLeft,
       );
       return currentDistance < closestDistance ? index : closestIndex;
     }, 0);
@@ -57,36 +57,24 @@ export function HorizontalCardScroller({
     const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 0;
     track.scrollBy({
       left: direction * (firstCard.offsetWidth + gap),
-      behavior: "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
     });
   };
 
   return (
     <div className="pricing-carousel">
+      <div
+        className="pricing-grid pricing-carousel-track"
+        ref={trackRef}
+        aria-label={label}
+        onScroll={updateActiveIndex}
+      >
+        {children}
+      </div>
       <div className="pricing-carousel-toolbar">
-        <span className="pricing-carousel-hint-copy">
-          Гортайте, щоб побачити більше
+        <span className="pricing-carousel-count" aria-live="polite" aria-atomic="true">
+          {activeIndex + 1} / {itemCount}
         </span>
-        <div className="pricing-carousel-mobile-cue" aria-hidden="true">
-          <span className="pricing-carousel-progress">
-            {Array.from({ length: itemCount }, (_, index) => (
-              <span
-                className={`pricing-carousel-dot${
-                  index === activeIndex ? " is-active" : ""
-                }`}
-                key={index}
-              />
-            ))}
-          </span>
-          <svg
-            className="pricing-carousel-swipe-arrow"
-            viewBox="0 0 72 34"
-            fill="none"
-          >
-            <path d="M3 7C24 3 48 7 62 23" />
-            <path d="M51 22L63 24L60 12" />
-          </svg>
-        </div>
         <div
           className="pricing-carousel-controls"
           aria-label={`Керування каруселлю «${label}»`}
@@ -106,14 +94,6 @@ export function HorizontalCardScroller({
             →
           </button>
         </div>
-      </div>
-      <div
-        className="pricing-grid pricing-carousel-track"
-        ref={trackRef}
-        aria-label={label}
-        onScroll={updateActiveIndex}
-      >
-        {children}
       </div>
     </div>
   );

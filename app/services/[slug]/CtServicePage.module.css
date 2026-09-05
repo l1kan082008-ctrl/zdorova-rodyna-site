@@ -322,6 +322,15 @@
 .areaCard:hover .areaArtwork img { transform: scale(1.18); }
 .areaCard[data-area="head"]:hover .areaArtwork img { transform: scale(1.18); }
 
+.indications { max-width: 780px; margin-inline: auto; scroll-margin-top: 120px; }
+.indications .sectionTitle { margin: 0 0 28px; text-align: left; }
+.indications .sectionTitle h2 { font-size: clamp(28px, 3vw, 40px); line-height: 1.15; }
+.compactFaq :global(.faq-question) { grid-template-columns: minmax(0, 1fr) 24px; min-height: 68px; padding: 18px 24px; }
+.compactFaq :global(.faq-answer p) { padding: 0 24px 24px; }
+@media (max-width: 760px) {
+  .compactFaq :global(.faq-question) { padding: 16px; gap: 12px; }
+  .compactFaq :global(.faq-answer p) { padding: 0 16px 20px; }
+}
 .infoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(40px, 7vw, 100px); }
 .infoColumns .sectionTitle { margin: 0 0 24px; text-align: left; }
 .infoColumns .sectionTitle h2 { font-size: clamp(28px, 2.5vw, 40px); }
@@ -355,6 +364,16 @@
 .doctorCard strong { display: block; min-height: 38px; margin: 14px 2px 5px; font-size: 16px; line-height: 1.2; }
 .doctorCard > span { display: block; margin: 0 2px 2px; color: var(--ct-muted); font-size: 13px; }
 
+.preparationGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }
+.preparationLabel { margin: 0 0 20px; font-size: 18px; }
+.preparationSteps { margin: 0; padding-left: 28px; display: grid; gap: 20px; list-style: decimal; }
+.preparationSteps li { padding-left: 8px; }
+.preparationSteps li::marker { color: var(--ct-teal); font-weight: 700; }
+.preparationSteps h3 { margin: 0 0 6px; font-size: 18px; }
+.preparationSteps p { margin: 0; color: var(--ct-muted); line-height: 1.45; }
+@media (max-width: 760px) {
+  .preparationGrid { grid-template-columns: 1fr; gap: 28px; }
+}
 .processGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 .processGrid article { position: relative; display: grid; grid-template-columns: 54px 1fr; gap: 18px; align-items: center; min-height: 150px; padding: 28px; border: 1px solid var(--ct-border); border-radius: 18px; }
 .processGrid article > span { position: absolute; top: 16px; right: 18px; color: var(--ct-orange); font-size: 12px; font-weight: 800; }

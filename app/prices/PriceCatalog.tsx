@@ -1,4 +1,5 @@
 "use client";
+import { CloseIcon } from "../components/CloseIcon";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -794,7 +795,7 @@ export function PriceCatalog({
                   aria-label="Очистити пошук"
                   onClick={clearSearch}
                 >
-                  ×
+                  <CloseIcon />
                 </button>
               ) : null}
             </label>
@@ -1096,7 +1097,7 @@ export function PriceCatalog({
                 aria-label="Закрити калькулятор"
                 onClick={() => setCalculatorOpen(false)}
               >
-                ×
+                <CloseIcon />
               </button>
             </div>
 
@@ -1140,7 +1141,7 @@ export function PriceCatalog({
                       if (selectedItems.length === 1) setCalculatorOpen(false);
                     }}
                   >
-                    ×
+                    <CloseIcon />
                   </button>
                 </article>
                 );
@@ -1231,7 +1232,7 @@ export function PriceCatalog({
                 >
                   Очистити
                 </button>
-                <a className="book-button" href={checkoutHref}>
+                <a className="book-button" href={checkoutHref} onClick={() => setCalculatorOpen(false)}>
                   Перейти до запису <span>→</span>
                 </a>
               </div>

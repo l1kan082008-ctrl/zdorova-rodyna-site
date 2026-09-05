@@ -9,6 +9,7 @@ Warm, trustworthy and precise medical care. The public site feels calm and human
 - Primary ink: `#073f45`
 - Brand teal: `#087f82`
 - Accent orange: shared site token `--orange` (`#ff7900`) for brand accents and primary actions
+- On orange action surfaces, text and arrows are white, never dark (owner preference, 2026-09-05). Preserve this in default, hover and focus states.
 - Soft surface: `#f5f9f8`
 - Neutral information surface: `#f1f3f5`, used where a calm grey background should not carry a teal tint
 - Canvas: `#ffffff`
@@ -21,6 +22,10 @@ Warm, trustworthy and precise medical care. The public site feels calm and human
 - Shadows are subtle and functional; gradients and glass effects are not used in admin interfaces.
 
 ## Components
+
+- Homepage services precede the promotional carousel. Mobile hero art and advantages are compact; the approved doctor fan and its scrolling remain unchanged. Quick actions use real links, and priced cards offer booking directly.
+
+- Home search starts with quick directions, uses full-width readable result groups, preserves doctor queries, and keeps the selection summary sticky. Result counts distinguish shown items from total matches. Arrow keys focus result links; Enter opens the focused result (or first result from the search input).
 
 - One button system: teal primary, quiet outlined secondary, red outlined destructive action.
 - One form system: label above control, consistent height, border, focus ring and error placement.
@@ -37,7 +42,10 @@ Warm, trustworthy and precise medical care. The public site feels calm and human
 
 ## Motion and accessibility
 
+- Interactive overlays share `--overlay-blur: 24px` and a light blue-grey tint at 32% opacity, matching the owner's strong-blur reference. Do not stack content blur with backdrop blur. Decorative photo filters remain independent.
+
 - State transitions last 150–220 ms and animate opacity/transform only where possible.
+- Modal forms share a 300 ms ease entrance: opacity 0–1, scale .975–1 and a 16 px upward reveal; corners stay fixed. Reduced motion disables the reveal.
 - Focus-visible rings are always present; controls retain semantic labels and keyboard behavior.
 - Destructive actions require confirmation.
 - Loading disables repeated submission and communicates progress.

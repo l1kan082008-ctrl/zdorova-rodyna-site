@@ -106,7 +106,7 @@ export default function AboutPage() {
         <div
           className="about-route-photo"
           role="img"
-          aria-label="Світла рецепція медичного центру Здорова Родина"
+          aria-label="Візуалізація інтер’єру рецепції, не фотографія центру"
         />
       </section>
 

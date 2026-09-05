@@ -163,6 +163,8 @@ export function DoctorsDirectory({
   );
 
   useEffect(() => {
+    const requestedSearch = new URLSearchParams(window.location.search).get("search");
+    if (requestedSearch) setQuery(requestedSearch);
     const requestedSpecialty = new URLSearchParams(window.location.search)
       .get("specialty")
       ?.trim();

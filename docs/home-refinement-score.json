@@ -1,0 +1,12 @@
+{
+  "visualCoherence": 9,
+  "componentConsistency": 9,
+  "responsive": 9,
+  "typography": 9,
+  "layoutSpacing": 9,
+  "accessibility": 8,
+  "performance": 10,
+  "motion": 9,
+  "contentFlow": 10,
+  "stateCoverage": 8
+}

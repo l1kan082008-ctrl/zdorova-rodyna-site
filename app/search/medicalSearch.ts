@@ -51,6 +51,20 @@ const searchAliases: Record<string, string[]> = {
 
 const exactPhraseAliases: Record<string, string[]> = {
   зак: ["загальний розгорнутий аналіз крові"],
+  "общий анализ крови": ["загальний розгорнутий аналіз крові"],
+  "загальний аналіз крові": ["загальний розгорнутий аналіз крові"],
+  "сахар в крови": ["глюкоза"],
+  "цукор в крові": ["глюкоза"],
+  "цукор у крові": ["глюкоза"],
+  "узи щитовидки": ["узд щитоподібної"],
+  "узд щитовидки": ["узд щитоподібної"],
+  "узи сердца": ["узд серця", "ехо"],
+  "узд серця": ["узд серця", "ехо"],
+  "детский врач": ["педіатр"],
+  "дитячий лікар": ["педіатр"],
+  "семейный врач": ["сімейний лікар"],
+  "родинки": ["дерматоскопія"],
+  "перевірити родимки": ["дерматоскопія"],
 };
 
 export const normalizeMedicalSearch = (value: string) =>
@@ -65,6 +79,17 @@ export const normalizeMedicalSearch = (value: string) =>
 
 const tokenize = (value: string): string[] =>
   Array.from(normalizeMedicalSearch(value).match(/[\p{L}\p{N}]+/gu) ?? []);
+
+const phraseAlternatives = (query: string) => {
+  const words = tokenize(query);
+  const entry = Object.entries(exactPhraseAliases).find(([phrase]) => {
+    const candidates = tokenize(phrase);
+    return candidates.length === words.length && candidates.every((word, index) =>
+      word === words[index] || (word.length >= 4 && editDistance(word, words[index]) <= 1),
+    );
+  });
+  return entry?.[1] ?? [];
+};
 
 const fixKeyboardLayout = (value: string) =>
   normalizeMedicalSearch(value)
@@ -158,6 +183,17 @@ const scoreWord = (
   return bestScore;
 };
 
+export const medicalHighlightParts = (text: string, query: string) => {
+  const normalized = normalizeMedicalSearch(query);
+  const words = tokenize(normalized);
+  const aliases = phraseAlternatives(normalized);
+  const alternatives = [...words.flatMap(queryAlternatives), ...aliases.flatMap(tokenize)];
+  return text.split(/([\p{L}\p{N}’']+)/u).map((part) => ({
+    text: part,
+    matched: !!normalized && !!tokenize(part).length && scoreWord(alternatives, normalizeMedicalSearch(part), tokenize(part)) > 0,
+  }));
+};
+
 export const scoreMedicalSearch = (
   query: string,
   title: string,
@@ -171,16 +207,16 @@ export const scoreMedicalSearch = (
   const searchable = normalizeMedicalSearch(`${title} ${supportingText}`);
   const searchableWords = tokenize(searchable);
   const titleWords = tokenize(normalizedTitle);
-  const phraseAliases = exactPhraseAliases[normalizedQuery] ?? [];
+  if (normalizedTitle === normalizedQuery) return 10000;
+  const phraseAliases = phraseAlternatives(normalizedQuery);
 
   if (phraseAliases.length) {
     const matchedPhrase = phraseAliases.find((alias) =>
-      searchable.includes(normalizeMedicalSearch(alias)),
+      (` ${searchable} `).includes(` ${normalizeMedicalSearch(alias)} `) ||
+      tokenize(alias).every((word) => searchableWords.includes(word)),
     );
 
-    if (!matchedPhrase) return 0;
-
-    return normalizedTitle.includes(normalizeMedicalSearch(matchedPhrase))
+    if (matchedPhrase) return normalizedTitle.includes(normalizeMedicalSearch(matchedPhrase))
       ? 600
       : 500;
   }
