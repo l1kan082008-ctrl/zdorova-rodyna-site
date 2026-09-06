@@ -31,7 +31,7 @@
 :root {
   --dialog-enter-duration: 300ms;
   --overlay-blur: 24px;
-  --overlay-tint: rgba(235, 242, 248, 0.32);
+  --overlay-tint: rgba(58, 112, 115, 0.18);
 }
 
 /* Shared form/dialog reveal, matching the restrained zoom-and-rise reference. */
@@ -91,7 +91,33 @@ body.home-search-open #top > :not(.home-search-shell) {
 }
 
 @media (min-width: 1081px) {
+  .main-nav-submenu {
+    top: calc(100% + 24px);
+    max-height: calc(100dvh - 130px);
+    overflow-y: auto;
+  }
+  .main-nav-submenu a { white-space: normal; }
+  #main-nav-submenu-services {
+    width: min(560px, calc(100vw - 48px));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #main-nav-submenu-doctors {
+    width: min(720px, calc(100vw - 48px));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-height: calc(100dvh - 130px);
+    overflow-y: auto;
+  }
+  #main-nav-submenu-doctors a { white-space: normal; }
+  .main-nav-group::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 24px;
+  }
   .site-menu-backdrop:has(+ .site-header .main-nav-group:is(.is-expanded, :hover, :focus-within)) {
+    --overlay-tint: rgba(235, 242, 248, 0.32);
     display: block;
     position: fixed;
     inset: 0;
@@ -101,6 +127,14 @@ body.home-search-open #top > :not(.home-search-shell) {
     pointer-events: auto;
   }
   .site-header:has(.main-nav-group:is(.is-expanded, :hover, :focus-within)) { z-index: 1100; }
+}
+
+@media (min-width: 1081px) and (max-width: 1200px) {
+  .site-header { grid-template-columns: 220px minmax(0, 1fr) max-content; gap: 12px; }
+  .site-header .logo { width: 220px; }
+  .site-header .logo img { width: 100%; height: auto; }
+  .main-nav { gap: 14px; font-size: 13px; }
+  .header-book { padding-inline: 14px; font-size: 12px; }
 }
 
 @supports not (backdrop-filter: blur(1px)) {
@@ -113,7 +147,23 @@ body.home-search-open #top > :not(.home-search-shell) {
 }
 
 @media (max-width: 1080px) {
-  .main-nav-group.is-expanded #main-nav-submenu-doctors {
-    max-height: 480px;
+  .main-nav:has(.main-nav-group.is-expanded) {
+    justify-content: flex-start;
+  }
+
+  .main-nav-group {
+    flex-shrink: 0;
+    min-width: 0;
+  }
+
+  .main-nav-group.is-expanded .main-nav-submenu {
+    max-height: none;
+  }
+
+  .main-nav-submenu a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }

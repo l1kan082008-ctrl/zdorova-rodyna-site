@@ -1,5 +1,7 @@
 "use client";
 
+import { doctorCategories as groupedSpecialties } from "./doctorCategories";
+
 import { useEffect, useMemo, useState } from "react";
 import {
   doctorPatientGroupOptions,
@@ -31,62 +33,7 @@ type MobileDoctorView = "single" | "double" | "quad";
 
 const mobileDoctorViewStorageKey = "zdorova-rodyna-doctors-view";
 
-const groupedSpecialties = [
-  {
-    value: "group:family",
-    label: "Сімейна медицина",
-    keywords: ["сімейний лікар"],
-    urlAliases: ["сімейна медицина", "сімейний лікар", "сімейні лікарі"],
-  },
-  {
-    value: "group:pediatrics",
-    label: "Педіатрія",
-    keywords: ["педіатр"],
-    urlAliases: ["педіатр", "педіатрія"],
-  },
-  {
-    value: "group:cardiology",
-    label: "Кардіологія",
-    keywords: ["кардіолог"],
-    urlAliases: ["кардіолог", "кардіологія"],
-  },
-  {
-    value: "group:neurology",
-    label: "Неврологія",
-    keywords: ["невролог", "невропатолог"],
-    urlAliases: ["невролог", "неврологія", "невропатолог"],
-  },
-  {
-    value: "group:gastroenterology",
-    label: "Гастроентерологія",
-    keywords: ["гастроентеролог"],
-    urlAliases: ["гастроентеролог", "гастроентерологія"],
-  },
-  {
-    value: "group:dermatology",
-    label: "Дерматологія",
-    keywords: ["дерматолог"],
-    urlAliases: ["дерматолог", "дерматологія"],
-  },
-  {
-    value: "group:gynecology",
-    label: "Гінекологія",
-    keywords: ["гінеколог"],
-    urlAliases: ["гінеколог", "гінекологія", "акушер-гінеколог"],
-  },
-  {
-    value: "group:surgery-urology",
-    label: "Хірургія та урологія",
-    keywords: ["хірург", "уролог"],
-    urlAliases: [
-      "хірург",
-      "хірургія",
-      "уролог",
-      "урологія",
-      "хірургія та урологія",
-    ],
-  },
-] as const;
+
 
 export function DoctorsDirectory({
   initialDoctors,
@@ -243,15 +190,10 @@ export function DoctorsDirectory({
             value={specialty}
             onChange={(event) => setSpecialty(event.target.value)}
           >
-            <option value="all">Усі спеціальності</option>
+            <option value="all">Усі категорії лікарів</option>
             {groupedSpecialties.map((group) => (
               <option value={group.value} key={group.value}>
                 {group.label}
-              </option>
-            ))}
-            {specialties.map((item) => (
-              <option value={item} key={item}>
-                {item}
               </option>
             ))}
           </select>

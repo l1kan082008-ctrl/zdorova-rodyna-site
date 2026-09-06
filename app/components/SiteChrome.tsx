@@ -1,4 +1,5 @@
 "use client";
+import { doctorCategories } from "../doctors/doctorCategories";
 import { CloseIcon } from "./CloseIcon";
 
 import { useEffect, useRef, useState } from "react";
@@ -38,11 +39,11 @@ const footerPatientLinks = [
 ];
 
 const footerDoctorLinks = [
-  { href: "/doctors?specialty=Сімейна медицина", label: "Сімейна медицина" },
-  { href: "/doctors?specialty=Педіатрія", label: "Педіатрія" },
+  { href: "/doctors?specialty=Сімейна медицина", label: "Сімейний лікар/терапевт" },
+  { href: "/doctors?specialty=Педіатрія", label: "Дитячі лікарі" },
   { href: "/doctors?specialty=Кардіологія", label: "Кардіологія" },
   { href: "/doctors?specialty=Гінекологія", label: "Гінекологія" },
-  { href: "/doctors?specialty=Хірургія та урологія", label: "Хірургія та урологія" },
+  { href: "/doctors?specialty=Урологія", label: "Урологія" },
 ];
 
 type NavigationItem = {
@@ -58,10 +59,20 @@ const navigation: NavigationItem[] = [
     label: "Послуги",
     key: "services",
     children: [
+      { href: "/services", label: "Усі послуги" },
       { href: "/services/lab", label: "Аналізи" },
       { href: "/services/ct", label: "КТ" },
       { href: "/services/mri", label: "МРТ" },
       { href: "/services/consultation", label: "Консультації лікарів" },
+      { href: "/services/ultrasound", label: "УЗД" },
+      { href: "/services/cardiology", label: "Кардіологія" },
+      { href: "/services/holter", label: "Холтер" },
+      { href: "/services/home-nurse", label: "Медсестра додому" },
+      { href: "/services/family", label: "Сімейний лікар" },
+      { href: "/services/wart-removal", label: "Видалення бородавок" },
+      { href: "/services/ear-piercing", label: "Проколювання вух" },
+      { href: "/services/dermoscopy", label: "Дерматоскопія родимок" },
+      { href: "/services/audiometry", label: "Аудіометрія" },
     ],
   },
   {
@@ -69,17 +80,8 @@ const navigation: NavigationItem[] = [
     label: "Лікарі",
     key: "doctors",
     children: [
-      { href: "/doctors", label: "Усі лікарі" },
-      ...[
-        "Сімейна медицина",
-        "Педіатрія",
-        "Кардіологія",
-        "Неврологія",
-        "Гастроентерологія",
-        "Дерматологія",
-        "Гінекологія",
-        "Хірургія та урологія",
-      ].map((label) => ({ href: `/doctors?specialty=${encodeURIComponent(label)}`, label })),
+      { href: "/doctors", label: "Усі категорії лікарів" },
+      ...doctorCategories.map(({ label }) => ({ href: `/doctors?specialty=${encodeURIComponent(label)}`, label })),
     ],
   },
   footerNavigation[2],
@@ -552,7 +554,7 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
               <div className="support-dialog-success" role="status">
                 <span aria-hidden="true">✓</span>
                 <strong>Заявку прийнято</strong>
-                <p>Адміністратор зателефонує вам у робочий час: пн–сб, 08:00–20:00. Неділя — вихідний.</p>
+                <p>Адміністратор зателефонує вам у робочий час: пн–пт, 08:00–20:00; сб, 08:00–17:00. Неділя — вихідний.</p>
                 <button type="button" onClick={closeSupport}>
                   Готово
                 </button>
@@ -568,7 +570,7 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
                         <circle cx="12" cy="12" r="8.5" />
                         <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      <span>Пн–сб <span aria-hidden="true">·</span> 08:00–20:00</span>
+                      <span>Пн–пт 08:00–20:00 <span aria-hidden="true">·</span> Сб 08:00–17:00</span>
                     </div>
                   </div>
                   <div className="support-phone-row">
@@ -805,7 +807,7 @@ export function SiteFooter() {
             <Link href="/contacts">
               м. Рівне, вул. Володимира Стельмаха (Курчатова), 18-М
             </Link>
-            <p>Пн–Пт 08:00–19:00<br />Сб 08:00–15:00</p>
+            <p>Пн–Пт 08:00–19:00<br />Сб 08:00–17:00</p>
           </div>
         </section>
       </div>

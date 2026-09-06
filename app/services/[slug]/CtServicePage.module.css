@@ -652,3 +652,14 @@
   .scanRingInner,
   .scanSweep { animation: none; }
 }
+
+/* Shared CT/MRI price actions retain the same readable size at every width. */
+.page .priceBooking { gap: 8px; }
+.page .priceBookingAction { min-height: 44px; padding-inline: 12px; font-size: 14px; flex-shrink: 0; }
+.page .priceBooking:focus-visible { outline: 3px solid var(--ct-teal); outline-offset: 3px; }
+@media (min-width: 761px) and (max-width: 1100px) {
+  .page .priceBooking { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 760px) {
+  .page .priceVariant { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}

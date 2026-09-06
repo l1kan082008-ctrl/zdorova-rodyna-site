@@ -42,7 +42,7 @@ Warm, trustworthy and precise medical care. The public site feels calm and human
 
 ## Motion and accessibility
 
-- Interactive overlays share `--overlay-blur: 24px` and a light blue-grey tint at 32% opacity, matching the owner's strong-blur reference. Do not stack content blur with backdrop blur. Decorative photo filters remain independent.
+- Interactive overlays share `--overlay-blur: 24px` and a muted grey-teal tint `rgba(58, 112, 115, 0.18)` (owner preference, 2026-09-06). Do not stack content blur with backdrop blur. Decorative photo filters remain independent.
 
 - State transitions last 150–220 ms and animate opacity/transform only where possible.
 - Modal forms share a 300 ms ease entrance: opacity 0–1, scale .975–1 and a 16 px upward reveal; corners stay fixed. Reduced motion disables the reveal.
@@ -54,3 +54,9 @@ Warm, trustworthy and precise medical care. The public site feels calm and human
 ## Quality gate
 
 Substantial UI work is complete only after desktop and mobile visual QA, interaction-state checks, responsive overflow checks and a score of at least 90/100 from the repository UI quality rubric.
+
+## Public banner typography
+
+- All public hero and promotional headings share Manrope, weight 450, line-height 1.14 and letter-spacing -0.02em through banner heading tokens in globals.css.
+- Service hero titles share clamp(38px, 4.1vw, 66px); below 760px they use clamp(28px, 7.5vw, 44px). The homepage keeps a smaller desktop scale to fit its two-line slogan.
+- Preserve room for Ukrainian accents and descenders; do not restore compressed line heights below 1 or page-specific negative tracking overrides.

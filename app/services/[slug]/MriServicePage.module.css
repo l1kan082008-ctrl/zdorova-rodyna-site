@@ -1,0 +1,78 @@
+.page { background: #fff; }
+.priceOptionContent { display: flex; flex-direction: column; gap: 4px; min-width: 0; width: 100%; }
+.priceOptionNote { color: var(--ct-muted); font-size: 12px; line-height: 1.35; overflow-wrap: break-word; }
+.heroContent h1 { font-size: clamp(38px, 4.1vw, 66px); overflow-wrap: normal; hyphens: manual; }
+.heroContent { width: 64%; }
+.heroImage { object-position: 74% center; }
+/* Crop the frame baked into the source image; the hero supplies its own corners. */
+.page .heroImage { transform: scale(1.07); transform-origin: center; }
+.page .heroField { top: 5%; right: -3%; bottom: 2%; left: 39%; height: auto; opacity: 1; }
+/* Match the photo matte and feather only its empty outer margins. */
+.page .equipmentCard { background: #03424b; }
+.page .equipmentImageFrame { left: 50%; right: auto; width: auto; height: 100%; aspect-ratio: 960 / 934; transform: translateX(-50%); }
+.equipmentImage {
+  object-fit: contain !important;
+  transform: none !important;
+  mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent), linear-gradient(180deg, transparent, #000 3%, #000 97%, transparent);
+  mask-composite: intersect;
+}
+.placeholder { display: grid; place-items: center; background: #eff6f5; }
+.placeholder svg { width: 46%; height: 54%; fill: none; stroke: #a6c5c5; stroke-width: 2; }
+@media (min-width: 761px) and (max-width: 1100px) {
+ .heroContent { width: 75%; }
+ .heroContent h1 { font-size: clamp(38px, 5vw, 52px); }
+}
+@media (max-width: 760px) {
+ .heroContent { width: 100%; padding-top: 28px; min-height: 720px; }
+ .heroContent h1 { font-size: clamp(28px, 7.5vw, 44px); line-height: 1.08; letter-spacing: -.035em; }
+ .heroContent nav { margin-bottom: 28px; }
+ .heroImage { object-position: 85% center; }
+ .page .heroField { top: auto; right: -26%; bottom: 0; left: -20%; height: 320px; opacity: .72; }
+}
+
+@media (min-width: 761px) { .additionalPrices [role="row"] { grid-template-columns: minmax(0, 1fr) 260px; } }
+
+.locations { grid-template-columns: minmax(0, 1fr); max-width: 840px; margin-inline: auto; }
+@media (min-width: 761px) { .locations article { grid-template-columns: 1fr 1fr; } }
+
+@media (min-width: 1101px) { .doctorRail { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 761px) and (max-width: 1100px) { .doctorRail { grid-template-columns: repeat(2, minmax(0, 1fr)); } .doctorRail > article:nth-child(n) { grid-column: auto; } }
+
+/* Shared anatomy uses the exact CT framing and palette. New close-ups fill
+   a portrait panel instead of shrinking a whole-body landscape image. */
+.page .areaCard:is([data-area="spine"], [data-area="upper"], [data-area="pelvis"], [data-area="additional"]) .areaArtwork {
+  inset: -2px -2px -2px auto;
+  width: 48%;
+}
+.page .areaCard:is([data-area="spine"], [data-area="upper"], [data-area="pelvis"], [data-area="additional"]) .areaArtwork img {
+  object-position: center;
+  transform: scale(1.02);
+  filter: hue-rotate(-10deg) brightness(1.04);
+}
+.page .areaCard:is([data-area="spine"], [data-area="upper"], [data-area="pelvis"], [data-area="additional"]):hover .areaArtwork img {
+  transform: scale(1.04);
+}
+.page .areaCard::after {
+  right: 32%;
+  background: linear-gradient(90deg, #fff 0%, #fff 86%, rgba(255,255,255,.95) 92%, transparent 100%);
+}
+/* Keep the MRI film and report intact; these are complete objects, not anatomy crops. */
+.page .areaCard[data-area="additional"] .areaArtwork img {
+  object-fit: contain;
+  object-position: right center;
+  transform: none;
+}
+.page .areaCard[data-area="additional"]:hover .areaArtwork img { transform: scale(1.025); }
+@media (max-width: 760px) {
+  .page .areaContent { width: 61%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page .areaCard, .page .areaArtwork img { transition: none; }
+  .page .areaCard:hover { transform: none; }
+  .page .areaCard:hover .areaArtwork img { transform: scale(1.16); }
+  .page .areaCard:is([data-area="spine"], [data-area="upper"], [data-area="pelvis"], [data-area="additional"]):hover .areaArtwork img { transform: scale(1.02); }
+  .page .areaCard[data-area="additional"]:hover .areaArtwork img { transform: none; }
+}
+
+
+

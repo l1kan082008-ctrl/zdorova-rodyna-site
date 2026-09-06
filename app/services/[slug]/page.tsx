@@ -16,6 +16,7 @@ import { getServiceDetail, serviceDetails } from "../serviceData";
 import { FamilyDeclarationForm } from "./FamilyDeclarationForm";
 import { ConsultationExperience } from "./ConsultationExperience";
 import { CtServicePage } from "./CtServicePage";
+import { MriServicePage } from "./MriServicePage";
 
 export const dynamic = "force-dynamic";
 
@@ -135,6 +136,15 @@ export default async function ServiceDetailPage({
     "dermoscopy",
     "audiometry",
   ].includes(service.slug);
+  if (isCinematicMri) {
+    const [doctors, prices] = await Promise.all([
+      listDoctors().catch(() => defaultDoctors),
+      listPublicPriceItems().catch(() => catalogItems),
+    ]);
+    const mriPrices = prices.filter(item => item.category === "mri" && item.isActive !== false);
+    const rohal = doctors.find(doctor => doctor.id === "rohalskyi-vitalii") ?? defaultDoctors.find(doctor => doctor.id === "rohalskyi-vitalii");
+    return <MriServicePage service={service} doctors={rohal ? [rohal] : []} prices={mriPrices.length ? mriPrices : catalogItems.filter(item => item.category === "mri" && item.isActive !== false)} bookingHref={bookingHref} priceHref={priceHref} />;
+  }
   if (isCinematicCt) {
     const [doctors, prices] = await Promise.all([
       listDoctors().catch(() => defaultDoctors),

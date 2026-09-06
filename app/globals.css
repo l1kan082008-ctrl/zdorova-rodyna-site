@@ -6650,11 +6650,12 @@ footer {
 
 .price-row-action:hover,
 .price-row-action:focus-visible {
-  border-color: var(--orange);
-  background: #fff8f1;
-  color: #d86100;
+  border-color: var(--teal);
+  background: #e6f3f2;
+  color: var(--teal);
 }
 
+.price-row-action:active,
 .price-row-action.is-selected {
   border-color: var(--teal);
   background: var(--teal);
@@ -14415,15 +14416,20 @@ body.calculator-is-open .site-header {
 }
 
 .service-detail-hero--mri-cinematic .book-button {
-  position: relative;
-  isolation: isolate;
   min-height: 54px;
   padding-inline: 30px;
+}
+
+.service-detail-hero--mri-cinematic .book-button,
+.mri-booking-motion {
+  position: relative;
+  isolation: isolate;
   overflow: hidden;
   animation: ct-book-button-breathe 3.6s ease-in-out infinite;
 }
 
-.service-detail-hero--mri-cinematic .book-button::before {
+.service-detail-hero--mri-cinematic .book-button::before,
+.mri-booking-motion::before {
   position: absolute;
   z-index: 1;
   top: -70%;
@@ -15684,6 +15690,8 @@ body.calculator-is-open .site-header {
   .service-detail-hero--holter-cinematic .book-button::before,
   .service-detail-hero--mri-cinematic .book-button,
   .service-detail-hero--mri-cinematic .book-button::before,
+  .mri-booking-motion,
+  .mri-booking-motion::before,
   .service-detail-hero--ultrasound-cinematic .book-button,
   .service-detail-hero--ultrasound-cinematic .book-button::before,
   .service-detail-hero--cardiology-cinematic .book-button,
@@ -16156,16 +16164,18 @@ body.calculator-is-open .site-header {
 
 .home-search-result-action:hover,
 .home-search-result-action:focus-visible {
-  border-color: var(--orange);
-  background: var(--orange);
-  color: #fff;
+  border-color: var(--teal);
+  background: #e6f3f2;
+  color: var(--teal);
 }
 
 .home-search-result-action.is-add {
   min-width: 92px;
+  border-color: var(--teal);
   justify-content: center;
 }
 
+.home-search-result-action:active,
 .home-search-result-action.is-added {
   border-color: var(--teal);
   background: var(--teal);
@@ -24326,4 +24336,28 @@ body.calculator-is-open .site-header {
   .medical-price-group-rows .medical-price-cito {
     display: grid;
   }
+}
+
+/* Public banner typography: shared across services, landing pages and promos. */
+:root {
+  --banner-heading-weight: 450;
+  --banner-heading-leading: 1.14;
+  --banner-heading-tracking: -.02em;
+}
+body :is(#hero-title, #ct-title, #mri-title, #service-detail-title, .page-hero h1, .contacts-overview h1, .family-medicine-copy h1, .promo-copy h2) {
+  font-family: "Manrope", Arial, Helvetica, sans-serif;
+  font-weight: var(--banner-heading-weight);
+  line-height: var(--banner-heading-leading);
+  letter-spacing: var(--banner-heading-tracking);
+}
+body :is(#ct-title, #mri-title, #service-detail-title) {
+  font-size: clamp(38px, 4.1vw, 66px);
+}
+@media (max-width: 760px) {
+  body :is(#ct-title, #mri-title, #service-detail-title) {
+    font-size: clamp(28px, 7.5vw, 44px);
+  }
+}
+@media (min-width: 761px) {
+  body #hero-title { font-size: clamp(36px, 3.6vw, 52px); }
 }

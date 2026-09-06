@@ -160,7 +160,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
 
       <section className={styles.section} id="ct-locations">
         <SectionTitle title="Де пройти КТ" lead="Доступність потрібного протоколу у вибраному відділенні підтвердить адміністратор." />
-        <div className={styles.locationGrid}>{locations.map((location: CenterLocation) => <article key={location.id}><div className={styles.locationPhoto}><Image src={location.gallery[0]?.src ?? "/locations/stelmakha-18m.webp"} alt={location.gallery[0]?.alt ?? location.fullAddress} fill unoptimized sizes="(max-width: 760px) 100vw, 32vw" /></div><div><strong>{location.city}</strong><p>{location.address}</p><span>{location.hours[0]}</span><a href={getDirectionsUrl(location)} target="_blank" rel="noreferrer">Показати на карті <span>→</span></a></div></article>)}</div>
+        <div className={styles.locationGrid}>{locations.map((location: CenterLocation) => <article key={location.id}><div className={styles.locationPhoto}><Image src={location.gallery[0]?.src ?? "/locations/stelmakha-18m.webp"} alt={location.gallery[0]?.alt ?? location.fullAddress} fill unoptimized sizes="(max-width: 760px) 100vw, 32vw" /></div><div><strong>{location.city}</strong><p>{location.address}</p><span>{location.hours.map((hours, index) => <span key={hours}>{index > 0 && <br />}{hours}</span>)}</span><a href={getDirectionsUrl(location)} target="_blank" rel="noreferrer">Показати на карті <span>→</span></a></div></article>)}</div>
       </section>
 
       <section className={styles.section}>

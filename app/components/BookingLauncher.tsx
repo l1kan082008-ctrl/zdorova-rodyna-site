@@ -52,7 +52,7 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
   const doctor = params.get("doctor")?.trim() || "";
   const total = params.get("total") || "";
   const requestedService = params.get("service")?.trim() || "";
-  const fixedCtService = !doctor && !studies && serviceCategory(requestedService) === "ct" ? requestedService : "";
+  const fixedImagingService = !doctor && !studies && ["ct", "mri"].includes(serviceCategory(requestedService) ?? "") ? requestedService : "";
   const [service, setService] = useState(studies ? "Комплекс досліджень" : params.get("service")?.trim() || (doctor ? "Консультації лікарів" : helpService));
   const [locationId, setLocationId] = useState(params.get("location") || "");
   const [phone, setPhone] = useState("");
@@ -159,9 +159,8 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
     <button className="quick-booking__close" type="button" aria-label="Закрити форму запису" disabled={submitting} onClick={onClose}><CloseIcon /></button>
     {reference ? <div className="quick-booking__success" role="status">
       <span className="section-kicker">Заявку отримано</span>
-      <h2 id="quick-booking-title" tabIndex={-1} ref={successRef}>Дякуємо за звернення</h2>
-      <p id="quick-booking-description">Адміністратор зателефонує, щоб погодити дату, час і відділення. Це заявка, а не підтверджений запис.</p>
-      <p>Номер заявки: <strong>{reference}</strong></p>
+      <h2 id="quick-booking-title" tabIndex={-1} ref={successRef}>Дякуємо!</h2>
+      <p id="quick-booking-description">Адміністратор зателефонує, щоб узгодити час візиту.</p>
       <button className="book-button" type="button" onClick={onClose}>Готово</button>
     </div> : <>
       <span className="section-kicker">Зворотний зв’язок</span>
@@ -169,15 +168,15 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
       <p id="quick-booking-description">Залиште контакти — адміністратор погодить з вами час візиту.</p>
       <form onSubmit={submit} aria-busy={submitting}>
         <fieldset disabled={submitting}>
-          {(doctor || studies || fixedCtService) && <div className="quick-booking__selection">
-            <span>{doctor ? "Обраний лікар" : studies ? "Обрані дослідження" : "Обране дослідження"}</span><strong>{doctor || studies.replaceAll(" | ", ", ") || fixedCtService}</strong>
+          {(doctor || studies || fixedImagingService) && <div className="quick-booking__selection">
+            <span>{doctor ? "Обраний лікар" : studies ? "Обрані дослідження" : "Обране дослідження"}</span><strong>{doctor || studies.replaceAll(" | ", ", ") || fixedImagingService}</strong>
             {total && Number.isFinite(Number(total)) && <span>Орієнтовно {Number(total).toLocaleString("uk-UA")} ₴</span>}
           </div>}
           <div className="quick-booking__fields">
             <label htmlFor="quick-name">Ваше ім’я<input id="quick-name" name="name" autoComplete="name" minLength={2} maxLength={100} placeholder="Ім’я" required /></label>
             <label htmlFor="quick-phone">Номер телефону<span className="quick-booking__phone"><span aria-hidden="true">+38</span><input id="quick-phone" name="phone" type="tel" inputMode="tel" autoComplete="tel-national" value={phone} onChange={(event) => setPhone(formatBookingPhone(event.target.value))} placeholder="(___) ___-__-__" title="Введіть 10 цифр українського номера, починаючи з 0" required /></span></label>
           </div>
-          {!doctor && !studies && !fixedCtService && <label htmlFor="quick-service"><span id="quick-service-label">Послуга</span><select id="quick-service" aria-labelledby="quick-service-label" value={service} required onChange={(event) => setService(event.target.value)}>
+          {!doctor && !studies && !fixedImagingService && <label htmlFor="quick-service"><span id="quick-service-label">Послуга</span><select id="quick-service" aria-labelledby="quick-service-label" value={service} required onChange={(event) => setService(event.target.value)}>
             <option value={helpService}>{helpService}</option>
             {!services.includes(service) && service !== helpService && <option value={service}>{service}</option>}
             {services.map((item) => <option key={item}>{item}</option>)}

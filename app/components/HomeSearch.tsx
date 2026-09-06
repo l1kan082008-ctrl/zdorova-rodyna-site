@@ -388,7 +388,6 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
             </button>
           </div>
 
-          {!mobileViewport && query && groups[0]?.items[0] ? <p className="home-search-keyboard-hint">Enter у полі пошуку — відкрити «{groups[0].items[0].title}». ↑ ↓ — обрати інший результат.</p> : null}
           <div className="home-search-suggestions" aria-label="Швидкий пошук">
             <span>Часто шукають</span>
             <div>
