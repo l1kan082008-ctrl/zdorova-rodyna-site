@@ -1,6 +1,14 @@
 import { listLocations } from "./locationStore";
+import { centerLocations } from "../../contacts/locationData";
 
 export async function GET() {
+  // Local previews can read the bundled catalogue without a database.
+  // Configured databases and production must still surface real failures.
+  if (process.env.NODE_ENV === "development" && !process.env.DATABASE_URL?.trim()) {
+    return Response.json({ locations: centerLocations }, {
+      headers: { "cache-control": "no-store" },
+    });
+  }
   try {
     return Response.json({ locations: await listLocations() });
   } catch (error) {

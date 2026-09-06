@@ -307,8 +307,18 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
         tabIndex={menuOpen ? -1 : undefined}
       >
       <Link className="logo" href="/" aria-label="Здорова Родина — на головну">
+        <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: "absolute" }}>
+          <defs>
+            <filter id="brand-remove-white" colorInterpolationFilters="sRGB">
+              {/* Keep the original artwork; only white pixels become transparent. */}
+              <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  -1 -1 -1 0 3" />
+              <feComposite in2="SourceGraphic" operator="in" />
+            </filter>
+          </defs>
+        </svg>
         <Image
           src="/zdorova-rodyna-logo-cropped.png"
+          style={{ filter: "url(#brand-remove-white)" }}
           alt="Здорова Родина — медичний центр"
           width={1800}
           height={361}

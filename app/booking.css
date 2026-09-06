@@ -70,6 +70,20 @@ html.quick-booking-open, html.quick-booking-open body { overflow: hidden !import
 .book-button:focus-visible { color: #fff !important; }
 .book-button :is(span, svg, i, strong, b) { color: inherit !important; }
 .quick-booking :is(button,input,select,textarea,summary,a):focus-visible, .contacts-page--compact :is(a,button,summary):focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+/* Touch booking forms keep their normal appearance when a control receives focus. */
+@media (hover: none) and (pointer: coarse) {
+  .quick-booking,
+  .quick-booking * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .quick-booking:focus,
+  .quick-booking :is(button, input, select, textarea, summary, a, [tabindex]):focus,
+  .quick-booking :is(button, input, select, textarea, summary, a, [tabindex]):focus-visible,
+  .quick-booking .quick-booking__phone:focus-within {
+    outline: none;
+    box-shadow: none;
+  }
+}
 .quick-booking button:disabled { opacity: .6; cursor: wait; }
 .quick-booking .booking-submit-error { color: #a0443b; margin: 0; }
 .quick-booking .booking-honeypot { display: none; }

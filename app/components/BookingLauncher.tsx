@@ -5,7 +5,7 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { TurnstileField } from "./TurnstileField";
 import { clearPriceCalculatorSelection } from "../prices/calculatorSelection";
-import { centerLocations, type CenterLocation } from "../contacts/locationData";
+import { type CenterLocation } from "../contacts/locationData";
 import { compatibleLocations, formatBookingPhone, serviceCategory } from "../../lib/bookingRequest";
 
 const services = ["МРТ", "КТ", "УЗД", "Лабораторні дослідження", "Консультації лікарів", "Холтер та кардіодіагностика", "Аналізи вдома", "Скринінг здоров’я 40+", "Комплекс досліджень"];
@@ -56,7 +56,7 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
   const [phone, setPhone] = useState("");
   const [locations, setLocations] = useState<CenterLocation[]>([]);
   const [locationsLoading, setLocationsLoading] = useState(true);
-  const [locationStatus, setLocationStatus] = useState("Завантажуємо відділення…");
+  const [locationStatus, setLocationStatus] = useState("");
   const [token, setToken] = useState("");
   const [captchaAttempt, setCaptchaAttempt] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -83,10 +83,7 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
       .then((payload) => { setLocations(payload.locations || []); setLocationStatus(""); })
       .catch(() => {
         if (controller.signal.aborted) return;
-        if (process.env.NODE_ENV === "development") {
-          setLocations(centerLocations);
-          setLocationStatus("Локальний перегляд: не вдалося оновити відділення. Показуємо адреси з копії сайту.");
-        } else setLocationStatus("Не вдалося завантажити адреси. Адміністратор допоможе обрати відділення.");
+        setLocationStatus("Не вдалося завантажити адреси. Адміністратор допоможе обрати відділення.");
       }).finally(() => { if (!controller.signal.aborted) setLocationsLoading(false); });
     return () => {
       controller.abort();
@@ -185,12 +182,10 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
           </select>
           {service !== helpService && <span className="quick-booking__service-detail">{service}</span>}
           </label>}
-          <label htmlFor="quick-location"><span id="quick-location-label">Відділення</span><select id="quick-location" aria-labelledby="quick-location-label" value={selectedLocation?.id || ""} onChange={(event) => setLocationId(event.target.value)}>
-            <option value="">Допоможіть обрати</option>
+          <label htmlFor="quick-location"><span id="quick-location-label">Відділення</span><select id="quick-location" aria-labelledby="quick-location-label" aria-busy={locationsLoading} disabled={locationsLoading} value={selectedLocation?.id || ""} onChange={(event) => setLocationId(event.target.value)}>
+            <option value="">{locationsLoading ? "Завантажуємо відділення…" : locationStatus || (category === null && service !== helpService) ? "Адміністратор допоможе обрати" : "Допоможіть обрати"}</option>
             {availableLocations.map((location) => <option key={location.id} value={location.id}>{location.fullAddress}</option>)}
           </select></label>
-          {locationStatus && <p className="quick-booking__hint" role="status">{locationStatus}</p>}
-          {!locationStatus && category === null && service !== helpService && <p className="quick-booking__hint">Відділення для цього запиту уточнить адміністратор.</p>}
           <details className="quick-booking__comment"><summary>Додати коментар <span>необов’язково</span></summary><label>Ваш коментар<textarea name="comment" maxLength={700} rows={3} placeholder="Наприклад, коли вам зручно зателефонувати" /></label></details>
           <label className="quick-booking__consent"><input type="checkbox" name="consent" required /><span>Погоджуюся на обробку контактних даних для організації запису.</span></label>
           <label className="booking-honeypot" aria-hidden="true">Ваш сайт<input name="website" tabIndex={-1} autoComplete="off" /></label>
