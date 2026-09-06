@@ -1,4 +1,5 @@
 import { env } from "@/lib/runtimeEnv";
+import { proofreadPriceItem } from "../../prices/nameCorrections";
 import {
   catalogItems,
   type CategoryId,
@@ -201,7 +202,7 @@ export async function listManagedPriceItems() {
 
 export async function listPublicPriceItems() {
   const items = await listManagedPriceItems();
-  return items.filter((item) => item.isActive);
+  return items.filter((item) => item.isActive).map(proofreadPriceItem);
 }
 
 export async function createManagedPriceItem(values: {

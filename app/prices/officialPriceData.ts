@@ -1,4 +1,5 @@
 import type { CategoryId, PriceItem } from "./priceData";
+import { proofreadPriceItem } from "./nameCorrections";
 import {
   DEFAULT_CITO_SURCHARGE,
   usesDefaultCitoPolicy,
@@ -6723,4 +6724,4 @@ export const officialPriceItems: PriceItem[] = officialPriceItemsBase.map(
               : DEFAULT_CITO_SURCHARGE,
         }
       : item,
-);
+).map(proofreadPriceItem);

@@ -1,0 +1,82 @@
+@media (min-width: 721px) and (max-width: 1080px) {
+  .price-catalog-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "categories" "prices";
+    gap: 20px;
+  }
+
+  .price-catalog-shell .price-category-panel {
+    position: static;
+    padding: 12px;
+  }
+
+  .price-category-panel .price-category-tabs {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    gap: 8px;
+  }
+
+  .price-category-tabs button {
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 8px;
+    padding: 12px 8px;
+    min-height: 64px;
+  }
+
+  .price-category-tabs .price-category-symbol {
+    width: 28px;
+    height: 28px;
+  }
+
+  .price-category-tabs .price-category-label {
+    font-size: 13px;
+    white-space: normal;
+  }
+
+  .price-category-tabs .price-category-label-wrap small {
+    display: none;
+  }
+
+  .price-table-panel .price-search-row {
+    grid-template-columns: minmax(0, 1fr) 248px;
+    gap: 12px;
+  }
+
+  .price-search-row label,
+  .price-search-row input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .price-search-row .price-cito-filter {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .medical-price-group-rows > .medical-price-column-head {
+    display: none;
+  }
+
+  .medical-price-group-rows > .medical-price-row {
+    grid-template-columns: minmax(0, 1fr) 104px 100px 108px;
+    gap: 12px 16px;
+    padding: 20px 24px;
+  }
+
+  .medical-price-row .medical-price-service {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .medical-price-service strong {
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .medical-price-row .medical-price-duration { grid-column: 1; grid-row: 2; }
+  .medical-price-row .medical-price-cito { grid-column: 2; grid-row: 2; }
+  .medical-price-row .medical-price-value { grid-column: 3; grid-row: 2; }
+  .medical-price-row .price-row-action { grid-column: 4; grid-row: 2; }
+}

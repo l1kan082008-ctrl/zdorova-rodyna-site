@@ -1,0 +1,103 @@
+@media (max-width: 720px) {
+  .price-catalog-shell {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "search search" "categories categories" "cito cito";
+    gap: 12px;
+  }
+  .price-catalog-shell .price-table-panel,
+  .price-table-panel .price-search-row { display: contents; }
+  .price-table-panel > * { grid-column: 1 / -1; }
+  .price-search-row > label { grid-area: search; min-width: 0; }
+  .price-search-row input { height: 52px; }
+  .price-catalog-shell .price-category-panel {
+    padding: 0;
+    border-radius: 14px;
+    box-shadow: none;
+    position: static;
+    overflow: hidden;
+  }
+  .price-category-mobile-toggle {
+    grid-template-columns: minmax(0, 1fr) 20px;
+    min-height: 48px;
+    padding: 12px 16px;
+    background: #fff;
+  }
+  .price-category-mobile-toggle > .price-category-symbol,
+  .price-category-mobile-toggle small { display: none; }
+  .price-category-mobile-toggle strong { white-space: normal; line-height: 1.4; }
+  .price-category-panel .price-category-tabs.is-open {
+    margin: 0;
+    padding: 8px;
+    border-top: 1px solid #d5e4e2;
+    max-height: 320px;
+  }
+  .price-category-tabs button { min-height: 48px; }
+  .price-search-row .price-cito-filter {
+    grid-area: cito;
+    justify-self: end;
+    display: flex;
+    width: auto;
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+  .price-cito-filter-icon,
+  .price-cito-filter-count,
+  .price-cito-filter-copy small { display: none; }
+  .price-cito-filter-copy strong { font-size: 12px; white-space: nowrap; }
+  .medical-price-table { gap: 12px; }
+  .medical-price-group-head {
+    min-height: 56px;
+    padding: 12px 14px;
+    grid-template-columns: minmax(0, 1fr) auto 20px;
+    gap: 8px;
+  }
+  .medical-price-group-head .medical-price-group-icon { display: none; }
+  .medical-price-group-head h3 { font-size: 17px; line-height: 1.35; }
+  .medical-price-group-rows > .medical-price-row {
+    grid-template-columns: minmax(0, 1fr) 108px;
+    padding: 16px;
+    gap: 12px;
+  }
+  .medical-price-row .medical-price-service { grid-column: 1 / -1; grid-row: 1; }
+  .medical-price-row .medical-price-service strong { font-size: 15px; line-height: 1.45; }
+  .medical-price-row .medical-price-value {
+    grid-column: 1;
+    grid-row: 2;
+    justify-items: start;
+    text-align: left;
+  }
+  .medical-price-row .price-row-action,
+  .medical-price-row.has-cito .price-row-action {
+    grid-column: 2;
+    grid-row: 2;
+    min-width: 0;
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .medical-price-row .medical-price-duration { grid-column: 1 / -1; grid-row: auto; }
+  .medical-price-row .medical-price-duration.is-unspecified { display: none; }
+  .medical-price-row .medical-price-cito {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .medical-price-row .medical-price-cito.is-empty { display: none; }
+  .price-cito-control { min-height: 44px; }
+  .price-catalog-shell .cito-switch::after,
+  .calculator-dialog .cito-switch::after {
+    content: "";
+    position: absolute;
+    inset: -10px -1px;
+  }
+  .medical-price-row .medical-price-cito:not(.is-empty)::before {
+    content: "CITO · до 2 годин";
+    color: #587276;
+    font-size: 12px;
+  }
+}

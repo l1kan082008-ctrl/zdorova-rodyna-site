@@ -1,5 +1,6 @@
 "use client";
 import { CloseIcon } from "../components/CloseIcon";
+import { deduplicatePriceSearch } from "./deduplicateSearch";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -18,6 +19,7 @@ import {
 } from "./calculatorSelection";
 import {
   normalizeMedicalSearch,
+  medicalHighlightParts,
   scoreMedicalSearch,
 } from "../search/medicalSearch";
 import {
@@ -207,7 +209,7 @@ export function PriceCatalog({
   const visibleItems = useMemo(() => {
     const normalized = normalizeMedicalSearch(query);
 
-    return initialItems
+    const matches = initialItems
       .map((item, index) => ({
         item,
         index,
@@ -228,7 +230,8 @@ export function PriceCatalog({
       )
       .sort((first, second) => second.score - first.score || first.index - second.index)
       .map(({ item }) => item);
-  }, [activeCategory, citoOnly, initialItems, query]);
+    return normalized ? deduplicatePriceSearch(matches, selectedIds) : matches;
+  }, [activeCategory, citoOnly, initialItems, query, selectedIds]);
 
   const citoAvailableCount = useMemo(
     () =>
@@ -777,10 +780,12 @@ export function PriceCatalog({
                 id="price-search"
                 ref={searchInputRef}
                 type="search"
+                aria-label="Пошук послуги"
                 value={query}
                 onChange={(event) => {
                   setQuery(event.target.value);
                   setActiveCategory("all");
+                  setCollapsedCategories(new Set());
                   setExpandedPreviewCategories(new Set());
                   setVisibleLimit(INITIAL_VISIBLE_COUNT);
                   setVisibleGroupLimit(INITIAL_VISIBLE_GROUP_COUNT);
@@ -808,8 +813,6 @@ export function PriceCatalog({
                 setCitoOnly(nextCitoOnly);
                 setExpandedPreviewCategories(new Set());
                 if (nextCitoOnly) {
-                  setActiveCategory("all");
-                  setQuery("");
                   setCollapsedCategories(new Set());
                 }
                 setVisibleLimit(INITIAL_VISIBLE_COUNT);
@@ -893,9 +896,11 @@ export function PriceCatalog({
                             >
                               <div className="medical-price-service">
                                 <span className="mobile-price-label">Послуга</span>
-                                <strong>{item.name}</strong>
+                                <strong>{medicalHighlightParts(item.name, query).map((part, index) =>
+                                  part.matched ? <mark key={index}>{part.text}</mark> : part.text,
+                                )}</strong>
                               </div>
-                              <div className="medical-price-duration">
+                              <div className={`medical-price-duration${!item.turnaround?.trim() ? " is-unspecified" : ""}`}>
                                 <strong>{getTurnaround(item)}</strong>
                               </div>
                               <div
@@ -976,17 +981,10 @@ export function PriceCatalog({
                               <strong>
                                 {isInlineOverview
                                   ? isPreviewExpanded
-                                    ? "Повний список відкрито"
-                                    : formatRemainingStudies(hiddenStudyCount)
+                                    ? "Згорнути список"
+                                    : `Показати ${formatRemainingStudies(hiddenStudyCount).toLocaleLowerCase("uk-UA")}`
                                   : "Усі дослідження категорії"}
                               </strong>
-                              <small>
-                                {isInlineOverview
-                                  ? isPreviewExpanded
-                                    ? "Згорнути до короткого списку"
-                                    : "Розгорнути повний список"
-                                  : "Перейти до повного списку"}
-                              </small>
                             </span>
                             <span
                               className="price-group-view-all-action"

@@ -1,0 +1,40 @@
+.medical-price-service mark {
+  background: #fff0d9;
+  color: inherit;
+  border-radius: 3px;
+}
+
+.medical-price-group .price-group-view-all {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 14px 16px;
+  border-top: 1px solid #e5eceb;
+  background: #fff;
+  color: var(--teal);
+}
+
+.medical-price-group .price-group-view-all:hover {
+  background: #f5f9f8;
+}
+
+.medical-price-group .price-group-view-all-copy strong {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.medical-price-group .price-group-view-all .price-group-view-all-action {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: currentColor;
+  box-shadow: none;
+  font-size: 18px;
+  transform: none;
+}

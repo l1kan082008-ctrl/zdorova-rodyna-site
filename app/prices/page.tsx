@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import "./tablet.css";
+import "./search.css";
+import "./mobile.css";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
 import { listPublicPriceItems } from "../api/prices/priceStore";
 import { PriceCatalog } from "./PriceCatalog";
