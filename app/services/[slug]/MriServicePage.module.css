@@ -73,6 +73,3 @@
   .page .areaCard:is([data-area="spine"], [data-area="upper"], [data-area="pelvis"], [data-area="additional"]):hover .areaArtwork img { transform: scale(1.02); }
   .page .areaCard[data-area="additional"]:hover .areaArtwork img { transform: none; }
 }
-
-
-
