@@ -100,6 +100,42 @@ const navigation: NavigationItem[] = [
 const HOME_SEARCH_OPEN_EVENT = "zdorova-rodyna-home-search-open";
 const SITE_MENU_OPEN_EVENT = "zdorova-rodyna-site-menu-open";
 
+function SupportIcon() {
+  return (
+          <svg
+            className="header-support-figure"
+            viewBox="0 0 60 54"
+            aria-hidden="true"
+          >
+            <path
+              className="header-support-headband"
+              d="M5.9 30.5v-6C5.9 11.5 16.4 1.8 30 1.8c6 0 11.5 1.9 15.7 5.4l-3 3.8A18.7 18.7 0 0 0 30 6.8c-10.5 0-18.8 7.6-18.8 17.7v6H5.9Z"
+            />
+            <rect className="header-support-earpiece" x="4.2" y="26.8" width="8.6" height="14.4" rx="4.3" />
+            <path
+              className="header-support-earpiece"
+              d="M47.2 26.8h4a4.3 4.3 0 0 1 4.3 4.3v5.8a4.3 4.3 0 0 1-4.3 4.3h-4V26.8Z"
+            />
+            <path
+              className="header-support-hair"
+              d="M15.5 26.1c0-10.1 6-16.4 14.4-16.4 8.5 0 14.5 6.3 14.5 16.4-6-.8-10.9-3.4-14.6-7.7-3.5 4.3-8.3 6.9-14.3 7.7Z"
+            />
+            <g className="header-support-eyes">
+              <circle cx="24" cy="31.5" r="2.15" />
+              <circle cx="36" cy="31.5" r="2.15" />
+            </g>
+            <path className="header-support-boom" d="M51 38.5c-1.7 6.8-7.6 10.6-14.8 10.6" />
+            <rect className="header-support-mic" x="28.4" y="46.9" width="7.6" height="4.3" rx="2.15" />
+            <g transform="translate(10 6.5) scale(.82)">
+              <path
+                className="header-support-heart"
+                d="M48.7 5.5c-4.4 0-6.5 5-3.4 8.1l7 7 7-7c3.1-3.1.9-8.1-3.4-8.1-1.7 0-3 .8-3.6 1.9-.7-1.1-2-1.9-3.6-1.9Z"
+              />
+            </g>
+          </svg>
+  );
+}
+
 function formatSupportPhone(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 10);
 
@@ -408,6 +444,7 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
             <strong>{selectedServiceCount}</strong>
           </a>
         ) : null}
+        <div className="header-contact-actions">
         {home ? (
           <div className="header-home-action">
             <a className={`header-home-phone${heroPassed ? " is-hidden" : ""}`} href="tel:+380676714444" aria-hidden={heroPassed} tabIndex={heroPassed ? -1 : 0}>
@@ -425,6 +462,26 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
             Записатися на прийом
           </a>
         )}
+          <button
+            type="button"
+            className="header-support header-support-desktop"
+            aria-label="Замовити дзвінок"
+            title="Замовити дзвінок"
+            aria-haspopup="dialog"
+            aria-expanded={supportOpen}
+            onClick={(event) => {
+              supportButtonRef.current = event.currentTarget;
+              setSupportClosing(false);
+              setMenuOpen(false);
+              setOpenNavigationMenu(null);
+              setSupportError("");
+              setSupportSubmitted(false);
+              setSupportOpen(true);
+            }}
+          >
+            <SupportIcon />
+          </button>
+        </div>
       </div>
       <div className="header-mobile-controls">
         <button
@@ -434,7 +491,8 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
           aria-label="Зв’язатися з адміністратором"
           aria-haspopup="dialog"
           aria-expanded={supportOpen}
-          onClick={() => {
+          onClick={(event) => {
+            supportButtonRef.current = event.currentTarget;
             setSupportClosing(false);
             setMenuOpen(false);
             setOpenNavigationMenu(null);
@@ -443,37 +501,7 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
             setSupportOpen(true);
           }}
         >
-          <svg
-            className="header-support-figure"
-            viewBox="0 0 60 54"
-            aria-hidden="true"
-          >
-            <path
-              className="header-support-headband"
-              d="M5.9 30.5v-6C5.9 11.5 16.4 1.8 30 1.8c6 0 11.5 1.9 15.7 5.4l-3 3.8A18.7 18.7 0 0 0 30 6.8c-10.5 0-18.8 7.6-18.8 17.7v6H5.9Z"
-            />
-            <rect className="header-support-earpiece" x="4.2" y="26.8" width="8.6" height="14.4" rx="4.3" />
-            <path
-              className="header-support-earpiece"
-              d="M47.2 26.8h4a4.3 4.3 0 0 1 4.3 4.3v5.8a4.3 4.3 0 0 1-4.3 4.3h-4V26.8Z"
-            />
-            <path
-              className="header-support-hair"
-              d="M15.5 26.1c0-10.1 6-16.4 14.4-16.4 8.5 0 14.5 6.3 14.5 16.4-6-.8-10.9-3.4-14.6-7.7-3.5 4.3-8.3 6.9-14.3 7.7Z"
-            />
-            <g className="header-support-eyes">
-              <circle cx="24" cy="31.5" r="2.15" />
-              <circle cx="36" cy="31.5" r="2.15" />
-            </g>
-            <path className="header-support-boom" d="M51 38.5c-1.7 6.8-7.6 10.6-14.8 10.6" />
-            <rect className="header-support-mic" x="28.4" y="46.9" width="7.6" height="4.3" rx="2.15" />
-            <g transform="translate(10 6.5) scale(.82)">
-              <path
-                className="header-support-heart"
-                d="M48.7 5.5c-4.4 0-6.5 5-3.4 8.1l7 7 7-7c3.1-3.1.9-8.1-3.4-8.1-1.7 0-3 .8-3.6 1.9-.7-1.1-2-1.9-3.6-1.9Z"
-              />
-            </g>
-          </svg>
+          <SupportIcon />
         </button>
         <button
           ref={menuButtonRef}
@@ -524,7 +552,7 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
               <div className="support-dialog-success" role="status">
                 <span aria-hidden="true">✓</span>
                 <strong>Заявку прийнято</strong>
-                <p>Адміністратор зателефонує вам найближчим часом.</p>
+                <p>Адміністратор зателефонує вам у робочий час: пн–сб, 08:00–20:00. Неділя — вихідний.</p>
                 <button type="button" onClick={closeSupport}>
                   Готово
                 </button>
@@ -533,8 +561,15 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
               <>
                 <form className="support-callback-form" onSubmit={submitSupportCallback}>
                   <div className="support-dialog-intro">
-                    <h2>Ми на зв’язку</h2>
-                    <p>Залиште номер, і ми зателефонуємо найближчим часом.</p>
+                    <h2>Зворотний дзвінок</h2>
+                    <p>Залиште номер — передзвонимо.</p>
+                    <div className="support-dialog-hours" aria-label="Графік адміністраторів: понеділок — субота, з 08:00 до 20:00. Неділя — вихідний.">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                        <circle cx="12" cy="12" r="8.5" />
+                        <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      <span>Пн–сб <span aria-hidden="true">·</span> 08:00–20:00</span>
+                    </div>
                   </div>
                   <div className="support-phone-row">
                     <div

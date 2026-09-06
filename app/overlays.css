@@ -1,3 +1,32 @@
+.header-contact-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-support-desktop {
+  flex: 0 0 44px;
+}
+
+@media (max-width: 1080px) {
+  .header-support-desktop { display: none; }
+}
+
+.support-dialog-hours {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.support-dialog-hours svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
 /* One background treatment for interactive overlays; decorative image filters are separate. */
 :root {
   --dialog-enter-duration: 300ms;
