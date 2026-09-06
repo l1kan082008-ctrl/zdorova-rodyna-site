@@ -40,7 +40,7 @@ export function BookingLauncher() {
       window.removeEventListener("popstate", openFromUrl);
     };
   }, [pathname]);
-  return request ? <BookingDialog request={request} onClose={() => {
+  return request ? <BookingDialog key={request.href} request={request} onClose={() => {
     setRequest(null);
     if (window.location.hash === "#booking") window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
   }} /> : null;
@@ -51,6 +51,8 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
   const studies = params.get("services")?.trim() || "";
   const doctor = params.get("doctor")?.trim() || "";
   const total = params.get("total") || "";
+  const requestedService = params.get("service")?.trim() || "";
+  const fixedCtService = !doctor && !studies && serviceCategory(requestedService) === "ct" ? requestedService : "";
   const [service, setService] = useState(studies ? "Комплекс досліджень" : params.get("service")?.trim() || (doctor ? "Консультації лікарів" : helpService));
   const [locationId, setLocationId] = useState(params.get("location") || "");
   const [phone, setPhone] = useState("");
@@ -167,15 +169,15 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
       <p id="quick-booking-description">Залиште контакти — адміністратор погодить з вами час візиту.</p>
       <form onSubmit={submit} aria-busy={submitting}>
         <fieldset disabled={submitting}>
-          {(doctor || studies) && <div className="quick-booking__selection">
-            <span>{doctor ? "Обраний лікар" : "Обрані дослідження"}</span><strong>{doctor || studies.replaceAll(" | ", ", ")}</strong>
+          {(doctor || studies || fixedCtService) && <div className="quick-booking__selection">
+            <span>{doctor ? "Обраний лікар" : studies ? "Обрані дослідження" : "Обране дослідження"}</span><strong>{doctor || studies.replaceAll(" | ", ", ") || fixedCtService}</strong>
             {total && Number.isFinite(Number(total)) && <span>Орієнтовно {Number(total).toLocaleString("uk-UA")} ₴</span>}
           </div>}
           <div className="quick-booking__fields">
             <label htmlFor="quick-name">Ваше ім’я<input id="quick-name" name="name" autoComplete="name" minLength={2} maxLength={100} placeholder="Ім’я" required /></label>
             <label htmlFor="quick-phone">Номер телефону<span className="quick-booking__phone"><span aria-hidden="true">+38</span><input id="quick-phone" name="phone" type="tel" inputMode="tel" autoComplete="tel-national" value={phone} onChange={(event) => setPhone(formatBookingPhone(event.target.value))} placeholder="(___) ___-__-__" title="Введіть 10 цифр українського номера, починаючи з 0" required /></span></label>
           </div>
-          {!doctor && !studies && <label htmlFor="quick-service"><span id="quick-service-label">Послуга</span><select id="quick-service" aria-labelledby="quick-service-label" value={service} required onChange={(event) => setService(event.target.value)}>
+          {!doctor && !studies && !fixedCtService && <label htmlFor="quick-service"><span id="quick-service-label">Послуга</span><select id="quick-service" aria-labelledby="quick-service-label" value={service} required onChange={(event) => setService(event.target.value)}>
             <option value={helpService}>{helpService}</option>
             {!services.includes(service) && service !== helpService && <option value={service}>{service}</option>}
             {services.map((item) => <option key={item}>{item}</option>)}
