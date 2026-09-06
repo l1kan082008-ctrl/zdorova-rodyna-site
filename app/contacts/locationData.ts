@@ -123,7 +123,7 @@ export const centerLocations: CenterLocation[] = [
       "Сб–Нд · вихідні",
     ],
     phone: "+380932332043",
-    services: ["laboratory"],
+    services: ["laboratory", "ct"],
     coordinates: { lat: 50.6105105, lng: 26.2209196 },
     gallery: [
       {
@@ -186,7 +186,7 @@ export const centerLocations: CenterLocation[] = [
       "Пункт лабораторної діагностики «Здорова Родина» у Костополі.",
     hours: ["Графік роботи уточнюйте"],
     phone: "+380982002300",
-    services: ["laboratory"],
+    services: ["laboratory", "ct"],
     coordinates: { lat: 50.8817744, lng: 26.451782 },
     gallery: [
       {

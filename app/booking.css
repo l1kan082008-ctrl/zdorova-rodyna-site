@@ -1,4 +1,23 @@
 /* Contacts and the shared booking dialog follow the existing site tokens. */
+/* Shared inset arrow for native dropdowns across public and admin forms. */
+html select:not([multiple]):not([size]) {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 48px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23087f82' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px 16px;
+}
+
+@media (forced-colors: active) {
+  html select:not([multiple]):not([size]) {
+    appearance: auto;
+    -webkit-appearance: auto;
+    background-image: none;
+  }
+}
+
 html.quick-booking-open, html.quick-booking-open body { overflow: hidden !important; }
 .contacts-intro, .contacts-booking-invite { width: min(1180px, calc(100% - 48px)); margin: 32px auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 32px; align-items: center; }
 .contacts-intro { padding: 24px 0 32px; border-bottom: 1px solid #d5e4e2; }
@@ -36,7 +55,7 @@ html.quick-booking-open, html.quick-booking-open body { overflow: hidden !import
 .quick-booking label { display: grid; gap: 8px; font-size: 13px; font-weight: 650; min-width: 0; }
 .quick-booking input:not([type=checkbox]), .quick-booking select, .quick-booking textarea { width: 100%; min-width: 0; min-height: 48px; padding: 10px 12px; border: 1px solid #a8c5c7; border-radius: 12px; background: #fff; color: var(--ink); font: inherit; font-size: 16px; }
 .quick-booking textarea { resize: vertical; }
-.quick-booking select { padding-right: 24px; text-overflow: ellipsis; }
+.quick-booking select { text-overflow: ellipsis; }
 .quick-booking input::placeholder, .quick-booking textarea::placeholder { color: #587276; opacity: 1; }
 .quick-booking__fields { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .quick-booking__phone { display: flex; align-items: center; border: 1px solid #a8c5c7; border-radius: 12px; padding-left: 12px; font-size: 16px; font-weight: 650; }
@@ -70,6 +89,14 @@ html.quick-booking-open, html.quick-booking-open body { overflow: hidden !import
 .book-button:focus-visible { color: #fff !important; }
 .book-button :is(span, svg, i, strong, b) { color: inherit !important; }
 .quick-booking :is(button,input,select,textarea,summary,a):focus-visible, .contacts-page--compact :is(a,button,summary):focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+.quick-booking select:focus {
+  outline: none;
+  box-shadow: none;
+}
+.quick-booking select:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
 /* Touch booking forms keep their normal appearance when a control receives focus. */
 @media (hover: none) and (pointer: coarse) {
   .quick-booking,

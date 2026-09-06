@@ -3577,7 +3577,7 @@ footer {
   grid-auto-flow: column;
   grid-auto-columns: calc((100% - 36px) / 3);
   overflow-x: auto;
-  overscroll-behavior-inline: contain;
+  overscroll-behavior-x: none;
   padding: 6px 2px 28px;
   scroll-padding-inline: 2px;
   scroll-snap-type: inline mandatory;
@@ -23783,12 +23783,22 @@ body.calculator-is-open .site-header {
 
 @media (max-width: 1240px) {
   .footer-directory-grid {
-    grid-template-columns: 1.2fr repeat(3, minmax(145px, 1fr));
+    grid-template-columns: minmax(240px, 1.2fr) repeat(3, minmax(145px, 1fr));
     gap: 28px 22px;
   }
 
   .footer-contact-column {
     grid-column: span 2;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 960px) {
+  .footer-directory-grid {
+    grid-template-columns: minmax(240px, 1.2fr) repeat(2, minmax(0, 1fr));
+  }
+
+  .footer-contact-column {
+    grid-column: auto;
   }
 }
 

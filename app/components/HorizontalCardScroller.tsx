@@ -13,6 +13,7 @@ export function HorizontalCardScroller({
   label,
 }: HorizontalCardScrollerProps) {
   const trackRef = useRef<HTMLDivElement>(null);
+  const targetRef = useRef<number | null>(null);
   const itemCount = Children.count(children);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -24,11 +25,15 @@ export function HorizontalCardScroller({
       (child): child is HTMLElement => child instanceof HTMLElement,
     );
     if (cards.length === 0) return;
+    const scrollLeft = Math.max(0, Math.min(track.scrollLeft, track.scrollWidth - track.clientWidth));
+    if (targetRef.current !== null && Math.abs(scrollLeft - targetRef.current) < 1) {
+      targetRef.current = null;
+    }
 
     const nextIndex = cards.reduce((closestIndex, card, index) => {
-      const currentDistance = Math.abs(card.offsetLeft - cards[0].offsetLeft - track.scrollLeft);
+      const currentDistance = Math.abs(card.offsetLeft - cards[0].offsetLeft - scrollLeft);
       const closestDistance = Math.abs(
-        cards[closestIndex].offsetLeft - cards[0].offsetLeft - track.scrollLeft,
+        cards[closestIndex].offsetLeft - cards[0].offsetLeft - scrollLeft,
       );
       return currentDistance < closestDistance ? index : closestIndex;
     }, 0);
@@ -39,12 +44,25 @@ export function HorizontalCardScroller({
   }, []);
 
   useEffect(() => {
+    const track = trackRef.current;
+    const resetTarget = () => {
+      targetRef.current = null;
+      updateActiveIndex();
+    };
     const frame = requestAnimationFrame(updateActiveIndex);
-    window.addEventListener("resize", updateActiveIndex);
+    window.addEventListener("resize", resetTarget);
+    track?.addEventListener("scrollend", resetTarget);
+    track?.addEventListener("pointerdown", resetTarget);
+    track?.addEventListener("touchstart", resetTarget, { passive: true });
+    track?.addEventListener("wheel", resetTarget, { passive: true });
 
     return () => {
       cancelAnimationFrame(frame);
-      window.removeEventListener("resize", updateActiveIndex);
+      window.removeEventListener("resize", resetTarget);
+      track?.removeEventListener("scrollend", resetTarget);
+      track?.removeEventListener("pointerdown", resetTarget);
+      track?.removeEventListener("touchstart", resetTarget);
+      track?.removeEventListener("wheel", resetTarget);
     };
   }, [updateActiveIndex]);
 
@@ -54,9 +72,19 @@ export function HorizontalCardScroller({
 
     if (!track || !(firstCard instanceof HTMLElement)) return;
 
-    const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 0;
-    track.scrollBy({
-      left: direction * (firstCard.offsetWidth + gap),
+    const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+    const positions = Array.from(track.children)
+      .filter((card): card is HTMLElement => card instanceof HTMLElement)
+      .map((card) => Math.max(0, Math.min(card.offsetLeft - firstCard.offsetLeft, maxScroll)));
+    // Repeated clicks advance from the requested destination, not an animation frame
+    // or Safari's temporarily negative rubber-band scroll position.
+    const current = Math.max(0, Math.min(targetRef.current ?? track.scrollLeft, maxScroll));
+    const next = direction === 1
+      ? positions.find((position) => position > current + 1) ?? maxScroll
+      : positions.findLast((position) => position < current - 1) ?? 0;
+    targetRef.current = next;
+    track.scrollTo({
+      left: next,
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
     });
   };

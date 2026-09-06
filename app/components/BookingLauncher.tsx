@@ -173,7 +173,7 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
           </div>}
           <div className="quick-booking__fields">
             <label htmlFor="quick-name">Ваше ім’я<input id="quick-name" name="name" autoComplete="name" minLength={2} maxLength={100} placeholder="Ім’я" required /></label>
-            <label htmlFor="quick-phone">Номер телефону<span className="quick-booking__phone"><span aria-hidden="true">+38</span><input id="quick-phone" name="phone" type="tel" inputMode="tel" autoComplete="tel-national" value={phone} onChange={(event) => setPhone(formatBookingPhone(event.target.value))} placeholder="067 123 45 67" title="Український номер телефону, наприклад 067 123 45 67" required /></span></label>
+            <label htmlFor="quick-phone">Номер телефону<span className="quick-booking__phone"><span aria-hidden="true">+38</span><input id="quick-phone" name="phone" type="tel" inputMode="tel" autoComplete="tel-national" value={phone} onChange={(event) => setPhone(formatBookingPhone(event.target.value))} placeholder="(___) ___-__-__" title="Введіть 10 цифр українського номера, починаючи з 0" required /></span></label>
           </div>
           {!doctor && !studies && <label htmlFor="quick-service"><span id="quick-service-label">Послуга</span><select id="quick-service" aria-labelledby="quick-service-label" value={service} required onChange={(event) => setService(event.target.value)}>
             <option value={helpService}>{helpService}</option>

@@ -123,8 +123,13 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
         </div>
       </section>
 
+      <section className={styles.section} id="ct-prices">
+        <SectionTitle title="Ціни та запис на КТ" lead="Оберіть потрібну ділянку. Остаточний протокол і необхідність контрастування підтвердить адміністратор." />
+        <CtPriceTabs items={prices} />
+      </section>
+
       <section className={styles.section}>
-        <div id="ct-indications" className={styles.indications}><SectionTitle title={service.indicationsTitle} />
+        <div id="ct-indications" className={styles.indications}><SectionTitle eyebrow="Коли потрібне обстеження" title={service.indicationsTitle} />
           <ul className={styles.checkList}>{service.indications.map((item) => <li key={item}>{item}</li>)}</ul>
         </div>
       </section>
@@ -141,7 +146,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
       </section>
 
       <section className={styles.section} id="ct-preparation">
-        <SectionTitle title="Підготовка та обстеження" />
+        <SectionTitle eyebrow="Ваш візит" title="Підготовка та обстеження" />
         <div className={styles.preparationGrid}>
           <div>
             <h3 className={styles.preparationLabel}>Перед візитом</h3>
@@ -161,11 +166,6 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
       <section className={styles.section}>
         <SectionTitle title="Часті запитання про КТ" />
         <CtFaqAccordion items={faq} />
-      </section>
-
-      <section className={styles.section} id="ct-prices">
-        <SectionTitle title="Ціни та запис на КТ" lead="Оберіть потрібну ділянку. Остаточний протокол і необхідність контрастування підтвердить адміністратор." />
-        <CtPriceTabs items={prices} />
       </section>
 
       <section className={styles.finalCta} aria-labelledby="ct-support-title">

@@ -365,7 +365,8 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
                 ref={phoneInputRef}
                 className={phone === PHONE_PREFIX ? "is-prefix-only" : undefined}
                 type="tel"
-                value={phone}
+                value={phone === PHONE_PREFIX ? "" : phone}
+                placeholder="+38 (___) ___-__-__"
                 onChange={(event) => {
                   const nextValue = formatPhoneNumber(event.target.value) || PHONE_PREFIX;
                   event.currentTarget.setCustomValidity("");
