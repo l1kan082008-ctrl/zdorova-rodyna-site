@@ -12,7 +12,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline'",
   "connect-src 'self' https://api.openai.com https://challenges.cloudflare.com",
-  "frame-src https://challenges.cloudflare.com https://www.openstreetmap.org",
+  "frame-src https://challenges.cloudflare.com https://www.google.com",
   "media-src 'self' blob:",
   "worker-src 'self' blob:",
   "upgrade-insecure-requests",

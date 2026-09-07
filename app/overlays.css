@@ -116,7 +116,7 @@ body.home-search-open #top > :not(.home-search-shell) {
     width: 100%;
     height: 24px;
   }
-  .site-menu-backdrop:has(+ .site-header .main-nav-group:is(.is-expanded, :hover, :focus-within)) {
+  .site-menu-backdrop:has(+ .site-header .main-nav-group.is-expanded) {
     --overlay-tint: rgba(235, 242, 248, 0.32);
     display: block;
     position: fixed;
@@ -126,7 +126,7 @@ body.home-search-open #top > :not(.home-search-shell) {
     opacity: 1;
     pointer-events: auto;
   }
-  .site-header:has(.main-nav-group:is(.is-expanded, :hover, :focus-within)) { z-index: 1100; }
+  .site-header:has(.main-nav-group.is-expanded) { z-index: 1100; }
 }
 
 @media (min-width: 1081px) and (max-width: 1200px) {
@@ -167,3 +167,561 @@ body.home-search-open #top > :not(.home-search-shell) {
     justify-content: center;
   }
 }
+
+/* Branch actions stay readable and the media close control stays above the header. */
+.branch-modal-backdrop { z-index: 2000; }
+.branch-modal { max-height: calc(100dvh - 48px); overscroll-behavior: contain; }
+.branch-modal-header { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid var(--border, #d5e4e2); }
+.branch-modal-close { min-width: 48px; min-height: 48px; }
+.branch-action-icon { width: 22px; height: 22px; flex: 0 0 22px; }
+.branch-navigator-actions > a, .branch-navigator-actions > button,
+.branch-modal-info .outline-button { min-height: 48px; font-size: 15px; gap: 10px; }
+@media (max-width: 760px) {
+  .branch-modal-backdrop { padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); place-items: center; }
+  .branch-modal { max-height: calc(100dvh - max(8px, env(safe-area-inset-top)) - max(8px, env(safe-area-inset-bottom))); }
+  .branch-modal-header { gap: 12px; padding: 14px 16px; }
+  .branch-modal-header h2 { font-size: 20px; line-height: 1.3; }
+  .branch-modal-info > .branch-modal-call { display: flex; align-items: center; min-height: 48px; font-size: 16px; }
+  .branch-modal-tabs button { min-height: 44px; font-size: 15px; }
+  .branch-full-hours summary { min-height: 44px; display: flex; align-items: center; font-size: 14px; }
+}
+.branch-navigator-actions > a.outline-button { color: var(--teal); background: #fff; border-color: #a8ceca; box-shadow: none; }
+.branch-navigation-arrow { display: grid; place-items: center; }
+@media (max-width: 760px) {
+  .branch-map-toggle.outline-button { min-height: 48px; font-size: 16px; }
+  .branch-city-nav button { min-height: 44px; font-size: 15px; }
+  .branch-navigation-copy > strong { font-size: 16px; }
+  .branch-navigation-copy > small { font-size: 13px; }
+}
+
+/* Approved branch actions: media, directions, then the map disclosure. */
+.branch-navigator-actions { flex-direction: column; align-items: stretch; gap: 12px; }
+.branch-navigator-actions > button, .branch-navigator-actions > a.outline-button,
+.branch-modal-info > a.branch-modal-directions {
+  display: grid; grid-template-columns: 24px minmax(0, 1fr) 24px;
+  width: 100%; min-height: 52px; padding: 12px 18px;
+  border: 1px solid #8ab9b8; border-radius: 16px;
+  color: var(--teal); background: #fff; font-size: 16px; font-weight: 700;
+}
+.branch-navigator-actions > button > span, .branch-navigator-actions > a > span, .branch-modal-directions > span { text-align: center; }
+.branch-navigator-actions > button:hover, .branch-navigator-actions > a.outline-button:hover { background: #edf6f5; color: var(--teal); }
+.contacts-page--compact .branch-map-toggle.outline-button {
+  align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 56px; padding: 12px 18px; border: 1px solid var(--teal);
+  border-radius: 16px; background: var(--teal); color: #fff;
+  font-size: 16px; font-weight: 700; box-shadow: 0 5px 14px rgba(8,127,130,.14);
+}
+.contacts-page--compact .branch-map-toggle.outline-button:hover { background: #076e71; color: #fff; }
+.branch-map-chevron { width: 22px; height: 22px; flex-shrink: 0; transition: transform 180ms ease; }
+.branch-map-toggle[aria-expanded="true"] .branch-map-chevron { transform: rotate(180deg); }
+.branch-map-toggle:focus-visible, .branch-navigator-actions > :focus-visible { outline: 3px solid #087f82; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .branch-map-chevron { transition: none; } }
+@media (max-width: 760px) {
+  .contacts-page--compact .branch-navigator-map-card { padding-bottom: 12px; }
+  .contacts-page--compact .branch-map-toggle.outline-button { margin: 0 20px 20px; }
+}
+
+.branch-modal-hours, .branch-media-viewer, .branch-main-photo { background: var(--surface-neutral); }
+.branch-modal-info > a.branch-modal-call {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 52px; margin-bottom: 12px; padding: 12px 18px;
+  border: 1px solid var(--orange); border-radius: 16px;
+  color: #fff; background: var(--orange); font-size: 16px; font-weight: 700;
+  text-align: center; text-decoration: none;
+}
+.branch-modal-info > a.branch-modal-call:hover { background: var(--orange); color: #fff; filter: brightness(0.96); }
+.branch-modal-info > a.branch-modal-directions:hover { background: #edf6f5; color: var(--teal); }
+.branch-modal-info > a:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+/* Media tabs align with the photo and have balanced vertical spacing. */
+.branch-modal-tabs { align-items: center; gap: 8px; padding: 16px 26px; }
+.branch-modal-tabs button {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 88px; min-height: 44px; padding: 10px 20px;
+  border-radius: 12px; font-size: 15px; line-height: 1.4; font-weight: 700;
+}
+.branch-modal-tabs button:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+@media (max-width: 760px) {
+  .branch-modal-tabs { padding: 14px; }
+}
+/* Service labels follow the approved contact-card mockup. */
+.branch-service-tags { gap: 6px; }
+.branch-service-tag {
+  min-height: 32px; padding: 7px 9px; border: 0; border-radius: 8px;
+  background: #e8f4f4; color: #087f82;
+  font-size: 12px; line-height: 1.25; font-weight: 600;
+  letter-spacing: 0; text-transform: uppercase;
+}
+/* Contacts: consistent neutral information surfaces and readable secondary text. */
+.contacts-page--compact .branch-navigation-copy small,
+.contacts-page--compact .branch-today-hours span,
+.contacts-page--compact .branch-full-hours,
+.contacts-page--compact .contacts-intro p,
+.contacts-page--compact .contacts-intro__email,
+.contacts-page--compact .contacts-booking-invite p,
+.branch-modal .branch-photo-caption,
+.branch-modal .branch-modal-hours span { color: #536b70; }
+.contacts-page--compact .contacts-booking-invite,
+.contacts-page--compact .branch-full-hours div,
+.contacts-page--compact .branch-navigation-item:not(.is-active) .branch-navigation-icon {
+  background: var(--surface-neutral);
+}
+.contacts-page--compact .outline-button:not(.branch-map-toggle),
+.contacts-page--compact .branch-navigator-actions > button,
+.branch-modal-info > a.branch-modal-directions { border-color: #6d999b; }
+.branch-desktop-hours { display: none; }
+@media (min-width: 1081px) {
+  .contacts-page--compact .branch-navigator-map-copy > .branch-today-hours,
+  .contacts-page--compact .branch-navigator-map-copy > .branch-full-hours { display: none; }
+  .branch-desktop-hours {
+    display: grid; gap: 12px; width: 100%; margin-top: 16px;
+    padding: 18px 20px; border-radius: 16px; background: var(--surface-neutral);
+  }
+  .branch-desktop-hours > strong { color: var(--ink); font-size: 14px; font-weight: 700; }
+  .branch-desktop-hours > div { display: flex; flex-wrap: wrap; gap: 12px 24px; }
+  .branch-desktop-hours span { color: #536b70; font-size: 14px; line-height: 1.5; }
+}
+/* Media dialog: neutral content, teal navigation, orange phone action. */
+.branch-modal { color: var(--ink); background: #fff; }
+.branch-modal .branch-modal-header { background: #fff; border-color: #e0e3e6; }
+.branch-modal .branch-modal-header span,
+.branch-modal .branch-modal-header h2,
+.branch-modal .branch-map-landmark,
+.branch-modal .branch-photo-caption,
+.branch-modal .branch-modal-hours strong,
+.branch-modal .branch-modal-hours span { color: var(--ink); }
+.branch-modal .branch-media-viewer,
+.branch-modal .branch-main-photo,
+.branch-modal .branch-modal-hours,
+.branch-modal .branch-modal-close { background: var(--surface-neutral); }
+.branch-modal .branch-modal-close { color: var(--ink); border-color: #e0e3e6; }
+.branch-modal .branch-modal-info { background: #fff; }
+.branch-modal .branch-thumbnail-list button { background: var(--surface-neutral); border-color: #e0e3e6; }
+.branch-modal .branch-thumbnail-list button.is-active { border-color: var(--ink); }
+/* Keep the media dialog's neutral palette independent of the site's teal ink. */
+
+.branch-modal { --ink: #30363b; }
+.branch-location-symbol { display: block; width: 26px; height: 26px; flex-shrink: 0; }
+
+/* One title scale for public information pages. */
+body :is(.page-hero h1, .contacts-intro h1) {
+  font-family: "Manrope", Arial, Helvetica, sans-serif;
+  font-size: clamp(38px, 4.1vw, 60px);
+  font-weight: var(--banner-heading-weight);
+  line-height: var(--banner-heading-leading);
+  letter-spacing: var(--banner-heading-tracking);
+}
+@media (max-width: 760px) {
+  body :is(.page-hero h1, .contacts-intro h1) { font-size: clamp(28px, 7.5vw, 44px); }
+}
+.contacts-intro__actions .outline-button { gap: 8px; min-height: 48px; }
+.contacts-intro__actions .support-viber-icon { background: transparent; }
+
+/* Contact directory audit: readable details and balanced short lists. */
+.contacts-page--compact .branch-navigation-copy small { font-size: 14px; line-height: 1.5; }
+.branch-modal .branch-photo-caption,
+.branch-modal .branch-modal-hours span { font-size: 13px; line-height: 1.5; }
+.branch-modal .branch-modal-hours strong { font-size: 14px; }
+.contacts-page--compact .branch-city-nav button span { color: #536b70; }
+@media (max-width: 760px) {
+  .contacts-page--compact .branch-city-nav {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px; overflow: visible; margin: 0 0 20px; border: 0;
+  }
+  .contacts-page--compact .branch-city-nav button {
+    min-width: 0; min-height: 46px; padding: 10px 8px;
+    border: 1px solid #d5e4e2; border-radius: 12px;
+    font-size: 15px; background: #fff;
+  }
+  .contacts-page--compact .branch-city-nav button.is-active {
+    border-color: var(--teal); background: #e8f4f4;
+  }
+  .contacts-page--compact .branch-city-nav button::after,
+  .contacts-page--compact .branch-city-nav-shell::after { display: none; }
+  .contacts-intro__actions { display: grid; grid-template-columns: 1fr; width: 100%; }
+  .contacts-intro__actions .outline-button { width: 100%; justify-content: center; font-size: 15px; }
+}
+@media (min-width: 1081px) {
+  .contacts-page--compact .branch-navigator--single { grid-template-columns: 1fr; min-height: 0; }
+  .contacts-page--compact .branch-navigator--single .branch-navigation-list { display: none; }
+  .contacts-page--compact .branch-navigator--single .branch-navigator-map {
+    display: grid; grid-template-columns: 1fr 1fr; align-items: stretch;
+  }
+  .contacts-page--compact .branch-navigator--single .branch-navigator-map-frame { height: 100%; min-height: 340px; }
+}
+/* Selecting an address must not shift neighbouring rows or flash a shadow. */
+@media (min-width: 1081px) {
+  .contacts-page--compact .branch-navigation-item {
+    margin: 6px 0; border: 1px solid transparent; border-bottom-color: #dce7e5;
+    border-radius: 18px; box-shadow: none; transition: none;
+  }
+  .contacts-page--compact .branch-navigation-item.is-active {
+    border-color: #b8d5d2; background: #edf7f6; box-shadow: none;
+  }
+}
+/* Desktop contact actions form one compact, aligned block. */
+@media (min-width: 1081px) {
+  .contacts-intro__support {
+    width: 380px; max-width: 100%; padding: 20px;
+    grid-template-columns: minmax(0, 1fr); gap: 8px;
+    justify-items: stretch; align-content: center;
+    background: var(--surface-neutral); border-radius: 20px;
+  }
+  .contacts-intro__phone { grid-row: 1; font-size: 22px; line-height: 1.4; font-weight: 700; }
+  .contacts-intro__email { grid-row: 2; min-height: 0; font-size: 14px; line-height: 1.5; }
+  .contacts-intro__actions {
+    grid-row: 3; display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; width: 100%; margin-top: 8px;
+  }
+  .contacts-intro__actions .outline-button {
+    width: 100%; min-height: 48px; padding: 10px 8px;
+    gap: 6px; font-size: 13px; font-weight: 700; justify-content: center;
+    border-radius: 12px; background: #fff; white-space: nowrap;
+  }
+  .contacts-intro__actions .support-contact-icon { width: 24px; height: 24px; }
+}
+@media (min-width: 1081px) {
+  .contacts-intro__email { font-size: 15.45px; letter-spacing: 0.015em; }
+}
+
+@media (max-width: 760px) {
+  .contacts-page--compact .branch-directory-controls {
+    display: block; width: 100%; margin-bottom: 20px; border: 0;
+  }
+  .contacts-page--compact .branch-directory-controls .branch-city-nav-shell {
+    width: 100%; border: 0;
+  }
+  .contacts-page--compact .branch-city-nav { width: 100%; margin-bottom: 0; }
+}
+@media (max-width: 760px) { .contacts-page--compact .branch-directory-controls .branch-city-nav { padding: 0; } }
+
+@media (max-width: 760px) { .contacts-intro__support > .contacts-intro__phone { display: none; } }
+
+
+.contacts-page--compact .branch-city-nav button.is-active {
+  background: var(--teal); color: #fff; border-color: var(--teal); border-radius: 12px;
+}
+.contacts-page--compact .branch-city-nav button.is-active span { color: #fff; }
+.contacts-page--compact .branch-city-nav button.is-active::after { display: none; }
+@media (min-width: 761px) {
+  .contacts-page--compact .branch-city-nav button { padding: 10px 16px; margin-bottom: 8px; }
+}
+@media (min-width: 1081px) { .contacts-intro__support { background: transparent; } }
+
+@media (min-width: 1081px) {
+  .contacts-intro__phone { text-align: right; }
+  .contacts-intro__email { justify-content: flex-end; text-align: right; }
+}
+/* Reserve room for selected studies instead of compressing navigation labels. */
+@media (min-width: 1081px) {
+  .site-header:has(.header-selection) { grid-template-columns: 200px minmax(0, 1fr) max-content; gap: 12px; }
+  .site-header:has(.header-selection) .logo { width: 200px; }
+  .site-header:has(.header-selection) .logo img { width: 100%; height: auto; }
+  .site-header:has(.header-selection) .main-nav { gap: 12px; font-size: 14px; }
+  .site-header:has(.header-selection) .main-nav > a,
+  .site-header:has(.header-selection) .main-nav-group { flex-shrink: 0; }
+  .site-header:has(.header-selection) .header-selection-label { display: none; }
+  .site-header:has(.header-selection) .header-book { padding-inline: 12px; font-size: 12px; }
+}
+body:has(.price-calculator-bar.has-items) { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+/* Branch details stay in the card; the dialog is only a media gallery. */
+.branch-modal .branch-modal-body--gallery { display: block; min-height: 0; }
+.branch-modal-body--gallery .branch-media-viewer { width: 100%; }
+.branch-modal-body--gallery .branch-main-photo { min-height: 0; }
+.branch-modal-body--gallery .branch-main-photo > img { max-height: 60dvh; object-fit: contain; }
+.branch-navigator-actions > a.branch-direct-phone {
+  display: block; min-height: 0; padding: 0; border: 0;
+  color: var(--ink); font-size: 20px; font-weight: 700; text-align: left;
+}
+.branch-navigator-actions > a.branch-direct-call {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 52px; padding: 12px 18px; border-radius: 16px;
+  background: var(--orange); border: 1px solid var(--orange); color: #fff;
+  font-size: 16px; font-weight: 700;
+}.branch-modal-body--gallery .branch-main-photo { height: min(60dvh, 620px); }
+.branch-navigator-actions > a.branch-direct-phone { background: transparent; box-shadow: none; border-radius: 0; }
+@media (max-width: 760px) { .branch-modal-body--gallery .branch-main-photo { height: 48dvh; } }
+@media (min-width: 1081px) { .branch-navigator-actions > a.branch-direct-call { display: none; } }
+
+@media (max-width: 760px) { .branch-navigator-actions > a.branch-direct-phone { display: none; } }
+
+.contacts-page--compact .branch-desktop-hours,
+.contacts-page--compact .branch-full-hours div {
+  background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0;
+}
+.contacts-page--compact .contacts-intro,
+.contacts-page--compact .branch-directory-controls,
+.contacts-page--compact .branch-city-nav-shell,
+.contacts-page--compact .branch-directory-controls .branch-city-nav-shell,
+.contacts-page--compact .branch-city-nav { border-bottom: 0; }
+/* Align the contact eyebrow with other public page introductions. */
+.contacts-page--compact .contacts-intro { margin-top: 0; padding-top: 64px; align-items: start; }
+@media (max-width: 1080px) { .contacts-page--compact .contacts-intro { padding-top: 48px; } }
+@media (max-width: 720px) { .contacts-page--compact .contacts-intro { padding-top: 28px; } }
+.main-nav-heading { display: flex; align-items: center; }
+.main-nav-page-link { display: inline-flex; align-items: center; min-height: 44px; color: inherit; font: inherit; white-space: nowrap; }
+.main-nav-heading .main-nav-group-toggle { min-width: 24px; min-height: 44px; justify-content: center; padding: 0; }
+.main-nav-heading > :focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 4px; }
+@media (max-width: 1080px) {
+  .main-nav-heading .main-nav-group-toggle { min-width: 44px; }
+}
+@media (max-width: 720px) {
+  .footer-directory-column { display: grid; grid-template-columns: minmax(0, 1fr) 48px; align-items: center; }
+  .footer-directory-column > h2 { display: block; margin: 0; }
+  .footer-directory-column > h2 a { display: flex; align-items: center; min-height: 52px; }
+  .footer-directory-column .footer-mobile-section-toggle { width: 48px; justify-content: center; }
+  .footer-directory-column > nav { grid-column: 1 / -1; }
+}
+.main-nav-mobile-label { display: none; }
+@media (max-width: 1080px) {
+  .main-nav-heading { display: contents; }
+  .main-nav-heading .main-nav-page-link { display: none; }
+  .main-nav-heading .main-nav-mobile-label { display: inline; }
+  .main-nav-heading .main-nav-group-toggle { width: auto; min-width: 0; min-height: 44px; padding: 12px 0; justify-content: center; }
+}
+@media (max-width: 720px) {
+  .footer-directory-column { display: block; }
+  .footer-directory-column > h2 { display: none; }
+  .footer-directory-column .footer-mobile-section-toggle { width: 100%; justify-content: space-between; }
+}
+/* Unified full-width city switcher. */
+.contacts-page--compact .branch-directory-controls { display: block; }
+.contacts-page--compact .branch-directory-controls .branch-city-nav {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%; gap: 6px; margin: 0; padding: 6px;
+  border: 1px solid #b8cecf; border-radius: 18px; background: #fff;
+  overflow: visible;
+}
+.contacts-page--compact .branch-city-nav button {
+  width: 100%; min-width: 0; min-height: 48px; margin: 0; padding: 10px 12px;
+  border: 0; border-radius: 12px; font-size: 15px; text-align: center;
+}
+.contacts-page--compact .branch-city-nav button:not(.is-active) { background: transparent; }
+.contacts-page--compact .branch-city-nav button:not(.is-active):hover { background: #f1f3f5; }
+.contacts-page--compact .branch-city-nav button:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
+@media (max-width: 760px) {
+  .contacts-page--compact .branch-directory-controls .branch-city-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .contacts-page--compact .contacts-intro__actions .outline-button {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    width: 100%; min-height: 52px; padding: 12px 48px;
+    border: 1px solid #6d999b; border-radius: 16px;
+    background: #fff; color: var(--teal); font-size: 16px; font-weight: 700;
+    box-shadow: none;
+  }
+  .contacts-intro__actions { gap: 12px; }
+  .contacts-intro__actions .outline-button .support-contact-icon {
+    position: absolute; left: 18px; width: 22px; height: 22px;
+    padding: 0; background: transparent;
+  }
+  .contacts-page--compact .contacts-intro__actions .outline-button:hover { background: #edf6f5; }
+}
+/* Compact contact rhythm; email belongs to the same mobile action stack. */
+.contacts-email-icon { display: none; flex-shrink: 0; }
+.contacts-page--compact .contacts-intro { padding-bottom: 16px; margin-bottom: 16px; }
+.contacts-page--compact .branch-directory { margin-top: 16px; margin-bottom: 32px; }
+.contacts-page--compact .branch-directory-controls { margin-bottom: 16px; }
+.contacts-page--compact .contacts-booking-invite { margin-top: 32px; margin-bottom: 32px; padding: 24px; }
+@media (min-width: 1081px) {
+  .contacts-page--compact .contacts-intro__support { padding-block: 0; }
+  .contacts-page--compact .branch-navigator-map-card { padding: 20px; gap: 16px; }
+}
+@media (max-width: 760px) {
+  .contacts-page--compact .contacts-intro { gap: 16px; }
+  .contacts-intro__support, .contacts-intro__actions { gap: 10px; }
+  .contacts-page--compact .contacts-intro__email {
+    position: relative; display: flex; justify-content: center; align-items: center;
+    width: 100%; min-height: 48px; padding: 10px 14px 10px 44px;
+    border: 1px solid #6d999b; border-radius: 16px;
+    color: var(--teal); background: #fff; font-size: 13px; line-height: 1.4;
+    text-align: center; letter-spacing: 0;
+  }
+  .contacts-intro__email .contacts-email-icon { display: block; position: absolute; left: 18px; }
+  .contacts-page--compact .branch-directory { margin-top: 12px; margin-bottom: 24px; }
+  .contacts-page--compact .contacts-booking-invite { margin-top: 24px; padding: 20px; }
+}
+@media (max-width: 760px) { .contacts-page--compact .contacts-intro__email { font-size: 16px; font-weight: 700; font-family: inherit; min-height: 52px; } }
+
+/* Shared, restrained page-title typography across public sections. */
+body :is(.inner-page h1, #patients-title) {
+  font-family: "Manrope", Arial, Helvetica, sans-serif;
+  font-size: clamp(36px, 3.4vw, 48px);
+  font-weight: 450; line-height: 1.16; letter-spacing: -0.02em;
+}
+@media (max-width: 760px) {
+  body :is(.inner-page h1, #patients-title) { font-size: clamp(28px, 7.2vw, 32px); }
+}body :is(.page-hero h1, .contacts-intro h1, #patients-title, #preparation-title, #faq-title) { color: var(--ink); }
+@media (min-width: 1081px) { .contacts-page--compact .contacts-intro__support { padding-inline: 0; justify-self: end; } }
+
+/* Tablet contacts: keep actionable calls and one card per single-branch city. */
+@media (min-width: 761px) and (max-width: 1080px) {
+  .contacts-page--compact .contacts-intro__phone,
+  .contacts-page--compact .branch-navigator-actions > a.branch-direct-phone,
+  .contacts-page--compact .branch-navigator--single .branch-navigation-list {
+    display: none;
+  }
+}
+/* Readable specialties when a doctor card is opened or enlarged. */
+.inner-page .doctors-directory-v2 .doctor-profile-card-v2:is(.is-expanded, .is-focused) .doctor-card-photo-identity small {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  opacity: 1;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+}
+.inner-page .doctor-detail-heading .doctor-specialty { font-size: 18px; font-weight: 600; line-height: 1.4; }
+
+/* Align every facts row to its grid column, including consultation price. */
+.inner-page .doctor-detail-facts { gap: 16px 18px; }
+.inner-page .doctor-detail-facts > div {
+  padding-inline: 0;
+  border-right: 0;
+}
+/* Readable desktop doctor profile details. */
+@media (min-width: 1081px) {
+  .inner-page .doctor-detail-facts dt { font-size: 13px; line-height: 1.4; letter-spacing: 0.02em; color: #587276; }
+  .inner-page .doctor-detail-facts dd { font-size: 16px; line-height: 1.5; font-weight: 600; }
+  .inner-page .doctor-biography p { font-size: 16px; line-height: 1.65; }
+}
+/* Reception hours belong beside the booking action, not beside biography. */
+.inner-page .doctor-detail-content { grid-template-columns: minmax(0, 1fr); }
+.inner-page .doctor-biography { max-width: 850px; }
+.inner-page .doctor-detail-schedule--inline {
+  width: 100%; margin: 0 0 24px; padding: 0;
+  background: transparent; border: 0; border-radius: 0;
+}
+.inner-page .doctor-detail-schedule--inline h2 { margin: 0 0 12px; font-size: 22px; line-height: 1.3; }
+.inner-page .doctor-detail-schedule--inline > div { display: grid; gap: 0; }
+.inner-page .doctor-detail-schedule--inline p {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 16px; margin: 0; padding: 8px 0;
+}
+.inner-page .doctor-detail-schedule--inline p span,
+.inner-page .doctor-detail-schedule--inline p strong { font-size: 15px; line-height: 1.4; }
+.inner-page .doctor-detail-schedule--inline p strong { text-align: right; font-weight: 600; }
+.inner-page .doctor-detail-schedule--inline small { display: block; margin-top: 12px; font-size: 13px; line-height: 1.5; }
+/* Compact schedule chevron with a full-size disclosure target. */
+.doctor-card-schedule-line summary { min-height: 44px; }
+.doctor-card-schedule-line summary i { background: transparent; border-radius: 0; }
+.doctor-card-schedule-line summary i::before {
+  top: 4px; left: 5px; width: 7px; height: 7px;
+  border: solid currentColor; border-width: 0 1.5px 1.5px 0;
+  border-radius: 0; background: transparent; transform: rotate(45deg);
+}
+.doctor-card-schedule-line summary i::after { content: none; }
+.doctor-card-schedule-line details[open] summary i { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .doctor-card-schedule-line summary i { transition: none; } }
+/* Desktop schedules open without resizing the doctor grid. */
+@media (min-width: 1081px) {
+  .doctors-directory-v2 { align-items: start; }
+  .doctor-profile-card-v2:has(.doctor-card-schedule-line details[open]) { z-index: 5; }
+  .doctor-card-schedule-line details { position: relative; }
+  .doctor-card-schedule-line details[open] .doctor-week {
+    position: absolute; inset: auto 0 auto 0; top: 100%; z-index: 6;
+    margin: 4px 0 0; padding: 8px 14px;
+    border: 1px solid #d5e4e2; border-radius: 12px;
+    background: #fff; box-shadow: 0 8px 24px rgb(15 52 54 / 12%);
+  }
+  .doctor-card-schedule-line .doctor-week b { white-space: normal; text-align: right; }
+}
+/* Align booking actions across each desktop doctor row. */
+@media (min-width: 1081px) {
+  .doctors-directory-v2 { align-items: stretch; }
+  .doctor-profile-card-v2 .doctor-card-text-actions { margin-top: auto; }
+  .doctor-profile-card-v2:hover { transform: none; }
+}
+/* Two text tones and one information grid in doctor cards. */
+.doctor-card-editorial-content { --doctor-label: #657477; --doctor-value: #073f46; }
+.doctor-card-editorial-content .doctor-card-facts span,
+.doctor-card-editorial-content .doctor-card-schedule-line > div > span,
+.doctor-card-editorial-content .doctor-card-schedule-line small,
+.doctor-card-editorial-content .doctor-week span {
+  color: var(--doctor-label); font-size: 12px; line-height: 1.5;
+  font-weight: 500; letter-spacing: 0; text-transform: none;
+}
+.doctor-card-editorial-content .doctor-card-facts strong,
+.doctor-card-editorial-content .doctor-card-schedule-line > div > strong,
+.doctor-card-editorial-content .doctor-card-schedule-line summary,
+.doctor-card-editorial-content .doctor-week b {
+  color: var(--doctor-value); font-size: 14px; line-height: 1.5; font-weight: 600;
+  text-align: left;
+}
+.doctor-card-editorial-content .doctor-card-facts > div,
+.doctor-card-editorial-content .doctor-card-schedule-line > div {
+  display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 12px;
+  align-items: start;
+}
+.doctor-card-editorial-content .doctor-card-schedule-line small {
+  display: block; max-width: none; margin: 4px 0 0 100px; text-align: left;
+}
+.doctor-card-editorial-content .doctor-week div {
+  display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 12px; align-items: start;
+}
+.doctor-card-editorial-content .doctor-week b { white-space: normal; }
+/* Align the day cells themselves, not only the text inside them. */
+.doctor-card-editorial-content .doctor-week div { justify-items: stretch; }
+.doctor-card-editorial-content .doctor-week span,
+.doctor-card-editorial-content .doctor-week b { justify-self: stretch; width: 100%; text-align: left; }
+.doctor-card-editorial-content .doctor-week > div:first-child { border-top: 0; }
+
+/* Keep photo captions within the image column, including long names and prices. */
+.doctor-card-photo-identity > span:first-child { grid-template-columns: minmax(0, 1fr); }
+.doctor-card-photo-identity .doctor-card-consultation-price {
+  display: block; width: fit-content; min-width: 0; max-width: 100%;
+  white-space: normal; overflow-wrap: anywhere; line-height: 1.45; border-radius: 12px;
+}
+@media (min-width: 761px) {
+  .doctor-card-photo-identity b { white-space: normal; overflow-wrap: normal; word-break: normal; text-wrap: wrap; }
+}
+/* Mobile doctor typography: readable captions and profile information. */
+@media (max-width: 760px) {
+  .inner-page .doctors-directory-v2 .doctor-card-photo-identity small { font-size: 13px; line-height: 1.4; }
+  .inner-page .doctors-directory-v2 .doctor-card-photo-identity .doctor-card-consultation-price { font-size: 13px; line-height: 1.4; padding: 6px 8px; }
+  .inner-page .doctors-directory-v2 .doctor-profile-card-v2:is(.is-expanded, .is-focused) .doctor-card-photo-identity small { font-size: 16px; }
+  .inner-page .doctor-card-editorial-content .doctor-card-facts strong,
+  .inner-page .doctor-card-editorial-content .doctor-card-schedule-line > div > strong,
+  .inner-page .doctor-card-editorial-content .doctor-card-schedule-line summary,
+  .inner-page .doctor-card-editorial-content .doctor-week b { font-size: 16px; }
+  .inner-page .doctor-detail-facts dt { font-size: 13px; line-height: 1.4; color: #657477; letter-spacing: 0.02em; }
+  .inner-page .doctor-detail-facts dd,
+  .inner-page .doctor-biography p { font-size: 16px; line-height: 1.55; }
+}
+.home-search-empty .home-search-admin-call {
+  display: inline-flex; align-items: center; justify-content: flex-start; gap: 12px;
+  min-height: 48px; max-width: 100%; padding: 12px 0;
+  border: 0; border-radius: 0;
+  font-size: 15px; line-height: 1.4; text-align: left;
+}
+.home-search-empty .home-search-admin-call:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+.home-search-result-count { margin: 8px 0 4px; color: #657477; font-size: 13px; font-weight: 500; line-height: 1.5; }
+
+/* Compact transitions between the homepage doctors, prices and about sections. */
+#doctors.doctors-section { padding-bottom: 24px; }
+#prices.pricing-section { margin-top: 0; padding-top: 24px; padding-bottom: 32px; }
+#about.about-section { margin-top: 0; }
+@media (max-width: 760px) {
+  #doctors.doctors-section { padding-bottom: 16px; }
+  #prices.pricing-section { padding-top: 16px; padding-bottom: 24px; }
+}
+
+/* One visible section gap on the homepage; panel padding stays internal. */
+.home-page { --home-section-gap: 40px; }
+.home-page > :is(.services-section, .promo-slider-section, .doctors-section, .pricing-section) {
+  margin-top: var(--home-section-gap);
+  padding-block: 0;
+}
+.home-page > #doctors.doctors-section,
+.home-page > #prices.pricing-section {
+  margin-top: var(--home-section-gap);
+  padding-block: 0;
+}
+.home-page > #about.about-section,
+.home-page > .quick-strip,
+.home-page > .site-footer-minimal { margin-top: var(--home-section-gap); }
+@media (max-width: 760px) {
+  .home-page { --home-section-gap: 24px; }
+}
+.home-page > #services.services-section { padding-block: 0; }
+.home-page > #about.about-section { margin-bottom: 0; }

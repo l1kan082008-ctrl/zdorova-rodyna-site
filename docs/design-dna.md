@@ -23,6 +23,8 @@ Warm, trustworthy and precise medical care. The public site feels calm and human
 
 ## Components
 
+- Header dropdowns use one explicit open state: desktop mouse entry opens a category and leaving it closes it; click or Enter/Space toggles it. Switching closes the previous category. Outside click, leaving navigation focus and Escape dismiss it. Touch uses clicks. CSS hover and focus styling must not independently keep panels or backdrops open.
+
 - Homepage services precede the promotional carousel. Mobile hero art and advantages are compact; the approved doctor fan and its scrolling remain unchanged. Quick actions use real links, and priced cards offer booking directly.
 
 - Home search starts with quick directions, uses full-width readable result groups, preserves doctor queries, and keeps the selection summary sticky. Result counts distinguish shown items from total matches. Arrow keys focus result links; Enter opens the focused result (or first result from the search input).

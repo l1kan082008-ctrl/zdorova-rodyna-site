@@ -23,3 +23,23 @@ test('synonyms highlight the actual matched title and preserve text', () => {
   assert.equal(parts.map(p => p.text).join(''), 'Глюкоза крові');
   assert.ok(parts.some(p => p.text === 'Глюкоза' && p.matched));
 });
+
+for (const [query, title] of [
+  ['ангиография', 'КТ-ангіографія судин головного мозку'],
+  ['ангиография сосудов головного мозга', 'КТ-ангіографія судин головного мозку'],
+  ['ангиография сосудов шеи', 'КТ-ангіографія судин шиї'],
+  ['ангиография нижних конечностей', 'КТ-ангіографія судин нижніх кінцівок'],
+]) {
+  test(`Russian angiography query: ${query}`, () => assert.ok(scoreMedicalSearch(query, title) > 0));
+}
+for (const query of ['ангеография', 'анг-е-о-графия', 'анг е о графия', 'ан-ги-о-графия', 'ангиография']) {
+  test(`angiography spelling variant: ${query}`, () => {
+    assert.ok(scoreMedicalSearch(query, 'КТ-ангіографія судин головного мозку') > 0);
+  });
+}
+for (const query of ['анге', 'ан-ге', 'анги', 'ангі', 'ангео']) {
+  test(`angiography autocomplete: ${query}`, () => {
+    assert.ok(scoreMedicalSearch(query, 'КТ-ангіографія судин головного мозку') > 0);
+    assert.equal(scoreMedicalSearch(query, 'Глюкоза'), 0);
+  });
+}

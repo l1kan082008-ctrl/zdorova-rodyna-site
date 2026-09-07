@@ -165,6 +165,7 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
   const [selectedServiceCount, setSelectedServiceCount] = useState(0);
   const supportButtonRef = useRef<HTMLButtonElement>(null);
   const headerRef = useRef<HTMLElement>(null);
+  const navigationRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const supportDialogRef = useRef<HTMLElement>(null);
   const supportPhoneRef = useRef<HTMLInputElement>(null);
@@ -285,6 +286,27 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
   }, [menuOpen]);
 
   useEffect(() => {
+    if (!openNavigationMenu) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !navigationRef.current?.contains(event.target)) {
+        setOpenNavigationMenu(null);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      const toggle = navigationRef.current?.querySelector<HTMLButtonElement>('[aria-expanded="true"]');
+      setOpenNavigationMenu(null);
+      toggle?.focus();
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [openNavigationMenu]);
+
+  useEffect(() => {
     if (!supportOpen) return;
 
     const previousOverflow = document.body.style.overflow;
@@ -334,7 +356,10 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
       <div
         className={menuOpen ? "site-menu-backdrop is-visible" : "site-menu-backdrop"}
         aria-hidden="true"
-        onClick={() => setMenuOpen(false)}
+        onClick={() => {
+          setMenuOpen(false);
+          setOpenNavigationMenu(null);
+        }}
       />
       <header
         ref={headerRef}
@@ -367,6 +392,10 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
       </Link>
 
       <nav
+        ref={navigationRef}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) setOpenNavigationMenu(null);
+        }}
         className={menuOpen ? "main-nav is-open" : "main-nav"}
         aria-label="Основна навігація"
       >
@@ -375,8 +404,21 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
             <div
               className={openNavigationMenu === item.key ? "main-nav-group is-expanded" : "main-nav-group"}
               key={item.key}
+              onPointerEnter={(event) => {
+                if (event.pointerType === "mouse" && window.matchMedia("(min-width: 1081px) and (hover: hover)").matches) {
+                  setOpenNavigationMenu(item.key);
+                }
+              }}
+              onPointerLeave={(event) => {
+                if (event.pointerType === "mouse" && window.matchMedia("(min-width: 1081px) and (hover: hover)").matches) {
+                  setOpenNavigationMenu((currentMenu) => currentMenu === item.key ? null : currentMenu);
+                }
+              }}
             >
+              <div className="main-nav-heading">
+              <a className="main-nav-page-link" href={item.href} onClick={() => { setMenuOpen(false); setOpenNavigationMenu(null); }}>{item.label}</a>
               <button
+                aria-label={item.label}
                 className={active === item.key ? "main-nav-group-toggle is-active" : "main-nav-group-toggle"}
                 type="button"
                 aria-expanded={openNavigationMenu === item.key}
@@ -387,13 +429,13 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
                   )
                 }
               >
-                {item.label}
-                <span className="main-nav-chevron" aria-hidden="true" />
+                <span className="main-nav-mobile-label">{item.label}</span><span className="main-nav-chevron" aria-hidden="true" />
               </button>
+              </div>
               <div
                 className="main-nav-submenu"
                 id={`main-nav-submenu-${item.key}`}
-                aria-label={`Підрозділи: ${item.label}`}
+                aria-label={item.label}
               >
                 {item.children.map((child) => (
                   <a
@@ -728,7 +770,7 @@ export function SiteFooter() {
         <section className={`footer-directory-column${openFooterSection === "services" ? " is-open" : ""}`}>
           <h2><Link href="/services">Послуги</Link></h2>
           <button
-            className="footer-mobile-section-toggle"
+            className="footer-mobile-section-toggle" aria-label="Розгорнути підрозділи"
             type="button"
             aria-expanded={openFooterSection === "services"}
             aria-controls="footer-services-links"
@@ -747,7 +789,7 @@ export function SiteFooter() {
         <section className={`footer-directory-column${openFooterSection === "doctors" ? " is-open" : ""}`}>
           <h2><Link href="/doctors">Лікарі</Link></h2>
           <button
-            className="footer-mobile-section-toggle"
+            className="footer-mobile-section-toggle" aria-label="Розгорнути підрозділи"
             type="button"
             aria-expanded={openFooterSection === "doctors"}
             aria-controls="footer-doctor-links"
@@ -766,7 +808,7 @@ export function SiteFooter() {
         <section className={`footer-directory-column${openFooterSection === "patients" ? " is-open" : ""}`}>
           <h2><Link href="/patients">Пацієнтам</Link></h2>
           <button
-            className="footer-mobile-section-toggle"
+            className="footer-mobile-section-toggle" aria-label="Розгорнути підрозділи"
             type="button"
             aria-expanded={openFooterSection === "patients"}
             aria-controls="footer-patient-links"
@@ -784,7 +826,7 @@ export function SiteFooter() {
         <section className={`footer-directory-column${openFooterSection === "about" ? " is-open" : ""}`}>
           <h2><Link href="/about">Про центр</Link></h2>
           <button
-            className="footer-mobile-section-toggle"
+            className="footer-mobile-section-toggle" aria-label="Розгорнути підрозділи"
             type="button"
             aria-expanded={openFooterSection === "about"}
             aria-controls="footer-about-links"

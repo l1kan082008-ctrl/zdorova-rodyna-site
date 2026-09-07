@@ -1,5 +1,7 @@
 "use client";
 import { CloseIcon } from "../components/CloseIcon";
+import { createPortal } from "react-dom";
+import { useModalDialog } from "../components/useModalDialog";
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -19,24 +21,39 @@ type LocationsExplorerProps = {
 
 type MediaMode = "photos" | "video";
 
+function DirectionsIcon() {
+  return <svg className="branch-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m21 3-7 18-3-8-8-3 18-7Z" /></svg>;
+}
+
 function getLocationIconType(location: CenterLocation) {
-  if (location.type.includes("Головний")) {
-    return "center";
-  }
-  if (location.type.includes("аналіз")) {
-    return "laboratory";
-  }
-  return "clinic";
+  if (location.services.length === 1 && location.services[0] === "laboratory") return "laboratory";
+  return location.services.length > 3 ? "center" : "clinic";
 }
 
 function LocationIcon({ location }: { location: CenterLocation }) {
+  const type = getLocationIconType(location);
   return (
-    <span
-      className={`branch-location-icon branch-location-icon--${getLocationIconType(location)}`}
-    />
+    <svg className="branch-location-symbol" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {type === "laboratory" ? (
+        <>
+          <rect x="7" y="2" width="10" height="5" rx="1.2" fill="currentColor" stroke="none" />
+          <path d="M8 7v11a4 4 0 0 0 8 0V7" />
+          <rect x="10" y="10" width="4" height="6" rx="0.7" fill="currentColor" fillOpacity="0.25" stroke="none" />
+        </>
+      ) : type === "center" ? (
+        <>
+          <path d="M7 21V3h10v18M7 9H2v12h20V9h-5M10 21v-5h4v5M12 6v6M9 9h6M4 13h1M4 17h1M19 13h1M19 17h1" />
+        </>
+      ) : (
+        <>
+          <rect x="5" y="7" width="14" height="14" rx="2" />
+          <path d="M12 10v4M10 12h4M10 21v-4h4v4" />
+        </>
+      )}
+    </svg>
   );
 }
-
 function BranchServiceTags({ services }: { services: BranchServiceId[] }) {
   return (
     <span className="branch-service-tags" aria-label="Доступні послуги">
@@ -89,6 +106,10 @@ export function LocationsExplorer({
   const [mobileMapOpen, setMobileMapOpen] = useState(false);
   const cityNavRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLElement>(null);
+  const mediaDialogRef = useRef<HTMLElement>(null);
+  const mediaCloseRef = useRef<HTMLButtonElement>(null);
+  useModalDialog({ open: openLocationId !== null, dialogRef: mediaDialogRef,
+    initialFocusRef: mediaCloseRef, onClose: () => setOpenLocationId(null) });
 
   const cities = useMemo(
     () => Array.from(new Set(locations.map((location) => location.city))),
@@ -192,13 +213,7 @@ export function LocationsExplorer({
 
   return (
     <>
-      <section className="branch-directory" aria-labelledby="locations-title">
-        <div className="branch-directory-heading">
-          <div>
-            <h2 id="locations-title">Оберіть місто та адресу</h2>
-          </div>
-        </div>
-
+      <section className="branch-directory" aria-label="Наші відділення">
         <div className="branch-directory-controls">
           <div className="branch-city-nav-shell">
             <div
@@ -222,7 +237,7 @@ export function LocationsExplorer({
                     key={city}
                     onClick={() => selectLocation(cityLocations[0])}
                   >
-                    {city} <span>{cityLocations.length}</span>
+                    {city}
                   </button>
                 );
               })}
@@ -230,7 +245,7 @@ export function LocationsExplorer({
           </div>
         </div>
 
-        <div className="branch-navigator">
+        <div className={`branch-navigator${visibleLocations.length === 1 ? " branch-navigator--single" : ""}`}>
           <div className="branch-navigation-list">
             {visibleLocations.map((location) => {
               const isActive = location.id === selectedLocation.id;
@@ -254,7 +269,7 @@ export function LocationsExplorer({
                     <BranchServiceTags services={location.services} />
                   </span>
                   <span className="branch-navigation-arrow" aria-hidden="true">
-                    ›
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m9 5 7 7-7 7" /></svg>
                   </span>
                 </button>
               );
@@ -266,7 +281,11 @@ export function LocationsExplorer({
             aria-live="polite"
             ref={mapRef}
           >
-            <button className="branch-map-toggle outline-button" type="button" aria-expanded={mobileMapOpen} aria-controls="branch-map-frame" onClick={() => setMobileMapOpen((value) => !value)}>{mobileMapOpen ? "Згорнути мапу" : "Показати на мапі"}</button>
+            <button className="branch-map-toggle outline-button" type="button" aria-expanded={mobileMapOpen} aria-controls="branch-map-frame" onClick={() => setMobileMapOpen((value) => !value)}>
+              <svg className="branch-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>{mobileMapOpen ? "Згорнути мапу" : "Показати на мапі"}</span>
+              <svg className="branch-map-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
             <div id="branch-map-frame" className={`branch-navigator-map-frame${mobileMapOpen ? " is-mobile-open" : ""}`}>
               <iframe
                 key={selectedLocation.id}
@@ -281,6 +300,14 @@ export function LocationsExplorer({
                 <span>{selectedLocation.type}</span>
                 <h3>{selectedLocation.address}</h3>
                 <BranchServiceTags services={selectedLocation.services} />
+                <div className="branch-desktop-hours">
+                  <strong>Графік роботи</strong>
+                  <div>
+                    {selectedLocation.hours.map((line) => (
+                      <span key={line}>{line}</span>
+                    ))}
+                  </div>
+                </div>
                 <div className="branch-today-hours">
                   <strong>Сьогодні</strong>
                   <span>{getHoursForDay(selectedLocation, currentDay)}</span>
@@ -297,29 +324,30 @@ export function LocationsExplorer({
                 ) : null}
               </div>
               <div className="branch-navigator-actions">
-                <a className="book-button" href={`/contacts?location=${encodeURIComponent(selectedLocation.id)}#booking`}>Записатися сюди <span aria-hidden="true">→</span></a>
+                <a className="branch-direct-phone" href={`tel:${selectedLocation.phone}`}>{selectedLocation.phone}</a>
+                <a className="book-button branch-direct-call" href={`tel:${selectedLocation.phone}`}>
+                  Зателефонувати у відділення
+                </a>
+                <button type="button" onClick={() => showLocation(selectedLocation)}>
+                  <svg className="branch-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true"><path d="M4 6h3l2-3h6l2 3h3a2 2 0 0 1 2 2v11H2V8a2 2 0 0 1 2-2Z"/><circle cx="12" cy="12" r="4"/></svg>
+                  <span>Фото і відео</span>
+                </button>
                 <a
                   className="outline-button"
                   href={getDirectionsUrl(selectedLocation)}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Прокласти маршрут
-                  <span aria-hidden="true">↗</span>
+                  <DirectionsIcon />
+                  <span>Прокласти маршрут</span>
                 </a>
-                <button
-                  type="button"
-                  onClick={() => showLocation(selectedLocation)}
-                >
-                  Фото і відео
-                </button>
               </div>
             </div>
           </aside>
         </div>
       </section>
 
-      {openLocation ? (
+      {openLocation ? createPortal(
         <div
           className="branch-modal-backdrop"
           role="presentation"
@@ -330,6 +358,7 @@ export function LocationsExplorer({
           }}
         >
           <section
+            ref={mediaDialogRef}
             className="branch-modal"
             role="dialog"
             aria-modal="true"
@@ -338,10 +367,11 @@ export function LocationsExplorer({
             <div className="branch-modal-header">
               <div>
                 <span>{openLocation.type}</span>
-                <h2 id="branch-modal-title">{openLocation.address}</h2>
+                <h2 id="branch-modal-title">{openLocation.fullAddress}</h2>
               </div>
               <button
                 className="branch-modal-close"
+                ref={mediaCloseRef}
                 type="button"
                 onClick={() => setOpenLocationId(null)}
                 aria-label="Закрити перегляд відділення"
@@ -350,6 +380,7 @@ export function LocationsExplorer({
               </button>
             </div>
 
+            {openLocation.videoUrl ? (
             <div className="branch-modal-tabs" role="tablist" aria-label="Медіа відділення">
               <button
                 className={mediaMode === "photos" ? "is-active" : ""}
@@ -373,7 +404,9 @@ export function LocationsExplorer({
               ) : null}
             </div>
 
-            <div className="branch-modal-body">
+            ) : null}
+
+            <div className="branch-modal-body branch-modal-body--gallery">
               <div className="branch-media-viewer">
                 {mediaMode === "photos" ? (
                   <>
@@ -452,36 +485,10 @@ export function LocationsExplorer({
                 ) : null}
               </div>
 
-              <aside className="branch-modal-info">
-                <h3>{openLocation.fullAddress}</h3>
-                {openLocation.landmark ? (
-                  <p className="branch-map-landmark">
-                    Орієнтир: {openLocation.landmark}
-                  </p>
-                ) : null}
-                <p>{openLocation.description}</p>
-                <BranchServiceTags services={openLocation.services} />
-                <div className="branch-modal-hours">
-                  <strong>Графік роботи</strong>
-                  {openLocation.hours.map((line) => (
-                    <span key={line}>{line}</span>
-                  ))}
-                </div>
-                <a className="branch-modal-call" href={`tel:${openLocation.phone}`}>
-                  Зателефонувати у відділення
-                </a>
-                <a
-                  className="outline-button"
-                  href={getDirectionsUrl(openLocation)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Прокласти маршрут ↗
-                </a>
-              </aside>
+
             </div>
           </section>
-        </div>
+        </div>, document.body
       ) : null}
     </>
   );

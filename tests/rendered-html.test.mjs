@@ -67,7 +67,7 @@ test("admin authentication is hardened end to end", async () => {
   assert.match(worker, /frame-ancestors 'none'/);
   assert.match(
     worker,
-    /frame-src https:\/\/challenges\.cloudflare\.com https:\/\/www\.openstreetmap\.org/,
+    /frame-src https:\/\/challenges\.cloudflare\.com https:\/\/www\.google\.com/,
   );
   assert.match(migration, /CREATE TABLE IF NOT EXISTS `admin_sessions`/);
   assert.match(migration, /CREATE TABLE IF NOT EXISTS `admin_login_attempts`/);

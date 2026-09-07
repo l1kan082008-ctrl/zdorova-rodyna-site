@@ -16,6 +16,7 @@ import {
   normalizeMedicalSearch,
   medicalHighlightParts,
   scoreMedicalSearch,
+  compareStudyMatches,
 } from "../search/medicalSearch";
 import { useModalDialog } from "./useModalDialog";
 
@@ -70,6 +71,12 @@ function SearchHighlight({ text, query }: { text: string; query: string }) {
   return <>{medicalHighlightParts(text, query).map((part, index) => part.matched ? <mark key={index}>{part.text}</mark> : part.text)}</>;
 }
 
+const countNoun = (count: number, forms: [string, string, string]) => {
+  const lastTwo = count % 100;
+  if (lastTwo >= 11 && lastTwo <= 14) return forms[2];
+  const last = count % 10;
+  return last === 1 ? forms[0] : last >= 2 && last <= 4 ? forms[1] : forms[2];
+};
 const formatPrice = (amount: number) =>
   `${new Intl.NumberFormat("uk-UA").format(amount)} ₴`;
 
@@ -134,7 +141,7 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
               : 1,
           }))
           .filter((match) => match.score > 0)
-          .sort((first, second) => second.score - first.score || first.index - second.index)
+          .sort((first, second) => kind === "price" && normalizedQuery ? compareStudyMatches(first, second) : second.score - first.score || first.index - second.index)
           .map((match) => match.item);
 
         const best = matches[0];
@@ -404,14 +411,14 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
           </div>
 
           <p className="sr-only" aria-live="polite">
-            {query ? `Показано ${resultCount} із ${totalCount} результатів` : "Основні напрями"}
+            {query ? `Знайдено ${totalCount} ${countNoun(totalCount, groups.every((group) => group.kind === "price") ? ["дослідження", "дослідження", "досліджень"] : ["результат", "результати", "результатів"])}` : "Основні напрями"}
           </p>
 
           {groups.length ? (
             <div className="home-search-groups">
               {groups.map((group) => (
                 <section className="home-search-group" key={group.kind}>
-                  <h2>{groupLabels[group.kind]} {query ? <small>Показано {group.items.length} із {group.total}</small> : null}</h2>
+                  <h2>{groupLabels[group.kind]} {query ? <small>{`Знайдено ${group.total} ${countNoun(group.total, group.kind === "price" ? ["дослідження", "дослідження", "досліджень"] : ["результат", "результати", "результатів"])}, ${group.total > group.items.length ? `показано перші ${group.items.length}` : "показано всі"}`}</small> : null}</h2>
                   <div className="home-search-results-list">
                     {group.items.map((item) => (
                       <article className="home-search-result" key={`${item.kind}-${item.id}`}>
@@ -523,14 +530,14 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
             <div className="home-search-empty">
               <strong>Нічого не знайшли за цим запитом</strong>
               <p>Спробуйте коротшу назву або зверніться до адміністратора.</p>
-              <Link href="/contacts#booking" onClick={closeSearch}>
-                Допомога адміністратора <span>→</span>
-              </Link>
+              <a className="home-search-admin-call" href="tel:+380676714444" onClick={closeSearch}>
+                Зателефонувати адміністратору <span aria-hidden="true">→</span>
+              </a>
             </div>
           )}
 
           <div className={`home-search-footer${selectedPriceIds.length ? " has-calculator" : ""}`}>
-            <span>{selectedPriceIds.length ? `Обрано: ${selectedPriceIds.length} · ${formatPrice(selectedAmount)} (без доплат CITO)` : query ? `Показано ${resultCount} із ${totalCount}` : "Оберіть напрям або введіть запит"}</span>
+            <span>{selectedPriceIds.length ? `Обрано: ${selectedPriceIds.length} · ${formatPrice(selectedAmount)} (без доплат CITO)` : query ? `Показано ${resultCount} із ${totalCount} знайдених` : "Оберіть напрям або введіть запит"}</span>
             {selectedPriceIds.length ? (
               <button className="home-search-calculator-cta" type="button" onClick={openCalculator}>
                 <span>Переглянути обране</span>

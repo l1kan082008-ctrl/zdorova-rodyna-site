@@ -38,7 +38,7 @@ function withSecurityHeaders(request: Request, response: Response) {
       "font-src 'self' data:",
       "media-src 'self' blob: https:",
       "connect-src 'self' https://api.openai.com https://challenges.cloudflare.com",
-      "frame-src https://challenges.cloudflare.com https://www.openstreetmap.org",
+      "frame-src https://challenges.cloudflare.com https://www.google.com",
       "worker-src 'self' blob:",
       "upgrade-insecure-requests",
     ].join("; "),

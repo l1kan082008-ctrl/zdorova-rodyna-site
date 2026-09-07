@@ -8,8 +8,8 @@
 .page .heroImage { transform: scale(1.07); transform-origin: center; }
 .page .heroField { top: 5%; right: -3%; bottom: 2%; left: 39%; height: auto; opacity: 1; }
 /* Match the photo matte and feather only its empty outer margins. */
-.page .equipmentCard { background: #03424b; }
-.page .equipmentImageFrame { left: 50%; right: auto; width: auto; height: 100%; aspect-ratio: 960 / 934; transform: translateX(-50%); }
+.page .equipmentCard { background: #023035; }
+.page .equipmentImageFrame { left: 50%; right: auto; width: auto; height: 100%; aspect-ratio: 1; transform: translateX(-50%); }
 .equipmentImage {
   object-fit: contain !important;
   transform: none !important;
@@ -73,3 +73,5 @@
   .page .areaCard:is([data-area="spine"], [data-area="upper"], [data-area="pelvis"], [data-area="additional"]):hover .areaArtwork img { transform: scale(1.02); }
   .page .areaCard[data-area="additional"]:hover .areaArtwork img { transform: none; }
 }
+
+.page .preparationGrid > div { background: #f1f3f5; }

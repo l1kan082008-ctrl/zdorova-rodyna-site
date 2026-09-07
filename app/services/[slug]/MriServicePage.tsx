@@ -87,7 +87,7 @@ export function MriServicePage({ service, doctors, prices, bookingHref }: Props)
 
       <section className={`${styles.section} ${styles.equipmentDoctors}`} id="mri-doctors">
         <article className={`${styles.equipmentCard} ${mri.equipmentCard}`}>
-          <div className={styles.equipmentMedia}><div className={`${styles.equipmentImageFrame} ${mri.equipmentImageFrame}`}><Image className={`${styles.equipmentImage} ${mri.equipmentImage}`} src="/service-heroes/mri-flow-plus-teal-v2.webp" alt="МР-томограф Siemens MAGNETOM Flow Plus" fill unoptimized sizes="(max-width: 760px) 100vw, 42vw" /></div></div>
+          <div className={styles.equipmentMedia}><div className={`${styles.equipmentImageFrame} ${mri.equipmentImageFrame}`}><Image className={`${styles.equipmentImage} ${mri.equipmentImage}`} src="/service-heroes/mri-flow-plus-dark-v3.webp" alt="МР-томограф Siemens MAGNETOM Flow Plus" fill unoptimized sizes="(max-width: 760px) 100vw, 42vw" /></div></div>
           <div className={styles.equipmentCopy}><span>Наше обладнання</span><h2>Siemens MAGNETOM Flow Plus</h2><p>МР-томограф 1,5 Тесла · 2026 рік випуску.</p></div>
         </article>
         <div className={styles.doctorsPanel}>
@@ -98,7 +98,7 @@ export function MriServicePage({ service, doctors, prices, bookingHref }: Props)
 
       <section className={styles.section} id="mri-preparation">
         <SectionTitle eyebrow="Ваш візит" title="Підготовка та обстеження" />
-        <div className={styles.preparationGrid}>
+        <div className={`${styles.preparationGrid} ${mri.preparationGrid}`}>
           <div>
             <h3 className={styles.preparationLabel}>Перед візитом</h3>
             <ul className={styles.infoList}>{service.preparation.map((item) => <li key={item}>{item}</li>)}</ul>
@@ -110,7 +110,7 @@ export function MriServicePage({ service, doctors, prices, bookingHref }: Props)
       </section>
 
       <section className={styles.section} id="mri-locations">
-        <SectionTitle title="Де пройти МРТ" lead="Доступність потрібного протоколу у вибраному відділенні підтвердить адміністратор." />
+        <SectionTitle title="Де пройти МРТ" lead="Адміністратор допоможе обрати зручний час для МРТ та підкаже, як підготуватися до обстеження." />
         <div className={`${styles.locationGrid} ${mri.locations}`}>{locations.map((location: CenterLocation) => <article key={location.id}><div className={styles.locationPhoto}><Image src={location.gallery[0]?.src ?? "/locations/stelmakha-18m.webp"} alt={location.gallery[0]?.alt ?? location.fullAddress} fill unoptimized sizes="(max-width: 760px) 100vw, 32vw" /></div><div><strong>{location.city}</strong><p>{location.address}</p><span>{location.hours.map((hours, index) => <span key={hours}>{index > 0 && <br />}{hours}</span>)}</span><a href={getDirectionsUrl(location)} target="_blank" rel="noreferrer">Показати на карті <span>→</span></a></div></article>)}</div>
       </section>
 

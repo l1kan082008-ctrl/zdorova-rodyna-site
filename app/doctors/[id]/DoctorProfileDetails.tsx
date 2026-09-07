@@ -1,7 +1,8 @@
 import Link from "next/link";
 import {
   getDoctorInitials,
-  formatDoctorConsultationPrice,
+  formatDoctorConsultations,
+  canBookDoctorConsultation,
   getDoctorPatientGroups,
   weekDays,
   type Doctor,
@@ -59,40 +60,48 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
               <div>
                 <dt>Стаж роботи</dt>
                 <dd>
-                  {doctor.experienceYears
-                    ? `${doctor.experienceYears} років`
-                    : "Уточнюється"}
+                  {doctor.experienceLabel ?? (doctor.experienceYears ? `${doctor.experienceYears} років` : "Уточнюється")}
                 </dd>
               </div>
-              <div>
-                <dt>Приймає</dt>
-                <dd>{getDoctorPatientGroups(doctor.patientGroups ?? [])}</dd>
-              </div>
+              {canBookDoctorConsultation(doctor) && (<div><dt>Приймає</dt><dd>{getDoctorPatientGroups(doctor.patientGroups ?? [])}</dd></div>)}
               <div>
                 <dt>Місце прийому</dt>
                 <dd>{doctor.branch || "Відділення уточнюйте"}</dd>
               </div>
-              <div>
+              {canBookDoctorConsultation(doctor) && (<div>
                 <dt>Вартість консультації</dt>
-                <dd>{formatDoctorConsultationPrice(doctor.consultationPrice)}</dd>
-              </div>
+                <dd>{formatDoctorConsultations(doctor)}</dd>
+              </div>)}
             </dl>
 
             {doctor.description ? (
               <p className="doctor-detail-lead">{doctor.description}</p>
             ) : null}
 
-            <div className="doctor-detail-actions">
+          <aside className="doctor-detail-schedule doctor-detail-schedule--inline">
+
+            <h2>{canBookDoctorConsultation(doctor) ? "Години прийому" : "Години роботи"}</h2>
+            <div>
+              {Object.values(doctor.schedule).some(Boolean) ? weekDays.map((day) => (
+                <p key={day.key}>
+                  <span>{day.label}</span>
+                  <strong>{doctor.schedule[day.key] || "Не приймає"}</strong>
+                </p>
+              )) : <p className="doctor-schedule-empty">Графік уточнюється</p>}
+            </div>
+            <small>
+              Перед візитом радимо підтвердити актуальний час в адміністратора.
+            </small>
+          </aside>
+
+            {canBookDoctorConsultation(doctor) && (<div className="doctor-detail-actions">
               <a
                 className="book-button"
                 href={`/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`}
               >
                 Записатися на прийом <span>→</span>
               </a>
-              <a className="outline-button" href="tel:+380676714444">
-                +38 (067) 671-44-44
-              </a>
-            </div>
+            </div>)}
           </div>
         </div>
 
@@ -115,21 +124,7 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
             )}
           </article>
 
-          <aside className="doctor-detail-schedule">
-            <span className="section-kicker">Графік</span>
-            <h2>Години прийому</h2>
-            <div>
-              {weekDays.map((day) => (
-                <p key={day.key}>
-                  <span>{day.label}</span>
-                  <strong>{doctor.schedule[day.key] || "Не приймає"}</strong>
-                </p>
-              ))}
-            </div>
-            <small>
-              Перед візитом радимо підтвердити актуальний час в адміністратора.
-            </small>
-          </aside>
+
         </div>
       </section>
     </>

@@ -6,7 +6,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   doctorPatientGroupOptions,
   getDoctorInitials,
-  formatDoctorConsultationPrice,
+  formatDoctorConsultations,
+  canBookDoctorConsultation,
   getScheduleSummary,
   weekDays,
   type Doctor,
@@ -31,7 +32,7 @@ const formatDoctorBranch = (branch: string) => {
 
 type MobileDoctorView = "single" | "double" | "quad";
 
-const mobileDoctorViewStorageKey = "zdorova-rodyna-doctors-view";
+
 
 
 
@@ -45,20 +46,13 @@ export function DoctorsDirectory({
   const [specialty, setSpecialty] = useState("all");
   const [focusedDoctorId, setFocusedDoctorId] = useState<string | null>(null);
   const [expandedDoctorId, setExpandedDoctorId] = useState<string | null>(null);
-  const [mobileView, setMobileView] = useState<MobileDoctorView>("single");
+  const [mobileView, setMobileView] = useState<MobileDoctorView>("quad");
 
-  useEffect(() => {
-    const savedView = window.localStorage.getItem(mobileDoctorViewStorageKey);
-    if (savedView === "single" || savedView === "double" || savedView === "quad") {
-      setMobileView(savedView);
-    }
-  }, []);
-
-  const changeMobileView = (nextView: MobileDoctorView) => {
+const changeMobileView = (nextView: MobileDoctorView) => {
     setMobileView(nextView);
     setFocusedDoctorId(null);
     setExpandedDoctorId(null);
-    window.localStorage.setItem(mobileDoctorViewStorageKey, nextView);
+
   };
 
   const focusDoctorPhoto = (doctorId: string) => {
@@ -292,15 +286,15 @@ export function DoctorsDirectory({
                     <span>
                       <b>{doctor.name}</b>
                       <small>{formatDoctorSpecialty(doctor.specialty)}</small>
-                      <span className="doctor-card-consultation-price">
-                        Консультація · {formatDoctorConsultationPrice(doctor.consultationPrice)}
-                      </span>
+                      {canBookDoctorConsultation(doctor) && (<span className="doctor-card-consultation-price">
+                        Консультація · {formatDoctorConsultations(doctor)}
+                      </span>)}
                     </span>
                   </span>
 
-                  <a className="doctor-book-on-photo" href={bookingHref}>
+                  {canBookDoctorConsultation(doctor) && (<a className="doctor-book-on-photo" href={bookingHref}>
                     Записатися <span aria-hidden="true">→</span>
-                  </a>
+                  </a>)}
                 </div>
 
                 <div className="doctor-profile-content doctor-card-editorial-content">
@@ -308,23 +302,18 @@ export function DoctorsDirectory({
                     <div>
                       <span>Досвід</span>
                       <strong>
-                        {doctor.experienceYears
-                          ? `${doctor.experienceYears} років`
-                          : "Уточнюйте"}
+                        {doctor.experienceLabel ?? (doctor.experienceYears ? `${doctor.experienceYears} років` : "Уточнюйте")}
                       </strong>
                     </div>
-                    <div>
-                      <span>Приймає</span>
-                      <strong>{patientGroups || "Вік уточнюйте"}</strong>
-                    </div>
+                    {canBookDoctorConsultation(doctor) && (<div><span>Приймає</span><strong>{patientGroups || "Вік уточнюйте"}</strong></div>)}
                     <div>
                       <span>Відділення</span>
                       <strong>{formatDoctorBranch(doctor.branch)}</strong>
                     </div>
-                    <div>
+                    {canBookDoctorConsultation(doctor) && (<div>
                       <span>Консультація</span>
-                      <strong>{formatDoctorConsultationPrice(doctor.consultationPrice)}</strong>
-                    </div>
+                      <strong>{formatDoctorConsultations(doctor)}</strong>
+                    </div>)}
                   </div>
 
                   <div className="doctor-card-schedule-line">
@@ -359,12 +348,12 @@ export function DoctorsDirectory({
                     >
                       Біографія
                     </a>
-                    <a
+                    {canBookDoctorConsultation(doctor) && (<a
                       className="doctor-book-text-link doctor-book-cta"
                       href={bookingHref}
                     >
                       Записатися <span>→</span>
-                    </a>
+                    </a>)}
                   </div>
                 </div>
               </article>

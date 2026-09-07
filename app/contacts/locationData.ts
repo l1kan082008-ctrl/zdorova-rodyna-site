@@ -184,7 +184,7 @@ export const centerLocations: CenterLocation[] = [
     fullAddress: "м. Костопіль, вул. Грушевського, 4",
     description:
       "Пункт лабораторної діагностики «Здорова Родина» у Костополі.",
-    hours: ["Графік роботи уточнюйте"],
+    hours: ["Пн–Пт · 08:00–17:00"],
     phone: "+380982002300",
     services: ["laboratory", "ct"],
     coordinates: { lat: 50.8817744, lng: 26.451782 },
@@ -200,20 +200,8 @@ export const centerLocations: CenterLocation[] = [
 
 export function getMapEmbedUrl(location: CenterLocation) {
   const { lat, lng } = location.coordinates;
-  const longitudePadding = 0.008;
-  const latitudePadding = 0.0048;
-  const bbox = [
-    lng - longitudePadding,
-    lat - latitudePadding,
-    lng + longitudePadding,
-    lat + latitudePadding,
-  ].join(",");
-
-  return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(
-    bbox,
-  )}&layer=mapnik&marker=${encodeURIComponent(`${lat},${lng}`)}`;
+  return `https://www.google.com/maps?q=${encodeURIComponent(`${lat},${lng}`)}&z=16&hl=uk&output=embed`;
 }
-
 export function getDirectionsUrl(location: CenterLocation) {
   const { lat, lng } = location.coordinates;
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;

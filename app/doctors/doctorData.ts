@@ -25,7 +25,9 @@ export type Doctor = {
   name: string;
   specialty: string;
   experienceYears: number | null;
+  experienceLabel?: string;
   consultationPrice: number | null;
+  repeatConsultationPrice?: number | null;
   branch: string;
   description: string;
   biography: string;
@@ -95,7 +97,27 @@ const doctor = (
 });
 
 export const defaultDoctors: Doctor[] = [
-  doctor("voloshko-tetiana", "Волошко Тетяна Іванівна", "Сімейний лікар, терапевт"),
+  {
+    ...doctor("voloshko-tetiana", "Волошко Тетяна Іванівна", "Сімейний лікар, терапевт"),
+    // Sources checked 2026-09-07; identity confirmed by the site owner.
+    // https://zdorovarodynaplus.com.ua/doctors/voloshko-tetyana-ivanivna-2
+    // https://www.rokl.rv.ua/nashi-pidrozdily/viddilennia-ekstrenoi-medychnoi-dopomohy
+    biography: "Тетяна Іванівна Волошко — сімейна лікарка та терапевтка медичного центру «Здорова Родина» у Рівному. Консультує пацієнтів у відділенні на вулиці Володимира Стельмаха, 18-М.\nОчолює відділення екстреної медичної допомоги Рівненської обласної клінічної лікарні імені Юрія Семенюка. Лікарка з медицини невідкладних станів вищої кваліфікаційної категорії.\nДо напрямів її роботи належать допомога при застудних захворюваннях і гарячці, скаргах із боку травної та серцево-судинної систем. У профілі лікарки також зазначені артеріальна гіпертензія, порушення серцевого ритму та артрит.",
+    // Local layout sample only; do not publish these trial details as real data.
+    ...(process.env.NODE_ENV === "development" ? {
+      experienceYears: 25,
+      experienceLabel: "Понад 25 років",
+      consultationPrice: 700,
+      repeatConsultationPrice: 500,
+      branch: "вул. Володимира Стельмаха, 18-М",
+      patientGroups: ["adults", "children"] as DoctorPatientGroup[],
+      schedule: {
+        mon: "Приймає · час уточнюйте", tue: "Приймає · час уточнюйте",
+        wed: "Приймає · час уточнюйте", thu: "Приймає · час уточнюйте",
+        fri: "Приймає · час уточнюйте",
+      },
+    } : {}),
+  },
   doctor("yatseniuk-zinoviia", "Яценюк Зіновія Михайлівна", "Ендокринолог"),
   doctor("danylkiv-yurii", "Данилків Юрій Степанович", "Уролог"),
   doctor("romanenko-liliia", "Романенко Лілія Георгіївна", "Гінеколог"),
@@ -171,4 +193,13 @@ export function getDoctorPatientGroups(groups: DoctorPatientGroup[]) {
     )
     .filter(Boolean)
     .join(" · ");
+}
+
+export function canBookDoctorConsultation(doctor: Pick<Doctor, 'specialty'>): boolean {
+  return !/рентгенолог|radiolog/iu.test(doctor.specialty);
+}
+
+export function formatDoctorConsultations(doctor: Pick<Doctor, "consultationPrice" | "repeatConsultationPrice">) {
+  if (doctor.repeatConsultationPrice == null) return formatDoctorConsultationPrice(doctor.consultationPrice);
+  return `Первинна — ${formatDoctorConsultationPrice(doctor.consultationPrice)} · Повторна — ${formatDoctorConsultationPrice(doctor.repeatConsultationPrice)}`;
 }

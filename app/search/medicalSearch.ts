@@ -1,3 +1,14 @@
+// Bound caches so repeated keystrokes reuse catalogue normalization without growing indefinitely.
+function memoizeSearchText<T>(compute: (value: string) => T, limit = 8192) {
+  const cache = new Map<string, T>();
+  return (value: string): T => {
+    if (cache.has(value)) return cache.get(value)!;
+    const result = compute(value);
+    if (cache.size >= limit) cache.delete(cache.keys().next().value!);
+    cache.set(value, result);
+    return result;
+  };
+}
 const latinToUkrainianKeyboard: Record<string, string> = {
   q: "й", w: "ц", e: "у", r: "к", t: "е", y: "н", u: "г", i: "ш",
   o: "щ", p: "з", "[": "х", "]": "ї", a: "ф", s: "і", d: "в",
@@ -31,6 +42,13 @@ const searchAliases: Record<string, string[]> = {
   ангиографія: ["ангіографія"],
   сосуды: ["судини", "судин"],
   сосудов: ["судин"],
+  головного: ["головного"],
+  мозга: ["мозку"],
+  мозг: ["мозок", "мозку"],
+  шеи: ["шиї"],
+  конечностей: ["кінцівок"],
+  нижних: ["нижніх"],
+  верхних: ["верхніх"],
   сердце: ["серце"],
   сердца: ["серця"],
   почки: ["нирки"],
@@ -67,20 +85,22 @@ const exactPhraseAliases: Record<string, string[]> = {
   "перевірити родимки": ["дерматоскопія"],
 };
 
-export const normalizeMedicalSearch = (value: string) =>
+export const normalizeMedicalSearch = memoizeSearchText((value: string) =>
   value
     .toLocaleLowerCase("uk-UA")
     .normalize("NFKD")
     .replace(/\p{M}+/gu, "")
     .replace(/[’'`ʼ]/g, "")
+    .replace(/ан[\s–—-]*г[\s–—-]*[еиі][\s–—-]*о[\s–—-]*граф[иі][яюиії]/gu, "ангіографія")
+    .replace(/(^|\s)ан[\s–—-]*г[еиі](?:[\s–—-]*о)?(?=$|\s)/gu, "$1ангіограф")
     .replace(/[–—-]/g, " ")
     .replace(/\s+/g, " ")
-    .trim();
+    .trim());
 
-const tokenize = (value: string): string[] =>
-  Array.from(normalizeMedicalSearch(value).match(/[\p{L}\p{N}]+/gu) ?? []);
+const tokenize = memoizeSearchText((value: string): string[] =>
+  Array.from(normalizeMedicalSearch(value).match(/[\p{L}\p{N}]+/gu) ?? []));
 
-const phraseAlternatives = (query: string) => {
+const phraseAlternatives = memoizeSearchText((query: string) => {
   const words = tokenize(query);
   const entry = Object.entries(exactPhraseAliases).find(([phrase]) => {
     const candidates = tokenize(phrase);
@@ -89,7 +109,7 @@ const phraseAlternatives = (query: string) => {
     );
   });
   return entry?.[1] ?? [];
-};
+}, 256);
 
 const fixKeyboardLayout = (value: string) =>
   normalizeMedicalSearch(value)
@@ -132,7 +152,9 @@ const editDistance = (first: string, second: string) => {
   return matrix[first.length][second.length];
 };
 
-const queryAlternatives = (word: string) => {
+const normalizedSearchAliases = Object.fromEntries(Object.entries(searchAliases).map(([key, values]) => [normalizeMedicalSearch(key), values]));
+
+const queryAlternatives = memoizeSearchText((word: string) => {
   const variants = new Set([word, fixKeyboardLayout(word)]);
 
   // Пацієнти часто пишуть назву ангіографії російською або через
@@ -144,13 +166,13 @@ const queryAlternatives = (word: string) => {
   }
 
   for (const variant of [...variants]) {
-    for (const alias of searchAliases[variant] ?? []) {
+    for (const alias of normalizedSearchAliases[variant] ?? []) {
       tokenize(alias).forEach((token) => variants.add(token));
     }
   }
 
   return [...variants].filter(Boolean);
-};
+}, 512);
 
 const scoreWord = (
   alternatives: string[],
@@ -168,7 +190,7 @@ const scoreWord = (
       bestScore = Math.max(bestScore, 88);
     }
 
-    if (word.length >= 4) {
+    if (word.length >= 4 && bestScore < 76) {
       const allowedDistance = word.length >= 8 ? 2 : 1;
       for (const candidate of searchableWords) {
         if (Math.abs(candidate.length - word.length) > allowedDistance) continue;
@@ -239,3 +261,12 @@ export const scoreMedicalSearch = (
 
   return totalScore;
 };
+
+// Price is a tie-breaker for equally relevant studies, never for unrelated matches.
+export function compareStudyMatches(
+  first: { score: number; index: number; item: { amount?: number } },
+  second: { score: number; index: number; item: { amount?: number } },
+) {
+  const amount = (value?: number) => typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : -1;
+  return second.score - first.score || amount(second.item.amount) - amount(first.item.amount) || first.index - second.index;
+}
