@@ -31,6 +31,7 @@ export type HomeSearchItem = {
   href: string;
   actionHref: string;
   keywords?: string;
+  searchIdentity?: string;
   amount?: number;
   turnaround?: string;
   imageUrl?: string;
@@ -144,13 +145,21 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
           .sort((first, second) => kind === "price" && normalizedQuery ? compareStudyMatches(first, second) : second.score - first.score || first.index - second.index)
           .map((match) => match.item);
 
-        const best = matches[0];
+        const uniqueMatches = kind === "price" && normalizedQuery
+          ? [...matches.reduce((unique, item) => {
+              const key = item.searchIdentity ?? item.id;
+              const previous = unique.get(key);
+              if (!previous || (!selectedPriceIds.includes(previous.id) && selectedPriceIds.includes(item.id))) unique.set(key, item);
+              return unique;
+            }, new Map<string, HomeSearchItem>()).values()]
+          : matches;
+        const best = uniqueMatches[0];
         const topScore = best && normalizedQuery ? scoreMedicalSearch(normalizedQuery, best.title, `${best.meta} ${best.keywords ?? ""}`) : 0;
-        return { kind, topScore, total: matches.length, items: matches.slice(0, normalizedQuery ? 5 : kind === "service" ? 3 : 0) };
+        return { kind, topScore, total: uniqueMatches.length, items: uniqueMatches.slice(0, normalizedQuery ? 5 : kind === "service" ? 3 : 0) };
       })
       .filter((group) => group.items.length > 0)
       .sort((a, b) => b.topScore - a.topScore);
-  }, [items, query]);
+  }, [items, query, selectedPriceIds]);
 
   const resultCount = groups.reduce(
     (count, group) => count + group.items.length,
@@ -547,7 +556,7 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
                 <span aria-hidden="true">→</span>
               </button>
             ) : (
-              <Link href={`/prices${query ? `?search=${encodeURIComponent(query)}` : ""}`}>
+              <Link href={`/prices${query && totalCount > 0 ? `?search=${encodeURIComponent(query)}` : ""}`}>
                 Переглянути весь прайс <span>→</span>
               </Link>
             )}

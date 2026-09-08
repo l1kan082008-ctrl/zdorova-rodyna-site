@@ -21,6 +21,7 @@ import {
   normalizeMedicalSearch,
   medicalHighlightParts,
   scoreMedicalSearch,
+  compareStudyMatches,
 } from "../search/medicalSearch";
 import {
   downloadCalculatorPdf,
@@ -217,7 +218,7 @@ export function PriceCatalog({
           ? scoreMedicalSearch(
               normalized,
               item.name,
-              `${item.categoryLabel} ${getTurnaround(item)} ${(item.aliases ?? []).join(" ")}`,
+              `${item.categoryLabel} ${(item.aliases ?? []).join(" ")}`,
             )
           : 1,
       }))
@@ -228,7 +229,7 @@ export function PriceCatalog({
             item.citoAvailable) &&
           score > 0,
       )
-      .sort((first, second) => second.score - first.score || first.index - second.index)
+      .sort((first, second) => normalized ? compareStudyMatches(first, second) : first.index - second.index)
       .map(({ item }) => item);
     return normalized ? deduplicatePriceSearch(matches, selectedIds) : matches;
   }, [activeCategory, citoOnly, initialItems, query, selectedIds]);
@@ -342,6 +343,9 @@ export function PriceCatalog({
     }
 
     const limitedItems = visibleItems.slice(0, visibleLimit);
+    if (normalizeMedicalSearch(query)) {
+      return limitedItems.length ? [{ category: limitedItems[0].category, categoryLabel: "Результати пошуку", totalCount: visibleItems.length, items: limitedItems, isPreview: false }] : [];
+    }
     const limitedIds = new Set(limitedItems.map((item) => item.id));
 
     return allVisibleGroups
@@ -356,6 +360,7 @@ export function PriceCatalog({
     isCitoOverview,
     isGroupedCategoryOverview,
     isAllOverview,
+    query,
     visibleGroupLimit,
     visibleItems,
     visibleLimit,

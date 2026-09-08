@@ -43,3 +43,11 @@ for (const query of ['анге', 'ан-ге', 'анги', 'ангі', 'анге�
     assert.equal(scoreMedicalSearch(query, 'Глюкоза'), 0);
   });
 }
+// A recognized phrase must not degrade into a generic word/prefix search.
+test('recognized blood-count queries exclude unrelated partial matches', () => {
+  for (const query of ['ЗАК', 'зак', 'общий анализ крови', 'загальний аналіз крові']) {
+    assert.ok(scoreMedicalSearch(query, 'Загальний розгорнутий аналіз крові') > 0);
+    assert.equal(scoreMedicalSearch(query, 'ЕКГ', 'заключення лікаря'), 0);
+    assert.equal(scoreMedicalSearch(query, 'Загальний аналіз сечі'), 0);
+  }
+});

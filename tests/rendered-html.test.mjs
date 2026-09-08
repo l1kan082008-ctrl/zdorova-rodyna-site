@@ -57,7 +57,7 @@ test("admin authentication is hardened end to end", async () => {
   assert.match(session, /PASSWORD_HASH_ITERATIONS = 100_000/);
   assert.doesNotMatch(route, /ADMIN_PASSWORD\??:/);
   assert.match(route, /ADMIN_PASSWORD_HASH/);
-  assert.match(session, /__Host-zr_admin_session/);
+  assert.match(await readSource("lib/adminCookie.ts"), /__Host-zr_admin_session/);
   assert.match(session, /SameSite=Strict/);
   assert.match(session, /crypto\.getRandomValues/);
   assert.match(session, /CREATE TABLE IF NOT EXISTS admin_sessions/);
@@ -190,7 +190,7 @@ test("homepage search covers services, doctors, prices and locations", async () 
   assert.match(smartSearch, /ангиография:\s*\["ангіографія"\]/);
   assert.match(smartSearch, /const editDistance/);
   assert.match(search, /scoreMedicalSearch/);
-  assert.match(search, /exactResult \?\? \(allResults\.length === 1/);
+  assert.match(search, /const destination = allResults\[0\]/);
   assert.match(
     css,
     /\.home-search-result-action\.is-added\s*\{[\s\S]*?border-color:\s*var\(--orange\);[\s\S]*?background:\s*var\(--orange\);/,
@@ -340,7 +340,7 @@ test("homepage service cards use calm artwork and open service detail pages", as
       "cardiology",
       "family",
     ].map((name) =>
-      readFile(new URL(`../public/service-cards/${name}-v2.jpg`, import.meta.url)),
+      readFile(new URL(`../public/service-cards/${name}-glass-v3.jpg`, import.meta.url)),
     ),
   ]);
 
@@ -350,17 +350,17 @@ test("homepage service cards use calm artwork and open service detail pages", as
   );
   assert.match(
     css,
-    /\.service-card--ct\s*\{[\s\S]*?--service-art:\s*url\("\/service-cards\/ct-v2\.jpg"\)/,
+    /\.service-card--ct\s*\{[\s\S]*?--service-art:\s*url\("\/service-cards\/ct-glass-v3\.jpg"\)/,
   );
   assert.match(
     css,
-    /\.service-card--family\s*\{[\s\S]*?--service-art:\s*url\("\/service-cards\/family-v2\.jpg"\)/,
+    /\.service-card--family\s*\{[\s\S]*?--service-art:\s*url\("\/service-cards\/family-glass-v3\.jpg"\)/,
   );
-  assert.match(page, /import \{ primaryServiceDetails \} from "\.\/services\/serviceData"/);
-  assert.match(page, /primaryServiceDetails\.map/);
-  assert.match(css, /\.service-card--home-nurse\s*\{[\s\S]*?home-nurse\.svg/);
+  assert.match(page, /await Promise\.all\([\s\S]*?listManagedServices\(\)/);
+  assert.match(page, /homeServiceDetails\.map/);
+  assert.match(css, /\.service-card--home-nurse\s*\{[\s\S]*?home-nurse-glass-v3\.jpg/);
   assert.match(page, /className=\{`service-card service-card--\$\{service\.slug\}`\}/);
-  assert.match(page, /href=\{`\/services\/\$\{service\.slug\}`\}/);
+  assert.match(page, /href=\{service\.href\}/);
   assert.doesNotMatch(page, /<ServiceIcon/);
   assets.forEach((asset) => assert.ok(asset.length > 20_000));
 });
@@ -390,7 +390,7 @@ test("every homepage service has a detailed information page", async () => {
   assert.match(page, /Як підготуватися/);
   assert.match(page, /Як усе відбувається/);
   assert.match(page, /\/contacts\?service=/);
-  assert.match(servicesPage, /href=\{`\/services\/\$\{item\.slug\}`\}/);
+  assert.match(servicesPage, /href=\{item\.href\}/);
   assert.match(css, /\.service-detail-hero\s*\{/);
   assert.match(css, /\.service-information-grid\s*\{/);
 });
@@ -401,10 +401,10 @@ test("diagnostic detail pages link to their matching price results", async () =>
   assert.match(page, /\/prices\?category=ct#price-calculator/);
   assert.match(
     page,
-    /\/prices\?category=heart&search=Холтер#price-calculator/,
+    /\/prices\?category=heart&search=%D0%A5%D0%BE%D0%BB%D1%82%D0%B5%D1%80#price-calculator/,
   );
   assert.match(page, /\/prices\?category=mri#price-calculator/);
-  assert.match(page, /\/prices\?category=ultrasound#price-calculator/);
+  assert.match(page, /\/prices\?category=ultrasound-group#price-calculator/);
 });
 
 test("ultrasound page uses the technological equipment hero and animated waves", async () => {
@@ -413,7 +413,7 @@ test("ultrasound page uses the technological equipment hero and animated waves",
     readSource("app/globals.css"),
     readFile(
       new URL(
-        "../public/service-heroes/ultrasound-technological-v1.png",
+        "../public/service-heroes/ultrasound-technological-v1.webp",
         import.meta.url,
       ),
     ),
@@ -423,7 +423,7 @@ test("ultrasound page uses the technological equipment hero and animated waves",
   assert.match(page, /ultrasound-cinematic-waves/);
   assert.match(
     css,
-    /background-image:\s*url\("\/service-heroes\/ultrasound-technological-v1\.png"\)/,
+    /background-image:\s*url\("\/service-heroes\/ultrasound-technological-v1\.webp"\)/,
   );
   assert.match(
     css,
@@ -434,32 +434,36 @@ test("ultrasound page uses the technological equipment hero and animated waves",
     /\.service-detail-hero\.service-detail-hero--ultrasound-cinematic\s*\{[\s\S]*?border:\s*0;[\s\S]*?background:\s*#021c22;[\s\S]*?box-shadow:\s*none/,
   );
   assert.match(css, /@keyframes ultrasound-arc-pulse/);
-  assert.ok(image.length > 50_000);
+  assert.equal(image.toString("ascii", 0, 4), "RIFF");
+  assert.equal(image.toString("ascii", 8, 12), "WEBP");
 });
 
 test("MRI page features the real 2026 Siemens MAGNETOM Flow Plus", async () => {
   const [page, data, css, image] = await Promise.all([
-    readSource("app/services/[slug]/page.tsx"),
+    readSource("app/services/[slug]/MriServicePage.tsx"),
     readSource("app/services/serviceData.ts"),
     readSource("app/globals.css"),
     readFile(
       new URL(
-        "../public/service-heroes/mri-cinematic-v1.png",
+        "../public/service-heroes/mri-cinematic-v1.webp",
         import.meta.url,
       ),
     ),
   ]);
 
-  assert.match(page, /service-detail-hero--mri-cinematic/);
-  assert.match(page, /Siemens MAGNETOM Flow Plus 2026 року випуску/);
+  assert.match(await readSource("app/services/[slug]/page.tsx"), /return <MriServicePage/);
+  assert.match(page, /Siemens MAGNETOM Flow Plus/);
+  assert.match(page, /2026 рік випуску/);
+  assert.match(page, /src="\/service-heroes\/mri-cinematic-v1\.webp"/);
   assert.match(data, /апараті 2026 року випуску/);
   assert.match(data, /Deep Resolve/);
   assert.match(data, /Quiet Suite/);
   assert.match(
     css,
-    /background-image:\s*url\("\/service-heroes\/mri-cinematic-v1\.png"\)/,
+    /background-image:\s*url\("\/service-heroes\/mri-cinematic-v1\.webp"\)/,
   );
-  assert.ok(image.length > 50_000);
+  assert.equal(image.toString("ascii", 0, 4), "RIFF");
+  assert.equal(image.toString("ascii", 8, 12), "WEBP");
 });
 
 test("cardiology page includes Holter as a fourth service", async () => {
@@ -469,7 +473,7 @@ test("cardiology page includes Holter as a fourth service", async () => {
     readSource("app/globals.css"),
     readFile(
       new URL(
-        "../public/service-heroes/cardiology-cinematic-v1.png",
+        "../public/service-heroes/cardiology-cinematic-v1.webp",
         import.meta.url,
       ),
     ),
@@ -480,9 +484,10 @@ test("cardiology page includes Holter as a fourth service", async () => {
   assert.match(page, /\/prices\?category=heart#price-calculator/);
   assert.match(
     css,
-    /background-image:\s*url\("\/service-heroes\/cardiology-cinematic-v1\.png"\)/,
+    /background-image:\s*url\("\/service-heroes\/cardiology-cinematic-v1\.webp"\)/,
   );
-  assert.ok(image.length > 50_000);
+  assert.equal(image.toString("ascii", 0, 4), "RIFF");
+  assert.equal(image.toString("ascii", 8, 12), "WEBP");
   assert.match(data, /facts: \["Консультація кардіолога", "ЕКГ", "УЗД серця", "Холтер ЕКГ"\]/);
   assert.match(page, /cardiologyBookingDefinitions/);
   assert.match(page, /cardiologyBookingOptions/);
@@ -539,7 +544,7 @@ test("home nurse page uses the chosen cinematic arrival hero", async () => {
     readSource("app/globals.css"),
     readFile(
       new URL(
-        "../public/service-heroes/home-nurse-cinematic-v1.png",
+        "../public/service-heroes/home-nurse-cinematic-v2.webp",
         import.meta.url,
       ),
     ),
@@ -554,7 +559,7 @@ test("home nurse page uses the chosen cinematic arrival hero", async () => {
   assert.match(page, /preserveAspectRatio="xMidYMid meet"/);
   assert.match(
     css,
-    /background-image:\s*url\("\/service-heroes\/home-nurse-cinematic-v1\.png"\)/,
+    /background-image:\s*url\("\/service-heroes\/home-nurse-cinematic-v2\.webp"\)/,
   );
   assert.match(css, /@keyframes home-nurse-route-dashes/);
   assert.match(css, /\.home-nurse-route\s*\{[\s\S]*?aspect-ratio:\s*1120 \/ 110/);
@@ -562,7 +567,8 @@ test("home nurse page uses the chosen cinematic arrival hero", async () => {
     css,
     /\.home-nurse-route-main\s*\{[\s\S]*?stroke-width:\s*2\.4px;[\s\S]*?vector-effect:\s*non-scaling-stroke/,
   );
-  assert.ok(image.length > 100_000);
+  assert.equal(image.toString("ascii", 0, 4), "RIFF");
+  assert.equal(image.toString("ascii", 8, 12), "WEBP");
 });
 
 test("popular price cards form a swipeable carousel with a clean teal glow", async () => {
@@ -589,8 +595,8 @@ test("popular price cards form a swipeable carousel with a clean teal glow", asy
   assert.match(page, /<HorizontalCardScroller label=/);
   assert.match(page, /\.slice\(0, 8\)/);
   assert.doesNotMatch(page, /tone=/);
-  assert.match(scroller, /scrollBy\(/);
-  assert.match(scroller, /behavior: "smooth"/);
+  assert.match(scroller, /track\.scrollTo\(/);
+  assert.match(scroller, /prefers-reduced-motion: reduce[\s\S]*?"auto" : "smooth"/);
   assert.match(css, /\.pricing-grid\.pricing-carousel-track\s*\{[\s\S]*?overflow-x:\s*auto/);
   assert.match(css, /grid-auto-columns:\s*min\(82vw, 330px\)/);
   assert.match(css, /scroll-snap-type:\s*inline mandatory/);
@@ -660,14 +666,17 @@ test("homepage all-doctor showcase expands on click and links to profiles", asyn
   assert.match(showcase, /type="button"/);
   assert.match(showcase, /onClick=\{\(\) => selectDoctor\(doctor\.id\)\}/);
   assert.match(showcase, /aria-expanded=\{isActive\}/);
-  assert.match(showcase, /scrollIntoView\(\{/);
+  assert.match(showcase, /viewport\.scrollTo\(\{ left: safeLeft, behavior \}\)/);
   assert.match(showcase, /disabled=\{activeIndex === 0\}/);
   assert.match(showcase, /disabled=\{activeIndex === doctors\.length - 1\}/);
-  assert.doesNotMatch(showcase, /onPointerMove|onMouseEnter|setTimeout/);
+  assert.doesNotMatch(showcase, /onPointerMove|onMouseEnter/);
+  assert.match(showcase, /window\.clearTimeout\(alignTimeoutRef\.current\)/);
   assert.match(showcase, /className="doctor-showcase-copy"/);
   assert.match(showcase, /href=\{`\/doctors\/\$\{doctor\.id\}`\}/);
   assert.doesNotMatch(showcase, /family-doctors-summary/);
-  assert.equal(importedPhotos.filter((name) => name.endsWith(".webp")).length, 36);
+  const referencedPhotos = [...doctorData.matchAll(/"\/doctors\/([^"\/]+\.webp)"/g)].map((match) => match[1]);
+  assert.ok(referencedPhotos.length > 0);
+  for (const photo of referencedPhotos) assert.ok(importedPhotos.includes(photo), `Missing doctor portrait: ${photo}`);
   assert.match(doctorData, /photoUrl:\s*doctorPhotoUrls\[id\]\s*\?\?\s*""/);
   assert.match(doctorStore, /doctorPhotoUrls\[row\.id\]\s*\?\?\s*""/);
   assert.match(
@@ -743,18 +752,18 @@ test("price list shows the load-more action only for an expanded list with hidde
 
 test("successful calculator booking clears its saved selection and header count", async () => {
   const [contacts, selection, catalog] = await Promise.all([
-    readSource("app/contacts/page.tsx"),
+    readSource("app/components/BookingLauncher.tsx"),
     readSource("app/prices/calculatorSelection.ts"),
     readSource("app/prices/PriceCatalog.tsx"),
   ]);
 
   assert.match(
     contacts,
-    /if \(selectedServices\) \{[\s\S]*?clearPriceCalculatorSelection\(\)/,
+    /if \(studies\) \{[\s\S]*?clearPriceCalculatorSelection\(\)/,
   );
   assert.match(
     contacts,
-    /cleanUrl\.searchParams\.delete\("services"\)[\s\S]*?cleanUrl\.searchParams\.delete\("total"\)/,
+    /clean\.searchParams\.delete\("services"\)[\s\S]*?clean\.searchParams\.delete\("total"\)/,
   );
   assert.match(
     selection,
@@ -829,7 +838,7 @@ test("CITO availability is configured per study while the surcharge is calculate
   );
   assert.match(
     catalog,
-    /"Згорнути до короткого списку"[\s\S]*?"Розгорнути повний список"/,
+    /"Згорнути список"[\s\S]*?formatRemainingStudies\(hiddenStudyCount\)/,
   );
   assert.match(
     catalog,
@@ -879,7 +888,7 @@ test("all-services overview expands and collapses categories inline", async () =
   );
   assert.match(
     catalog,
-    /isInlineOverview[\s\S]*?isPreviewExpanded[\s\S]*?"Згорнути до короткого списку"[\s\S]*?"Розгорнути повний список"/,
+    /isInlineOverview[\s\S]*?isPreviewExpanded[\s\S]*?"Згорнути список"[\s\S]*?formatRemainingStudies\(hiddenStudyCount\)/,
   );
 });
 

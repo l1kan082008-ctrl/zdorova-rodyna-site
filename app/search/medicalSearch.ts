@@ -241,6 +241,8 @@ export const scoreMedicalSearch = (
     if (matchedPhrase) return normalizedTitle.includes(normalizeMedicalSearch(matchedPhrase))
       ? 600
       : 500;
+    // Recognized medical phrases must not fall back to unrelated partial matches.
+    return 0;
   }
 
   let totalScore = 0;

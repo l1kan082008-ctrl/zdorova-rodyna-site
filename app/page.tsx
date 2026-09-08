@@ -1,3 +1,4 @@
+import { priceSearchIdentity } from "./prices/deduplicateSearch";
 import Link from "next/link";
 import "./home-refinements.css";
 import type { CSSProperties } from "react";
@@ -364,6 +365,7 @@ export default async function Home() {
       .map((item) => ({
         id: item.id,
         kind: "price" as const,
+        searchIdentity: priceSearchIdentity(item),
         title: item.name,
         meta: item.categoryLabel,
         amount: item.amount,

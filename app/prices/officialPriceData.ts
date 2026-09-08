@@ -1,5 +1,5 @@
 import type { CategoryId, PriceItem } from "./priceData";
-import { proofreadPriceItem } from "./nameCorrections";
+import { proofreadPriceItem } from "./nameCorrections.ts";
 import {
   DEFAULT_CITO_SURCHARGE,
   usesDefaultCitoPolicy,
