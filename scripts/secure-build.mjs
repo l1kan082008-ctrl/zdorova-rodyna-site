@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, rmSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 
@@ -27,6 +27,11 @@ function removeForbiddenFiles(directory) {
   return removed;
 }
 
+// A restored compiler cache must not supply CSS from an earlier release.
+const cacheRoot = resolve(outputRoot, "cache");
+if (cacheRoot !== resolve(projectRoot, ".next", "cache")) throw new Error("Invalid cache path");
+rmSync(cacheRoot, { recursive: true, force: true });
+
 const result = spawnSync(
   process.execPath,
   [resolve(projectRoot, "node_modules/next/dist/bin/next"), "build"],
@@ -46,5 +51,14 @@ if (remaining.length) {
   process.exit(1);
 }
 
+if (result.status === 0) {
+  const staticRoot = resolve(outputRoot, "static");
+  const css = readdirSync(staticRoot, { recursive: true })
+    .filter(name => name.endsWith(".css"))
+    .map(name => readFileSync(resolve(staticRoot, name), "utf8")).join("\n");
+  for (const selector of [".ultrasound-price-list", ".ultrasound-price-head", ".ultrasound-description-toggle"]) {
+    if (!css.includes(selector)) throw new Error(`Missing published CSS: ${selector}`);
+  }
+}
 if (result.error) throw result.error;
 process.exit(result.status ?? 1);
