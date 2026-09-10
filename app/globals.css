@@ -24441,7 +24441,6 @@ body :is(#ct-title, #mri-title, #service-detail-title) {
   margin: 0 auto 48px;
   scroll-margin-top: 110px;
 }
-.ultrasound-price-list h2 { margin: 8px 0 16px; color: var(--ink); font-size: clamp(28px, 3vw, 42px); line-height: 1.15; }
 .ultrasound-price-list > p { max-width: 850px; margin: 0 0 24px; color: var(--muted, #587276); line-height: 1.6; }
 .ultrasound-price-row { display: grid; grid-template-columns: minmax(0, 1fr) 120px 154px; align-items: center; gap: 24px; padding: 20px 0; border-bottom: 1px solid #d5e4e2; }
 .ultrasound-price-row h3 { margin: 0; font-size: 17px; line-height: 1.5; font-weight: 500; color: var(--ink); }

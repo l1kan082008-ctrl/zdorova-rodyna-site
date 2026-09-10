@@ -1,3 +1,4 @@
+import serviceStyles from "./CtServicePage.module.css";
 import { UltrasoundPriceRow } from "./UltrasoundPriceRow";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -1016,9 +1017,9 @@ export default async function ServiceDetailPage({
 
       {isCinematicUltrasound && (
         <section className="ultrasound-price-list" id="ultrasound-prices" aria-labelledby="ultrasound-prices-title">
-          <span className="section-kicker">Вартість обстежень</span>
-          <h2 id="ultrasound-prices-title">Послуги УЗД та ціни</h2>
-          <p>Оберіть дослідження. Вартість і запис — нижче, підготовка — у «Детальніше».</p>
+          <header className={serviceStyles.sectionTitle}>
+          <h2 id="ultrasound-prices-title">Ціна та запис на УЗД</h2>
+          <p>Оберіть дослідження. Вартість і запис — нижче, підготовка — у «Детальніше».</p></header>
           <div className="ultrasound-price-rows">
             <div className="ultrasound-price-head" aria-hidden="true"><span>Дослідження</span><span>Ціна</span><span>Запис</span></div>
             {cardiologyPriceItems.filter(item => item.isActive !== false && ["ultrasound", "doppler"].includes(item.category)).map(item => (
