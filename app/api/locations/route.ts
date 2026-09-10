@@ -1,5 +1,6 @@
 import { listLocations } from "./locationStore";
 import { centerLocations } from "../../contacts/locationData";
+import { stelmakhaGallery } from "../../contacts/stelmakhaGallery";
 
 export async function GET() {
   // Local previews can read the bundled catalogue without a database.
@@ -10,7 +11,15 @@ export async function GET() {
     });
   }
   try {
-    return Response.json({ locations: await listLocations() });
+    const locations = (await listLocations()).map((location) => {
+      // Upgrade the original seeded cover; keep galleries edited in admin intact.
+      const legacyCover = location.gallery.length === 1 &&
+        /^\/locations\/stelmakha-18m\.(png|webp)$/.test(location.gallery[0].src);
+      return location.id === "stelmakha-18m" && legacyCover
+        ? { ...location, gallery: stelmakhaGallery }
+        : location;
+    });
+    return Response.json({ locations });
   } catch (error) {
     const incidentId = crypto.randomUUID();
     console.error(JSON.stringify({
