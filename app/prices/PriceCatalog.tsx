@@ -10,6 +10,7 @@ import {
 import { PriceCategoryIcon } from "./PriceCategoryIcon";
 import {
   announcePriceCalculatorSelection,
+  PRICE_CALCULATOR_CHANGED_EVENT,
   PRICE_CALCULATOR_CITO_STORAGE_KEY,
   PRICE_CALCULATOR_OPEN_EVENT,
   PRICE_CALCULATOR_STORAGE_KEY,
@@ -161,10 +162,14 @@ export function PriceCatalog({
   initialItems = catalogItems,
   initialCategory = "all",
   initialQuery = "",
+  calculatorOnly = false,
+  initiallyOpen = false,
 }: {
   initialItems?: PriceItem[];
   initialCategory?: PriceItem["category"] | "all";
   initialQuery?: string;
+  calculatorOnly?: boolean;
+  initiallyOpen?: boolean;
 }) {
   const requestedDefaultCategory = getCategoryFilter(initialCategory);
   const defaultCategory = categories.some(
@@ -179,6 +184,7 @@ export function PriceCatalog({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [citoSelectedIds, setCitoSelectedIds] = useState<string[]>([]);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const openedInitially = useRef(false);
   const [calculatorExporting, setCalculatorExporting] = useState<
     "pdf" | "share" | null
   >(null);
@@ -208,6 +214,7 @@ export function PriceCatalog({
   });
 
   const visibleItems = useMemo(() => {
+    if (calculatorOnly) return [];
     const normalized = normalizeMedicalSearch(query);
 
     const matches = initialItems
@@ -232,7 +239,7 @@ export function PriceCatalog({
       .sort((first, second) => normalized ? compareStudyMatches(first, second) : first.index - second.index)
       .map(({ item }) => item);
     return normalized ? deduplicatePriceSearch(matches, selectedIds) : matches;
-  }, [activeCategory, citoOnly, initialItems, query, selectedIds]);
+  }, [activeCategory, citoOnly, initialItems, query, selectedIds, calculatorOnly]);
 
   const citoAvailableCount = useMemo(
     () =>
@@ -501,6 +508,17 @@ export function PriceCatalog({
   }, [selectedIds, selectionHydrated]);
 
   useEffect(() => {
+    const sync = (event: Event) => {
+      const ids = (event as CustomEvent<string[]>).detail;
+      if (!Array.isArray(ids)) return;
+      setSelectedIds(current => current.length === ids.length && current.every((id, index) => id === ids[index]) ? current : ids);
+      setCitoSelectedIds(readPriceCalculatorCitoSelection());
+    };
+    window.addEventListener(PRICE_CALCULATOR_CHANGED_EVENT, sync);
+    return () => window.removeEventListener(PRICE_CALCULATOR_CHANGED_EVENT, sync);
+  }, []);
+
+  useEffect(() => {
     if (!selectionHydrated) return;
     const selectedSet = new Set(selectedIds);
     const eligibleSet = new Set(
@@ -562,6 +580,10 @@ export function PriceCatalog({
     };
 
     window.addEventListener(PRICE_CALCULATOR_OPEN_EVENT, openCalculator);
+    if (selectionHydrated && initiallyOpen && !openedInitially.current) {
+      openedInitially.current = true;
+      if (selectedIds.length) setCalculatorOpen(true);
+    }
 
     if (selectionHydrated && window.location.hash === "#calculator") {
       window.history.replaceState(
@@ -590,7 +612,7 @@ export function PriceCatalog({
 
     return () =>
       window.removeEventListener(PRICE_CALCULATOR_OPEN_EVENT, openCalculator);
-  }, [selectedIds.length, selectionHydrated]);
+  }, [selectedIds.length, selectionHydrated, initiallyOpen]);
 
   useEffect(() => {
     if (!calculatorOpen) return;
@@ -709,7 +731,7 @@ export function PriceCatalog({
 
   return (
     <>
-      <section
+      {!calculatorOnly && <section
         className="price-catalog-shell"
         id="price-calculator"
         aria-label="Каталог цін"
@@ -1047,13 +1069,13 @@ export function PriceCatalog({
             </div>
           )}
         </div>
-      </section>
+      </section>}
 
-      {selectedItems.length ? (
+      {!calculatorOnly && selectedItems.length ? (
         <div className="price-calculator-spacer" aria-hidden="true" />
       ) : null}
 
-      {selectedItems.length ? (
+      {!calculatorOnly && selectedItems.length ? (
         <div className="price-calculator-bar has-items" aria-live="polite">
           <div className="calculator-bar-icon" aria-hidden="true">
             {selectedItems.length}

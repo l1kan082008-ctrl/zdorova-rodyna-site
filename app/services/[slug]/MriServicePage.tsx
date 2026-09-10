@@ -52,7 +52,7 @@ export function MriServicePage({ service, doctors, prices, bookingHref }: Props)
           <span className={styles.eyebrow}>Магнітно-резонансна діагностика</span>
           <h1 id="mri-title">Магнітно-резонансна<br />томографія</h1>
           <p>{service.lead}</p>
-          <div className={styles.heroActions}><Link className={`${styles.primaryButton} mri-booking-motion`} href={bookingHref}>Записатися <span>→</span></Link><Link className={styles.secondaryButton} href="#mri-prices">Переглянути вартість <span>→</span></Link></div>
+          <div className={styles.heroActions}><Link className={`${styles.primaryButton} service-banner-booking`} href={bookingHref}>Записатися <span>→</span></Link><Link className={`${styles.secondaryButton} service-banner-secondary`} href="#mri-prices">Переглянути вартість <span>→</span></Link></div>
         </div>
       </section>
 

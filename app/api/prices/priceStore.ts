@@ -1,3 +1,4 @@
+import { initializeOnce } from "../../../lib/initializeOnce";
 import { env } from "@/lib/runtimeEnv";
 import { proofreadPriceItem } from "../../prices/nameCorrections";
 import {
@@ -99,6 +100,12 @@ function toPriceItem(row: PriceRow): ManagedPriceItem {
 }
 
 export async function ensurePriceItemsTable() {
+  return initializeSchema(initializeSchemaTables);
+}
+
+const initializeSchema = initializeOnce();
+
+async function initializeSchemaTables() {
   await env.DB.batch([
     env.DB.prepare(createPriceItemsTable),
     env.DB.prepare(createPriceCatalogMetaTable),
@@ -319,13 +326,15 @@ export async function importManagedPriceItems(values: ImportedPriceItem[]) {
 
   const statements = values.map((item) => {
     const matchKey = getImportMatchKey(item.name, item.category);
-    if (selectedKeys.has(matchKey)) {
+    const knownId = item.id && existingIds.has(item.id) ? item.id : undefined;
+    const duplicateKey = knownId ? `id::${knownId}` : `name::${matchKey}`;
+    if (selectedKeys.has(duplicateKey)) {
       throw new Error(`Позиція «${item.name}» дублюється у файлі`);
     }
-    selectedKeys.add(matchKey);
+    selectedKeys.add(duplicateKey);
 
     const matchedId =
-      (item.id && existingIds.has(item.id) ? item.id : undefined) ??
+      knownId ??
       existingByName.get(matchKey);
     const id = matchedId ?? `price-${crypto.randomUUID()}`;
 

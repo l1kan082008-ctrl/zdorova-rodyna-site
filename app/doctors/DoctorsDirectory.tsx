@@ -48,6 +48,19 @@ export function DoctorsDirectory({
   const [expandedDoctorId, setExpandedDoctorId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<MobileDoctorView>("quad");
 
+  const directoryUrl = (nextSpecialty: string, nextQuery: string) => {
+    const params = new URLSearchParams();
+    if (nextSpecialty !== "all") params.set("specialty", nextSpecialty);
+    if (nextQuery) params.set("search", nextQuery);
+    return `/doctors${params.size ? `?${params}` : ""}`;
+  };
+
+  const changeFilters = (nextSpecialty: string, nextQuery: string) => {
+    setSpecialty(nextSpecialty);
+    setQuery(nextQuery);
+    window.history.replaceState(null, "", directoryUrl(nextSpecialty, nextQuery));
+  };
+
 const changeMobileView = (nextView: MobileDoctorView) => {
     setMobileView(nextView);
     setFocusedDoctorId(null);
@@ -114,7 +127,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
 
     const normalizedRequested = requestedSpecialty.toLocaleLowerCase("uk");
     const matchingGroup = groupedSpecialties.find((group) =>
-      group.urlAliases.some((alias) => alias === normalizedRequested),
+      group.value === normalizedRequested || group.urlAliases.some((alias) => alias === normalizedRequested),
     );
 
     if (matchingGroup) {
@@ -172,7 +185,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
             id="doctor-search"
             type="search"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => changeFilters(specialty, event.target.value)}
             placeholder="Прізвище або спеціальність"
             autoComplete="off"
           />
@@ -182,7 +195,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
           <select
             id="doctor-specialty"
             value={specialty}
-            onChange={(event) => setSpecialty(event.target.value)}
+            onChange={(event) => changeFilters(event.target.value, query)}
           >
             <option value="all">Усі категорії лікарів</option>
             {groupedSpecialties.map((group) => (
@@ -226,7 +239,8 @@ const changeMobileView = (nextView: MobileDoctorView) => {
             const activeSchedule = weekDays.filter(
               (day) => doctor.schedule[day.key],
             );
-            const profileHref = `/doctors/${doctor.id}`;
+            const returnTo = `${directoryUrl(specialty, query)}#doctor-card-${doctor.id}`;
+            const profileHref = `/doctors/${doctor.id}?returnTo=${encodeURIComponent(returnTo)}`;
             const bookingHref = `/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`;
             const isFocused = focusedDoctorId === doctor.id;
             const isExpanded = expandedDoctorId === doctor.id;

@@ -11,6 +11,7 @@ import {
 } from "./api/services/serviceStore";
 import { DoctorsShowcase } from "./components/DoctorsShowcase";
 import { GlowPriceCard } from "./components/GlowPriceCard";
+import { PopularAnalysisButton } from "./components/PopularAnalysisButton";
 import { HomeSearch, type HomeSearchItem } from "./components/HomeSearch";
 import { HorizontalCardScroller } from "./components/HorizontalCardScroller";
 import { PromoSlider } from "./components/PromoSlider";
@@ -87,6 +88,7 @@ const featuredDoctorOrder = [
 
 type PopularPriceDirection = {
   priceItemId: string;
+  category: PriceItem["category"];
   title: string;
   text: string;
   note: string;
@@ -138,6 +140,7 @@ function buildFallbackPriceDirections(items: PriceItem[]): PopularPriceDirection
     return [
       {
         priceItemId: item.id,
+        category: item.category,
         title: item.name,
         text: formatPrice(item.amount),
         note,
@@ -195,6 +198,7 @@ async function getPopularPriceDirections() {
       return [
         {
           priceItemId: item.id,
+          category: item.category,
           title: item.name,
           text: formatPrice(item.amount),
           note: `${item.categoryLabel} · популярне за підтвердженими записами`,
@@ -499,12 +503,14 @@ export default async function Home() {
               <h3>{item.title}</h3>
               <strong>{item.text}</strong>
               <p>{item.note}</p>
-              <Link
+              {!(["ultrasound", "heart", "doppler", "ct", "mri", "medical", "sampling"] as string[]).includes(item.category) ? (
+                <PopularAnalysisButton itemId={item.priceItemId} />
+              ) : <Link
                 className="outline-button"
                 href={`/contacts?service=${encodeURIComponent(item.title)}#booking`}
               >
                 Записатися <span>→</span>
-              </Link>
+              </Link>}
             </GlowPriceCard>
           ))}
         </HorizontalCardScroller>

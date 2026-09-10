@@ -187,6 +187,7 @@ function parseAmount(value: unknown) {
     .replace(/[\s\u00a0]/g, "")
     .replace(",", ".")
     .replace(/[^\d.-]/g, "");
+  if (!normalized) return null;
   const amount = Number(normalized);
   return Number.isFinite(amount) && amount >= 0 ? Math.round(amount) : null;
 }
@@ -347,7 +348,7 @@ export async function parsePriceWorkbook(
 
   const seen = new Map<string, ParsedPriceImportRow>();
   for (const row of rows) {
-    const key = `${row.category}::${normalize(row.name)}`;
+    const key = row.id ? `id::${row.id}` : `${row.category}::${normalize(row.name)}`;
     const first = seen.get(key);
     if (first) {
       issues.push({

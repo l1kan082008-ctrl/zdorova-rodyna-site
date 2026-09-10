@@ -1,3 +1,4 @@
+import { initializeOnce } from "../../../lib/initializeOnce";
 import { env } from "@/lib/runtimeEnv";
 import {
   defaultDoctors,
@@ -58,6 +59,12 @@ function prepareDefaultDoctorInsert(doctor: Doctor) {
 }
 
 export async function ensureDoctorsTable() {
+  return initializeSchema(initializeSchemaTables);
+}
+
+const initializeSchema = initializeOnce();
+
+async function initializeSchemaTables() {
   await env.DB.prepare(createDoctorsTable).run();
   const columns = await env.DB.prepare("PRAGMA table_info(doctors)").all<{
     name: string;

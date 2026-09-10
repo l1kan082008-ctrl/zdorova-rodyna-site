@@ -296,7 +296,7 @@ body.home-search-open #top > :not(.home-search-shell) {
 .branch-modal .branch-modal-close { color: var(--ink); border-color: #e0e3e6; }
 .branch-modal .branch-modal-info { background: #fff; }
 .branch-modal .branch-thumbnail-list button { background: var(--surface-neutral); border-color: #e0e3e6; }
-.branch-modal .branch-thumbnail-list button.is-active { border-color: var(--ink); }
+.branch-modal .branch-thumbnail-list button.is-active { border-color: #087f82; }
 /* Keep the media dialog's neutral palette independent of the site's teal ink. */
 
 .branch-modal { --ink: #30363b; }

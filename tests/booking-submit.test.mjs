@@ -77,7 +77,7 @@ function harness(responseOverride) {
   const jsx = (type, props) => ({ type, props });
   const component = load("../app/components/BookingLauncher.tsx", {
     react, "react/jsx-runtime": { jsx, jsxs: jsx, Fragment: "fragment" },
-    "next/navigation": {}, "./CloseIcon": {}, "./TurnstileField": {},
+    "../doctors/doctorCategories": load("../app/doctors/doctorCategories.ts"), "next/navigation": {}, "./CloseIcon": {}, "./TurnstileField": {},
     "../prices/calculatorSelection": selection, "../../lib/bookingRequest": bookingRequest,
   }, { window, fetch, FormData: class { constructor(form) { this.form = form; } get(k) { return this.form[k] ?? null; } } },
   "\nexport { BookingDialog as TestDialog };\n");

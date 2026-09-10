@@ -95,7 +95,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
           <span className={styles.eyebrow}>Променева діагностика</span>
           <h1 id="ct-title">Комп’ютерна<br />томографія</h1>
           <p>{service.lead}</p>
-          <div className={styles.heroActions}><Link className={styles.primaryButton} href={bookingHref}>Записатися <span>→</span></Link><Link className={styles.secondaryButton} href="#ct-prices">Переглянути вартість <span>→</span></Link></div>
+          <div className={styles.heroActions}><Link className={`${styles.primaryButton} service-banner-booking`} href={bookingHref}>Записатися <span>→</span></Link><Link className={`${styles.secondaryButton} service-banner-secondary`} href="#ct-prices">Переглянути вартість <span>→</span></Link></div>
         </div>
       </section>
 

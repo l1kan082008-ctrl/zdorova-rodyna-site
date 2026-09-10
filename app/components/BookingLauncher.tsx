@@ -7,8 +7,18 @@ import { TurnstileField } from "./TurnstileField";
 import { clearPriceCalculatorSelection } from "../prices/calculatorSelection";
 import { type CenterLocation } from "../contacts/locationData";
 import { compatibleLocations, formatBookingPhone, serviceCategory } from "../../lib/bookingRequest";
+import { doctorCategories } from "../doctors/doctorCategories";
 
-const services = ["МРТ", "КТ", "УЗД", "Лабораторні дослідження", "Консультації лікарів", "Холтер та кардіодіагностика", "Аналізи вдома", "Скринінг здоров’я 40+", "Комплекс досліджень"];
+const services = [
+  "МРТ", "КТ", "УЗД", "Лабораторні дослідження", "Консультації лікарів",
+  "Кардіологія та діагностика серця", "Холтерівське моніторування ЕКГ",
+  "Виїзд медичної сестри додому", "Аналізи вдома", "Видалення бородавок",
+  "Проколювання вух", "Дерматоскопія родимок", "Перевірка слуху",
+  "Сімейна медицина", "Скринінг здоров’я 40+", "Комплекс досліджень",
+];
+const consultationServices = doctorCategories
+  .filter(({ value }) => !["group:radiology", "group:ultrasound"].includes(value))
+  .map(({ label }) => `Консультація: ${label}`);
 const helpService = "Допоможіть обрати послугу";
 
 // Keep real booking URLs as a fallback and preserve modified/new-tab clicks.
@@ -178,15 +188,18 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
           </div>
           {!doctor && !studies && !fixedImagingService && <label htmlFor="quick-service"><span id="quick-service-label">Послуга</span><select id="quick-service" aria-labelledby="quick-service-label" value={service} required onChange={(event) => setService(event.target.value)}>
             <option value={helpService}>{helpService}</option>
-            {!services.includes(service) && service !== helpService && <option value={service}>{service}</option>}
-            {services.map((item) => <option key={item}>{item}</option>)}
+            {!services.includes(service) && !consultationServices.includes(service) && service !== helpService && <option value={service}>{service}</option>}
+            <optgroup label="Послуги центру">{services.map((item) => <option key={item}>{item}</option>)}</optgroup>
+            <optgroup label="Консультації за напрямами">{consultationServices.map((item) => <option key={item}>{item}</option>)}</optgroup>
           </select>
           {service !== helpService && <span className="quick-booking__service-detail">{service}</span>}
           </label>}
           <label htmlFor="quick-location"><span id="quick-location-label">Відділення</span><select id="quick-location" aria-labelledby="quick-location-label" aria-busy={locationsLoading} disabled={locationsLoading} value={selectedLocation?.id || ""} onChange={(event) => setLocationId(event.target.value)}>
             <option value="">{locationsLoading ? "Завантажуємо відділення…" : locationStatus || (category === null && service !== helpService) ? "Адміністратор допоможе обрати" : "Допоможіть обрати"}</option>
             {availableLocations.map((location) => <option key={location.id} value={location.id}>{location.fullAddress}</option>)}
-          </select></label>
+          </select>
+          {!locationsLoading && (selectedLocation || availableLocations.length === 0) && <span className="quick-booking__service-detail">{selectedLocation?.fullAddress || "Адміністратор допоможе обрати відділення."}</span>}
+          </label>
           <details className="quick-booking__comment"><summary>Додати коментар <span>необов’язково</span></summary><label>Ваш коментар<textarea name="comment" maxLength={700} rows={3} placeholder="Наприклад, коли вам зручно зателефонувати" /></label></details>
           <label className="quick-booking__consent"><input type="checkbox" name="consent" required /><span>Погоджуюся на обробку контактних даних для організації запису.</span></label>
           <label className="booking-honeypot" aria-hidden="true">Ваш сайт<input name="website" tabIndex={-1} autoComplete="off" /></label>

@@ -1666,8 +1666,8 @@ footer {
   }
 
   .support-dialog-close {
-    top: 24px;
-    right: 16px;
+    top: 4px;
+    right: 8px;
     width: 42px;
     height: 42px;
   }
@@ -1680,7 +1680,7 @@ footer {
 
   .support-callback-form {
     gap: 10px;
-    padding-top: 26px;
+    padding-top: 8px;
   }
 
   .support-dialog-intro {
@@ -3657,7 +3657,7 @@ footer {
 }
 
 .price-card--plain {
-  --glow-rgb: 255, 121, 0;
+  --glow-rgb: 17, 121, 122;
 }
 
 .price-card--plain:hover,
@@ -3707,7 +3707,8 @@ footer {
 }
 
 .price-card .outline-button:hover,
-.price-card .outline-button:focus-visible {
+.price-card .outline-button:focus-visible,
+.price-card .outline-button[aria-pressed="true"] {
   border-color: var(--orange);
   background: var(--orange);
   color: #fff;
@@ -5580,7 +5581,7 @@ footer {
 
 .about-directions-grid > a:hover,
 .about-directions-grid > a:focus-visible {
-  transform: translateY(-5px);
+  transform: translateY(-8px);
   border-color: rgba(255, 255, 255, 0.34);
   background: rgba(255, 255, 255, 0.13);
 }
@@ -10159,7 +10160,7 @@ body.calculator-is-open .site-header {
 }
 
 .branch-thumbnail-list > button.is-active {
-  border-color: var(--teal);
+  border-color: #087f82;
 }
 
 .branch-thumbnail-list img {
@@ -13141,7 +13142,7 @@ body.calculator-is-open .site-header {
 
 .cardiology-direct-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
   width: 100%;
   margin-top: auto;
@@ -13149,8 +13150,10 @@ body.calculator-is-open .site-header {
 
 .cardiology-direct-actions .cardiology-direct-booking {
   min-width: 0;
+  min-height: 44px;
   margin-top: 0;
-  padding-inline: 12px;
+  padding-inline: 18px;
+  text-align: center;
   gap: 8px;
 }
 
@@ -13380,6 +13383,7 @@ body.calculator-is-open .site-header {
 
 .service-overview--cardiology {
   grid-template-columns: 1fr;
+  margin-bottom: 40px;
 }
 
 .service-overview--single {
@@ -13424,8 +13428,17 @@ body.calculator-is-open .site-header {
 
 .cardiology-guide-grid {
   display: grid;
-  grid-template-columns: minmax(0, 780px);
+  grid-template-columns: minmax(0, 1fr);
   justify-content: start;
+}
+
+@media (min-width: 981px) {
+  .cardiology-guide-symptoms .service-check-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 48px;
+    align-items: start;
+  }
 }
 
 .cardiology-guide-grid > article {
@@ -13434,7 +13447,7 @@ body.calculator-is-open .site-header {
 
 .cardiology-guide-grid h2 {
   max-width: 560px;
-  margin: 12px 0 30px;
+  margin: 8px 0 18px;
   color: var(--ink);
   font-size: clamp(34px, 3.7vw, 52px);
   line-height: 1.08;
@@ -13442,11 +13455,11 @@ body.calculator-is-open .site-header {
 }
 
 .cardiology-guide-symptoms .service-check-list li {
-  padding-block: 15px;
+  padding-block: 10px;
 }
 
 .cardiology-guide-symptoms .service-check-list li::before {
-  top: 18px;
+  top: 13px;
 }
 
 .service-center-card {
@@ -13665,7 +13678,7 @@ body.calculator-is-open .site-header {
   min-width: 230px;
 }
 
-.service-detail-cta-actions > a:last-child {
+.service-detail-cta-actions > a:last-child:not(.book-button) {
   color: rgba(255, 255, 255, 0.82);
   font-size: 13px;
   font-weight: 700;
@@ -22751,7 +22764,7 @@ body.calculator-is-open .site-header {
     transition:
       max-height 420ms cubic-bezier(0.16, 1, 0.3, 1),
       margin-bottom 420ms cubic-bezier(0.16, 1, 0.3, 1),
-      opacity 180ms ease,
+      opacity 240ms ease,
       transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
       visibility 0s linear 420ms;
   }
@@ -22770,6 +22783,39 @@ body.calculator-is-open .site-header {
   .main-nav-chevron {
     transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1), color 180ms ease;
   }
+
+  /* A short stagger explains the submenu hierarchy without delaying navigation. */
+  .main-nav-submenu > a {
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 260ms ease, transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: 0s;
+  }
+
+  .main-nav-group.is-expanded .main-nav-submenu > a {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 30ms;
+  }
+
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(2) { transition-delay: 75ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(3) { transition-delay: 120ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(4) { transition-delay: 165ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(5) { transition-delay: 210ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(6) { transition-delay: 255ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(7) { transition-delay: 300ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(8) { transition-delay: 345ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(9) { transition-delay: 390ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(10) { transition-delay: 435ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(11) { transition-delay: 480ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(12) { transition-delay: 525ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(13) { transition-delay: 570ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(14) { transition-delay: 615ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(15) { transition-delay: 660ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(16) { transition-delay: 705ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(17) { transition-delay: 750ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(18) { transition-delay: 795ms; }
+  .main-nav-group.is-expanded .main-nav-submenu > a:nth-child(19) { transition-delay: 840ms; }
 }
 
 @media (max-width: 720px) {
@@ -22789,8 +22835,9 @@ body.calculator-is-open .site-header {
   .site-menu-backdrop,
   .main-nav,
   .main-nav-submenu,
+  .main-nav-submenu > a,
   .main-nav-chevron {
-    transition: none;
+    transition: none !important;
   }
 }
 
@@ -24352,3 +24399,278 @@ body :is(#ct-title, #mri-title, #service-detail-title) {
 }
 
 /* Navigation disclosures use explicit state. */
+
+/* One section rhythm for cardiology, independent of shared service defaults. */
+.cardiology-page { --cardiology-section-gap: 48px; }
+.cardiology-page > .service-detail-hero,
+.cardiology-page > .service-facts,
+.cardiology-page > .cardiology-care-guide,
+.cardiology-page > .service-important,
+.cardiology-page > .service-detail-cta {
+  margin-top: 0;
+  margin-bottom: var(--cardiology-section-gap);
+}
+.cardiology-page > .site-footer { margin-top: 0; }
+.cardiology-page > .service-facts--booking { margin-bottom: 24px; }
+@media (max-width: 720px) {
+  .cardiology-page { --cardiology-section-gap: 32px; }
+  .cardiology-page > .service-facts--booking { margin-bottom: 20px; }
+}
+
+@media (min-width: 981px) {
+  .cardiology-page .service-facts--booking > .cardiology-service-card {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 4;
+    row-gap: 12px;
+  }
+  .cardiology-page .cardiology-service-card > strong,
+  .cardiology-page .cardiology-service-card > .cardiology-service-price,
+  .cardiology-page .cardiology-service-card > small {
+    align-self: start;
+    margin-top: 0;
+  }
+  .cardiology-page .cardiology-service-card > :last-child {
+    align-self: end;
+  }
+}
+
+/* Ultrasound: continuous price list, without separate service cards. */
+.ultrasound-price-list {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto 48px;
+  scroll-margin-top: 110px;
+}
+.ultrasound-price-list h2 { margin: 8px 0 16px; color: var(--ink); font-size: clamp(28px, 3vw, 42px); line-height: 1.15; }
+.ultrasound-price-list > p { max-width: 850px; margin: 0 0 24px; color: var(--muted, #587276); line-height: 1.6; }
+.ultrasound-price-row { display: grid; grid-template-columns: minmax(0, 1fr) 120px 154px; align-items: center; gap: 24px; padding: 20px 0; border-bottom: 1px solid #d5e4e2; }
+.ultrasound-price-row h3 { margin: 0; font-size: 17px; line-height: 1.5; font-weight: 500; color: var(--ink); }
+.ultrasound-price-row > strong { white-space: nowrap; color: var(--ink); font-size: 17px; }
+.ultrasound-price-row .book-button { min-height: 44px; padding: 10px 16px; font-size: 13px; gap: 12px; }
+.ultrasound-page .service-overview > article,
+.ultrasound-page .service-information-grid > article { background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; }
+.ultrasound-page .service-overview,
+.ultrasound-page .service-information-grid,
+.ultrasound-page .service-process { margin-bottom: 48px; gap: 32px; }
+@media (max-width: 720px) {
+  .ultrasound-price-list { width: calc(100% - 32px); margin-bottom: 32px; }
+  .ultrasound-price-row { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding-block: 16px; }
+  .ultrasound-price-row > div { grid-column: 1 / -1; }
+  .ultrasound-price-row .book-button { min-width: 140px; }
+}
+
+/* Consistent ultrasound spacing and CT/MRI price styling. */
+.ultrasound-page { --ultrasound-section-gap: 40px; }
+.ultrasound-page > :is(.service-detail-hero,.ultrasound-price-list,.service-information-grid,.service-process,.service-important,.service-detail-cta) { margin-top:0; margin-bottom:var(--ultrasound-section-gap); }
+.ultrasound-page > .site-footer { margin-top:0; }
+.ultrasound-page .service-information-grid { grid-template-columns:minmax(0,1fr); }
+.ultrasound-page .service-process { background:#f1f3f5; border-color:transparent; box-shadow:none; }
+.ultrasound-page .service-process-steps article { background:transparent; box-shadow:none; }
+.ultrasound-price-row { min-height:82px; padding:14px 0; gap:16px; grid-template-columns:minmax(0,1fr) 104px 140px; }
+.ultrasound-price-row h3 { font-size:15px; font-weight:720; line-height:1.4; }
+.ultrasound-price-row > strong { font-size:15px; }
+.ultrasound-price-row .book-button { min-height:44px; padding:0 12px; border:0; border-radius:10px; background:#087f82; color:#fff; font-size:14px; font-weight:800; box-shadow:none; }
+.ultrasound-price-row .book-button:hover { background:#073f45; }
+@media(max-width:720px) {
+.ultrasound-page { --ultrasound-section-gap:28px; }
+.ultrasound-price-row { grid-template-columns:minmax(0,1fr) auto; gap:10px; padding-block:16px; }
+.ultrasound-price-row > div { grid-column:1/-1; }
+}
+
+/* Balance the ultrasound preparation list across the desktop section. */
+.ultrasound-page .service-information-grid > article { min-width: 0; width: 100%; }
+@media (min-width: 761px) {
+  .ultrasound-page .service-preparation-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; }
+}
+
+/* Compact, naturally wrapped study names in the mobile ultrasound price list. */
+@media (max-width: 720px) {
+  .ultrasound-page .ultrasound-price-row { min-height: 0; padding-block: 12px; row-gap: 8px; }
+  .ultrasound-page .ultrasound-price-row > div { min-width: 0; }
+  .ultrasound-page .ultrasound-price-row h3 { width: auto; max-width: none; margin: 0; font-size: 15px; font-weight: 600; line-height: 1.35; letter-spacing: normal; word-spacing: normal; text-align: left; text-wrap: wrap; overflow-wrap: break-word; }
+}
+
+/* Mobile ultrasound: keep the study and price together beside its action. */
+@media (max-width: 720px) {
+  .ultrasound-page .ultrasound-price-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    column-gap: 12px;
+    row-gap: 10px;
+    align-items: start;
+  }
+  .ultrasound-page .ultrasound-price-row > div { grid-column: 1; grid-row: 1; }
+  .ultrasound-page .ultrasound-price-row > strong { grid-column: 1; grid-row: 2; }
+  .ultrasound-page .ultrasound-price-row .book-button {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: center;
+    min-width: 0;
+    min-height: 44px;
+    padding-inline: 10px;
+    font-size: 13px;
+    gap: 6px;
+  }
+  .ultrasound-page .ultrasound-price-row .book-button > span { display: none; }
+}
+
+.ultrasound-description-toggle { display:flex; align-items:center; gap:8px; width:100%; min-height:44px; padding:0; border:0; background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer; }
+.ultrasound-description-toggle svg { width:16px; height:16px; flex-shrink:0; fill:none; stroke:currentColor; stroke-width:1.8; }
+.ultrasound-description-toggle[aria-expanded="true"] svg { transform:rotate(180deg); }
+.ultrasound-description-toggle:focus-visible { outline:2px solid #087f82; outline-offset:3px; border-radius:4px; }
+.ultrasound-page .ultrasound-price-row > .ultrasound-description { grid-column:1/-1; grid-row:auto; width:100%; min-width:0; }
+.ultrasound-description[hidden] { display:none; }
+.ultrasound-description dl { display:grid; gap:12px; margin:0; padding:16px; border-radius:10px; background:#f1f3f5; }
+.ultrasound-description dt { margin-bottom:4px; font-size:14px; font-weight:700; color:#073f45; }
+.ultrasound-description dd { margin:0; font-size:14px; line-height:1.55; color:#41575a; }
+
+/* Ultrasound uses the compact CT/MRI card treatment and explicit disclosure. */
+.ultrasound-price-rows { display:grid; gap:10px; }
+.ultrasound-page .ultrasound-price-row { padding:18px; border:1px solid #d5e4e2; border-radius:16px; background:#fff; }
+.ultrasound-page .ultrasound-price-row > .ultrasound-description-toggle { grid-column:1/-1; grid-row:auto; width:fit-content; min-height:44px; gap:8px; font-size:14px; font-weight:650; color:#087f82; }
+.ultrasound-description-toggle svg { width:20px; height:20px; }
+@media(max-width:720px) {
+  .ultrasound-page .ultrasound-price-row { padding:16px; }
+  .ultrasound-page .ultrasound-price-row > .ultrasound-description-toggle { grid-column:1/-1; grid-row:3; }
+  .ultrasound-page .ultrasound-price-row > .ultrasound-description { grid-row:4; }
+}
+
+/* Keep booking at a fixed inset regardless of the study name length. */
+.ultrasound-page .ultrasound-price-row > .book-button { align-self:start; }
+
+/* Desktop ultrasound remains an open list; mobile retains its compact cards. */
+@media (min-width: 761px) {
+  .ultrasound-page .ultrasound-price-row { border:0; border-radius:0; background:transparent; box-shadow:none; padding-inline:0; }
+}
+
+/* Subtle separators between desktop ultrasound studies. */
+@media (min-width: 761px) {
+  .ultrasound-page .ultrasound-price-row + .ultrasound-price-row { border-top: 1px solid #e1e5e7; }
+}
+
+/* Keep desktop disclosure close to the study title. */
+@media (min-width: 761px) {
+  .ultrasound-page .ultrasound-price-row { row-gap: 2px; }
+  .ultrasound-page .ultrasound-price-row > .ultrasound-description-toggle { align-self: start; }
+  .ultrasound-page .ultrasound-price-row > .ultrasound-description:not([hidden]) { margin-top: 10px; }
+}
+
+
+/* Light travels across the equipment image, behind the text shade. */
+.ultrasound-cinematic-waves { display:none; }
+.ultrasound-cinematic-backdrop::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:inherit;
+  background-size:inherit;
+  background-position:inherit;
+  background-repeat:no-repeat;
+  filter:brightness(1.65) saturate(1.12);
+  mask-image:linear-gradient(110deg,transparent 35%,#000 49%,transparent 63%);
+  mask-size:300% 100%;
+  mask-repeat:no-repeat;
+  animation:ultrasound-equipment-light 6s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes ultrasound-equipment-light {
+  0%,15% { mask-position:100% 0; opacity:0; }
+  25% { opacity:.9; }
+  75% { opacity:.9; }
+  90%,100% { mask-position:0% 0; opacity:0; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .ultrasound-cinematic-backdrop::after { animation:none; display:none; }
+}
+
+/* Ultrasound audit: compact sections and a quieter final action. */
+.ultrasound-page .service-detail-cta { box-shadow:none; background:#f1f3f5; color:#073f45; }
+.ultrasound-page .service-detail-cta::before,
+.ultrasound-page .service-detail-cta::after { display:none; }
+.ultrasound-page .service-detail-cta h2 { color:#073f45; }
+.ultrasound-page .service-detail-cta p { color:#41575a; }
+.ultrasound-page .service-detail-cta .book-button { box-shadow:none; }
+.ultrasound-page .service-information-grid h2 { margin-bottom:16px; }
+.ultrasound-page .service-preparation-list li { padding-block:10px; }
+@media(max-width:760px) {
+ .ultrasound-page .service-detail-hero--ultrasound-cinematic { min-height:620px; padding-top:24px; }
+ .ultrasound-page .ultrasound-cinematic-backdrop { background-size:auto 52%; }
+ .ultrasound-page .ultrasound-cinematic-shade { background:linear-gradient(180deg,#02262b 0%,rgba(2,42,47,.94) 44%,rgba(2,42,47,.12) 67%,rgba(2,35,40,.2) 100%); }
+ .ultrasound-page .service-detail-hero--ultrasound-cinematic .service-breadcrumbs { margin-bottom:20px; }
+ .ultrasound-page .service-detail-hero--ultrasound-cinematic .service-detail-actions { margin-top:18px; }
+ .ultrasound-page .ultrasound-price-list > p { margin-bottom:16px; }
+}
+
+/* Mobile ultrasound trial: full-width title and aligned actions. */
+@media (max-width:720px) {
+  .ultrasound-page .ultrasound-price-row > div:first-child { grid-column:1/-1; grid-row:1; }
+  .ultrasound-page .ultrasound-price-row > strong { grid-column:1/-1; grid-row:2; }
+  .ultrasound-page .ultrasound-price-row > .ultrasound-description-toggle { grid-column:1; grid-row:3; align-self:center; }
+  .ultrasound-page .ultrasound-price-row > .book-button { grid-column:2; grid-row:3; align-self:center; }
+  .ultrasound-page .ultrasound-price-row > .ultrasound-description { grid-column:1/-1; grid-row:4; }
+}
+
+/* Shared service-banner booking shape and highlight. */
+body .service-detail-hero .book-button,
+body .service-banner-booking {
+ position:relative; isolation:isolate; overflow:hidden; border-radius:999px;
+ background:#ff7900; color:#fff; box-shadow:0 8px 22px rgba(255,121,0,.2);
+ animation:none;
+}
+body .service-detail-hero .book-button::before,
+body .service-banner-booking::before {
+ content:""; position:absolute; z-index:1; inset:-70% auto -70% -46%; width:30%;
+ border-radius:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,.36),transparent);
+ pointer-events:none; transform:skewX(-20deg); animation:service-banner-sheen 4.4s ease-in-out infinite;
+}
+@keyframes service-banner-sheen {
+ 0%,25% { left:-46%; opacity:0; }
+ 35% { opacity:1; }
+ 65% { left:120%; opacity:1; }
+ 75%,100% { left:120%; opacity:0; }
+}
+@media(prefers-reduced-motion:reduce) {
+ body .service-detail-hero .book-button::before,
+ body .service-banner-booking::before { animation:none; display:none; }
+}
+
+/* Match secondary service-banner button rounding to the booking action. */
+body .service-detail-hero .outline-button,
+body .service-banner-secondary { border-radius:999px; }
+
+/* Ultrasound: one shared CT/MRI-style price panel without category tabs. */
+.ultrasound-page .ultrasound-price-rows {
+ display:grid; gap:0; overflow:hidden;
+ border:1px solid #d5e4e2; border-radius:20px; background:#fff;
+ box-shadow:0 14px 36px rgba(7,63,69,.065);
+}
+.ultrasound-page .ultrasound-price-row {
+ margin:0; padding:14px 22px; border:0; border-radius:0;
+ background:transparent; box-shadow:none;
+}
+.ultrasound-page .ultrasound-price-row + .ultrasound-price-row { border-top:1px solid #d5e4e2; }
+@media(max-width:720px) {
+ .ultrasound-page .ultrasound-price-row { padding:16px; }
+}
+
+/* Match CT/MRI price-row hover, contained inside the shared panel. */
+.ultrasound-page .ultrasound-price-row { transition:background-color .18s ease; }
+@media(hover:hover) {
+ .ultrasound-page .ultrasound-price-row:hover { background:rgba(245,249,248,.42); }
+}
+.ultrasound-page .ultrasound-price-row:focus-within { background:rgba(245,249,248,.42); }
+@media(prefers-reduced-motion:reduce) {
+ .ultrasound-page .ultrasound-price-row { transition:none; }
+}
+
+/* Column labels and centered desktop price actions. */
+.ultrasound-price-head { display:grid; grid-template-columns:minmax(0,1fr) 104px 140px; gap:16px; padding:14px 22px; background:#f1f3f5; color:#41575a; font-size:12px; font-weight:700; }
+.ultrasound-price-head > span:last-child { text-align:center; }
+@media(min-width:761px) {
+ .ultrasound-page .ultrasound-price-row > div:first-child { grid-column:1; grid-row:1; }
+ .ultrasound-page .ultrasound-price-row > .ultrasound-description-toggle { grid-column:1; grid-row:2; }
+ .ultrasound-page .ultrasound-price-row > strong { grid-column:2; grid-row:1/3; align-self:center; }
+ .ultrasound-page .ultrasound-price-row > .book-button { grid-column:3; grid-row:1/3; align-self:center; justify-content:center; }
+ .ultrasound-page .ultrasound-price-row > .ultrasound-description { grid-column:1/-1; grid-row:3; }
+}
+@media(max-width:760px) { .ultrasound-price-head { display:none; } }

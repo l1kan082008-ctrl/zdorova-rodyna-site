@@ -1,55 +1,34 @@
 import Link from "next/link";
 
-const consultationDirections = [
-  {
-    number: "01",
-    title: "Сімейна медицина",
-    description: "Перший контакт, профілактика та супровід здоров’я дорослих і дітей.",
-    href: "/doctors?specialty=Сімейна медицина",
-  },
-  {
-    number: "02",
-    title: "Педіатрія",
-    description: "Огляд дитини, профілактика, довідки та допомога під час хвороби.",
-    href: "/doctors?specialty=Педіатрія",
-  },
-  {
-    number: "03",
-    title: "Кардіологія",
-    description: "Тиск, біль у грудях, серцебиття та контроль стану серця.",
-    href: "/doctors?specialty=Кардіологія",
-  },
-  {
-    number: "04",
-    title: "Неврологія",
-    description: "Головний біль, запаморочення, біль у спині та порушення чутливості.",
-    href: "/doctors?specialty=Неврологія",
-  },
-  {
-    number: "05",
-    title: "Гастроентерологія",
-    description: "Біль у животі, печія, нудота та інші порушення травлення.",
-    href: "/doctors?specialty=Гастроентерологія",
-  },
-  {
-    number: "06",
-    title: "Дерматологія",
-    description: "Висипи, зміни шкіри, волосся, нігтів і перевірка новоутворень.",
-    href: "/doctors?specialty=Дерматологія",
-  },
-  {
-    number: "07",
-    title: "Гінекологія",
-    description: "Профілактичні огляди, консультації та турбота про жіноче здоров’я.",
-    href: "/doctors?specialty=Гінекологія",
-  },
-  {
-    number: "08",
-    title: "Хірургія та урологія",
-    description: "Консультації щодо гострих і планових станів та подальшої тактики.",
-    href: "/doctors?specialty=Хірургія%20та%20урологія",
-  },
-];
+import { doctorCategories } from "../../doctors/doctorCategories";
+
+const directionDescriptions: Record<string, string> = {
+  "group:family": "Сімейні лікарі та терапевти — профілі, графік і запис.",
+  "group:endocrinology": "Ендокринологи — інформація про лікарів та запис.",
+  "group:urology": "Урологи — профілі спеціалістів і графік прийому.",
+  "group:cardiology": "Кардіологи — інформація про спеціалістів та запис.",
+  "group:gynecology": "Гінекологи — профілі лікарів і графік прийому.",
+  "group:neurology": "Неврологи та невропатологи — вибір спеціаліста.",
+  "group:ultrasound": "Лікарі ультразвукової діагностики — профілі та графік.",
+  "group:rheumatology": "Ревматологи — інформація про лікарів та запис.",
+  "group:phlebology": "Флебологи — профілі спеціалістів і графік прийому.",
+  "group:mammology": "Мамологи — інформація про спеціалістів та запис.",
+  "group:radiology": "Фахівці КТ та МРТ — профілі та години роботи.",
+  "group:ent": "Отоларингологи та сурдологи — вибір спеціаліста.",
+  "group:pediatrics": "Педіатри та дитячі спеціалісти — профілі й запис.",
+  "group:dermatology": "Дерматологи — інформація про лікарів та запис.",
+  "group:oncology": "Онкологи — профілі спеціалістів і графік прийому.",
+  "group:traumatology": "Ортопеди-травматологи — профілі та запис.",
+  "group:gastroenterology": "Гастроентерологи — інформація про лікарів та запис.",
+  "group:allergy": "Алергологи — профілі спеціалістів і графік прийому.",
+};
+
+const consultationDirections = doctorCategories.map((category, index) => ({
+  number: String(index + 1).padStart(2, "0"),
+  title: category.label,
+  description: directionDescriptions[category.value],
+  href: `/doctors?specialty=${encodeURIComponent(category.value)}`,
+}));
 
 export function ConsultationExperience() {
   return (

@@ -8,6 +8,7 @@ import "./search-improvements.css";
 import "./close-controls.css";
 import { Suspense } from "react";
 import { BookingLauncher } from "./components/BookingLauncher";
+import { GlobalCalculator } from "./components/GlobalCalculator";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -58,14 +59,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <html lang="uk">
-      <body>{children}<Suspense fallback={null}><BookingLauncher /></Suspense></body>
+      <body>{children}<Suspense fallback={null}><BookingLauncher /><GlobalCalculator /></Suspense></body>
     </html>
   );
 }

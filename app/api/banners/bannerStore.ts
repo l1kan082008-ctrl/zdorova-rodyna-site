@@ -1,3 +1,4 @@
+import { initializeOnce } from "../../../lib/initializeOnce";
 import { env } from "@/lib/runtimeEnv";
 import {
   defaultPromoSlides,
@@ -40,6 +41,12 @@ const db = () => (env as unknown as { DB: D1DatabaseLike }).DB;
 const validThemes = new Set<string>(promoThemes);
 
 async function ensureBannersTable() {
+  return initializeSchema(initializeSchemaTables);
+}
+
+const initializeSchema = initializeOnce();
+
+async function initializeSchemaTables() {
   await db().prepare(`
     CREATE TABLE IF NOT EXISTS home_banners (
       id TEXT PRIMARY KEY,

@@ -534,7 +534,7 @@ test("cardiology page includes Holter as a fourth service", async () => {
   );
   assert.match(
     css,
-    /\.cardiology-guide-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0, 780px\)/,
+    /\.cardiology-guide-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\)/,
   );
 });
 
@@ -622,7 +622,7 @@ test("popular price cards form a swipeable carousel with a clean teal glow", asy
   );
   assert.match(
     css,
-    /\.price-card--plain\s*\{[\s\S]*?--glow-rgb:\s*255, 121, 0/,
+    /\.price-card--plain\s*\{[\s\S]*?--glow-rgb:\s*17, 121, 122/,
   );
   assert.doesNotMatch(css, /\.price-card--plain::after\s*\{[\s\S]*?display:\s*none/);
   assert.match(

@@ -296,14 +296,9 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
     if (selectedPriceIds.length === 0) return;
 
     closeSearch();
-    if (window.location.pathname === "/prices") {
-      window.requestAnimationFrame(() => {
-        window.dispatchEvent(new Event(PRICE_CALCULATOR_OPEN_EVENT));
-      });
-      return;
-    }
-
-    window.location.assign("/prices#calculator");
+    window.requestAnimationFrame(() => {
+      window.dispatchEvent(new Event(PRICE_CALCULATOR_OPEN_EVENT));
+    });
   };
 
   return (

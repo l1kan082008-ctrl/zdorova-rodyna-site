@@ -473,12 +473,10 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
             onClick={(event) => {
               setMenuOpen(false);
 
-              if (window.location.pathname === "/prices") {
-                event.preventDefault();
-                window.dispatchEvent(
-                  new CustomEvent(PRICE_CALCULATOR_OPEN_EVENT),
-                );
-              }
+              event.preventDefault();
+              window.requestAnimationFrame(() => {
+                window.dispatchEvent(new CustomEvent(PRICE_CALCULATOR_OPEN_EVENT));
+              });
             }}
           >
             <span className="header-selection-icon" aria-hidden="true">

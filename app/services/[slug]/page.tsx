@@ -1,3 +1,4 @@
+import { UltrasoundPriceRow } from "./UltrasoundPriceRow";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -187,7 +188,7 @@ export default async function ServiceDetailPage({
         /сімей|педіатр|терапевт/i.test(doctor.specialty),
       )
     : [];
-  const cardiologyPriceItems = isCardiology
+  const cardiologyPriceItems = isCardiology || isCinematicUltrasound
     ? await listPublicPriceItems().catch(() => catalogItems)
     : catalogItems;
   const cardiologyBookingOptions = cardiologyBookingDefinitions.flatMap(
@@ -211,7 +212,7 @@ export default async function ServiceDetailPage({
   );
 
   return (
-    <main className="inner-page service-detail-page">
+    <main className={`inner-page service-detail-page${isCardiology ? " cardiology-page" : ""}${isCinematicUltrasound ? " ultrasound-page" : ""}`}>
       <SiteHeader active="services" />
 
       {isCinematicHolter ? (
@@ -362,7 +363,7 @@ export default async function ServiceDetailPage({
               <Link className="book-button" href={bookingHref}>
                 Записатися <span>→</span>
               </Link>
-              <Link className="outline-button" href={priceHref}>
+              <Link className="outline-button" href="#ultrasound-prices">
                 Переглянути вартість <span>→</span>
               </Link>
             </div>
@@ -1013,7 +1014,20 @@ export default async function ServiceDetailPage({
         </>
       ) : null}
 
-      {!isFamilyMedicine && !isConsultation ? (
+      {isCinematicUltrasound && (
+        <section className="ultrasound-price-list" id="ultrasound-prices" aria-labelledby="ultrasound-prices-title">
+          <span className="section-kicker">Вартість обстежень</span>
+          <h2 id="ultrasound-prices-title">Послуги УЗД та ціни</h2>
+          <p>Оберіть дослідження. Вартість і запис — нижче, підготовка — у «Детальніше».</p>
+          <div className="ultrasound-price-rows">
+            <div className="ultrasound-price-head" aria-hidden="true"><span>Дослідження</span><span>Ціна</span><span>Запис</span></div>
+            {cardiologyPriceItems.filter(item => item.isActive !== false && ["ultrasound", "doppler"].includes(item.category)).map(item => (
+              <UltrasoundPriceRow key={item.id} name={item.name} amount={item.amount} />
+            ))}
+          </div>
+        </section>
+      )}
+      {!isFamilyMedicine && !isConsultation && !isCinematicUltrasound ? (
       <section
         className={`service-facts${isCardiology ? " service-facts--booking" : ""}`}
         id={isCardiology ? "cardiology-services" : undefined}
@@ -1144,7 +1158,7 @@ export default async function ServiceDetailPage({
             <p>{service.overview}</p>
           </article>
         </section>
-      ) : isCinematicLaboratory ? null : (
+      ) : isCinematicLaboratory || isCinematicUltrasound ? null : (
           <section
             className={`service-overview${
               isCompactProcedure ? " service-overview--single" : ""
@@ -1172,7 +1186,7 @@ export default async function ServiceDetailPage({
 
       {!isCardiology && !isFamilyMedicine && !isConsultation ? (
       <section className="service-information-grid">
-        <article>
+        {!isCinematicUltrasound && <article>
           <span className="section-kicker">Показання</span>
           <h2>{service.indicationsTitle}</h2>
           <ul className="service-check-list">
@@ -1180,7 +1194,7 @@ export default async function ServiceDetailPage({
               <li key={item}>{item}</li>
             ))}
           </ul>
-        </article>
+        </article>}
         <article>
           <span className="section-kicker">Перед візитом</span>
           <h2>Як підготуватися</h2>
@@ -1196,7 +1210,7 @@ export default async function ServiceDetailPage({
       </section>
       ) : null}
 
-      {!isCardiology && !isFamilyMedicine && !isConsultation ? (
+      {!isCardiology && !isFamilyMedicine && !isConsultation && !isCinematicUltrasound ? (
       <section className="service-process" aria-labelledby="service-process-title">
         <div>
           <span className="section-kicker">Послідовно і зрозуміло</span>
@@ -1234,13 +1248,13 @@ export default async function ServiceDetailPage({
           </p>
         </div>
         <div className="service-detail-cta-actions">
-          <Link
+          {!isCardiology && <Link
             className="book-button"
-            href={isCardiology ? "#cardiology-services" : bookingHref}
+            href={bookingHref}
           >
-            {isCardiology ? "Обрати послугу" : "Записатися"} <span>→</span>
-          </Link>
-          <a href="tel:+380676714444">+38 (067) 671-44-44</a>
+            Записатися <span>→</span>
+          </Link>}
+          {!isCinematicUltrasound && <a className={isCardiology ? "book-button" : undefined} href="tel:+380676714444">+38 (067) 671-44-44</a>}
         </div>
       </section>
       </>

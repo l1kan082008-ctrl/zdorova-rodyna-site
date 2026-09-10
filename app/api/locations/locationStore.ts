@@ -1,3 +1,4 @@
+import { initializeOnce } from "../../../lib/initializeOnce";
 import { env } from "@/lib/runtimeEnv";
 import {
   branchServiceCatalog,
@@ -43,6 +44,12 @@ const db = () => (env as unknown as { DB: D1DatabaseLike }).DB;
 const validServiceIds = new Set(branchServiceCatalog.map((service) => service.id));
 
 async function ensureLocationsTable() {
+  return initializeSchema(initializeSchemaTables);
+}
+
+const initializeSchema = initializeOnce();
+
+async function initializeSchemaTables() {
   await db().prepare(`
     CREATE TABLE IF NOT EXISTS center_locations (
       id TEXT PRIMARY KEY,

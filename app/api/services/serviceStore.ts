@@ -1,3 +1,4 @@
+import { initializeOnce } from "../../../lib/initializeOnce";
 import { env } from "@/lib/runtimeEnv";
 import { primaryServiceDetails } from "../../services/serviceData";
 import { normalizeInternalHref, normalizeMediaUrl } from "@/lib/publicUrl";
@@ -80,6 +81,12 @@ export function getDefaultManagedServices(): ManagedService[] {
 }
 
 async function ensureServicesTable() {
+  return initializeSchema(initializeSchemaTables);
+}
+
+const initializeSchema = initializeOnce();
+
+async function initializeSchemaTables() {
   await db().prepare(`
     CREATE TABLE IF NOT EXISTS managed_services (
       id TEXT PRIMARY KEY,
