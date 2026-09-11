@@ -28,3 +28,17 @@ test("a laboratory-only branch is not offered for CT or a doctor", () => {
   assert.equal(compatibleLocations(locations, "Комплекс досліджень").length, 0);
   assert.equal(compatibleLocations([], "КТ").length, 0);
 });
+
+
+test("home visit aliases share one booking service and preserve the Rivne address", async () => {
+  const { normalizeBookingService, isHomeVisitService, homeVisitAddressComment } = await import("../lib/bookingRequest.ts");
+  for (const label of ["Медсестра додому", "Виїзд медичної сестри додому", "Аналізи вдома"]) {
+    assert.equal(normalizeBookingService(label), "Медсестра додому");
+    assert.equal(isHomeVisitService(label), true);
+  }
+  assert.equal(normalizeBookingService("КТ"), "КТ");
+  assert.equal(isHomeVisitService("КТ"), false);
+  assert.equal(homeVisitAddressComment("  Тестова, 10  "), "Адреса виїзду: м. Рівне, Тестова, 10.");
+  assert.equal(homeVisitAddressComment("   "), "");
+  assert.equal(homeVisitAddressComment("x".repeat(201)), "");
+});

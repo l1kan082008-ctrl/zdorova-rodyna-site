@@ -306,7 +306,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
                     </span>
                   </span>
 
-                  {canBookDoctorConsultation(doctor) && (<a className="doctor-book-on-photo" href={bookingHref}>
+                  {canBookDoctorConsultation(doctor) && !isExpanded && (<a className="doctor-book-on-photo" href={bookingHref}>
                     Записатися <span aria-hidden="true">→</span>
                   </a>)}
                 </div>

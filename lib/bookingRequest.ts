@@ -21,3 +21,20 @@ export function formatBookingPhone(value: string) {
   digits = digits.slice(0, 10);
   return [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 8), digits.slice(8, 10)].filter(Boolean).join(" ");
 }
+
+export const homeVisitService = "Медсестра додому";
+
+export function isHomeVisitService(service: string) {
+  return [homeVisitService, "Виїзд медичної сестри додому", "Аналізи вдома"].includes(service.trim());
+}
+
+export function normalizeBookingService(service: string) {
+  return isHomeVisitService(service) ? homeVisitService : service;
+}
+
+export function homeVisitAddressComment(address: string) {
+  const trimmed = address.trim();
+  return trimmed.length >= 5 && trimmed.length <= 200
+    ? `Адреса виїзду: м. Рівне, ${trimmed}.`
+    : "";
+}

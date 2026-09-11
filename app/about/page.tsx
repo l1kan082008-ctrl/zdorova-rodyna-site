@@ -75,7 +75,7 @@ const values = [
 
 export default function AboutPage() {
   return (
-    <main className="inner-page">
+    <main className="inner-page about-page">
       <SiteHeader active="about" />
 
       <section className="page-hero about-page-hero">

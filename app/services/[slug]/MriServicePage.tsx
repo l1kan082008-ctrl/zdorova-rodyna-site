@@ -101,7 +101,7 @@ export function MriServicePage({ service, doctors, prices, bookingHref }: Props)
         <div className={`${styles.preparationGrid} ${mri.preparationGrid}`}>
           <div>
             <h3 className={styles.preparationLabel}>Перед візитом</h3>
-            <ul className={styles.infoList}>{service.preparation.map((item) => <li key={item}>{item}</li>)}</ul>
+            <ol className="service-preparation-list">{service.preparation.map((item, index) => <li key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item}</p></li>)}</ol>
           </div>
           <ol className={styles.preparationSteps} aria-label="Етапи обстеження">
             {service.process.map((step) => <li key={step.title}><h3>{step.title}</h3><p>{step.text}</p></li>)}

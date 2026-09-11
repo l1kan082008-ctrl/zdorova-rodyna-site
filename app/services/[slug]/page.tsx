@@ -19,6 +19,7 @@ import { FamilyDeclarationForm } from "./FamilyDeclarationForm";
 import { ConsultationExperience } from "./ConsultationExperience";
 import { CtServicePage } from "./CtServicePage";
 import { MriServicePage } from "./MriServicePage";
+import { HolterEquipment } from "./HolterEquipment";
 
 export const dynamic = "force-dynamic";
 
@@ -99,7 +100,7 @@ export default async function ServiceDetailPage({
     holter:
       "/prices?category=heart&search=%D0%A5%D0%BE%D0%BB%D1%82%D0%B5%D1%80#price-calculator",
     "home-nurse":
-      "/prices?category=analyses&search=%D0%9C%D0%B5%D0%B4%D1%81%D0%B5%D1%81%D1%82%D1%80%D0%B0%20%D0%B4%D0%BE%D0%B4%D0%BE%D0%BC%D1%83#price-calculator",
+      "/prices?category=sampling&search=%D0%97%D0%B0%D0%B1%D1%96%D1%80%20%D0%BA%D1%80%D0%BE%D0%B2%D1%96%20%D0%B2%D0%B4%D0%BE%D0%BC%D0%B0%20%28%D0%BC.%20%D0%A0%D1%96%D0%B2%D0%BD%D0%B5%29#price-calculator",
     family:
       "/prices?category=medical&search=%D0%A1%D1%96%D0%BC%D0%B5%D0%B9%D0%BD%D0%B8%D0%B9%20%D0%BB%D1%96%D0%BA%D0%B0%D1%80#price-calculator",
     "wart-removal":
@@ -213,7 +214,7 @@ export default async function ServiceDetailPage({
   );
 
   return (
-    <main className={`inner-page service-detail-page${isCardiology ? " cardiology-page" : ""}${isCinematicUltrasound ? " ultrasound-page" : ""}`}>
+    <main className={`inner-page service-detail-page${isHomeNurse ? " home-nurse-page" : ""}${isCardiology ? " cardiology-page" : ""}${isCinematicUltrasound ? " ultrasound-page" : ""}`}>
       <SiteHeader active="services" />
 
       {isCinematicHolter ? (
@@ -554,7 +555,7 @@ export default async function ServiceDetailPage({
             <p>Забір аналізів у вас вдома — у погоджений день і час.</p>
             <div className="service-detail-actions">
               <Link className="book-button" href={bookingHref}>
-                Записатися <span>→</span>
+                Замовити виїзд <span>→</span>
               </Link>
               <Link className="outline-button" href={priceHref}>
                 Переглянути вартість <span>→</span>
@@ -1152,14 +1153,18 @@ export default async function ServiceDetailPage({
           </div>
         </section>
       ) : isHomeNurse ? (
-        <section className="service-overview service-overview--single service-overview--home-nurse">
+        <section className="service-overview service-overview--home-nurse">
           <article>
-            <span className="section-kicker">Про послугу</span>
-            <h2>{service.centerTitle}</h2>
+            <div className="home-nurse-intro-heading">
+              <h2>{service.centerTitle}</h2>
+              <span className="home-nurse-area">Тільки у Рівному</span>
+            </div>
             <p>{service.overview}</p>
           </article>
         </section>
-      ) : isCinematicLaboratory || isCinematicUltrasound ? null : (
+      ) : isCinematicHolter ? (
+        <HolterEquipment />
+      ) : isCinematicLaboratory || isCinematicUltrasound || isCinematicEarPiercing || isCinematicWartRemoval || isCinematicDermoscopy ? null : (
           <section
             className={`service-overview${
               isCompactProcedure ? " service-overview--single" : ""
@@ -1211,7 +1216,7 @@ export default async function ServiceDetailPage({
       </section>
       ) : null}
 
-      {!isCardiology && !isFamilyMedicine && !isConsultation && !isCinematicUltrasound ? (
+      {!isCardiology && !isFamilyMedicine && !isConsultation && !isCinematicUltrasound && !isHomeNurse ? (
       <section className="service-process" aria-labelledby="service-process-title">
         <div>
           <span className="section-kicker">Послідовно і зрозуміло</span>
@@ -1231,21 +1236,20 @@ export default async function ServiceDetailPage({
 
       {!isFamilyMedicine && !isConsultation ? (
       <>
-      <aside className="service-important">
+      {!isHomeNurse && <aside className="service-important">
         <span aria-hidden="true">i</span>
         <div>
           <strong>Важливо знати</strong>
           <p>{service.important}</p>
         </div>
-      </aside>
+      </aside>}
 
       <section className="subpage-cta service-detail-cta">
         <div>
           <span className="section-kicker">Допоможемо підготуватися</span>
-          <h2>Уточніть дослідження та оберіть зручний час</h2>
+          <h2>{isHomeNurse ? "Замовте виїзд медсестри додому" : "Уточніть дослідження та оберіть зручний час"}</h2>
           <p>
-            Адміністратор перевірить деталі, підкаже підготовку та доступне
-            відділення.
+            {isHomeNurse ? "Залиште адресу в Рівному — адміністратор погодить час виїзду, перелік аналізів і вартість." : "Адміністратор перевірить деталі, підкаже підготовку та доступне відділення."}
           </p>
         </div>
         <div className="service-detail-cta-actions">
@@ -1253,9 +1257,9 @@ export default async function ServiceDetailPage({
             className="book-button"
             href={bookingHref}
           >
-            Записатися <span>→</span>
+            {isHomeNurse ? "Замовити виїзд" : "Записатися"} <span>→</span>
           </Link>}
-          {!isCinematicUltrasound && <a className={isCardiology ? "book-button" : undefined} href="tel:+380676714444">+38 (067) 671-44-44</a>}
+          {!isCinematicUltrasound && !isHomeNurse && service.slug !== "holter" && <a className={isCardiology ? "book-button" : undefined} href="tel:+380676714444">+38 (067) 671-44-44</a>}
         </div>
       </section>
       </>

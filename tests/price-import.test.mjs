@@ -11,14 +11,14 @@ const cache = new Map();
 function load(file) {
   file = path.resolve(file);
   if (cache.has(file)) return cache.get(file).exports;
-  const module = { exports: {} }; cache.set(file, module);
+  const loadedModule = { exports: {} }; cache.set(file, loadedModule);
   const code = ts.transpileModule(readFileSync(file, 'utf8'), { compilerOptions: {
     module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022,
   }}).outputText;
   new Function('require', 'module', 'exports', code)(id => id.startsWith('.')
     ? load(path.resolve(path.dirname(file), id.endsWith('.ts') ? id : `${id}.ts`))
-    : require(id), module, module.exports);
-  return module.exports;
+    : require(id), loadedModule, loadedModule.exports);
+  return loadedModule.exports;
 }
 const { parsePriceWorkbook } = load('app/admin/prices/priceImport.ts');
 function workbook(rows) {

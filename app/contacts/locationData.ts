@@ -196,7 +196,7 @@ export const centerLocations: CenterLocation[] = [
 
 export function getMapEmbedUrl(location: CenterLocation) {
   const { lat, lng } = location.coordinates;
-  return `https://www.google.com/maps?q=${encodeURIComponent(`${lat},${lng}`)}&z=16&hl=uk&output=embed`;
+  return `https://www.google.com/maps/embed?origin=mfe&pb=${encodeURIComponent(`!1m3!2m1!1s${lat},${lng}!6i16!3m1!1suk!5m1!1suk`)}`;
 }
 export function getDirectionsUrl(location: CenterLocation) {
   const { lat, lng } = location.coordinates;

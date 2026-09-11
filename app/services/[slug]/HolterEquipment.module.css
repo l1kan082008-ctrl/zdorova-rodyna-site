@@ -1,0 +1,166 @@
+.equipment {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  grid-template-areas: "heading description" "photo description";
+  column-gap: 40px;
+  row-gap: 16px;
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto 48px;
+  padding: 32px;
+  border: 1px solid #d5e4e2;
+  border-radius: 20px;
+  background: #fff;
+  color: var(--ink);
+  scroll-margin-top: 112px;
+}
+
+.heading {
+  grid-area: heading;
+  align-self: end;
+  min-width: 0;
+}
+
+.heading h2 {
+  margin: 8px 0;
+  color: var(--ink);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 500;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+}
+
+.heading p {
+  margin: 0;
+  color: #587276;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.photo {
+  grid-area: photo;
+  align-self: start;
+  min-width: 0;
+  margin: 0;
+}
+
+.photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.description {
+  grid-area: description;
+  align-self: center;
+  min-width: 0;
+}
+
+.intro,
+.explanation p {
+  margin: 0;
+  color: #587276;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  gap: 16px;
+  margin: 24px 0;
+  padding: 20px 0;
+  border-block: 1px solid #d5e4e2;
+}
+
+.facts div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.facts dt {
+  color: #587276;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.facts dd {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.explanation h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.explanation p + h3 {
+  margin-top: 20px;
+}
+
+@media (min-width: 721px) and (max-width: 1000px) {
+  .equipment {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas: "heading photo" "description description";
+    column-gap: 24px;
+    padding: 24px;
+  }
+
+  .heading {
+    align-self: center;
+  }
+
+  .photo img {
+    max-height: 220px;
+    object-fit: contain;
+  }
+}
+
+@media (max-width: 720px) {
+  .equipment {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "heading" "photo" "description";
+    gap: 20px;
+    width: calc(100% - 28px);
+    margin-bottom: 32px;
+    padding: 20px 16px;
+  }
+
+  .heading h2 {
+    font-size: clamp(26px, 7.2vw, 32px);
+  }
+
+  .photo img {
+    max-width: 360px;
+    margin-inline: auto;
+    aspect-ratio: 1.6;
+    object-fit: cover;
+  }
+
+  .facts {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 20px 0;
+    padding: 16px 0;
+  }
+
+  .facts div {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .facts dt {
+    font-size: 13px;
+  }
+
+  .facts dd {
+    font-size: 16px;
+  }
+}

@@ -148,7 +148,7 @@
 /* Consultation directory */
 .consultation-experience {
   width: min(1780px, calc(100% - 48px));
-  margin: 70px auto 110px;
+  margin: 48px auto;
   color: var(--ink, #063f46);
 }
 
@@ -162,9 +162,8 @@
 }
 
 .consultation-direction-panel {
-  padding: 48px 10px 10px;
-  border-top: 1px solid rgba(0, 121, 128, 0.18);
-  border-bottom: 1px solid rgba(0, 121, 128, 0.18);
+  padding: 0 10px;
+  border: 0;
 }
 
 .consultation-direction-heading {
@@ -196,7 +195,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px 0 8px;
-  border-bottom: 1px solid rgba(0, 121, 128, 0.38);
+  border-bottom: 0;
   color: #087378;
   font-weight: 700;
   text-decoration: none;
@@ -496,7 +495,7 @@
   align-items: end;
   justify-content: space-between;
   gap: 40px;
-  margin-top: 84px;
+  margin-top: 48px;
   padding: 52px 58px;
   border-radius: 30px;
   color: #fff;
@@ -537,7 +536,7 @@
 @media (max-width: 720px) {
   .consultation-experience {
     width: calc(100% - 32px);
-    margin: 42px auto 72px;
+    margin: 32px auto;
   }
 
   .consultation-directory-heading h2,
@@ -546,7 +545,7 @@
   }
 
   .consultation-direction-panel {
-    padding: 30px 0 4px;
+    padding: 0;
   }
 
   .consultation-direction-heading {
@@ -638,7 +637,7 @@
 
   .consultation-help {
     display: block;
-    margin-top: 62px;
+    margin-top: 32px;
     padding: 32px 22px;
     border-radius: 24px;
   }
@@ -2007,7 +2006,7 @@ footer {
 }
 
 .promo-slide--laboratory {
-  --promo-photo: url("/promo/laboratory-photo-v1.webp");
+  --promo-photo: url("/promo/laboratory-masnieva-v8.webp");
 }
 
 .promo-slide--home {
@@ -2015,15 +2014,15 @@ footer {
 }
 
 .promo-slide--heart {
-  --promo-photo: url("/promo/cardiology-photo-v1.webp");
+  --promo-photo: url("/promo/cardiology-stoliarska-holter-v3.webp");
 }
 
 .promo-slide--mri {
-  --promo-photo: url("/promo/mri-photo-flow-plus-v2.webp");
+  --promo-photo: url("/promo/mri-rohalskyi-v4.webp");
 }
 
 .promo-slide--doctors {
-  --promo-photo: url("/promo/doctors-photo-v1.webp");
+  --promo-photo: url("/promo/doctors-real-team-v2.webp");
 }
 
 .promo-slide--dermoscopy {
@@ -5490,18 +5489,7 @@ footer {
 }
 
 .about-page-hero::after {
-  position: absolute;
-  top: 24px;
-  right: 5%;
-  width: 210px;
-  height: 210px;
-  border: 1px solid rgba(13, 126, 128, 0.13);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 38px rgba(13, 126, 128, 0.035),
-    0 0 0 76px rgba(13, 126, 128, 0.025);
-  content: "";
-  pointer-events: none;
+  content: none;
 }
 
 .about-directions {
@@ -11445,7 +11433,7 @@ body.calculator-is-open .site-header {
 
 .audiometry-cinematic-backdrop {
   z-index: -3;
-  background-image: url("/service-heroes/audiometry-cinematic-v1.webp");
+  background-image: url("/service-heroes/audiometry-luniakin-v2.webp");
   background-position: center;
   background-size: cover;
   transform: scale(1.018);
@@ -24673,3 +24661,206 @@ body .service-banner-secondary { border-radius:999px; }
  .ultrasound-page .ultrasound-price-row > .ultrasound-description { grid-column:1/-1; grid-row:3; }
 }
 @media(max-width:760px) { .ultrasound-price-head { display:none; } }
+
+/* Compact home visit introduction and service area. */
+.service-overview--home-nurse { display: block; margin-bottom: 32px; }
+.service-overview--home-nurse > article:not(.service-center-card) { display: block; padding: 24px 28px; border-radius: 20px; background: #f1f3f5; }
+.home-nurse-intro-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 24px; }
+.service-overview--home-nurse h2 { font-size: 30px; line-height: 1.2; letter-spacing: -.02em; }
+.home-nurse-area { display: inline-flex; padding: 6px 12px; border-radius: 8px; background: var(--orange); color: #fff; font-size: 13px; line-height: 1.5; font-weight: 700; }
+.service-overview--home-nurse p { max-width: 900px; margin: 12px 0 0; font-size: 16px; line-height: 1.6; color: #53676a; }
+@media (max-width: 720px) {
+  .service-overview--home-nurse { margin-bottom: 24px; }
+  .service-overview--home-nurse > article:not(.service-center-card) { padding: 20px; }
+  .service-overview--home-nurse h2 { font-size: 26px; }
+}
+
+/* Home visit page: a consistent vertical rhythm and shorter mobile hero. */
+.home-nurse-page > :is(.service-facts,.service-overview,.service-information-grid,.service-detail-cta) { margin-top: 0; margin-bottom: 32px; }
+.home-nurse-page .service-information-grid h2 { font-size: clamp(28px,3vw,36px); line-height: 1.2; }
+.home-nurse-page .service-detail-cta { box-shadow: none; }
+@media (max-width: 720px) {
+  .home-nurse-page > :is(.service-facts,.service-overview,.service-information-grid,.service-detail-cta) { margin-bottom: 24px; }
+  .home-nurse-page .service-detail-hero--home-nurse-cinematic { min-height: 520px; padding-top: 24px; padding-bottom: 160px; }
+  .home-nurse-page .home-nurse-cinematic-backdrop { background-size: auto 44%; background-position: right calc(100% + 32px); }
+  .home-nurse-page .service-breadcrumbs { margin-bottom: 20px; }
+  .home-nurse-page .service-detail-actions { gap: 10px; margin-top: 20px; }
+}
+
+.home-nurse-page > .service-detail-hero { margin-bottom: 32px; }
+@media (max-width: 720px) {
+  .home-nurse-page > .service-detail-hero { margin-bottom: 24px; }
+}
+
+/* Home visit visual alignment with the shared service-page palette. */
+.home-nurse-page {
+  --home-nurse-surface: #f1f3f5;
+  --home-nurse-copy: #41575a;
+}
+.home-nurse-page :is(.service-overview, .service-information-grid, .service-detail-cta) h2 {
+  color: var(--ink);
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -.02em;
+}
+.home-nurse-page :is(.service-overview, .service-information-grid, .service-detail-cta) p,
+.home-nurse-page .service-check-list li {
+  color: var(--home-nurse-copy);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.home-nurse-page :is(.service-information-grid, .service-detail-cta) .section-kicker {
+  color: var(--orange);
+  font-size: 12px;
+}
+.home-nurse-page .service-facts {
+  background: var(--home-nurse-surface);
+  border-color: transparent;
+  border-radius: 20px;
+  box-shadow: none;
+}
+.home-nurse-page .service-facts > div > span { color: var(--orange); font-size: 12px; }
+.home-nurse-page .service-facts strong { font-size: 15px; line-height: 1.5; }
+.home-nurse-page .service-detail-cta {
+  padding: 24px 28px;
+  border-radius: 20px;
+  box-shadow: none;
+}
+.home-nurse-page .service-detail-cta::before,
+.home-nurse-page .service-detail-cta::after { display: none; }
+.home-nurse-page .service-detail-cta-actions > a:not(.book-button) {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal);
+  font-size: 14px;
+}
+@media (max-width: 720px) {
+  .home-nurse-page :is(.service-overview, .service-information-grid, .service-detail-cta) h2 { font-size: 26px; }
+  .home-nurse-page .service-detail-cta { padding: 20px; }
+}
+
+.home-nurse-page .service-detail-cta h2 { color: #fff; }
+.home-nurse-page .service-detail-cta p { color: rgba(255, 255, 255, .76); }
+
+/* Preparation cards reuse the patient journey treatment on every service. */
+body .service-preparation-list { gap: 12px; }
+body .service-preparation-list li {
+ display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 22px;
+ align-items: start; padding: 24px 26px;
+ border: 1px solid #dce9e8; border-radius: 20px;
+ background: rgba(255,255,255,.78); box-shadow: 0 12px 30px rgba(24,73,76,.045);
+}
+body .service-preparation-list li > span {
+ width: 52px; height: 52px; background: #e5f3f2; color: var(--teal);
+ font-size: 11px; font-weight: 800; letter-spacing: .08em;
+}
+body .service-preparation-list li > p { margin: 0; align-self: center; color: #59696c; font-size: 16px; line-height: 1.65; }
+@media (max-width: 720px) {
+ body .service-preparation-list li { grid-template-columns: 40px minmax(0,1fr); gap: 14px; padding: 18px 16px; }
+ body .service-preparation-list li > span { width: 40px; height: 40px; }
+ body .service-preparation-list li > p { font-size: 15px; }
+}
+
+/* About hero: restrained editorial layout. */
+.page-hero.about-page-hero {
+ display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr);
+ column-gap: 64px; row-gap: 18px; align-items: center;
+}
+.about-page-hero > .section-kicker { grid-column: 1 / -1; margin: 0; }
+.page-hero.about-page-hero h1 { margin: 0; max-width: 720px; }
+.page-hero.about-page-hero > p {
+ margin: 0; max-width: 560px; padding-left: 32px;
+ border-left: 1px solid #cbdcdb; text-align: left;
+}
+@media (max-width: 760px) {
+ .page-hero.about-page-hero { grid-template-columns: minmax(0,1fr); gap: 18px; }
+ .page-hero.about-page-hero > p { padding: 18px 0 0; border-left: 0; border-top: 1px solid #cbdcdb; }
+}
+
+/* Consistent left-aligned section introductions on About. */
+.about-journey { grid-template-columns: minmax(0,1fr); gap: 28px; padding: 48px 0 0; }
+.about-journey-intro { position: static; }
+.about-values { padding-top: 48px; }
+.about-values-head { display: block; padding-bottom: 0; border-bottom: 0; }
+.about-journey-intro .section-kicker,
+.about-values-head .section-kicker { display: block; margin: 0 0 12px; }
+.about-journey-intro h2,
+.about-values-head h2 { max-width: 800px; margin: 0; font-size: 36px; line-height: 1.2; color: var(--ink); }
+.about-journey-intro p { max-width: 760px; margin: 16px 0 0; }
+.about-journey-steps { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.about-values .values-grid { padding: 28px 0 0; }
+@media (max-width: 720px) {
+ .about-journey { padding-top: 32px; gap: 22px; }
+ .about-values { padding-top: 32px; }
+ .about-journey-intro h2,.about-values-head h2 { font-size: 28px; }
+ .about-journey-steps { grid-template-columns: minmax(0,1fr); }
+ .about-values .values-grid { padding-top: 22px; }
+}
+
+/* Fill mobile service cards so the image has no exposed vertical edge. */
+@media (max-width: 760px) {
+ .services-directory-grid .service-card::before {
+  left: auto; width: min(100%, 250px); background-size: auto 100%; background-position: right center;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 42%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 42%);
+ }
+ .services-directory-grid .service-card::after {
+  background: linear-gradient(180deg,rgba(248,251,250,0) 10%,rgba(248,251,250,.25) 35%,rgba(248,251,250,.85) 65%,#f8fbfa 90%);
+ }
+}
+
+/* About page section spacing: one rhythm across the whole page. */
+.about-page { --about-section-gap: 48px; }
+.about-page > .about-page-hero { padding-bottom: 0; margin-bottom: var(--about-section-gap); }
+.about-page > :is(.about-route,.about-directions,.about-journey,.about-values,.subpage-cta) { margin-top: 0; margin-bottom: var(--about-section-gap); }
+.about-page > :is(.about-journey,.about-values) { padding-top: 0; padding-bottom: 0; }
+.about-page .about-route-copy p:last-child { margin-bottom: 0; }
+.about-page .about-values .values-grid { padding-bottom: 0; }
+@media(max-width:720px) {
+ .about-page { --about-section-gap: 32px; }
+}
+
+/* Patient information: consistent section rhythm without preparation dividers. */
+.patients-page,.preparation-page,.faq-page { --patient-section-gap: 48px; }
+.patients-shell,.preparation-shell,.faq-shell { margin-bottom: var(--patient-section-gap); }
+.patients-section { padding-block: var(--patient-section-gap); gap: 48px; scroll-margin-top: 110px; }
+.preparation-hero { border-bottom: 0; padding-bottom: 0; }
+.preparation-directory { padding-block: var(--patient-section-gap); }
+.preparation-checklist { border-top: 0; padding-top: 0; padding-bottom: var(--patient-section-gap); }
+.faq-directory { padding-block: var(--patient-section-gap); }
+@media(max-width:720px) {
+ .patients-page,.preparation-page,.faq-page { --patient-section-gap: 32px; }
+ .patients-section { gap: 24px; }
+}
+
+/* Remove outer separators around patient support. */
+.patients-page #results,
+.patients-page .patients-benefits { border-bottom: 0; }
+.patients-page .patients-benefits { border-top: 0; }
+.patients-page .patients-benefit-list article:first-child { border-top: 0; }
+.patients-page .patients-benefit-list article:last-child { border-bottom: 0; }
+
+/* Clear, compact result delivery cards. */
+.patients-page #results { grid-template-columns: minmax(0,1fr); gap: 24px; }
+.patients-page #results h2 { max-width: none; margin-bottom: 0; }
+.patients-page .patients-result-grid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.patients-page .patients-result-grid article {
+ min-height: 0; padding: 24px; border: 1px solid #dce9e8; border-radius: 20px;
+ background: #fff; box-shadow: 0 12px 30px rgba(24,73,76,.045);
+}
+.patients-page .patients-result-grid article > span {
+ display: grid; place-items: center; width: 44px; height: 44px;
+ border-radius: 50%; background: #e5f3f2; color: var(--teal); font-size: 11px;
+}
+.patients-page .patients-result-grid h3 { margin: 18px 0 10px; font-size: 20px; line-height: 1.25; }
+.patients-page .patients-result-grid p { font-size: 15px; line-height: 1.6; color: #59696c; }
+@media(max-width:760px) {
+ .patients-page .patients-result-grid { grid-template-columns: minmax(0,1fr); gap: 12px; }
+ .patients-page .patients-result-grid article { display: grid; grid-template-columns: 40px minmax(0,1fr); gap: 8px 14px; padding: 20px 16px; }
+ .patients-page .patients-result-grid article > span { width: 40px; height: 40px; grid-row: 1/3; }
+ .patients-page .patients-result-grid h3 { margin: 0; align-self: center; }
+ .patients-page .patients-result-grid p { grid-column: 2; }
+}
