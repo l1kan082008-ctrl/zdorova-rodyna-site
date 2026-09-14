@@ -201,6 +201,19 @@ function parseBoolean(value: unknown, defaultValue = true) {
   return true;
 }
 
+function parseAliases(value: unknown): string[] {
+  const text = String(value ?? "").trim();
+  if (text.startsWith("[")) {
+    try {
+      const parsed: unknown = JSON.parse(text);
+      if (Array.isArray(parsed) && parsed.every(alias => typeof alias === "string")) {
+        return parsed.map(alias => alias.trim()).filter(Boolean);
+      }
+    } catch { /* Older files use comma or semicolon separated names. */ }
+  }
+  return text.split(/[;,|]/).map(alias => alias.trim()).filter(Boolean);
+}
+
 function getCell(
   row: unknown[],
   columns: Map<ColumnName, number>,
@@ -284,10 +297,7 @@ export async function parsePriceWorkbook(
         continue;
       }
 
-      const aliases = String(getCell(row, header.columns, "aliases"))
-        .split(/[;,|]/)
-        .map((alias) => alias.trim())
-        .filter(Boolean);
+      const aliases = parseAliases(getCell(row, header.columns, "aliases"));
       const explicitOrder = Number(
         getCell(row, header.columns, "sortOrder"),
       );

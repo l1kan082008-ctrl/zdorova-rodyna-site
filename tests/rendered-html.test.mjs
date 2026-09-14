@@ -775,7 +775,7 @@ test("successful calculator booking clears its saved selection and header count"
   );
 });
 
-test("admin price list supports validated Excel imports without deleting other rows", async () => {
+test("admin price list supports validated Excel imports with reversible synchronization", async () => {
   const [page, panel, parser, route, store] = await Promise.all([
     readSource("app/admin/prices/page.tsx"),
     readSource("app/admin/prices/PriceImportPanel.tsx"),

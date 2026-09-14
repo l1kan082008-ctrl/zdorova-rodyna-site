@@ -15,7 +15,7 @@ type ManagedPriceItem = PriceItem & {
 
 type ImportResponse = {
   items?: ManagedPriceItem[];
-  summary?: { created: number; updated: number };
+  summary?: { created: number; updated: number; hidden: number };
   error?: string;
 };
 
@@ -40,29 +40,46 @@ export default function PriceImportPanel({
   const [issues, setIssues] = useState<PriceImportIssue[]>([]);
   const [parsing, setParsing] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
   const [status, setStatus] = useState("");
 
   const importSummary = useMemo(() => {
     const ids = new Set(items.map((item) => item.id));
-    const keys = new Set(
-      items.map(
-        (item) => `${item.category}::${normalize(item.name)}`,
-      ),
-    );
+    const byName = new Map(items.map(item => [`${item.category}::${normalize(item.name)}`, item.id]));
+    const selected = new Set<string>();
     let updated = 0;
     let created = 0;
     for (const row of rows) {
-      if (
-        (row.id && ids.has(row.id)) ||
-        keys.has(`${row.category}::${normalize(row.name)}`)
-      ) {
-        updated += 1;
-      } else {
-        created += 1;
-      }
+      const id = row.id && ids.has(row.id) ? row.id : byName.get(`${row.category}::${normalize(row.name)}`);
+      if (id) { selected.add(id); updated += 1; }
+      else created += 1;
     }
-    return { updated, created };
+    const hidden = items.filter(item => item.isActive && !selected.has(item.id)).length;
+    return { updated, created, hidden };
   }, [items, rows]);
+
+  const downloadPrices = async () => {
+    setExporting(true);
+    setExportError("");
+    try {
+      const response = await fetch("/api/admin/prices", { cache: "no-store" });
+      const payload = await response.json() as ImportResponse;
+      if (!response.ok || !payload.items) throw new Error(payload.error || "Не вдалося завантажити прайс.");
+      const { createPriceWorkbook } = await import("./priceExport");
+      const bytes = await createPriceWorkbook(payload.items);
+      const url = URL.createObjectURL(new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `prais-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : "Не вдалося створити Excel.");
+    } finally { setExporting(false); }
+  };
 
   const reset = () => {
     setFileName("");
@@ -131,7 +148,7 @@ export default function PriceImportPanel({
       onImported(payload.items);
       const summary = payload.summary ?? importSummary;
       setStatus(
-        `Готово: оновлено ${summary.updated}, додано ${summary.created} позицій.`,
+        `Готово: оновлено ${summary.updated}, додано ${summary.created}, приховано відсутніх у файлі ${summary.hidden} позицій.`,
       );
       setRows([]);
       setIssues([]);
@@ -161,6 +178,9 @@ export default function PriceImportPanel({
           </p>
         </div>
         <div className="admin-import-file-actions">
+          <button type="button" onClick={downloadPrices} disabled={exporting || importing}>
+            {exporting ? "Готуємо Excel…" : "Скачати актуальний прайс Excel"}
+          </button>
           <label className="admin-import-file">
             <input
               ref={fileInput}
@@ -179,9 +199,10 @@ export default function PriceImportPanel({
         </div>
       </div>
 
+      {exportError ? <p role="alert">{exportError}</p> : null}
       <p className="admin-import-note">
         Збіги за ID або назвою в межах категорії буде оновлено, нові позиції —
-        додано. Решта прайса залишиться без змін.
+        додано. Усі позиції, яких немає у файлі, буде приховано із сайту. Завантажуйте повний прайс усіх категорій.
       </p>
 
       {fileName ? (
@@ -190,6 +211,7 @@ export default function PriceImportPanel({
           <span><b>Готово</b>{rows.length}</span>
           <span><b>Оновиться</b>{importSummary.updated}</span>
           <span><b>Нових</b>{importSummary.created}</span>
+          <span><b>Зникне із сайту</b>{importSummary.hidden}</span>
           <span className={issues.length ? "has-errors" : undefined}>
             <b>Помилок</b>{issues.length}
           </span>
@@ -269,7 +291,7 @@ export default function PriceImportPanel({
               onClick={importRows}
               disabled={importing || issues.length > 0}
             >
-              {importing ? "Імпортуємо…" : `Імпортувати ${rows.length} позицій`}
+              {importing ? "Імпортуємо…" : `Замінити прайс (${rows.length} позицій)`}
               <span>→</span>
             </button>
           </div>

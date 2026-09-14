@@ -309,6 +309,7 @@ function getImportMatchKey(name: string, category: CategoryId) {
 }
 
 export async function importManagedPriceItems(values: ImportedPriceItem[]) {
+  if (!values.length) throw new Error("Порожній файл не може замінити прайс.");
   await ensurePriceItemsTable();
 
   const existing = await listManagedPriceItems();
@@ -377,9 +378,12 @@ export async function importManagedPriceItems(values: ImportedPriceItem[]) {
     );
   });
 
-  for (let index = 0; index < statements.length; index += 50) {
-    await env.DB.batch(statements.slice(index, index + 50));
-  }
+  const hidden = existing.filter((item) => item.isActive && !selectedIds.has(item.id)).length;
+  // One transaction: a failed import leaves the previous public catalog intact.
+  await env.DB.batch([
+    env.DB.prepare("UPDATE price_items SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE is_active = 1"),
+    ...statements,
+  ]);
 
-  return { created, updated };
+  return { created, updated, hidden };
 }
