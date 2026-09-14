@@ -1190,6 +1190,50 @@ export default async function ServiceDetailPage({
         </section>
       )}
 
+      {isCinematicUltrasound && (
+        <section className="ultrasound-equipment" aria-label="Наше обладнання Siemens ACUSON">
+          {[
+            {
+              model: "S2000",
+              title: "Для загальної діагностики та жіночого здоров’я",
+              description: "Обстеження органів черевної порожнини, щитоподібної та молочних залоз, органів малого таза.",
+              features: [
+                { title: "Структура органів", text: "Лікар оцінює контури та внутрішню структуру органів, вимірює виявлені утворення." },
+                { title: "Оцінка кровотоку", text: "Кольоровий і спектральний доплер допомагають оцінити напрямок та швидкість руху крові." },
+              ],
+            },
+            {
+              model: "S3000",
+              title: "Для поглибленого дослідження тканин",
+              description: "Ультразвукове зображення та оцінка кровотоку з можливістю застосування спеціалізованих режимів діагностики.",
+              features: [
+                { title: "Детальний огляд", text: "Зображення та вимірювання допомагають описати розташування, розміри й структуру виявлених змін." },
+                { title: "Еластографія Virtual Touch", text: "У відповідній комплектації зсувні хвилі дозволяють оцінити жорсткість тканин, зокрема печінки. Це доповнює УЗД, а не замінює діагноз лікаря." },
+              ],
+            },
+          ].map((device) => (
+            <article className="ultrasound-equipment-card" key={device.model} aria-labelledby={`equipment-${device.model}`}>
+              <div className="ultrasound-equipment-copy">
+                <span className="section-kicker">Наше обладнання</span>
+                <h2 id={`equipment-${device.model}`}><span>Siemens ACUSON</span><strong>{device.model}</strong></h2>
+                <div className="ultrasound-equipment-accent" aria-hidden="true" />
+                <h3>{device.title}</h3>
+                <p>{device.description}</p>
+                <ol className="ultrasound-equipment-features">
+                  {device.features.map((feature, index) => (
+                    <li key={feature.title}>
+                      <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                      <div><h4>{feature.title}</h4><p>{feature.text}</p></div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div className="ultrasound-equipment-visual"><img className="ultrasound-equipment-photo" src={`/equipment/acuson-${device.model.toLowerCase()}.jpg`} alt={`Ультразвуковий апарат Siemens ACUSON ${device.model}`} width="1536" height="2048" loading="lazy" /></div>
+            </article>
+          ))}
+        </section>
+      )}
+
       {!isCardiology && !isFamilyMedicine && !isConsultation ? (
       <section className="service-information-grid">
         {!isCinematicUltrasound && <article>
