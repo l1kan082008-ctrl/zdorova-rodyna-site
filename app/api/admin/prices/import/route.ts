@@ -50,7 +50,7 @@ function parseItem(value: unknown, index: number): ImportedPriceItem {
         .slice(0, 30)
     : [];
 
-  if (!name || name.length > 500) {
+  if (!name || name.length > 2000) {
     throw new Error(`Рядок ${index + 1}: перевірте назву послуги.`);
   }
   if (!categoryOption) {
