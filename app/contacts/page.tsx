@@ -11,6 +11,7 @@ export default function ContactsPage() {
   useEffect(() => {
     const controller = new AbortController();
     const linkedLocation = new URLSearchParams(window.location.search).get("location");
+    if (linkedLocation && centerLocations.some(({ id }) => id === linkedLocation)) setSelectedLocationId(linkedLocation);
     fetch("/api/locations", { signal: controller.signal })
       .then(async (response) => response.ok ? await response.json() as { locations?: CenterLocation[] } : null)
       .then((payload) => {

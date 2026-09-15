@@ -1,10 +1,11 @@
 "use client";
+import { radiologyPriceRegistry } from "../../prices/radiologyPriceRegistry";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import Link from "next/link";
 import type { PriceItem } from "../../prices/priceData";
-import { MRI_PRICE_GROUPS, MRI_PRICE_ROWS, type MriPriceGroupId } from "./mriPriceGroups";
+import { MRI_PRICE_GROUPS, type MriPriceGroupId } from "./mriPriceGroups";
 import styles from "./CtServicePage.module.css";
 import mri from "./MriServicePage.module.css";
 
@@ -19,16 +20,17 @@ function requiresSeparateBooking(item: PriceItem) {
   return !/^official-258-(11[6-9]|120|123)$/.test(item.id);
 }
 function pairItems(items: PriceItem[], groupId: MriPriceGroupId): PricePair[] {
-  const byId = new Map(items.filter(item => item.isActive !== false).map(item => [item.id, item]));
-  const get = (position?: number) => position ? byId.get('official-258-' + String(position).padStart(3, '0')) : undefined;
-  return MRI_PRICE_ROWS[groupId].flatMap(([without, withContrast]) => {
-    const originalPlain = get(without);
-    const plain = without === 64 && originalPlain ? { ...originalPlain, name: "МРТ одного колінного суглоба (після 65 років)" } : originalPlain;
-    const contrast = get(withContrast);
-    const item = plain ?? contrast;
-    if (!item) return [];
-    return [{ id: item.id, name: item.name.replace(/ без контрасту$/i, ""), withoutContrast: plain, withContrast: contrast }];
-  });
+  const pairs = new Map<string, PricePair>();
+  for (const item of items.filter(item => item.isActive !== false)) {
+    const entry = radiologyPriceRegistry[item.id];
+    if ((entry?.group ?? "additional") !== groupId) continue;
+    const name = entry?.pairName ?? item.name;
+    const pair = pairs.get(name) ?? { id: item.id, name };
+    if (entry?.contrast) pair.withContrast = item;
+    else pair.withoutContrast = item;
+    pairs.set(name, pair);
+  }
+  return [...pairs.values()];
 }
 
 function PriceOption({

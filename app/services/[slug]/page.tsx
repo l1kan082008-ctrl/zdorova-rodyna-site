@@ -1,3 +1,6 @@
+import "./ultrasound-locations.css";
+import Image from "next/image";
+import { centerLocations, getDirectionsUrl } from "../../contacts/locationData";
 import serviceStyles from "./CtServicePage.module.css";
 import { UltrasoundPriceRow } from "./UltrasoundPriceRow";
 import type { Metadata } from "next";
@@ -1234,6 +1237,29 @@ export default async function ServiceDetailPage({
         </section>
       )}
 
+      {isCinematicUltrasound && (
+        <section className={`${serviceStyles.page} ${serviceStyles.section} ultrasound-locations`} aria-labelledby="ultrasound-locations-title">
+          <div className={serviceStyles.sectionTitle}>
+            <h2 id="ultrasound-locations-title">Де пройти УЗД</h2>
+            <p>Адміністратор допоможе обрати зручний час для УЗД та підкаже, як підготуватися до обстеження.</p>
+          </div>
+          <div className={`${serviceStyles.locationGrid} ultrasound-locations-grid`}>
+            {centerLocations.filter((location) => ["stelmakha-18m", "zviahel-shevchenka-41-1"].includes(location.id)).map((location) => (
+              <article key={location.id}>
+                <div className={serviceStyles.locationPhoto}>
+                  <Image src={location.gallery[0].src} alt={location.gallery[0].alt} fill unoptimized sizes="(max-width: 760px) 112px, 140px" />
+                </div>
+                <div>
+                  <strong><Link className={serviceStyles.locationLink} href={`/contacts?location=${encodeURIComponent(location.id)}#locations`} aria-label={`Переглянути відділення: ${location.fullAddress}`}>{location.city}</Link></strong>
+                  <p>{location.address}</p>
+                  <span>{location.hours.map((hours, index) => <span key={hours}>{index > 0 && <br />}{hours}</span>)}</span>
+                  <a href={getDirectionsUrl(location)} target="_blank" rel="noreferrer">Показати на карті <span>→</span></a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
       {!isCardiology && !isFamilyMedicine && !isConsultation ? (
       <section className="service-information-grid">
         {!isCinematicUltrasound && <article>
@@ -1288,6 +1314,7 @@ export default async function ServiceDetailPage({
         </div>
       </aside>}
 
+      {!isCinematicUltrasound && (
       <section className="subpage-cta service-detail-cta">
         <div>
           <span className="section-kicker">Допоможемо підготуватися</span>
@@ -1306,6 +1333,7 @@ export default async function ServiceDetailPage({
           {!isCinematicUltrasound && !isHomeNurse && service.slug !== "holter" && <a className={isCardiology ? "book-button" : undefined} href="tel:+380676714444">+38 (067) 671-44-44</a>}
         </div>
       </section>
+      )}
       </>
       ) : null}
 

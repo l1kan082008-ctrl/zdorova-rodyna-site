@@ -46,7 +46,7 @@ export const MRI_PRICE_GROUPS = [
   {
     "id": "special",
     "label": "Спеціальні дослідження",
-    "text": "Спинний мозок, кілька ділянок та дифузія всього тіла.",
+    "text": "Спинний мозок та обстеження кількох ділянок.",
     "artwork": "/ct-area-cards/combined.webp"
   },
   {

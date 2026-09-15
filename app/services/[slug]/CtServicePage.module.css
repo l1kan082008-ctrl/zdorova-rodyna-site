@@ -663,3 +663,33 @@
 @media (max-width: 760px) {
   .page .priceVariant { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 }
+/* The branch card opens its contact details; the map stays a separate action. */
+.locationGrid article { position: relative; }
+.locationGrid a.locationLink { color: inherit; font-size: inherit; font-weight: inherit; }
+.locationLink::after { content: ""; position: absolute; inset: 0; border-radius: 18px; }
+.locationLink:focus-visible { outline: none; }
+.locationLink:focus-visible::after { outline: 2px solid var(--ct-teal); outline-offset: 3px; }
+.locationGrid article > div > a { position: relative; z-index: 1; }
+.locationGrid article:has(.locationLink:hover) { border-color: var(--ct-teal); }
+/* Match the lift and surface response of the About direction cards. */
+.locationGrid article {
+  background: #fff;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+@media (hover: hover) {
+  .locationGrid article:hover {
+    transform: translateY(-8px);
+    border-color: var(--ct-teal);
+    background: #f0f8f7;
+  }
+}
+.locationGrid article:focus-within {
+  transform: translateY(-8px);
+  border-color: var(--ct-teal);
+  background: #f0f8f7;
+}
+@media (prefers-reduced-motion: reduce) {
+  .locationGrid article { transition: none; }
+  .locationGrid article:hover,
+  .locationGrid article:focus-within { transform: none; }
+}

@@ -53,6 +53,7 @@ function parseValues(payload: Record<string, unknown>) {
     throw new Error("Заповніть назву, категорію та коректну вартість");
   }
   return {
+    code: typeof payload.code === "string" ? payload.code.trim().slice(0, 100) : undefined,
     name,
     category: category as CategoryId,
     categoryLabel,

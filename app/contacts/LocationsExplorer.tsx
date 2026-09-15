@@ -213,7 +213,7 @@ export function LocationsExplorer({
 
   return (
     <>
-      <section className="branch-directory" aria-label="Наші відділення">
+      <section id="locations" style={{ scrollMarginTop: 100 }} className="branch-directory" aria-label="Наші відділення">
         <div className="branch-directory-controls">
           <div className="branch-city-nav-shell">
             <div

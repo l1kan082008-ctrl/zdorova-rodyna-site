@@ -1,0 +1,19 @@
+/* Reuse the CT/MRI location cards and heading. */
+.ultrasound-page .ultrasound-locations { width: min(1180px, calc(100% - 48px)); padding-top: 0; margin: 0 auto 48px; }
+.ultrasound-page .ultrasound-locations-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 760px) {
+  .ultrasound-page .ultrasound-locations { width: calc(100% - 40px); margin-bottom: 32px; }
+  .ultrasound-page .ultrasound-locations-grid { grid-template-columns: 1fr; }
+}
+/* Align ultrasound section headings with the MRI section hierarchy. */
+.ultrasound-page .ultrasound-price-list > header,
+.ultrasound-page .service-information-grid > article > .section-kicker,
+.ultrasound-page .service-information-grid > article > h2,
+.ultrasound-page .service-detail-cta > div:first-child { text-align: center; }
+.ultrasound-page .service-information-grid > article > .section-kicker { display: block; }
+.ultrasound-page .service-information-grid > article > h2 { max-width: 780px; margin: 12px auto 36px; font-size: clamp(32px, 3.5vw, 52px); font-weight: 520; line-height: 1.05; letter-spacing: -.035em; }
+.ultrasound-page .service-detail-cta { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.ultrasound-page .service-detail-cta > div:first-child { width: 100%; }
+.ultrasound-page .service-detail-cta h2 { margin-inline: auto; }
+.ultrasound-page .service-detail-cta p { margin-inline: auto; }
+.ultrasound-page .service-detail-cta-actions { justify-content: center; }

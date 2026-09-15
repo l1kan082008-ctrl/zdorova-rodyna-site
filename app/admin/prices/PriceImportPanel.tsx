@@ -127,6 +127,7 @@ export default function PriceImportPanel({
         body: JSON.stringify({
           items: rows.map((row) => ({
             id: row.id,
+            code: row.code,
             name: row.name,
             category: row.category,
             categoryLabel: row.categoryLabel,

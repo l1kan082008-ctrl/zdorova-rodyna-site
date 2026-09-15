@@ -1,4 +1,5 @@
 "use client";
+import { radiologyPriceRegistry } from "../../prices/radiologyPriceRegistry";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
@@ -54,6 +55,8 @@ function getOfficialCtPosition(item: PriceItem) {
 }
 
 function getGroupId(item: PriceItem): CtPriceGroupId {
+  const entry = radiologyPriceRegistry[item.id];
+  if (entry) return entry.group as CtPriceGroupId;
   const position = getOfficialCtPosition(item);
   if (position === null) return "additional";
 
@@ -86,7 +89,8 @@ function pairItems(items: PriceItem[], groupId: CtPriceGroupId): PricePair[] {
   );
 
   items.forEach((item) => {
-    const name = getBaseName(item.name);
+    const entry = radiologyPriceRegistry[item.id];
+    const name = entry?.pairName ?? getBaseName(item.name);
     const key = normalizeName(name);
     const pair = pairs.get(key) ?? { id: item.id, name };
     const isImplicitContrast =
@@ -95,7 +99,7 @@ function pairItems(items: PriceItem[], groupId: CtPriceGroupId): PricePair[] {
       (groupId === "combined" && !explicitContrastNames.has(key)) ||
       (groupId === "abdomen" && /ентерограф|колонограф|черевної порожнини\s*\+/.test(key));
 
-    if (isExplicitContrast(item.name) || isImplicitContrast) {
+    if (entry ? entry.contrast : (isExplicitContrast(item.name) || isImplicitContrast)) {
       pair.withContrast = item;
     } else {
       pair.withoutContrast = item;

@@ -64,6 +64,7 @@ function parseItem(value: unknown, index: number): ImportedPriceItem {
   }
   return {
     id: id || undefined,
+    code: typeof payload.code === "string" ? payload.code.trim().slice(0, 100) : undefined,
     name,
     category: category as CategoryId,
     categoryLabel: categoryOption.label,

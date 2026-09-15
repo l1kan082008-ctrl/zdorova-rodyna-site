@@ -6,6 +6,7 @@ import {
 
 export type ParsedPriceImportRow = {
   id?: string;
+  code?: string;
   name: string;
   category: CategoryId;
   categoryLabel: string;
@@ -33,6 +34,7 @@ export type PriceImportResult = {
 };
 
 type ColumnName =
+  | "code"
   | "id"
   | "name"
   | "category"
@@ -47,7 +49,8 @@ type ColumnName =
 const MAX_ROWS = 5000;
 
 const columnAliases: Record<ColumnName, string[]> = {
-  id: ["id", "код", "артикул", "ідентифікатор"],
+  id: ["id", "ідентифікатор"],
+  code: ["код", "код дослідження", "код послуги", "артикул", "code"],
   name: [
     "назва",
     "найменування",
@@ -310,6 +313,7 @@ export async function parsePriceWorkbook(
       );
 
       rows.push({
+        code: header.columns.has("code") ? String(getCell(row, header.columns, "code")).trim() : undefined,
         id:
           String(getCell(row, header.columns, "id")).trim() || undefined,
         name,

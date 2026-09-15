@@ -907,9 +907,9 @@ test("CITO categories use the group pricing tiers with legacy storage defaults",
   assert.match(policy, /DEFAULT_CITO_SURCHARGE = 100/);
   assert.match(policy, /CITO_INITIAL_GROUP_SURCHARGE = 200/);
   assert.match(policy, /CITO_ADDITIONAL_STUDY_SURCHARGE = 50/);
-  assert.match(policy, /CITO_MAX_GROUP_SURCHARGE = 350/);
+  assert.doesNotMatch(policy, /CITO_MAX_GROUP_SURCHARGE/);
   assert.match(policy, /if \(count <= 2\) return CITO_INITIAL_GROUP_SURCHARGE/);
-  assert.match(policy, /Math\.min\(/);
+  assert.doesNotMatch(policy, /Math\.min\(/);
   assert.match(policy, /"general"/);
   assert.match(policy, /"biochemistry"/);
   assert.match(policy, /"hormones"/);

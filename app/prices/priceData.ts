@@ -39,6 +39,7 @@ export type CategoryId =
 
 export type PriceItem = {
   id: string;
+  code?: string;
   name: string;
   category: CategoryId;
   categoryLabel: string;

@@ -1181,8 +1181,7 @@ export function PriceCatalog({
                 </div>
                 <b>+{formatPrice(citoSurchargeTotal)}</b>
                 <p>
-                  1–2 дослідження — 200 грн; кожне наступне — +50 грн;
-                  від 5 досліджень — 350 грн.
+                  1–2 дослідження — 200 грн; кожне наступне — +50 грн.
                 </p>
               </div>
             ) : null}

@@ -14,6 +14,7 @@ import {
 
 type PriceRow = {
   id: string;
+  code: string;
   name: string;
   category: CategoryId;
   category_label: string;
@@ -33,6 +34,7 @@ export type ManagedPriceItem = PriceItem & {
 
 export type ImportedPriceItem = {
   id?: string;
+  code?: string;
   name: string;
   category: CategoryId;
   categoryLabel: string;
@@ -48,6 +50,7 @@ export type ImportedPriceItem = {
 const createPriceItemsTable = `
   CREATE TABLE IF NOT EXISTS price_items (
     id TEXT PRIMARY KEY,
+    code TEXT NOT NULL DEFAULT '',
     name TEXT NOT NULL,
     category TEXT NOT NULL,
     category_label TEXT NOT NULL,
@@ -86,6 +89,7 @@ function parseAliases(value: string) {
 function toPriceItem(row: PriceRow): ManagedPriceItem {
   return {
     id: row.id,
+    code: row.code,
     name: row.name,
     category: row.category,
     categoryLabel: row.category_label,
@@ -115,7 +119,8 @@ async function initializeSchemaTables() {
   ]);
 
   const tableInfo = await env.DB.prepare("PRAGMA table_info(price_items)").all<{
-    name: string;
+    code?: string;
+  name: string;
   }>();
   if (!tableInfo.results.some((column) => column.name === "turnaround")) {
     await env.DB.prepare(
@@ -131,6 +136,13 @@ async function initializeSchemaTables() {
     await env.DB.prepare(
       "ALTER TABLE price_items ADD COLUMN cito_surcharge INTEGER NOT NULL DEFAULT 0",
     ).run();
+  }
+
+  if (!tableInfo.results.some((column) => column.name === "code")) {
+    await env.DB.prepare("ALTER TABLE price_items ADD COLUMN code TEXT NOT NULL DEFAULT ''").run();
+    const statements = catalogItems.filter(item => item.code).map(item =>
+      env.DB.prepare("UPDATE price_items SET code = ? WHERE id = ?").bind(item.code!, item.id));
+    for (let i = 0; i < statements.length; i += 50) await env.DB.batch(statements.slice(i, i + 50));
   }
 
   const appliedCitoPolicy = await env.DB.prepare(
@@ -166,11 +178,12 @@ async function initializeSchemaTables() {
   const statements = catalogItems.map((item, index) =>
     env.DB.prepare(
        `INSERT INTO price_items
-       (id, name, category, category_label, amount, turnaround, cito_available, cito_surcharge, aliases, is_active, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+       (id, code, name, category, category_label, amount, turnaround, cito_available, cito_surcharge, aliases, is_active, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
        ON CONFLICT(id) DO NOTHING`,
     ).bind(
       item.id,
+      item.code ?? "",
       item.name,
       item.category,
       item.categoryLabel,
@@ -199,7 +212,7 @@ async function initializeSchemaTables() {
 export async function listManagedPriceItems() {
   await ensurePriceItemsTable();
   const result = await env.DB.prepare(
-    `SELECT id, name, category, category_label, amount, turnaround, cito_available, cito_surcharge, aliases, is_active, sort_order
+    `SELECT id, code, name, category, category_label, amount, turnaround, cito_available, cito_surcharge, aliases, is_active, sort_order
      FROM price_items
      ORDER BY sort_order, name COLLATE NOCASE`,
   ).all<PriceRow>();
@@ -213,6 +226,7 @@ export async function listPublicPriceItems() {
 }
 
 export async function createManagedPriceItem(values: {
+  code?: string;
   name: string;
   category: CategoryId;
   categoryLabel: string;
@@ -231,11 +245,12 @@ export async function createManagedPriceItem(values: {
 
   await env.DB.prepare(
     `INSERT INTO price_items
-     (id, name, category, category_label, amount, turnaround, cito_available, cito_surcharge, aliases, is_active, sort_order)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     (id, code, name, category, category_label, amount, turnaround, cito_available, cito_surcharge, aliases, is_active, sort_order)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       id,
+      values.code ?? "",
       values.name,
       values.category,
       values.categoryLabel,
@@ -257,7 +272,8 @@ export async function createManagedPriceItem(values: {
 export async function updateManagedPriceItem(
   id: string,
   values: {
-    name: string;
+    code?: string;
+  name: string;
     category: CategoryId;
     categoryLabel: string;
     amount: number;
@@ -272,12 +288,13 @@ export async function updateManagedPriceItem(
   await ensurePriceItemsTable();
   const result = await env.DB.prepare(
     `UPDATE price_items
-     SET name = ?, category = ?, category_label = ?, amount = ?, turnaround = ?,
+     SET code = COALESCE(?, code), name = ?, category = ?, category_label = ?, amount = ?, turnaround = ?,
          cito_available = ?, cito_surcharge = ?, aliases = ?, is_active = ?, sort_order = ?,
          updated_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
   )
     .bind(
+      values.code ?? null,
       values.name,
       values.category,
       values.categoryLabel,
@@ -349,9 +366,10 @@ export async function importManagedPriceItems(values: ImportedPriceItem[]) {
 
     return env.DB.prepare(
       `INSERT INTO price_items
-       (id, name, category, category_label, amount, turnaround, cito_available, cito_surcharge, aliases, is_active, sort_order, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+       (id, code, name, category, category_label, amount, turnaround, cito_available, cito_surcharge, aliases, is_active, sort_order, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
        ON CONFLICT(id) DO UPDATE SET
+         code = excluded.code,
          name = excluded.name,
          category = excluded.category,
          category_label = excluded.category_label,
@@ -365,6 +383,7 @@ export async function importManagedPriceItems(values: ImportedPriceItem[]) {
          updated_at = CURRENT_TIMESTAMP`,
     ).bind(
       id,
+      item.code ?? existing.find(entry => entry.id === id)?.code ?? "",
       item.name,
       item.category,
       item.categoryLabel,
