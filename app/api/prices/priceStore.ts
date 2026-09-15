@@ -354,7 +354,8 @@ export async function importManagedPriceItems(values: ImportedPriceItem[]) {
     const matchedId =
       knownId ??
       existingByName.get(matchKey);
-    const id = matchedId ?? `price-${crypto.randomUUID()}`;
+    const catalogId = item.id && catalogItems.some(entry => entry.id === item.id) ? item.id : undefined;
+    const id = matchedId ?? catalogId ?? `price-${crypto.randomUUID()}`;
 
     if (selectedIds.has(id)) {
       throw new Error(`Позиція «${item.name}» дублюється у файлі`);
