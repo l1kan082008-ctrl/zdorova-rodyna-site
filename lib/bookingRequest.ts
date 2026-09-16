@@ -1,3 +1,4 @@
+import { isInformationOnlyLocation } from "./locationPolicy";
 import type { BranchServiceId, CenterLocation } from "../app/contacts/locationData";
 
 export function serviceCategory(service: string): BranchServiceId | null {
@@ -11,7 +12,7 @@ export function serviceCategory(service: string): BranchServiceId | null {
 
 export function compatibleLocations(locations: CenterLocation[], service: string) {
   const category = serviceCategory(service);
-  return locations.filter((location) => service === "Допоможіть обрати послугу" || (category !== null && location.services.includes(category)));
+  return locations.filter((location) => !isInformationOnlyLocation(location) && (service === "Допоможіть обрати послугу" || (category !== null && location.services.includes(category))));
 }
 
 export function formatBookingPhone(value: string) {

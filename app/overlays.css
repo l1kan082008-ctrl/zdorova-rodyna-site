@@ -246,7 +246,7 @@ body.home-search-open #top > :not(.home-search-shell) {
 /* Service labels follow the approved contact-card mockup. */
 .branch-service-tags { gap: 6px; }
 .branch-service-tag {
-  min-height: 32px; padding: 7px 9px; border: 0; border-radius: 8px;
+  min-height: 32px; padding: 6px 8px; border: 1px solid #81b5b5; border-radius: 8px;
   background: #e8f4f4; color: #087f82;
   font-size: 12px; line-height: 1.25; font-weight: 600;
   letter-spacing: 0; text-transform: uppercase;
@@ -725,3 +725,25 @@ body :is(.inner-page h1, #patients-title) {
 }
 .home-page > #services.services-section { padding-block: 0; }
 .home-page > #about.about-section { margin-bottom: 0; }
+
+/* Center the mobile footer while keeping accordion controls full-width. */
+@media (max-width: 720px) {
+  .site-footer-minimal,
+  .site-footer-minimal .footer-directory-column,
+  .site-footer-minimal .footer-contact-column { text-align: center; }
+  .site-footer-minimal .footer-brand-column { grid-template-columns: 1fr; justify-items: center; }
+  .site-footer-minimal .footer-brand { flex-direction: column; justify-content: center; text-align: center; }
+  .site-footer-minimal .footer-brand-column .footer-socials { grid-column: 1; grid-row: auto; justify-items: center; justify-content: center; }
+  .site-footer-minimal .footer-socials > div { justify-content: center; }
+  .site-footer-minimal .footer-directory-column .footer-mobile-section-toggle { justify-content: center; gap: 9px; padding-inline: 16px; text-align: center; }
+  .site-footer-minimal .footer-toggle-icon { position: static; width: 7px; height: 7px; border-color: currentColor; border-width: 0 1.5px 1.5px 0; }
+  .site-footer-minimal .footer-directory-column nav,
+  .site-footer-minimal .footer-contact-list { justify-items: center; text-align: center; }
+  .site-footer-minimal .footer-directory-column > h2 a { justify-content: center; }
+}
+
+.branch-information-only { width: min(1180px, calc(100% - 48px)); margin: 24px auto 40px; padding: 24px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .5fr); gap: 24px; border: 1px solid #d5e4e2; border-radius: 20px; color: #073f45; background: #f5f9f8; scroll-margin-top: 100px; }
+.branch-information-only h2 { margin: 8px 0 12px; font-size: 28px; }
+.branch-information-only p { margin: 8px 0; color: #587276; line-height: 1.6; }
+.branch-information-only a { display: block; width: fit-content; padding-block: 10px; color: #087f82; }
+@media (max-width: 720px) { .branch-information-only { width: calc(100% - 40px); padding: 20px; grid-template-columns: 1fr; gap: 12px; } }

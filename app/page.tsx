@@ -1,3 +1,4 @@
+import { isInformationOnlyLocation } from "../lib/locationPolicy";
 import { priceSearchIdentity } from "./prices/deduplicateSearch";
 import Link from "next/link";
 import "./home-refinements.css";
@@ -383,8 +384,8 @@ export default async function Home() {
       kind: "location" as const,
       title: location.address,
       meta: `${location.city} · ${location.type}`,
-      href: `/contacts?location=${encodeURIComponent(location.id)}#locations`,
-      actionHref: `/contacts?location=${encodeURIComponent(location.id)}#locations`,
+      href: isInformationOnlyLocation(location) ? `/contacts#information-${location.id}` : `/contacts?location=${encodeURIComponent(location.id)}#locations`,
+      actionHref: isInformationOnlyLocation(location) ? `/contacts#information-${location.id}` : `/contacts?location=${encodeURIComponent(location.id)}#locations`,
       keywords: `${location.fullAddress} ${location.name} ${location.landmark ?? ""}`,
     })),
   ];

@@ -1,4 +1,5 @@
 "use client";
+import { isInformationOnlyLocation } from "../../lib/locationPolicy";
 import { CloseIcon } from "../components/CloseIcon";
 import { createPortal } from "react-dom";
 import { useModalDialog } from "../components/useModalDialog";
@@ -111,14 +112,16 @@ export function LocationsExplorer({
   useModalDialog({ open: openLocationId !== null, dialogRef: mediaDialogRef,
     initialFocusRef: mediaCloseRef, onClose: () => setOpenLocationId(null) });
 
+  const selectableLocations = useMemo(() => locations.filter(location => !isInformationOnlyLocation(location)), [locations]);
+  const informationLocations = locations.filter(isInformationOnlyLocation);
   const cities = useMemo(
-    () => Array.from(new Set(locations.map((location) => location.city))),
-    [locations],
+    () => Array.from(new Set(selectableLocations.map((location) => location.city))),
+    [selectableLocations],
   );
 
   const selectedLocation =
-    locations.find((location) => location.id === selectedLocationId) ??
-    locations[0];
+    selectableLocations.find((location) => location.id === selectedLocationId) ??
+    selectableLocations[0] ?? locations[0];
 
   const openLocation = useMemo(
     () =>
@@ -126,7 +129,7 @@ export function LocationsExplorer({
       null,
     [locations, openLocationId],
   );
-  const visibleLocations = locations.filter(
+  const visibleLocations = selectableLocations.filter(
     (location) => location.city === selectedLocation.city,
   );
 
@@ -218,12 +221,13 @@ export function LocationsExplorer({
           <div className="branch-city-nav-shell">
             <div
               className="branch-city-nav"
+              style={{ gridTemplateColumns: `repeat(${Math.max(1, cities.length)}, minmax(0, 1fr))` }}
               role="tablist"
               aria-label="Міста"
               ref={cityNavRef}
             >
               {cities.map((city) => {
-                const cityLocations = locations.filter(
+                const cityLocations = selectableLocations.filter(
                   (location) => location.city === city,
                 );
                 const isActive = selectedLocation.city === city;
@@ -346,6 +350,13 @@ export function LocationsExplorer({
           </aside>
         </div>
       </section>
+
+      {informationLocations.map(location => (
+        <section className="branch-information-only" id={`information-${location.id}`} key={location.id} aria-label={`Інформація про відділення: ${location.city}`}>
+          <div><span className="section-kicker">Інформація про відділення</span><h2>{location.city}</h2><p>{location.fullAddress}</p><p>{location.description}</p></div>
+          <div><p>{location.hours.join(" · ")}</p><a href={`tel:${location.phone}`}>{location.phone}</a><a href={getDirectionsUrl(location)} target="_blank" rel="noreferrer">Показати на карті ↗</a></div>
+        </section>
+      ))}
 
       {openLocation ? createPortal(
         <div

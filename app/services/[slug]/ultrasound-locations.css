@@ -17,3 +17,7 @@
 .ultrasound-page .service-detail-cta h2 { margin-inline: auto; }
 .ultrasound-page .service-detail-cta p { margin-inline: auto; }
 .ultrasound-page .service-detail-cta-actions { justify-content: center; }
+
+/* Keep the branch heading centered at mobile breakpoints too. */
+.ultrasound-page .ultrasound-locations > div:first-child { text-align: center; }
+.ultrasound-page .ultrasound-locations > div:first-child > :is(h2, p) { margin-inline: auto; text-align: center; }
