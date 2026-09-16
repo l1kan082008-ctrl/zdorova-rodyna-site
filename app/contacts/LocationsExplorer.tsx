@@ -408,7 +408,7 @@ export function LocationsExplorer({
 
             <div className="branch-modal-body branch-modal-body--gallery">
               <div className="branch-media-viewer">
-                {mediaMode === "photos" ? (
+                {mediaMode === "photos" && openLocation.gallery[photoIndex] ? (
                   <>
                     <div className="branch-main-photo">
                       <Image

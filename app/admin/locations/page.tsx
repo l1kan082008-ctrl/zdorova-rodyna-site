@@ -62,6 +62,7 @@ export default function LocationsAdminPage() {
   const [draft, setDraft] = useState<CenterLocation | null>(null);
   const [galleryText, setGalleryText] = useState("");
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
@@ -96,6 +97,29 @@ export default function LocationsAdminPage() {
     setDraft((current) => (current ? { ...current, [key]: value } : current));
   };
 
+  const uploadPhotos = async (files: File[]) => {
+    if (!draft || uploading || saving || !files.length) return;
+    setUploading(true);
+    setError("");
+    try {
+      for (const file of files) {
+        if (file.size > 4 * 1024 * 1024) throw new Error(`«${file.name}»: розмір має бути до 4 МБ.`);
+        const form = new FormData();
+        form.append("locationId", draft.id);
+        form.append("photo", file);
+        const response = await fetch("/api/admin/locations/photo", { method: "POST", body: form });
+        const result = await response.json() as { src?: string; error?: string };
+        if (!response.ok || !result.src) throw new Error(result.error || "Не вдалося завантажити фото.");
+        const photo = { src: result.src, alt: draft.address, caption: "" };
+        setGalleryText(current => galleryToText([...parseGallery(current), photo]));
+      }
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Не вдалося завантажити фото.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const toggleService = (serviceId: BranchServiceId) => {
     if (!draft) return;
     const next = draft.services.includes(serviceId)
@@ -105,7 +129,7 @@ export default function LocationsAdminPage() {
   };
 
   const save = useCallback(async () => {
-    if (!draft) return;
+    if (!draft || uploading) return;
     setSaving(true);
     setError("");
     try {
@@ -125,7 +149,7 @@ export default function LocationsAdminPage() {
     } finally {
       setSaving(false);
     }
-  }, [draft, galleryText]);
+  }, [draft, galleryText, uploading]);
 
   const draftValue = useMemo<LocationDraft | null>(
     () => draft ? { location: draft, galleryText } : null,
@@ -149,7 +173,7 @@ export default function LocationsAdminPage() {
       }
     },
     onSave: save,
-    busy: saving,
+    busy: saving || uploading,
   });
 
   const create = async () => {
@@ -232,7 +256,7 @@ export default function LocationsAdminPage() {
                 <strong>Усі відділення</strong>
                 <span>{locations.length} {locations.length === 1 ? "пункт" : "пунктів"}</span>
               </div>
-              <button className={styles.createButton} type="button" onClick={create} disabled={creating} aria-label="Додати відділення">
+              <button className={styles.createButton} type="button" onClick={create} disabled={creating || uploading || saving} aria-label="Додати відділення">
                 <span aria-hidden="true">+</span>
                 {creating ? "Створюємо" : "Додати"}
               </button>
@@ -240,6 +264,7 @@ export default function LocationsAdminPage() {
             <div className={styles.locationList}>
               {locations.map((location, index) => (
                 <button
+                  disabled={uploading || saving}
                   key={location.id}
                   type="button"
                   className={`${styles.locationItem}${location.id === selectedId ? ` ${styles.locationItemActive}` : ""}`}
@@ -339,7 +364,31 @@ export default function LocationsAdminPage() {
                   <div><h3>Фото та відео</h3><p>Матеріали для сторінки контактів.</p></div>
                 </div>
                 <div className={styles.formGrid}>
-                  <label className={styles.wideField}>Фотографії <small>Один рядок: шлях | опис | підпис</small><textarea value={galleryText} onChange={(event) => setGalleryText(event.target.value)} placeholder="/images/location.jpg | Вхід до пункту | Центральний вхід" /></label>
+                  <div className={styles.wideField}>
+                    <label>Додати фотографії
+                      <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple disabled={uploading || saving}
+                        onChange={event => { const files = Array.from(event.target.files ?? []); event.target.value = ""; void uploadPhotos(files); }} />
+                    </label>
+                    <p className={styles.mediaHint} role="status">{uploading ? "Завантажуємо фотографії…" : "JPG, PNG, WEBP або AVIF до 4 МБ. Після додавання чи видалення натисніть «Зберегти зміни»."}</p>
+                    <div className={styles.photoGrid}>
+                      {parseGallery(galleryText).map((photo, index) => (
+                        <div className={styles.photoCard} key={`${photo.src}-${index}`}>
+                          {/* Uploaded photos may use the configured public media store. */}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={photo.src} alt={photo.alt || `Фото відділення ${index + 1}`} loading="lazy" />
+                          <span>{photo.caption || `Фото ${index + 1}`}</span>
+                          <button type="button" className={styles.deleteButton} disabled={uploading || saving}
+                            aria-label={`Видалити фото ${index + 1}`}
+                            onClick={() => setGalleryText(current => galleryToText(parseGallery(current).filter((_, i) => i !== index)))}>Видалити фото</button>
+                        </div>
+                      ))}
+                    </div>
+                    {!parseGallery(galleryText).length ? <p className={styles.mediaHint}>Фотографій ще немає. Додайте їх із комп’ютера або телефона.</p> : null}
+                    <details className={styles.mediaDetails}>
+                      <summary>Редагувати посилання та підписи</summary>
+                      <label>Один рядок: шлях | опис | підпис<textarea value={galleryText} disabled={uploading || saving} onChange={event => setGalleryText(event.target.value)} /></label>
+                    </details>
+                  </div>
                   <label className={styles.wideField}>Посилання на відео<input value={draft.videoUrl ?? ""} onChange={(event) => update("videoUrl", event.target.value)} placeholder="https://…" /></label>
                 </div>
               </section>
@@ -357,15 +406,15 @@ export default function LocationsAdminPage() {
                     entityId={draft.id}
                     entityLabel={draft.name}
                     draftStorageKey={`admin-safe-draft:location:${draft.id}`}
-                    disabled={saving}
+                    disabled={saving || uploading}
                     hasUnsavedChanges={safeSave.dirty}
                   />
-                  <button className={styles.deleteButton} type="button" onClick={remove} disabled={saving}>Видалити відділення</button>
+                  <button className={styles.deleteButton} type="button" onClick={remove} disabled={saving || uploading}>Видалити відділення</button>
                   <button
                     className={styles.saveButton}
                     type="button"
                     onClick={() => void save()}
-                    disabled={!safeSave.dirty || saving}
+                    disabled={!safeSave.dirty || saving || uploading}
                     aria-keyshortcuts="Control+S Meta+S"
                     aria-busy={saving}
                   >
@@ -379,7 +428,7 @@ export default function LocationsAdminPage() {
               <span aria-hidden="true">＋</span>
               <strong>Додайте перше відділення</strong>
               <p>Після створення тут з’являться всі налаштування пункту.</p>
-              <button type="button" onClick={create} disabled={creating}>{creating ? "Створюємо…" : "Створити відділення"}</button>
+              <button type="button" onClick={create} disabled={creating || uploading || saving}>{creating ? "Створюємо…" : "Створити відділення"}</button>
             </div>
           )}
         </section>
