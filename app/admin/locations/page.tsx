@@ -379,7 +379,10 @@ export default function LocationsAdminPage() {
                           <span>{photo.caption || `Фото ${index + 1}`}</span>
                           <button type="button" className={styles.deleteButton} disabled={uploading || saving}
                             aria-label={`Видалити фото ${index + 1}`}
-                            onClick={() => setGalleryText(current => galleryToText(parseGallery(current).filter((_, i) => i !== index)))}>Видалити фото</button>
+                            onClick={() => {
+                              if (!window.confirm(`Видалити фото ${index + 1}${photo.caption ? ` «${photo.caption}»` : ""}? Зміна набуде чинності після збереження відділення.`)) return;
+                              setGalleryText(current => galleryToText(parseGallery(current).filter((_, i) => i !== index)));
+                            }}>Видалити фото</button>
                         </div>
                       ))}
                     </div>
