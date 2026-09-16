@@ -1,3 +1,4 @@
+import { stelmakhaGallery } from "../../contacts/stelmakhaGallery";
 import { initializeOnce } from "../../../lib/initializeOnce";
 import { env } from "@/lib/runtimeEnv";
 import {
@@ -81,6 +82,24 @@ async function initializeSchemaTables() {
       await insertLocation(location, index);
     }
   }
+  await migrateLegacyGallery();
+}
+
+async function migrateLegacyGallery() {
+  const migration = "stelmakha-full-gallery-v1";
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS location_migrations (id TEXT PRIMARY KEY)").run();
+  if (await env.DB.prepare("SELECT id FROM location_migrations WHERE id = ?").bind(migration).first()) return;
+  const row = await env.DB.prepare("SELECT gallery_json FROM center_locations WHERE id = ?")
+    .bind("stelmakha-18m").first<{ gallery_json: string }>();
+  const gallery = row ? parseJson<CenterLocation["gallery"]>(row.gallery_json, []) : [];
+  const legacy = gallery.length === 1 && /^\/locations\/stelmakha-18m\.(png|webp)$/.test(gallery[0].src);
+  const statements = [];
+  if (row && legacy) {
+    statements.push(env.DB.prepare("UPDATE center_locations SET gallery_json = ? WHERE id = ? AND gallery_json = ?")
+      .bind(JSON.stringify(stelmakhaGallery), "stelmakha-18m", row.gallery_json));
+  }
+  statements.push(env.DB.prepare("INSERT INTO location_migrations (id) VALUES (?) ON CONFLICT(id) DO NOTHING").bind(migration));
+  await env.DB.batch(statements);
 }
 
 function parseJson<T>(value: string, fallback: T): T {
