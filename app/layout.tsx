@@ -6,6 +6,7 @@ import "./booking.css";
 import "./overlays.css";
 import "./search-improvements.css";
 import "./close-controls.css";
+import "./service-banners.css";
 import { Suspense } from "react";
 import { BookingLauncher } from "./components/BookingLauncher";
 import { GlobalCalculator } from "./components/GlobalCalculator";

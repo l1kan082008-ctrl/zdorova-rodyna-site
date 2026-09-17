@@ -1,3 +1,4 @@
+import { ServiceBookingCta } from "./ServiceBookingCta";
 import Image from "next/image";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
@@ -20,6 +21,8 @@ type Props = {
   priceHref: string;
 };
 
+// Keep the doctors panel disabled until the MRI reporting team is confirmed.
+const SHOW_MRI_DOCTORS = false;
 const areas = MRI_PRICE_GROUPS;
 const faq = [
   ["Як підготуватися до МРТ?", "Підготовка залежить від ділянки та протоколу. Під час запису уточніть рекомендації, візьміть направлення та результати попередніх досліджень."],
@@ -40,19 +43,19 @@ export function MriServicePage({ service, doctors, prices, bookingHref }: Props)
     <main className={`${styles.page} ${mri.page}`}>
       <SiteHeader active="services" />
 
-      <section className={`${styles.hero} ${mri.hero}`} aria-labelledby="mri-title">
+      <section className={`${styles.hero} ${mri.hero} service-banner-shell`} aria-labelledby="mri-title">
         <Image className={`${styles.heroImage} ${mri.heroImage}`} src="/service-heroes/mri-cinematic-v1.webp" alt="МР-томограф Siemens MAGNETOM Flow Plus" fill priority unoptimized sizes="(max-width: 760px) 100vw, 94vw" />
         <div className={`${styles.heroShade} ${mri.heroShade}`} />
         <div className={`mri-cinematic-field ${mri.heroField}`} aria-hidden="true">
           <i /><i /><i />
           <b /><b /><b />
         </div>
-        <div className={`${styles.heroContent} ${mri.heroContent}`}>
+        <div className={`${styles.heroContent} ${mri.heroContent} service-banner-copy`}>
           <nav aria-label="Хлібні крихти"><Link href="/services">Послуги</Link><span>/</span><span>МРТ</span></nav>
           <span className={styles.eyebrow}>Магнітно-резонансна діагностика</span>
           <h1 id="mri-title">Магнітно-резонансна<br />томографія</h1>
           <p>{service.lead}</p>
-          <div className={styles.heroActions}><Link className={`${styles.primaryButton} service-banner-booking`} href={bookingHref}>Записатися <span>→</span></Link><Link className={`${styles.secondaryButton} service-banner-secondary`} href="#mri-prices">Переглянути вартість <span>→</span></Link></div>
+          <div className={`${styles.heroActions} service-banner-actions`}><Link className={`${styles.primaryButton} service-banner-booking`} href={bookingHref}>Записатися <span>→</span></Link><Link className={`${styles.secondaryButton} service-banner-secondary`} href="#mri-prices">Переглянути вартість <span>→</span></Link></div>
         </div>
       </section>
 
@@ -87,13 +90,13 @@ export function MriServicePage({ service, doctors, prices, bookingHref }: Props)
 
       <section className={`${styles.section} ${styles.equipmentDoctors}`} id="mri-doctors">
         <article className={`${styles.equipmentCard} ${mri.equipmentCard}`}>
-          <div className={styles.equipmentMedia}><div className={`${styles.equipmentImageFrame} ${mri.equipmentImageFrame}`}><Image className={`${styles.equipmentImage} ${mri.equipmentImage}`} src="/service-heroes/mri-flow-plus-dark-v3.webp" alt="МР-томограф Siemens MAGNETOM Flow Plus" fill unoptimized sizes="(max-width: 760px) 100vw, 42vw" /></div></div>
+          <div className={`${styles.equipmentMedia} ${mri.equipmentMedia}`}><div className={`${styles.equipmentImageFrame} ${mri.equipmentImageFrame}`}><Image className={`${styles.equipmentImage} ${mri.equipmentImage}`} src="/service-heroes/mri-flow-plus-dark-v3.webp" alt="МР-томограф Siemens MAGNETOM Flow Plus" fill unoptimized sizes="(max-width: 760px) 100vw, 42vw" /></div></div>
           <div className={styles.equipmentCopy}><span>Наше обладнання</span><h2>Siemens MAGNETOM Flow Plus</h2><p>МР-томограф 1,5 Тесла · 2026 рік випуску.</p></div>
         </article>
-        <div className={styles.doctorsPanel}>
+        {SHOW_MRI_DOCTORS && <div className={styles.doctorsPanel}>
           <SectionTitle title="Лікарі, які описують МРТ" />
           <div className={`${styles.doctorRail} ${mri.doctorRail}`}>{shownDoctors.map((doctor) => <article className={styles.doctorCard} data-doctor-id={doctor.id} key={doctor.id}><div className={styles.doctorPhoto}><Image src={doctor.photoUrl} alt={doctor.name} fill unoptimized sizes="(max-width: 760px) 70vw, (max-width: 1100px) 31vw, 19vw" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></article>)}{[1, 2, 3].map(number => <article className={styles.doctorCard} key={`placeholder-${number}`}><div className={`${styles.doctorPhoto} ${mri.placeholder}`} aria-hidden="true"><svg viewBox="0 0 120 140"><circle cx="60" cy="42" r="22" /><path d="M20 124v-12a40 40 0 0 1 80 0v12" /></svg></div><strong>Лікар-рентгенолог</strong><span>Інформацію додамо незабаром</span></article>)}</div>
-        </div>
+        </div>}
       </section>
 
       <section className={styles.section} id="mri-preparation">
@@ -119,28 +122,7 @@ export function MriServicePage({ service, doctors, prices, bookingHref }: Props)
         <CtFaqAccordion items={faq} />
       </section>
 
-      <section className={styles.finalCta} aria-labelledby="mri-support-title">
-        <div className={styles.finalCtaCopy}>
-          <span className={styles.finalCtaEyebrow}>Допоможемо з вибором</span>
-          <h2 id="mri-support-title">Не впевнені, яке МРТ обрати?</h2>
-          <p>Зателефонуйте адміністратору — уточнимо дослідження, підготовку та зручний час.</p>
-        </div>
-        <div className={styles.finalCtaActions}>
-          <a
-            className={styles.finalCallButton}
-            href="tel:+380676714444"
-            aria-label="Зателефонувати до медичного центру: +38 (067) 671-44-44"
-          >
-            <span className={styles.finalCallText}>
-              <strong>Зателефонувати</strong>
-              <small>+38 (067) 671-44-44</small>
-            </span>
-          </a>
-          <Link className={styles.finalRequestLink} href={bookingHref}>
-            Залишити заявку
-          </Link>
-        </div>
-      </section>
+      <ServiceBookingCta bookingHref={bookingHref} />
 
       <SiteFooter />
     </main>

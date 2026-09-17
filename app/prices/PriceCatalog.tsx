@@ -3,6 +3,7 @@ import { CloseIcon } from "../components/CloseIcon";
 import { deduplicatePriceSearch } from "./deduplicateSearch";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   catalogItems,
   type PriceItem,
@@ -1094,7 +1095,7 @@ export function PriceCatalog({
         </div>
       ) : null}
 
-      {calculatorOpen ? (
+      {calculatorOpen && typeof document !== "undefined" ? createPortal(
         <div
           className="calculator-dialog-backdrop"
           role="presentation"
@@ -1166,7 +1167,9 @@ export function PriceCatalog({
                       if (selectedItems.length === 1) setCalculatorOpen(false);
                     }}
                   >
-                    <CloseIcon />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false" style={{ display: "block", margin: "auto" }}>
+                      <path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6" />
+                    </svg>
                   </button>
                 </article>
                 );
@@ -1193,6 +1196,7 @@ export function PriceCatalog({
                   aria-label="Зберегти список у PDF"
                   onClick={handlePdfDownload}
                   disabled={calculatorExporting !== null || !calculatorPdfReady}
+                  data-preparing={!calculatorPdfReady && calculatorExporting === null ? "true" : undefined}
                 >
                   <span className="calculator-action-icon is-file-download" aria-hidden="true">
                     <svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false">
@@ -1207,17 +1211,14 @@ export function PriceCatalog({
                     </svg>
                   </span>
                   <strong>
-                    {!calculatorPdfReady
-                      ? "Готуємо…"
-                      : calculatorExporting === "pdf"
-                        ? "Створюємо…"
-                        : "PDF"}
+                    {calculatorExporting === "pdf" ? "Створюємо…" : "PDF"}
                   </strong>
                 </button>
                 <button
                   type="button"
                   onClick={handleShareSelection}
                   disabled={calculatorExporting !== null || !calculatorPdfReady}
+                  data-preparing={!calculatorPdfReady && calculatorExporting === null ? "true" : undefined}
                 >
                   <span className="calculator-action-icon is-share" aria-hidden="true">
                     <svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false">
@@ -1262,7 +1263,7 @@ export function PriceCatalog({
               </div>
             </div>
           </section>
-        </div>
+        </div>, document.body
       ) : null}
     </>
   );

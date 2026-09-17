@@ -1,3 +1,4 @@
+import { ServiceBookingCta } from "./[slug]/ServiceBookingCta";
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { CSSProperties } from "react";
@@ -31,10 +32,7 @@ export default async function ServicesPage() {
           підготовку, доступний час, відділення та актуальну вартість.
         </p>
         <div className="services-hero-actions">
-          <a className="book-button" href="#services-list">
-            Обрати послугу <span>↓</span>
-          </a>
-          <a className="outline-button" href="/prices">
+          <a className="book-button" href="/prices">
             Переглянути вартість <span>→</span>
           </a>
         </div>
@@ -68,15 +66,7 @@ export default async function ServicesPage() {
           );
         })}
       </section>
-      <section className="subpage-cta">
-        <div>
-          <span className="section-kicker">Потрібна допомога?</span>
-          <h2>Підберемо послугу та підкажемо, як підготуватися</h2>
-        </div>
-        <a className="book-button" href="tel:+380676714444">
-          +38 (067) 671-44-44 <span>→</span>
-        </a>
-      </section>
+      <ServiceBookingCta bookingHref="/contacts#booking" />
       <SiteFooter />
     </main>
   );

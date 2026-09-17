@@ -80,7 +80,7 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
   const isHomeVisit = !doctor && !studies && isHomeVisitService(service);
   const category = serviceCategory(doctor ? "Консультації лікарів" : service);
   const availableLocations = compatibleLocations(locations, doctor ? "Консультації лікарів" : service);
-  const selectedLocation = availableLocations.find(({ id }) => id === locationId);
+  const selectedLocation = availableLocations.length === 1 ? availableLocations[0] : availableLocations.find(({ id }) => id === locationId);
 
   useEffect(() => {
     const dialog = dialogRef.current!;
@@ -204,7 +204,7 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
           {isHomeVisit ? <label htmlFor="quick-address">Адреса виїзду в Рівному
             <input id="quick-address" name="address" autoComplete="street-address" minLength={5} maxLength={200} placeholder="Вулиця, будинок, квартира" required />
           </label> : <label htmlFor="quick-location"><span id="quick-location-label">Відділення</span><select id="quick-location" aria-labelledby="quick-location-label" aria-busy={locationsLoading} disabled={locationsLoading} value={selectedLocation?.id || ""} onChange={(event) => setLocationId(event.target.value)}>
-            <option value="">{locationsLoading ? "Завантажуємо відділення…" : locationStatus || (category === null && service !== helpService) ? "Адміністратор допоможе обрати" : "Допоможіть обрати"}</option>
+            {availableLocations.length !== 1 && <option value="">{locationsLoading ? "Завантажуємо відділення…" : locationStatus || (category === null && service !== helpService) ? "Адміністратор допоможе обрати" : "Допоможіть обрати"}</option>}
             {availableLocations.map((location) => <option key={location.id} value={location.id}>{location.fullAddress}</option>)}
           </select>
           {!locationsLoading && (selectedLocation || availableLocations.length === 0) && <span className="quick-booking__service-detail">{selectedLocation?.fullAddress || "Адміністратор допоможе обрати відділення."}</span>}

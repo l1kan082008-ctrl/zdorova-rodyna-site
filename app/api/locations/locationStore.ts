@@ -83,6 +83,7 @@ async function initializeSchemaTables() {
     }
   }
   await migrateLegacyGallery();
+  await migrateZviahelUltrasound();
 }
 
 async function migrateLegacyGallery() {
@@ -97,6 +98,23 @@ async function migrateLegacyGallery() {
   if (row && legacy) {
     statements.push(env.DB.prepare("UPDATE center_locations SET gallery_json = ? WHERE id = ? AND gallery_json = ?")
       .bind(JSON.stringify(stelmakhaGallery), "stelmakha-18m", row.gallery_json));
+  }
+  statements.push(env.DB.prepare("INSERT INTO location_migrations (id) VALUES (?) ON CONFLICT(id) DO NOTHING").bind(migration));
+  await env.DB.batch(statements);
+}
+
+// Apply the confirmed service once, preserving later edits in the admin catalogue.
+async function migrateZviahelUltrasound() {
+  const migration = "zviahel-ultrasound-v1";
+  if (await env.DB.prepare("SELECT id FROM location_migrations WHERE id = ?").bind(migration).first()) return;
+  const row = await env.DB.prepare("SELECT services_json FROM center_locations WHERE id = ?")
+    .bind("zviahel-shevchenka-41-1").first<{ services_json: string }>();
+  if (!row) return;
+  const services = parseJson<BranchServiceId[]>(row.services_json, []);
+  const statements = [];
+  if (!services.includes("ultrasound")) {
+    statements.push(env.DB.prepare("UPDATE center_locations SET services_json = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND services_json = ?")
+      .bind(JSON.stringify([...services, "ultrasound"]), "zviahel-shevchenka-41-1", row.services_json));
   }
   statements.push(env.DB.prepare("INSERT INTO location_migrations (id) VALUES (?) ON CONFLICT(id) DO NOTHING").bind(migration));
   await env.DB.batch(statements);

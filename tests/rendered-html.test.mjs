@@ -108,27 +108,25 @@ test("CT prices separate categories and highlight contrast booking", async () =>
 
   assert.match(tabs, /className=\{styles\.priceTabsLabel\}>Категорії досліджень/);
   assert.match(tabs, /item=\{item\.withContrast\} label="З контрастом" contrast/);
-  assert.match(css, /\.priceTabsViewport\s*\{[^}]*background:\s*#eaf5f4;/);
+  assert.match(css, /\.priceTabsViewport\s*\{[^}]*background:\s*#f1f3f5;/);
   assert.match(
     css,
     /\.priceBookingContrast \.priceBookingAction\s*\{[^}]*color:\s*#fff;[^}]*background:\s*var\(--ct-orange\);/,
   );
 });
 
-test("CT support callout prioritizes a phone consultation on mobile", async () => {
-  const [page, css] = await Promise.all([
+test("CT support callout uses the shared booking action without a phone", async () => {
+  const [page, cta, css] = await Promise.all([
     readSource("app/services/[slug]/CtServicePage.tsx"),
-    readSource("app/services/[slug]/CtServicePage.module.css"),
+    readSource("app/services/[slug]/ServiceBookingCta.tsx"),
+    readSource("app/services/[slug]/ServiceBookingCta.module.css"),
   ]);
-
-  assert.match(page, /className=\{styles\.finalCallButton\}[\s\S]*?href="tel:\+380676714444"/);
-  assert.match(page, /<strong>Зателефонувати<\/strong>[\s\S]*?<small>\+38 \(067\) 671-44-44<\/small>/);
-  assert.match(page, /className=\{styles\.finalRequestLink\}[\s\S]*?Залишити заявку/);
-  assert.doesNotMatch(page, /styles\.finalCallIcon|styles\.finalCallArrow/);
-  assert.doesNotMatch(page, /Залишити заявку\s*<span/);
-  assert.match(css, /\.finalCallButton\s*\{[^}]*background:\s*var\(--ct-orange\);/);
-  assert.match(css, /\.finalCta\s*\{[^}]*background:\s*var\(--ct-teal\);/);
-  assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.finalCta\s*\{[^}]*grid-template-columns:\s*1fr;/);
+  assert.match(page, /<ServiceBookingCta bookingHref=\{bookingHref\}/);
+  assert.match(cta, /buttonLabel = "Залишити заявку"/);
+  assert.match(cta, /href=\{bookingHref\}/);
+  assert.doesNotMatch(cta, /tel:|671-44-44/);
+  assert.match(css, /background:\s*var\(--brand-panel-gradient\)/);
+  assert.match(css, /@media \(max-width: 900px\)[\s\S]*?grid-template-columns:\s*1fr/);
 });
 
 test("mobile footer uses compact accessible navigation sections", async () => {
@@ -729,7 +727,7 @@ test("calculator can save a PDF, share the selection and proceed to booking", as
   assert.match(exporter, /navigator\.canShare\?\.\(\{ files: \[file\] \}\)/);
   assert.match(exporter, /navigator\.clipboard\.writeText\(text\)/);
   assert.match(css, /\.calculator-share-tools/);
-  assert.match(css, /\.calculator-share-actions > button:hover[\s\S]*?background: #eaf5f4/);
+  assert.match(css, /\.calculator-share-actions > button:not\(:disabled\):is\(:hover, :focus-visible\)[\s\S]*?background: #f1f3f5/);
   assert.doesNotMatch(
     css,
     /\.calculator-share-actions > button:first-child\s*\{[\s\S]*?background:/,

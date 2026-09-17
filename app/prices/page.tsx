@@ -1,3 +1,4 @@
+import { ServiceBookingCta } from "../services/[slug]/ServiceBookingCta";
 import type { Metadata } from "next";
 import "./tablet.css";
 import "./search.css";
@@ -59,15 +60,7 @@ export default async function PricesPage({
         initialQuery={initialQuery}
       />
 
-      <section className="subpage-cta">
-        <div>
-          <span className="section-kicker">Не знайшли послугу?</span>
-          <h2>Адміністратор швидко уточнить вартість і підготовку</h2>
-        </div>
-        <a className="book-button" href="tel:+380676714444">
-          Подзвонити <span>→</span>
-        </a>
-      </section>
+      <ServiceBookingCta bookingHref="/contacts#booking" />
       <SiteFooter />
     </main>
   );

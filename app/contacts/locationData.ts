@@ -130,38 +130,17 @@ export const centerLocations: CenterLocation[] = [
     ],
   },
   {
-    id: "brody-zaliznychna-37b",
-    city: "Броди",
-    name: "Залізнична, 37-Б",
-    type: "Пункт забору аналізів",
-    address: "вул. Залізнична, 37-Б",
-    fullAddress: "м. Броди, вул. Залізнична, 37-Б",
-    description:
-      "Пункт лабораторної діагностики «Здорова Родина» у Бродах.",
-    hours: ["Графік роботи уточнюйте"],
-    phone: "+380970993130",
-    services: ["laboratory"],
-    coordinates: { lat: 50.0927788, lng: 25.1347706 },
-    gallery: [
-      {
-        src: "/locations/brody-zaliznychna-37b.jpg",
-        alt: "Пункт медичного центру «Здорова Родина» у Бродах",
-        caption: "Пункт на вул. Залізничній, 37-Б у Бродах",
-      },
-    ],
-  },
-  {
     id: "zviahel-shevchenka-41-1",
     city: "Звягель",
     name: "Шевченка, 41/1",
-    type: "Пункт забору аналізів",
+    type: "Лабораторія та УЗД",
     address: "вул. Тараса Шевченка, 41/1",
     fullAddress: "м. Звягель, вул. Тараса Шевченка, 41/1",
     description:
-      "Пункт лабораторної діагностики «Здорова Родина» у Звягелі.",
+      "Лабораторні дослідження та УЗД у відділенні «Здорова Родина» у Звягелі.",
     hours: ["Графік роботи уточнюйте"],
     phone: "+380970383113",
-    services: ["laboratory"],
+    services: ["laboratory", "ultrasound"],
     coordinates: { lat: 50.5897806, lng: 27.615086 },
     gallery: [
       {

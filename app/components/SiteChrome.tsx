@@ -84,7 +84,6 @@ const navigation: NavigationItem[] = [
       ...doctorCategories.map(({ label }) => ({ href: `/doctors?specialty=${encodeURIComponent(label)}`, label })),
     ],
   },
-  footerNavigation[2],
   {
     href: "/patients",
     label: "Пацієнтам",
@@ -96,7 +95,9 @@ const navigation: NavigationItem[] = [
       { href: "/patients#benefits", label: "Пільги та знижки" },
     ],
   },
-  ...footerNavigation.slice(3),
+  footerNavigation[3],
+  footerNavigation[2],
+  footerNavigation[4],
 ];
 
 const HOME_SEARCH_OPEN_EVENT = "zdorova-rodyna-home-search-open";
@@ -671,7 +672,7 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
                       alt=""
                       aria-hidden="true"
                     />
-                    <strong>Подзвонити</strong>
+                    <strong>Зателефонувати</strong>
                   </a>
                   <a
                     className="support-contact-link support-viber-link"

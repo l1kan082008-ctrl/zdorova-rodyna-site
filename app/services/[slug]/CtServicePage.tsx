@@ -1,3 +1,4 @@
+import { ServiceBookingCta } from "./ServiceBookingCta";
 import Image from "next/image";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
@@ -75,7 +76,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
     <main className={styles.page}>
       <SiteHeader active="services" />
 
-      <section className={styles.hero} aria-labelledby="ct-title">
+      <section className={`${styles.hero} service-banner-shell`} aria-labelledby="ct-title">
         <Image className={styles.heroImage} src="/service-heroes/ct-cinematic-v1.webp" alt="Комп’ютерний томограф Philips Brilliance 64" fill priority unoptimized sizes="(max-width: 760px) 100vw, 94vw" />
         <div className={styles.heroShade} />
         <div className={styles.scanGraphic} aria-hidden="true">
@@ -90,12 +91,12 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
           </svg>
           <span className={styles.scanReadout}><strong>64</strong><small>зрізи</small></span>
         </div>
-        <div className={styles.heroContent}>
+        <div className={`${styles.heroContent} service-banner-copy`}>
           <nav aria-label="Хлібні крихти"><Link href="/services">Послуги</Link><span>/</span><span>КТ</span></nav>
           <span className={styles.eyebrow}>Променева діагностика</span>
           <h1 id="ct-title">Комп’ютерна<br />томографія</h1>
           <p>{service.lead}</p>
-          <div className={styles.heroActions}><Link className={`${styles.primaryButton} service-banner-booking`} href={bookingHref}>Записатися <span>→</span></Link><Link className={`${styles.secondaryButton} service-banner-secondary`} href="#ct-prices">Переглянути вартість <span>→</span></Link></div>
+          <div className={`${styles.heroActions} service-banner-actions`}><Link className={`${styles.primaryButton} service-banner-booking`} href={bookingHref}>Записатися <span>→</span></Link><Link className={`${styles.secondaryButton} service-banner-secondary`} href="#ct-prices">Переглянути вартість <span>→</span></Link></div>
         </div>
       </section>
 
@@ -128,12 +129,6 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
         <CtPriceTabs items={prices} />
       </section>
 
-      <section className={styles.section}>
-        <div id="ct-indications" className={styles.indications}><SectionTitle eyebrow="Коли потрібне обстеження" title={service.indicationsTitle} />
-          <ul className={styles.checkList}>{service.indications.map((item) => <li key={item}>{item}</li>)}</ul>
-        </div>
-      </section>
-
       <section className={`${styles.section} ${styles.equipmentDoctors}`} id="ct-doctors">
         <article className={styles.equipmentCard}>
           <div className={styles.equipmentMedia}><div className={styles.equipmentImageFrame}><Image className={styles.equipmentImage} src="/service-heroes/ct-philips-brilliance-64-cutout-v2.webp" alt="Комп’ютерний томограф Philips Brilliance 64" fill unoptimized sizes="(max-width: 760px) 100vw, 42vw" /></div></div>
@@ -147,7 +142,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
 
       <section className={styles.section} id="ct-preparation">
         <SectionTitle eyebrow="Ваш візит" title="Підготовка та обстеження" />
-        <div className={styles.preparationGrid}>
+        <div className={`${styles.preparationGrid} ct-preparation-gradient`}>
           <div>
             <h3 className={styles.preparationLabel}>Перед візитом</h3>
             <ol className="service-preparation-list">{important.map((item, index) => <li key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item}</p></li>)}</ol>
@@ -168,28 +163,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
         <CtFaqAccordion items={faq} />
       </section>
 
-      <section className={styles.finalCta} aria-labelledby="ct-support-title">
-        <div className={styles.finalCtaCopy}>
-          <span className={styles.finalCtaEyebrow}>Допоможемо з вибором</span>
-          <h2 id="ct-support-title">Не впевнені, яке КТ обрати?</h2>
-          <p>Зателефонуйте адміністратору — уточнимо дослідження, підготовку та зручний час.</p>
-        </div>
-        <div className={styles.finalCtaActions}>
-          <a
-            className={styles.finalCallButton}
-            href="tel:+380676714444"
-            aria-label="Зателефонувати до медичного центру: +38 (067) 671-44-44"
-          >
-            <span className={styles.finalCallText}>
-              <strong>Зателефонувати</strong>
-              <small>+38 (067) 671-44-44</small>
-            </span>
-          </a>
-          <Link className={styles.finalRequestLink} href={bookingHref}>
-            Залишити заявку
-          </Link>
-        </div>
-      </section>
+      <ServiceBookingCta bookingHref={bookingHref} />
 
       <SiteFooter />
     </main>

@@ -5538,7 +5538,7 @@ footer {
   gap: 12px;
 }
 
-.about-directions-grid > a {
+.about-directions-grid > :is(a, article) {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -5555,7 +5555,7 @@ footer {
     border-color 180ms ease;
 }
 
-.about-directions-grid > a::after {
+.about-directions-grid > :is(a, article)::after {
   position: absolute;
   right: -28px;
   bottom: -42px;
@@ -5573,7 +5573,7 @@ footer {
   background: rgba(255, 255, 255, 0.13);
 }
 
-.about-directions-grid > a > span {
+.about-directions-grid > :is(a, article) > span {
   color: #ffb36e;
   font-size: 11px;
   font-weight: 800;
@@ -6951,7 +6951,7 @@ body.calculator-is-open .site-header {
 .calculator-share-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0;
+  gap: 10px;
   padding: 5px;
   border: 1px solid #d4e2e1;
   border-radius: 17px;
@@ -6976,19 +6976,21 @@ body.calculator-is-open .site-header {
 }
 
 .calculator-share-actions > button + button {
-  border-left: 1px solid #e0e9e8;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+  position: relative;
+}
+.calculator-share-actions > button + button::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: #e5e7eb;
 }
 
-.calculator-share-actions > button:hover {
-  background: #eaf5f4;
-  color: #007c84;
-}
-
-.calculator-share-actions > button:first-child:hover {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+.calculator-share-actions > button:not(:disabled):is(:hover, :focus-visible) {
+  background: #f1f3f5;
+  color: var(--ink);
 }
 
 .calculator-share-actions > button:focus-visible {
@@ -7039,17 +7041,7 @@ body.calculator-is-open .site-header {
   transition: transform 180ms ease;
 }
 
-.calculator-share-actions > button:hover .calculator-action-icon {
-  filter: drop-shadow(0 0 4px rgba(0, 137, 143, 0.2));
-}
 
-.calculator-share-actions > button:hover .download-arrow {
-  transform: translateY(1.25px);
-}
-
-.calculator-share-actions > button:hover .is-share svg {
-  transform: scale(1.06);
-}
 
 .calculator-action-icon.is-share svg {
   transition: transform 180ms ease;
@@ -9061,7 +9053,7 @@ body.calculator-is-open .site-header {
     grid-template-columns: 1fr;
   }
 
-  .about-directions-grid > a {
+  .about-directions-grid > :is(a, article) {
     min-height: 220px;
   }
 
@@ -23021,7 +23013,7 @@ body.calculator-is-open .site-header {
   box-shadow: 0 12px 34px rgb(15 52 54 / 6%);
 }
 
-.faq-item.is-open {
+.faq-item:is(.is-open, [open]) {
   border-color: rgb(8 110 112 / 30%);
   background:
     radial-gradient(circle at 100% 0%, rgb(8 126 127 / 7%), transparent 34%),
@@ -23099,7 +23091,7 @@ body.calculator-is-open .site-header {
   transform: translate(-50%, -50%) rotate(90deg);
 }
 
-.faq-item.is-open .faq-toggle::after {
+.faq-item:is(.is-open, [open]) .faq-toggle::after {
   transform: translate(-50%, -50%) rotate(0deg);
 }
 
@@ -23126,7 +23118,7 @@ body.calculator-is-open .site-header {
   line-height: 1.7;
 }
 
-.faq-item.is-open .faq-answer {
+.faq-item:is(.is-open, [open]) .faq-answer {
   grid-template-rows: 1fr;
   opacity: 1;
 }
@@ -24185,7 +24177,7 @@ body.calculator-is-open .site-header {
 }
 
 .preparation-accordion-item[open],
-.faq-item.is-open {
+.faq-item:is(.is-open, [open]) {
   border-color: rgb(8 110 112 / 24%);
   background: var(--surface-soft);
   box-shadow: 0 12px 32px rgb(15 52 54 / 5%);

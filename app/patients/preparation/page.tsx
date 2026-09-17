@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PreparationDisclosure } from "./PreparationDisclosure";
+import { ServiceBookingCta } from "../../services/[slug]/ServiceBookingCta";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
 
 export const metadata: Metadata = {
@@ -160,19 +162,9 @@ export default function PreparationPage() {
         </section>
 
         <section className="preparation-directory" aria-label="Напрями обстежень">
-          <div className="preparation-accordion">
+          <div className="faq-list">
             {preparationGroups.map((group) => (
-              <details className="preparation-accordion-item" key={group.title}>
-                <summary>
-                  <span className="preparation-accordion-number">{group.number}</span>
-                  <span className="preparation-accordion-title">
-                    <strong>{group.title}</strong>
-                    <small>{group.lead}</small>
-                  </span>
-                  <span className="preparation-accordion-toggle" aria-hidden="true" />
-                </summary>
-                <div className="preparation-accordion-content">
-                  <div className="preparation-accordion-content-inner">
+              <PreparationDisclosure key={group.title} number={group.number} title={group.title} lead={group.lead}>
                     <div className="preparation-advice-grid">
                       {group.sections.map((section) => (
                         <article key={section.title}>
@@ -182,9 +174,7 @@ export default function PreparationPage() {
                       ))}
                     </div>
                     <p className="preparation-group-note">{group.note}</p>
-                  </div>
-                </div>
-              </details>
+              </PreparationDisclosure>
             ))}
           </div>
         </section>
@@ -209,18 +199,10 @@ export default function PreparationPage() {
           </ol>
         </section>
 
-        <aside className="preparation-contact-note">
-          <div>
-            <p className="section-label">Залишилися запитання?</p>
-            <h2>Уточніть підготовку під час запису</h2>
-          </div>
-          <p>
-            Адміністратор перевірить назву дослідження та надасть точну
-            інструкцію саме для вашого візиту.
-          </p>
-          <a href="tel:+380676714444">+38 (067) 671-44-44</a>
-        </aside>
+
       </div>
+
+      <ServiceBookingCta bookingHref="/contacts#booking" title="Уточніть підготовку під час запису" description="Адміністратор перевірить назву дослідження та надасть точну інструкцію саме для вашого візиту." />
 
       <SiteFooter />
     </main>

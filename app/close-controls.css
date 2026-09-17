@@ -21,3 +21,27 @@ button:has(> .site-close-icon):focus-visible {
   button:has(> .site-close-icon) { min-width: 44px; min-height: 44px; }
   .calculator-items article { grid-template-columns: minmax(0, 1fr) auto 44px; }
 }
+
+/* Search is a full-screen dialog on phones; align to the same viewport inset. */
+body .home-search-shell .home-search-mobile-head .home-search-close {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top));
+  right: -10px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #073f45;
+}
+body .home-search-shell .home-search-mobile-head .home-search-close .site-close-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+}

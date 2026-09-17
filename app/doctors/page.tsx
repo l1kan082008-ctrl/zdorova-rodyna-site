@@ -1,3 +1,4 @@
+import { ServiceBookingCta } from "../services/[slug]/ServiceBookingCta";
 import type { Metadata } from "next";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
 import { listDoctors } from "../api/doctors/doctorStore";
@@ -24,15 +25,7 @@ export default async function DoctorsPage() {
         </p>
       </section>
       <DoctorsDirectory initialDoctors={doctors} />
-      <section className="subpage-cta">
-        <div>
-          <span className="section-kicker">Запис</span>
-          <h2>Адміністратор допоможе обрати спеціаліста</h2>
-        </div>
-        <a className="book-button" href="tel:+380676714444">
-          Подзвонити <span>→</span>
-        </a>
-      </section>
+      <ServiceBookingCta bookingHref="/contacts#booking" />
       <SiteFooter />
     </main>
   );

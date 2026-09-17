@@ -1,3 +1,4 @@
+import { ServiceBookingCta } from "../services/[slug]/ServiceBookingCta";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
@@ -162,7 +163,7 @@ export default function AboutPage() {
         <div className="about-values-head">
           <span className="section-kicker">Наші принципи</span>
           <h2 id="about-values-title">
-            Довіра починається не з кабінету, а зі ставлення
+            Довіра починається не з кабінету,{" "}<span className="about-values-title-ending">а зі ставлення</span>
           </h2>
         </div>
         <div className="values-grid">
@@ -176,15 +177,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="subpage-cta">
-        <div>
-          <span className="section-kicker">Потрібна допомога з вибором?</span>
-          <h2>Розкажіть, що вас турбує — підкажемо, з чого почати</h2>
-        </div>
-        <Link className="book-button" href="/contacts#booking">
-          Звернутися до центру <span>→</span>
-        </Link>
-      </section>
+      <ServiceBookingCta bookingHref="/contacts#booking" />
 
       <SiteFooter />
     </main>

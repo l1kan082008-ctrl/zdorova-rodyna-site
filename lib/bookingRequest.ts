@@ -11,6 +11,9 @@ export function serviceCategory(service: string): BranchServiceId | null {
 }
 
 export function compatibleLocations(locations: CenterLocation[], service: string) {
+  if (["Кардіологія", "Кардіологія та діагностика серця"].includes(service.trim())) {
+    return locations.filter(location => location.id === "stelmakha-18m");
+  }
   const category = serviceCategory(service);
   return locations.filter((location) => !isInformationOnlyLocation(location) && (service === "Допоможіть обрати послугу" || (category !== null && location.services.includes(category))));
 }

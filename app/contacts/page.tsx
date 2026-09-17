@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ServiceBookingCta } from "../services/[slug]/ServiceBookingCta";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
 import { LocationsExplorer } from "./LocationsExplorer";
 import { centerLocations, type CenterLocation } from "./locationData";
@@ -32,10 +33,7 @@ export default function ContactsPage() {
       </div>
     </section>
     <LocationsExplorer locations={locations} selectedLocationId={selectedLocationId} onSelectLocation={setSelectedLocationId} />
-    <section className="contacts-booking-invite" id="booking">
-      <div><h2>Допомогти з записом?</h2><p>Залиште ім’я та телефон. Адміністратор допоможе обрати послугу, відділення й час візиту.</p></div>
-      <a className="book-button" href="/contacts#booking">Записатися на прийом <span aria-hidden="true">→</span></a>
-    </section>
+    <ServiceBookingCta bookingHref="/contacts#booking" id="booking" title="Допомогти з записом?" description="Залиште ім’я та телефон. Адміністратор допоможе обрати послугу, відділення й час візиту." buttonLabel="Записатися на прийом" showKicker={false} />
     <SiteFooter />
   </main>;
 }

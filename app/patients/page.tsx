@@ -47,12 +47,12 @@ export default function PatientsPage() {
           ))}
         </nav>
 
-        <section className="patients-section" id="results">
-          <header className="patients-section-heading">
-            <p className="section-label">Після обстеження</p>
-            <h2>Як отримати результати</h2>
+        <section className="about-directions patients-results-panel" id="results" aria-labelledby="patients-results-title">
+          <header className="about-directions-head">
+            <span className="section-kicker">Після обстеження</span>
+            <h2 id="patients-results-title">Як отримати результати</h2>
           </header>
-          <div className="patients-result-grid">
+          <div className="about-directions-grid patients-results-grid">
             <article>
               <span>01</span>
               <h3>У відділенні</h3>

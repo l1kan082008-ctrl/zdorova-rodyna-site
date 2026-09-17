@@ -1,3 +1,4 @@
+import { isInformationOnlyLocation } from "../../../lib/locationPolicy";
 import { listLocations } from "./locationStore";
 import { centerLocations } from "../../contacts/locationData";
 
@@ -11,7 +12,7 @@ export async function GET() {
   }
   try {
     const locations = await listLocations();
-    return Response.json({ locations });
+    return Response.json({ locations: locations.filter(location => !isInformationOnlyLocation(location)) });
   } catch (error) {
     const incidentId = crypto.randomUUID();
     console.error(JSON.stringify({

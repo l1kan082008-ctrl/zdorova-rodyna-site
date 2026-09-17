@@ -21,3 +21,18 @@
 /* Keep the branch heading centered at mobile breakpoints too. */
 .ultrasound-page .ultrasound-locations > div:first-child { text-align: center; }
 .ultrasound-page .ultrasound-locations > div:first-child > :is(h2, p) { margin-inline: auto; text-align: center; }
+
+.ultrasound-price-controls { display:flex; justify-content:center; margin-bottom:16px; }
+.ultrasound-price-controls-bottom { margin:20px 0 0; }
+.ultrasound-collapsible-prices [hidden] { display:none !important; }
+
+/* Match the neutral CT/MRI price framing. */
+.ultrasound-page .ultrasound-price-rows {
+  border-color: #dedfe1;
+  box-shadow: 0 14px 36px rgba(0,0,0,.065);
+}
+.ultrasound-page .ultrasound-price-row + .ultrasound-price-row { border-top-color: #dedfe1; }
+@media (hover: hover) {
+  .ultrasound-page .ultrasound-price-row:hover { background: #f7f7f8; }
+}
+.ultrasound-page .ultrasound-price-row:focus-within { background: #f7f7f8; }

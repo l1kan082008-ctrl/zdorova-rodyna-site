@@ -167,8 +167,8 @@ export function MriPriceTabs({ items }: Props) {
   };
 
   return (
-    <div className={styles.pricePanel}>
-      <div className={styles.priceTabsViewport}>
+    <div className={`${styles.pricePanel} ${mri.neutralPricePanel}`}>
+      <div className={`${styles.priceTabsViewport} ${mri.priceCategories}`}>
         <span className={styles.priceTabsLabel}>Категорії досліджень</span>
         <div className={styles.priceMobileNav} ref={mobileNavRef}>
           <span className={styles.priceMobileLabel} id="mri-price-category-label">Категорія досліджень</span>
@@ -236,13 +236,13 @@ export function MriPriceTabs({ items }: Props) {
       </div>
 
       <div className={`${styles.priceTable} ${selectedGroup === "additional" ? mri.additionalPrices : ""}`} role="table" aria-label={`Ціни МРТ: ${MRI_PRICE_GROUPS.find((group) => group.id === selectedGroup)?.label ?? "Категорія"}`}>
-        <div className={styles.priceTableHead} role="row">
+        <div className={`${styles.priceTableHead} ${mri.neutralPriceHeader}`} role="row">
           <span role="columnheader">Дослідження</span>
           <span role="columnheader">{selectedGroup === "additional" ? "Вартість" : "Без контрасту"}</span>
           {selectedGroup !== "additional" && <span role="columnheader">З контрастом</span>}
         </div>
         {visibleItems.map((item) => (
-          <div className={styles.priceRow} key={item.id} role="row">
+          <div className={`${styles.priceRow} ${mri.neutralPriceRow}`} key={item.id} role="row">
             <strong className={styles.priceTitle} role="rowheader">{item.name}</strong>
             <PriceOption item={item.withoutContrast} label={selectedGroup === "additional" ? "Вартість" : "Без контрасту"} />
             {selectedGroup !== "additional" && <PriceOption item={item.withContrast} label="З контрастом" contrast />}

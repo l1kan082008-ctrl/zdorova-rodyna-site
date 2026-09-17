@@ -1,8 +1,9 @@
+import { ServiceBookingCta } from "./ServiceBookingCta";
 import "./ultrasound-locations.css";
 import Image from "next/image";
 import { centerLocations, getDirectionsUrl } from "../../contacts/locationData";
 import serviceStyles from "./CtServicePage.module.css";
-import { UltrasoundPriceRow } from "./UltrasoundPriceRow";
+import { UltrasoundPriceList } from "./UltrasoundPriceList";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -217,7 +218,7 @@ export default async function ServiceDetailPage({
   );
 
   return (
-    <main className={`inner-page service-detail-page${isHomeNurse ? " home-nurse-page" : ""}${isCardiology ? " cardiology-page" : ""}${isCinematicUltrasound ? " ultrasound-page" : ""}`}>
+    <main className={`inner-page service-detail-page${isHomeNurse ? " home-nurse-page" : ""}${isCardiology ? " cardiology-page" : ""}${isCinematicUltrasound ? " ultrasound-page" : ""}${isCinematicAudiometry ? " audiometry-page" : ""}`}>
       <SiteHeader active="services" />
 
       {isCinematicHolter ? (
@@ -1006,7 +1007,9 @@ export default async function ServiceDetailPage({
             </article>
           </section>
 
-          <aside className="family-nszu-note">
+          <aside className="service-important family-declaration-note">
+            <span aria-hidden="true">i</span>
+            <div>
             <strong>Важливо</strong>
             <p>
               Декларація не робить автоматично безоплатними весь лабораторний
@@ -1015,6 +1018,7 @@ export default async function ServiceDetailPage({
               договором НСЗУ або оплачуватися пацієнтом. Доступність конкретних
               послуг у нашому центрі підтвердить адміністратор.
             </p>
+            </div>
           </aside>
         </>
       ) : null}
@@ -1024,12 +1028,7 @@ export default async function ServiceDetailPage({
           <header className={serviceStyles.sectionTitle}>
           <h2 id="ultrasound-prices-title">Ціна та запис на УЗД</h2>
           <p>Оберіть дослідження. Вартість і запис — нижче, підготовка — у «Детальніше».</p></header>
-          <div className="ultrasound-price-rows">
-            <div className="ultrasound-price-head" aria-hidden="true"><span>Дослідження</span><span>Ціна</span><span>Запис</span></div>
-            {cardiologyPriceItems.filter(item => item.isActive !== false && ["ultrasound", "doppler"].includes(item.category)).map(item => (
-              <UltrasoundPriceRow key={item.id} name={item.name} amount={item.amount} />
-            ))}
-          </div>
+          <UltrasoundPriceList items={cardiologyPriceItems.filter(item => item.isActive !== false && ["ultrasound", "doppler"].includes(item.category))} />
         </section>
       )}
       {!isFamilyMedicine && !isConsultation && !isCinematicUltrasound ? (
@@ -1201,8 +1200,8 @@ export default async function ServiceDetailPage({
               title: "Для загальної діагностики та жіночого здоров’я",
               description: "Обстеження органів черевної порожнини, щитоподібної та молочних залоз, органів малого таза.",
               features: [
-                { title: "Структура органів", text: "Лікар оцінює контури та внутрішню структуру органів, вимірює виявлені утворення." },
-                { title: "Оцінка кровотоку", text: "Кольоровий і спектральний доплер допомагають оцінити напрямок та швидкість руху крові." },
+                { title: "SieClear — чіткіші межі тканин", text: "Поєднує ультразвукові зображення з різних кутів, покращуючи контраст і видимість меж органів та утворень." },
+                { title: "Тканинна гармоніка — менше шуму", text: "Режим THI зменшує шуми й перешкоди на зображенні та підвищує контрастність для розрізнення сусідніх тканин." },
               ],
             },
             {
@@ -1210,8 +1209,8 @@ export default async function ServiceDetailPage({
               title: "Для поглибленого дослідження тканин",
               description: "Ультразвукове зображення та оцінка кровотоку з можливістю застосування спеціалізованих режимів діагностики.",
               features: [
-                { title: "Детальний огляд", text: "Зображення та вимірювання допомагають описати розташування, розміри й структуру виявлених змін." },
-                { title: "Еластографія Virtual Touch", text: "У відповідній комплектації зсувні хвилі дозволяють оцінити жорсткість тканин, зокрема печінки. Це доповнює УЗД, а не замінює діагноз лікаря." },
+                { title: "eSieFusion — УЗД разом із КТ та МРТ", text: "Поєднує попередні знімки КТ або МРТ з УЗД у реальному часі, допомагаючи лікарю зіставити ділянку дослідження." },
+                { title: "Virtual Touch — жорсткість тканин", text: "Вимірює швидкість зсувних хвиль у тканині, додаючи до звичайного УЗД оцінку її жорсткості." },
               ],
             },
           ].map((device) => (
@@ -1315,24 +1314,7 @@ export default async function ServiceDetailPage({
       </aside>}
 
       {!isCinematicUltrasound && (
-      <section className="subpage-cta service-detail-cta">
-        <div>
-          <span className="section-kicker">Допоможемо підготуватися</span>
-          <h2>{isHomeNurse ? "Замовте виїзд медсестри додому" : "Уточніть дослідження та оберіть зручний час"}</h2>
-          <p>
-            {isHomeNurse ? "Залиште адресу в Рівному — адміністратор погодить час виїзду, перелік аналізів і вартість." : "Адміністратор перевірить деталі, підкаже підготовку та доступне відділення."}
-          </p>
-        </div>
-        <div className="service-detail-cta-actions">
-          {!isCardiology && <Link
-            className="book-button"
-            href={bookingHref}
-          >
-            {isHomeNurse ? "Замовити виїзд" : "Записатися"} <span>→</span>
-          </Link>}
-          {!isCinematicUltrasound && !isHomeNurse && service.slug !== "holter" && <a className={isCardiology ? "book-button" : undefined} href="tel:+380676714444">+38 (067) 671-44-44</a>}
-        </div>
-      </section>
+      <ServiceBookingCta bookingHref={bookingHref} />
       )}
       </>
       ) : null}

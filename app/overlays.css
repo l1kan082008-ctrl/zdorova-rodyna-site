@@ -31,7 +31,7 @@
 :root {
   --dialog-enter-duration: 300ms;
   --overlay-blur: 24px;
-  --overlay-tint: rgba(58, 112, 115, 0.18);
+  --overlay-tint: rgba(238, 241, 246, .58);
 }
 
 /* Shared form/dialog reveal, matching the restrained zoom-and-rise reference. */
@@ -79,6 +79,7 @@
 .support-dialog-backdrop,
 .calculator-dialog-backdrop,
 .branch-modal-backdrop,
+.admin-history-backdrop,
 .quick-booking::backdrop {
   background: var(--overlay-tint);
   -webkit-backdrop-filter: blur(var(--overlay-blur));
@@ -117,7 +118,6 @@ body.home-search-open #top > :not(.home-search-shell) {
     height: 24px;
   }
   .site-menu-backdrop:has(+ .site-header .main-nav-group.is-expanded) {
-    --overlay-tint: rgba(235, 242, 248, 0.32);
     display: block;
     position: fixed;
     inset: 0;
@@ -143,7 +143,8 @@ body.home-search-open #top > :not(.home-search-shell) {
   .support-dialog-backdrop,
   .calculator-dialog-backdrop,
   .branch-modal-backdrop,
-  .quick-booking::backdrop { background: rgba(235, 242, 248, 0.92); }
+  .admin-history-backdrop,
+  .quick-booking::backdrop { background: rgba(238, 241, 246, .92); }
 }
 
 @media (max-width: 1080px) {
@@ -747,3 +748,528 @@ body :is(.inner-page h1, #patients-title) {
 .branch-information-only p { margin: 8px 0; color: #587276; line-height: 1.6; }
 .branch-information-only a { display: block; width: fit-content; padding-block: 10px; color: #087f82; }
 @media (max-width: 720px) { .branch-information-only { width: calc(100% - 40px); padding: 20px; grid-template-columns: 1fr; gap: 12px; } }
+
+/* Audiometry section headings share centered alignment on all screens. */
+.audiometry-page > :is(.service-overview, .service-information-grid, .service-process, .service-detail-cta) :is(h2, h3, .section-kicker) {
+  text-align: center;
+  margin-inline: auto;
+}
+.audiometry-page > :is(.service-overview, .service-information-grid, .service-process, .service-detail-cta) .section-kicker {
+  display: block;
+}
+
+.audiometry-page .service-overview.service-overview--audiometry > article {
+  display: block;
+  width: 100%;
+}
+.audiometry-page .service-overview--audiometry > article > h2 {
+  max-width: none;
+  margin: 12px auto 24px;
+}
+.audiometry-page .service-overview.service-overview--audiometry > article > p {
+  max-width: 860px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+@media (max-width: 1080px) {
+  .main-nav-heading .main-nav-mobile-label { position: relative; }
+  .main-nav-heading .main-nav-group-toggle.is-active .main-nav-mobile-label::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: -7px;
+    height: 1px;
+    background: var(--orange);
+  }
+}
+
+/* Declaration coverage follows the shared service card and notice scale. */
+.service-detail-page .family-coverage {
+  gap: 24px;
+  align-items: start;
+  padding: 48px 0 24px;
+}
+.service-detail-page .family-coverage > article {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.service-detail-page .family-coverage .section-kicker { display: block; text-align: left; }
+.service-detail-page .family-coverage h2 {
+  margin: 12px auto 24px;
+  font-size: clamp(26px, 2.4vw, 34px);
+  line-height: 1.15;
+  text-align: left;
+}
+.service-detail-page .family-coverage-intro { font-size: 16px; line-height: 1.6; }
+.service-detail-page .family-coverage ul { margin-top: 20px; }
+.service-detail-page .family-coverage li { padding: 14px 0 14px 24px; font-size: 16px; line-height: 1.6; }
+.service-detail-page .family-coverage li::before { top: 23px; width: 6px; height: 6px; }
+.service-detail-page .family-coverage-footnote {
+  margin-top: 20px;
+  padding: 16px;
+  border: 0;
+  border-radius: 12px;
+  background: #f5f9f8;
+  font-size: 14px;
+  line-height: 1.6;
+}
+@media (max-width: 720px) {
+  .service-detail-page .family-coverage { grid-template-columns: minmax(0, 1fr); gap: 20px; padding: 32px 0 20px; }
+  .service-detail-page .family-coverage > article { padding: 0; }
+}
+
+:root {
+  --brand-panel-gradient: radial-gradient(circle at 92% 5%, rgba(117, 226, 217, .22), transparent 31%), linear-gradient(135deg, #064e56 0%, #076a70 55%, #138986 100%);
+}
+.about-directions,
+.family-nszu,
+.consultation-help,
+.preparation-contact-note {
+  background: var(--brand-panel-gradient);
+}
+
+@media (min-width: 721px) {
+  .service-detail-page .service-detail-cta > div:first-child .section-kicker {
+    display: block;
+    width: auto;
+    margin-inline: 0;
+    text-align: left;
+  }
+}
+
+.about-values-head #about-values-title { text-wrap: balance; }
+.about-values-title-ending { white-space: nowrap; }
+
+/* Process panels use simple numbered rows at every size. */
+@media (min-width: 0px) {
+  body .service-detail-page .service-process .service-process-steps {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  body .service-detail-page .service-process .service-process-steps article {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr);
+    gap: 8px 12px;
+    min-height: 0;
+    padding: 20px 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  body .service-detail-page .service-process .service-process-steps article + article {
+    border-top: 1px solid #d5e4e2;
+  }
+  body .service-detail-page .service-process .service-process-steps article:first-child { padding-top: 0; }
+  body .service-detail-page .service-process .service-process-steps article:last-child { padding-bottom: 0; }
+  body .service-detail-page .service-process .service-process-steps article > span {
+    grid-row: 1 / 3;
+    padding-top: 3px;
+    font-size: 12px;
+    line-height: 22px;
+  }
+  body .service-detail-page .service-process .service-process-steps h3 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.4;
+    text-align: left;
+  }
+  body .service-detail-page .service-process .service-process-steps p {
+    grid-column: 2;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    text-align: left;
+  }
+}
+/* Shared editorial style for service information, preparation and steps. */
+@media (min-width: 0px) {
+  body .service-detail-page > :is(.service-overview, .service-information-grid, .service-process, .service-important) {
+    width: calc(100% - 40px);
+    margin: 0 auto 48px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  body .service-detail-page .service-information-grid { gap: 48px; }
+  body .service-detail-page .service-overview > article:not(.service-center-card) {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  body .service-detail-page :is(.service-overview, .service-information-grid, .service-process) h2 {
+    margin: 10px 0 24px;
+    font-size: 28px;
+    line-height: 1.15;
+  }
+  body .service-detail-page .service-process { gap: 0; }
+  body .service-detail-page :is(.service-check-list, .service-preparation-list) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+  }
+  body .service-detail-page .service-preparation-list li {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr);
+    gap: 12px;
+    padding: 20px 0;
+    border: 0;
+    border-bottom: 1px solid #d5e4e2;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  body .service-detail-page .service-preparation-list li > span {
+    display: block;
+    width: auto;
+    height: auto;
+    padding-top: 2px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--orange);
+    font-size: 12px;
+    line-height: 22px;
+  }
+  body .service-detail-page :is(.service-preparation-list li > p, .service-check-list li, .service-process-steps p) {
+    color: #587276;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  body .service-detail-page .service-check-list li { padding: 20px 0 20px 38px; border-bottom: 1px solid #d5e4e2; }
+  body .service-detail-page .service-check-list li::before {
+    top: 28px;
+    left: 9px;
+    width: 6px;
+    height: 6px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--orange);
+    box-shadow: none;
+    content: '';
+  }
+  body .service-detail-page .service-process .service-process-steps article {
+    padding: 20px 0;
+    border-top: 0;
+    border-bottom: 1px solid #d5e4e2;
+  }
+  body .service-detail-page :is(.service-preparation-list li, .service-check-list li, .service-process-steps article):last-child { border-bottom: 0; }
+  body .service-detail-page > .service-important {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr);
+    gap: 12px;
+    padding-block: 20px;
+    border-top: 1px solid #d5e4e2;
+    border-bottom: 1px solid #d5e4e2;
+  }
+  body .service-detail-page > .service-important > span {
+    width: 26px;
+    height: 26px;
+    border: 0;
+    background: transparent;
+    color: var(--orange);
+    font-size: 20px;
+  }
+  body .service-detail-page > .service-important p { color: #587276; font-size: 14px; line-height: 1.6; }
+  body .service-detail-page > .service-facts:not(.service-facts--booking) {
+    width: calc(100% - 40px);
+    margin: 0 auto 48px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+}
+@media (min-width: 761px) {
+  body .service-detail-page > :is(.service-overview, .service-information-grid, .service-process, .service-important, .service-facts:not(.service-facts--booking)) {
+    width: min(1180px, calc(100% - 48px));
+    margin-bottom: 72px;
+  }
+  body .service-detail-page .service-information-grid { gap: 56px; align-items: start; }
+  body .service-detail-page :is(.service-overview, .service-information-grid, .service-process) h2 {
+    margin: 12px 0 28px;
+    font-size: clamp(30px, 2.7vw, 40px);
+    line-height: 1.15;
+  }
+  body .service-detail-page :is(.service-preparation-list li > p, .service-check-list li, .service-process-steps p, .service-important p) {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  body .service-detail-page .service-process { grid-template-columns: 1fr; gap: 0; }
+  body .service-detail-page .service-process .service-process-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px;
+  }
+  body .service-detail-page .service-process .service-process-steps article {
+    align-content: start;
+    padding: 24px 0 0;
+    border-top: 1px solid #d5e4e2;
+    border-bottom: 0;
+  }
+  body .service-detail-page .service-process .service-process-steps h3 { font-size: 20px; }
+  body .service-detail-page .service-preparation-list li > span { padding-top: 2px; line-height: 26px; }
+  body .service-detail-page .service-check-list li::before { top: 30px; }
+  body .service-detail-page > .service-important { padding-block: 24px; }
+}@media (min-width: 761px) {
+  body .service-detail-page .service-process .service-process-steps article:first-child,
+  body .service-detail-page .service-process .service-process-steps article:last-child { padding: 24px 0 0; }
+}
+/* CT preparation matches the light family declaration section. */
+body .ct-preparation-gradient > div {
+  background: radial-gradient(circle at 100% 0%, rgba(42,165,164,.16), transparent 34%), #edf6f5;
+  border-color: transparent;
+}
+/* Public directory cards share neutral framing; brand surfaces remain intact. */
+:root { --public-card-border: #dedfe1; --public-card-shadow: 0 12px 26px rgba(0,0,0,.065); }
+body .contacts-page.contacts-page--compact :is(.book-button, .outline-button),
+body .branch-modal :is(.book-button, .outline-button) { border-radius: 999px; }
+body :is(.services-directory-grid .service-card, .doctors-directory .doctor-profile-card, .about-values .values-grid > article) {
+  border-color: var(--public-card-border);
+}
+body .services-directory-grid .service-card {
+  box-shadow: inset 0 1px 0 #fff, var(--public-card-shadow);
+}
+body .contacts-page--compact .branch-navigation-item { border-bottom-color: var(--public-card-border); }
+body .contacts-page--compact .branch-navigation-item.is-active { border-color: var(--public-card-border); }@media (max-width: 760px) {
+  body .contacts-page.contacts-page--compact .contacts-intro__email { border-radius: 999px; }
+}
+/* Shared hierarchy and rhythm for public editorial sections. */
+:root {
+  --public-section-title: 36px;
+  --public-section-gap: 64px;
+  --public-heading-gap: 24px;
+}
+@media (max-width: 760px) {
+  :root { --public-section-title: 28px; --public-section-gap: 48px; }
+}
+body :is(.section-heading h2, .about-section h2, .about-route-copy h2,
+  .about-directions-head h2, .about-journey-intro h2,
+  .patients-section-heading h2),
+body .about-values-head #about-values-title,
+body .service-detail-page:not(.cardiology-page):not(.family-medicine-page) :is(.service-overview, .service-information-grid, .service-process) h2 {
+  font-size: var(--public-section-title);
+  line-height: 1.15;
+  font-weight: 450;
+  letter-spacing: -.035em;
+}
+body .about-page { --about-section-gap: var(--public-section-gap); }
+body .patients-page { --patient-section-gap: var(--public-section-gap); }
+body .service-detail-page:not(.cardiology-page):not(.family-medicine-page) > :is(.service-overview, .service-information-grid, .service-process, .service-important, .service-facts:not(.service-facts--booking)) {
+  margin-bottom: var(--public-section-gap);
+}
+body .service-detail-page:not(.cardiology-page):not(.family-medicine-page) :is(.service-overview, .service-information-grid, .service-process) h2 {
+  margin-bottom: var(--public-heading-gap);
+}
+body main > :is(.services-section, .promo-slider-section, .doctors-section, .pricing-section, .about-section, .quick-strip) {
+  margin-top: var(--public-section-gap);
+}
+body .section-heading { margin-bottom: var(--public-heading-gap); }
+/* Preparation guide follows the shared editorial sections and booking CTA. */
+body .preparation-page { --patient-section-gap: var(--public-section-gap); }
+body .preparation-shell { width: min(1180px, calc(100% - 48px)); margin-bottom: 0; }
+body .preparation-directory { padding-block: var(--public-section-gap); }
+body .preparation-checklist { padding: 0; gap: 48px; }
+body .preparation-checklist h2 { font-size: var(--public-section-title); line-height: 1.15; font-weight: 450; letter-spacing: -.035em; margin: 0 0 var(--public-heading-gap); }
+body .preparation-accordion { gap: 0; }
+body .preparation-accordion-item,
+body .preparation-accordion-item:hover,
+body .preparation-accordion-item[open] {
+  border: 0; border-bottom: 1px solid var(--public-card-border); border-radius: 0;
+  background: transparent; box-shadow: none; transform: none;
+}
+body .preparation-accordion-item:first-child { border-top: 1px solid var(--public-card-border); }
+body .preparation-accordion-item summary { grid-template-columns: 26px minmax(0, 1fr) 20px; gap: 16px; padding: 24px 4px; }
+body .preparation-accordion-item summary:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px; box-shadow: none; border-radius: 4px; }
+body .preparation-accordion-title strong { font-size: 22px; font-weight: 500; line-height: 1.3; }
+body .preparation-accordion-title small { font-size: 14px; line-height: 1.6; }
+body .preparation-accordion-content { padding-inline: 46px 24px; }
+body .preparation-advice-grid { gap: 32px; }
+body .preparation-advice-grid article { min-height: 0; padding: 20px 0 0; border: 0; border-top: 1px solid var(--public-card-border); border-radius: 0; background: transparent; box-shadow: none; }
+body .preparation-advice-grid h3 { font-size: 18px; font-weight: 500; line-height: 1.35; }
+body .preparation-advice-grid p,
+body .preparation-group-note,
+body .preparation-checklist li small { font-size: 16px; line-height: 1.65; }
+body .preparation-group-note { margin-top: 24px; padding-top: 20px; border-color: var(--public-card-border); }
+body .preparation-checklist ol { grid-template-columns: 1fr; gap: 0; }
+body .preparation-checklist li,
+body .preparation-checklist li:first-child {
+  grid-template-columns: 26px minmax(0, 1fr); gap: 16px; min-height: 0; padding: 20px 0;
+  border: 0; border-bottom: 1px solid var(--public-card-border); border-radius: 0; background: transparent; box-shadow: none;
+}
+body .preparation-checklist li:first-child { border-top: 1px solid var(--public-card-border); }
+body .preparation-checklist-number { width: auto; height: auto; padding-top: 3px; justify-items: start; }
+body .preparation-checklist li strong { font-size: 18px; font-weight: 500; }
+@media (max-width: 1080px) {
+  body .preparation-advice-grid { grid-template-columns: 1fr; gap: 24px; }
+}
+@media (max-width: 760px) {
+  body .preparation-shell { width: calc(100% - 40px); }
+  body .preparation-checklist { grid-template-columns: 1fr; gap: 0; }
+  body .preparation-checklist h2 { max-width: none; }
+  body .preparation-accordion-item summary { gap: 12px; padding-block: 20px; }
+  body .preparation-accordion-title strong { font-size: 18px; }
+  body .preparation-accordion-title small { font-size: 13px; }
+  body .preparation-accordion-content { padding-inline: 4px; }
+  body .preparation-advice-grid p,
+  body .preparation-group-note,
+  body .preparation-checklist li small { font-size: 14px; }
+}
+
+@media (min-width: 761px) and (max-width: 900px) {
+  body .site-header .header-selection-label { display: none; }
+}
+@media (max-width: 360px) {
+  body .site-header .logo { width: 154px; }
+}
+/* Balance the preparation checklist across the desktop content width. */
+@media (min-width: 761px) {
+  body .preparation-checklist { grid-template-columns: 1fr; gap: 0; }
+  body .preparation-checklist h2 { max-width: none; }
+  body .preparation-checklist ol { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; }
+  body .preparation-checklist li:nth-child(2) { border-top: 1px solid var(--public-card-border); }
+}
+/* Benefits share the balanced preparation checklist layout. */
+body .patients-page .patients-benefits { grid-template-columns: 1fr; gap: var(--public-heading-gap); }
+body .patients-benefits .patients-section-heading > p:last-child { max-width: 760px; font-size: 16px; line-height: 1.65; }
+body .patients-benefits .patients-section-heading h2 { margin-bottom: 16px; }
+body .patients-benefit-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; }
+body .patients-page .patients-benefit-list article { grid-template-columns: 72px minmax(0, 1fr); gap: 20px; align-items: start; padding: 24px 0; border: 0; border-bottom: 1px solid var(--public-card-border); }
+body .patients-page .patients-benefit-list article:nth-child(-n+2) { border-top: 1px solid var(--public-card-border); }
+body .patients-benefit-list strong { font-size: 30px; line-height: 1.2; }
+body .patients-benefit-list h3 { font-size: 18px; font-weight: 500; line-height: 1.35; }
+body .patients-benefit-list p { color: var(--text-muted); font-size: 16px; line-height: 1.65; }
+@media (max-width: 760px) {
+  body .patients-benefit-list { grid-template-columns: 1fr; }
+  body .patients-page .patients-benefit-list article { grid-template-columns: 60px minmax(0, 1fr); gap: 16px; padding-block: 20px; }
+  body .patients-page .patients-benefit-list article:nth-child(2) { border-top: 0; }
+  body .patients-benefits .patients-section-heading > p:last-child,
+  body .patients-benefit-list p { font-size: 14px; }
+  body .patients-benefit-list strong { font-size: 28px; }
+}
+
+/* Preparation disclosures reuse the FAQ card, typography, and plus/minus control. */
+body .preparation-shell { width: min(1120px, calc(100% - 48px)); }
+.preparation-page summary.faq-question { list-style: none; }
+.preparation-page summary.faq-question::-webkit-details-marker { display: none; }
+.preparation-page .preparation-faq-content { padding: 0 76px 24px 94px; }
+@media (max-width: 720px) {
+  body .preparation-shell { width: min(560px, calc(100% - 32px)); }
+  .preparation-page .preparation-faq-content { padding: 0 45px 18px 55px; }
+}
+
+/* Match FAQ's single reading column, including expanded answer alignment. */
+body .preparation-faq-content .preparation-advice-grid { grid-template-columns: 1fr; gap: 20px; }
+body .preparation-faq-content .preparation-advice-grid article { padding: 0; border: 0; }
+body .preparation-faq-content .preparation-advice-grid h3 { margin-bottom: 6px; font-size: 16px; }
+body .preparation-faq-content .preparation-advice-grid p,
+body .preparation-faq-content .preparation-group-note { font-size: 14px; line-height: 1.7; }
+body .preparation-faq-content .preparation-group-note { margin-top: 20px; padding-top: 16px; }
+@media (max-width: 720px) {
+  body .preparation-faq-content .preparation-advice-grid h3 { font-size: 15px; }
+  body .preparation-faq-content .preparation-advice-grid p,
+  body .preparation-faq-content .preparation-group-note { font-size: 13px; line-height: 1.65; }
+}
+
+body .faq-shell { margin-bottom: 0; }
+.preparation-disclosure-answer { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 420ms cubic-bezier(.16,1,.3,1), opacity 180ms ease; }
+.preparation-disclosure-answer > div { min-height: 0; overflow: hidden; }
+.faq-item.is-open > .preparation-disclosure-answer { grid-template-rows: 1fr; opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .preparation-disclosure-answer { transition: none; } }
+
+/* Results reuse the About page's capabilities panel and card treatment. */
+body .patients-results-panel { width: 100%; margin: var(--public-section-gap) 0 0; scroll-margin-top: 110px; }
+.patients-results-panel .about-directions-head h2 { grid-column: 1 / -1; color: #fff; }
+.patients-results-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.patients-results-grid h3 { color: #fff; }
+@media (max-width: 1080px) { .patients-results-grid { grid-template-columns: 1fr; } }
+
+/* One viewport-level blur prevents seams between composited glass surfaces.
+   The calculator is portalled outside main, so background filters can be
+   suspended without changing the dialog or persisting changes after close. */
+body.calculator-is-open main,
+body.calculator-is-open main *,
+body.calculator-is-open main *::before,
+body.calculator-is-open main *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+body > .calculator-dialog-backdrop {
+  z-index: 2000;
+  animation: none;
+}
+/* Light neutral calculator surfaces; brand colour is reserved for actions. */
+.calculator-dialog { background: #fff; box-shadow: 0 24px 70px rgba(25, 32, 45, .16); }
+.calculator-dialog :is(.calculator-items article, .calculator-share-actions) { border-color: #e5e7eb; }
+.calculator-dialog .calculator-share-actions > button + button { border-color: #e5e7eb; }
+.calculator-dialog .calculator-total { background: #f4f5f7; }
+.calculator-dialog .calculator-items article > button { background: transparent; border: 0; border-radius: 0; color: #657080; }
+.calculator-dialog .calculator-close { background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+.calculator-dialog .calculator-total .outline-button { background: #fff; border-color: #d4d8df; }
+.calculator-dialog :is(.calculator-action-message, .calculator-total p, .calculator-total > div > span) { color: #626b78; }
+
+/* Quiet scrollbar with no track or arrow controls. */
+.calculator-dialog { scrollbar-width: thin; scrollbar-color: #d5d8dd transparent; }
+@supports selector(::-webkit-scrollbar) {
+  .calculator-dialog { scrollbar-width: auto; scrollbar-color: auto; }
+  .calculator-dialog::-webkit-scrollbar { width: 4px; height: 4px; }
+  .calculator-dialog::-webkit-scrollbar-track { background: transparent; margin-block: 24px; }
+  .calculator-dialog::-webkit-scrollbar-thumb { background: #d5d8dd; border-radius: 4px; }
+  .calculator-dialog::-webkit-scrollbar-thumb:hover { background: #b8bec6; }
+  .calculator-dialog::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+  .calculator-dialog::-webkit-scrollbar-corner { background: transparent; }
+}
+
+/* Shared public-dialog close control: same inset, ink and touch target. */
+.calculator-dialog { position: relative; }
+.calculator-dialog-head { padding-right: 44px; }
+.branch-modal-header { padding-right: 76px; }
+body :is(.quick-booking__close, .support-dialog-close, .calculator-close, .branch-modal-close, .admin-history-heading > button) {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #073f45;
+  cursor: pointer;
+}
+body :is(.quick-booking__close, .support-dialog-close, .calculator-close, .branch-modal-close, .admin-history-heading > button) .site-close-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+}
+body :is(.quick-booking__close, .support-dialog-close, .calculator-close, .branch-modal-close, .admin-history-heading > button):focus-visible {
+  outline: 2px solid #087f82;
+  outline-offset: 2px;
+}
+@media (max-width: 760px) {
+  body :is(.quick-booking__close, .support-dialog-close, .calculator-close, .branch-modal-close, .admin-history-heading > button) { top: 8px; right: 8px; }
+  .branch-modal-header { padding-right: 60px; }
+}
+
+.admin-history-dialog { position: relative; }
+.admin-history-heading { padding-right: 76px; }
+
+/* Background PDF refresh keeps export controls visually stable. */
+.calculator-share-actions > button[data-preparing="true"]:disabled { opacity: 1; }
+.calculator-share-actions > button[data-preparing="true"]:is(:hover, :focus-visible) { background: #f1f3f5; color: var(--ink); }

@@ -343,7 +343,7 @@
 .infoList li::before { content: "i"; position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 22px; height: 22px; border: 1px solid var(--ct-teal); border-radius: 50%; color: var(--ct-teal); font-size: 12px; font-weight: 900; }
 
 .equipmentDoctors { display: block; }
-.equipmentCard { position: relative; display: grid; grid-template-columns: minmax(350px, 42%) minmax(0, 58%); min-height: 320px; overflow: hidden; border-radius: 24px; background: linear-gradient(105deg, #06484d 0%, #063c41 72%); isolation: isolate; }
+.equipmentCard { position: relative; display: grid; grid-template-columns: minmax(350px, 42%) minmax(0, 58%); min-height: 320px; overflow: hidden; border-radius: 24px; background: var(--brand-panel-gradient); isolation: isolate; }
 .equipmentCard::after { content: none; }
 .equipmentMedia { --equipment-image-fit: contain; position: relative; min-width: 0; z-index: 0; overflow: hidden; background: transparent; }
 .equipmentMedia::before { content: ""; position: absolute; left: 50%; bottom: 12%; width: 46%; height: 10%; border-radius: 50%; background: rgba(0,23,28,.24); filter: blur(13px); transform: translateX(-50%); }
@@ -370,7 +370,7 @@
 .doctorCard > span { display: block; margin: 0 2px 2px; color: var(--ct-muted); font-size: 13px; }
 
 .preparationGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }
-.preparationGrid > div { padding: clamp(22px, 3vw, 40px); border-radius: 20px; background: var(--ct-surface); border: 1px solid var(--ct-border); }
+.preparationGrid > div { padding: clamp(22px, 3vw, 40px); border-radius: 20px; background: #f1f3f5; border: 1px solid var(--ct-border); }
 .preparationLabel { margin: 0 0 24px; font-size: 22px; font-weight: 700; }
 .preparationSteps { margin: 0; padding-left: 28px; display: grid; gap: 20px; list-style: decimal; }
 .preparationSteps li { padding: 12px 0 20px 8px; border-bottom: 1px solid var(--ct-border); }
@@ -398,8 +398,8 @@
 .locationGrid article > div > span { display: block; margin-bottom: 14px; color: var(--ct-muted); font-size: 12px; }
 .locationGrid a { color: var(--ct-teal); font-size: 13px; font-weight: 800; }
 
-.pricePanel { overflow: hidden; border: 1px solid var(--ct-border); border-radius: 20px; background: #fff; box-shadow: 0 14px 36px rgba(7,63,69,.065); }
-.priceTabsViewport { position: relative; z-index: 1; padding: 18px; border-bottom: 1px solid rgba(8,127,130,.18); background: #eaf5f4; box-shadow: 0 10px 24px rgba(7,63,69,.07); }
+.pricePanel { --ct-border: #dedfe1; overflow: hidden; border: 1px solid var(--ct-border); border-radius: 20px; background: #fff; box-shadow: 0 14px 36px rgba(0,0,0,.065); }
+.priceTabsViewport { position: relative; z-index: 1; padding: 18px; border-bottom: 1px solid #dedfe1; background: #f1f3f5; box-shadow: 0 10px 24px rgba(0,0,0,.07); }
 .priceTabsLabel { display: block; margin: 0 2px 10px; color: var(--ct-muted); font-size: 11px; font-weight: 820; letter-spacing: .08em; text-transform: uppercase; }
 .priceTabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .priceMobileNav { display: none; }
@@ -437,10 +437,10 @@
 .priceMobileOptionActive:focus-visible { outline: 3px solid rgba(244,119,11,.35); outline-offset: 2px; }
 .priceTableHead,
 .priceRow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(190px, 228px) minmax(190px, 228px); align-items: stretch; gap: 16px; }
-.priceTableHead { padding: 14px 22px; color: var(--ct-muted); background: rgba(245,249,248,.45); font-size: 12px; font-weight: 750; letter-spacing: .01em; }
+.priceTableHead { padding: 14px 22px; color: var(--ct-muted); background: #f7f7f8; font-size: 12px; font-weight: 750; letter-spacing: .01em; }
 .priceTableHead span:not(:first-child) { padding-left: 2px; }
 .priceRow { min-height: 82px; padding: 14px 22px; border-top: 1px solid var(--ct-border); transition: background-color .18s ease; }
-.priceRow:hover { background: rgba(245,249,248,.42); }
+.priceRow:hover { background: #f7f7f8; }
 .priceTitle { min-width: 0; align-self: center; padding-right: 12px; font-size: 15px; font-weight: 720; line-height: 1.4; }
 .priceVariant { display: flex; min-width: 0; align-items: center; }
 .priceVariantLabel { display: none; }
@@ -470,7 +470,7 @@
   border: 0;
   border-radius: 20px;
   color: #fff;
-  background: var(--ct-teal);
+  background: var(--brand-panel-gradient);
 }
 
 .finalCtaCopy { max-width: 760px; }
@@ -575,7 +575,7 @@
   .doctorsPanel { margin-top: 40px; }
   .doctorRail { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; scrollbar-width: none; }
   .doctorCard { grid-column: auto; flex: 0 0 70%; scroll-snap-align: start; }
-  .equipmentCard { display: grid; grid-template-columns: 1fr; grid-template-rows: clamp(230px, 68vw, 290px) auto; min-height: 0; border: 0; background: linear-gradient(145deg, #06484d 0%, #063c41 100%); }
+  .equipmentCard { display: grid; grid-template-columns: 1fr; grid-template-rows: clamp(230px, 68vw, 290px) auto; min-height: 0; border: 0; background: var(--brand-panel-gradient); }
   .equipmentCard::after { content: none; }
   .equipmentMedia { --equipment-image-fit: contain; position: relative; inset: auto; min-height: 0; background: transparent; }
   .equipmentMedia::after { content: none; }
@@ -670,7 +670,7 @@
 .locationLink:focus-visible { outline: none; }
 .locationLink:focus-visible::after { outline: 2px solid var(--ct-teal); outline-offset: 3px; }
 .locationGrid article > div > a { position: relative; z-index: 1; }
-.locationGrid article:has(.locationLink:hover) { border-color: var(--ct-teal); }
+.locationGrid article:has(.locationLink:hover) { border-color: transparent; }
 /* Match the lift and surface response of the About direction cards. */
 .locationGrid article {
   background: #fff;
@@ -679,14 +679,14 @@
 @media (hover: hover) {
   .locationGrid article:hover {
     transform: translateY(-8px);
-    border-color: var(--ct-teal);
-    background: #f0f8f7;
+    border-color: transparent;
+    background: radial-gradient(circle at 100% 0%, rgba(42,165,164,.16), transparent 34%), #edf6f5;
   }
 }
 .locationGrid article:focus-within {
   transform: translateY(-8px);
   border-color: var(--ct-teal);
-  background: #f0f8f7;
+  background: radial-gradient(circle at 100% 0%, rgba(42,165,164,.16), transparent 34%), #edf6f5;
 }
 @media (prefers-reduced-motion: reduce) {
   .locationGrid article { transition: none; }

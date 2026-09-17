@@ -113,7 +113,6 @@ export function LocationsExplorer({
     initialFocusRef: mediaCloseRef, onClose: () => setOpenLocationId(null) });
 
   const selectableLocations = useMemo(() => locations.filter(location => !isInformationOnlyLocation(location)), [locations]);
-  const informationLocations = locations.filter(isInformationOnlyLocation);
   const cities = useMemo(
     () => Array.from(new Set(selectableLocations.map((location) => location.city))),
     [selectableLocations],
@@ -351,12 +350,6 @@ export function LocationsExplorer({
         </div>
       </section>
 
-      {informationLocations.map(location => (
-        <section className="branch-information-only" id={`information-${location.id}`} key={location.id} aria-label={`Інформація про відділення: ${location.city}`}>
-          <div><span className="section-kicker">Інформація про відділення</span><h2>{location.city}</h2><p>{location.fullAddress}</p><p>{location.description}</p></div>
-          <div><p>{location.hours.join(" · ")}</p><a href={`tel:${location.phone}`}>{location.phone}</a><a href={getDirectionsUrl(location)} target="_blank" rel="noreferrer">Показати на карті ↗</a></div>
-        </section>
-      ))}
 
       {openLocation ? createPortal(
         <div

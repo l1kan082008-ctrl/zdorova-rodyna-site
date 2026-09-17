@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ServiceBookingCta } from "../../services/[slug]/ServiceBookingCta";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
 import { FaqDirectory } from "./FaqDirectory";
 
@@ -37,18 +38,17 @@ export default function FaqPage() {
 
         <FaqDirectory />
 
-        <aside className="faq-contact">
-          <div>
-            <p className="section-label">Потрібне уточнення?</p>
-            <h2>Запитайте адміністратора</h2>
-          </div>
-          <p>
-            Підготовка та протипоказання залежать від конкретного дослідження.
-            Перед візитом ми перевіримо деталі саме для вашого випадку.
-          </p>
-          <a href="tel:+380676714444">+38 (067) 671-44-44</a>
-        </aside>
+
       </div>
+
+      <ServiceBookingCta
+        bookingHref="/contacts#booking"
+        kicker="Залишилися запитання?"
+        title="Не знайшли потрібної відповіді?"
+        description="Залиште контакти — адміністратор допоможе уточнити інформацію про послуги, підготовку або запис на прийом."
+        buttonLabel="Зв’язатися з адміністратором"
+        ariaLabel="Допомога з питаннями"
+      />
 
       <SiteFooter />
     </main>

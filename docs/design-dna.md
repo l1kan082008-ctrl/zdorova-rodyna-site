@@ -44,7 +44,7 @@ Warm, trustworthy and precise medical care. The public site feels calm and human
 
 ## Motion and accessibility
 
-- Interactive overlays share `--overlay-blur: 24px` and a muted grey-teal tint `rgba(58, 112, 115, 0.18)` (owner preference, 2026-09-06). Do not stack content blur with backdrop blur. Decorative photo filters remain independent.
+- Interactive overlays share `--overlay-blur: 24px` and a light neutral tint `rgba(238, 241, 246, .58)` (owner preference, 2026-09-17). Do not stack content blur with backdrop blur. Decorative photo filters remain independent.
 
 - State transitions last 150–220 ms and animate opacity/transform only where possible.
 - Modal forms share a 300 ms ease entrance: opacity 0–1, scale .975–1 and a 16 px upward reveal; corners stay fixed. Reduced motion disables the reveal.
@@ -62,3 +62,17 @@ Substantial UI work is complete only after desktop and mobile visual QA, interac
 - All public hero and promotional headings share Manrope, weight 450, line-height 1.14 and letter-spacing -0.02em through banner heading tokens in globals.css.
 - Service hero titles share clamp(38px, 4.1vw, 66px); below 760px they use clamp(28px, 7.5vw, 44px). The homepage keeps a smaller desktop scale to fit its two-line slogan.
 - Preserve room for Ukrainian accents and descenders; do not restore compressed line heights below 1 or page-specific negative tracking overrides.
+
+## Teal information panels
+- Large teal information and support panels use the shared `--brand-panel-gradient`, matching the About page: a restrained upper-right radial highlight over the deep teal diagonal gradient. Apply to NSZU, consultation support, preparation contact panels, and CT/MRI closing calls to action. Keep existing image-backed heroes and control states independent.
+
+## Service hero geometry
+All service heroes share app/service-banners.css: 640px desktop, 700px tablet, 760px mobile (800px at 360px and below), with natural growth for enlarged text. Mobile gutters are 12px, top gap 12px, corners 24px, content inset 20px. Photography and colour treatment remain service-specific. CT/MRI use the same geometry via explicit shared classes.
+
+Service information sections use one editorial treatment at every viewport: white canvas, orange markers, unboxed preparation and process rows, and fine teal-grey separators. Desktop keeps paired information columns and three process columns; mobile uses one column. Important notes keep their semantic label/icon without a separate coloured card.
+
+Public directory framing uses neutral #dedfe1 borders and black-alpha shadows, without teal tint. Contact action buttons use the shared pill radius; call actions are labelled Зателефонувати. Preserve approved mint selection surfaces and location-hover gradients.
+
+Public editorial section headings share 36px desktop / 28px mobile, 1.15 line height, weight 450. Section rhythm is 64px desktop / 48px mobile, with a 24px heading-to-content gap. These tokens exclude hero titles, card titles, footer navigation, and bespoke CT/MRI/cardiology/family sections.
+
+The preparation guide reuses FAQ disclosure cards, including their radius, surfaces, typography, spacing, orange numbers, and plus/minus controls. Expanded recommendations and visit checklists have no nested cards. Its closing panel reuses ServiceBookingCta with preparation-specific copy.
