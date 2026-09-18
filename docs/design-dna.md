@@ -95,4 +95,4 @@ At <=1080px, public floating dialogs and navigation blur the normal-flow main el
 
 Mobile booking cards use the existing neutral border without an outer shadow: a tall fixed card would cast that shadow across Safari's toolbar boundary. Booking grid tracks and native selects have explicit inline-size constraints; branch options use city + branch name while the full address remains readable below at every viewport size.
 
-The selected-price summary is a solid dark-ink floating bar: a separate service count, prominent white total and an orange “Калькулятор →” action. It retains a 48px mobile tap target, safe-area bottom clearance and space after the catalog; it uses no backdrop filter or duplicate count badge.
+The selected-price summary is a solid brand-teal floating bar, matching the selected “Додано” buttons: a separate service count, prominent white total and an orange “Калькулятор →” action. It retains a 48px mobile tap target, safe-area bottom clearance and space after the catalog; it uses no backdrop filter or duplicate count badge.

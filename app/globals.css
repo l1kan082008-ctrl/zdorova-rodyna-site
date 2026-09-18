@@ -6613,7 +6613,7 @@ footer {
   padding: 14px 16px 14px 24px;
   border: 1px solid rgba(255, 255, 255, .24);
   border-radius: 20px;
-  background: var(--ink);
+  background: var(--teal);
   color: #fff;
   box-shadow: 0 8px 28px rgba(8, 61, 66, .24);
   transform: translateX(50%);
@@ -6630,7 +6630,7 @@ footer {
 }
 
 .calculator-bar-copy span {
-  color: #cce3e2;
+  color: #fff;
   font-size: 14px;
   font-weight: 500;
   line-height: 1.4;
