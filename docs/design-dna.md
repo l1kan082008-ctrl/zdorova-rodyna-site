@@ -100,3 +100,5 @@ The selected-price summary is a solid brand-teal floating bar, matching the sele
 CT/MRI body-area navigation uses compact three-column cards (196px minimum height, 14px gaps) with natural content growth; tablet retains two columns and mobile one column at 176px minimum. Keep the artwork, readable descriptions and full-card links; never duplicate a tall minimum height on the inner content.
 
 Within the shared public frame, mobile header logos may shrink while action targets remain at least 44px. At 360px and below home advantages stack and long city/benefit labels retain room. Family medicine editorial headings cap at 56px and step titles at 24px; declaration fields stack at 900px and below to stay inside the panel.
+
+CT/MRI body-area cards have no decorative border in default or hover states. Their shadows use neutral black alpha (.055 at rest, .10 on hover), without a teal cast. Preserve the visible keyboard-only focus outline and the original anatomy artwork.

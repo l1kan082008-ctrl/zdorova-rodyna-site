@@ -279,14 +279,14 @@
   display: flex;
   min-height: 196px;
   overflow: hidden;
-  border: 1px solid var(--ct-border);
+  border: 0;
   border-radius: 20px;
   color: inherit;
   background: #fff;
-  box-shadow: 0 10px 26px rgba(7,63,69,.055);
+  box-shadow: 0 10px 26px rgba(0,0,0,.055);
   isolation: isolate;
   text-decoration: none;
-  transition: transform .24s ease, border-color .24s ease, box-shadow .24s ease;
+  transition: transform .24s ease, box-shadow .24s ease;
 }
 .areaCard::after {
   content: "";
@@ -317,7 +317,7 @@
   transform: scale(1.16);
   transform-origin: right center;
 }
-.areaCard:hover { border-color: rgba(8,127,130,.36); box-shadow: 0 18px 42px rgba(7,63,69,.1); transform: translateY(-3px); }
+.areaCard:hover { box-shadow: 0 18px 42px rgba(0,0,0,.1); transform: translateY(-3px); }
 .areaCard:focus-visible { outline: 3px solid rgba(244,119,11,.42); outline-offset: 3px; }
 .areaCard:hover .areaArtwork img { transform: scale(1.18); }
 .areaCard[data-area="head"]:hover .areaArtwork img { transform: scale(1.18); }
