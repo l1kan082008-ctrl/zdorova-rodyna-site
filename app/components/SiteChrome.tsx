@@ -183,7 +183,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
   }, [home]);
 
   const closeSupport = () => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (window.matchMedia("(max-width: 1080px), (prefers-reduced-motion: reduce)").matches) {
       setSupportOpen(false);
     } else {
       setSupportClosing(true);

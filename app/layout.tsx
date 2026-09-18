@@ -9,7 +9,6 @@ import "./close-controls.css";
 import "./service-banners.css";
 import "./page-spacing.css";
 import "./mobile-safe-area.css";
-import { MobileOverlayChrome } from "./components/MobileOverlayChrome";
 import { Suspense } from "react";
 import { BookingLauncher } from "./components/BookingLauncher";
 import { GlobalCalculator } from "./components/GlobalCalculator";
@@ -77,7 +76,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="uk">
-      <body><MobileOverlayChrome />{children}<Suspense fallback={null}><BookingLauncher /><GlobalCalculator /></Suspense></body>
+      <body>{children}<Suspense fallback={null}><BookingLauncher /><GlobalCalculator /></Suspense></body>
     </html>
   );
 }
