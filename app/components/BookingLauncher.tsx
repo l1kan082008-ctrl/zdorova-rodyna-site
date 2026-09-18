@@ -85,8 +85,13 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
   useEffect(() => {
     const dialog = dialogRef.current!;
     const previousFocus = document.activeElement;
+    const root = document.documentElement;
+    const previousBlurPreview = root.getAttribute("data-booking-blur");
+    // Opt-in physical-device comparison; ordinary visits keep the current blur.
+    const contentBlurPreview = window.location.pathname === "/" && new URLSearchParams(window.location.search).get("blur-preview") === "content";
+    if (contentBlurPreview) root.setAttribute("data-booking-blur", "content");
     dialog.showModal();
-    document.documentElement.classList.add("quick-booking-open");
+    root.classList.add("quick-booking-open");
     const controller = new AbortController();
     fetch("/api/locations", { signal: controller.signal })
       .then(async (response) => {
@@ -101,7 +106,11 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
     return () => {
       controller.abort();
       dialog.close();
-      document.documentElement.classList.remove("quick-booking-open");
+      root.classList.remove("quick-booking-open");
+      if (contentBlurPreview) {
+        if (previousBlurPreview === null) root.removeAttribute("data-booking-blur");
+        else root.setAttribute("data-booking-blur", previousBlurPreview);
+      }
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true });
     };
   }, []);
