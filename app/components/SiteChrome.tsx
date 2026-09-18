@@ -152,7 +152,7 @@ function formatSupportPhone(value: string) {
     .join(" ");
 }
 
-export function SiteHeader({ active, home = false }: { active?: string; home?: boolean }) {
+export function SiteHeader({ active, home = false, bookingHref = "/contacts#booking" }: { active?: string; home?: boolean; bookingHref?: string }) {
   const [heroPassed, setHeroPassed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openNavigationMenu, setOpenNavigationMenu] = useState<string | null>(null);
@@ -496,12 +496,12 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
               </svg>
               <span>+38 (067) 671-44-44</span>
             </a>
-            <a className={`book-button header-book${heroPassed ? "" : " is-hidden"}`} href="/contacts#booking" aria-hidden={!heroPassed} tabIndex={heroPassed ? 0 : -1}>
+            <a className={`book-button header-book${heroPassed ? "" : " is-hidden"}`} href={bookingHref} aria-hidden={!heroPassed} tabIndex={heroPassed ? 0 : -1}>
               Записатися на прийом
             </a>
           </div>
         ) : (
-          <a className="book-button header-book" href="/contacts#booking">
+          <a className="book-button header-book" href={bookingHref}>
             Записатися на прийом
           </a>
         )}
@@ -666,7 +666,9 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
 
                 <div className="support-contact-actions">
                   <a className="support-contact-link support-call-link" href="tel:+380676714444">
-                    <img
+                    <Image
+                      width={32}
+                      height={32}
                       className="support-contact-icon support-call-icon"
                       src="/icons/phone.svg"
                       alt=""
@@ -678,7 +680,9 @@ export function SiteHeader({ active, home = false }: { active?: string; home?: b
                     className="support-contact-link support-viber-link"
                     href="viber://chat?number=%2B380676714444"
                   >
-                    <img
+                    <Image
+                      width={32}
+                      height={32}
                       className="support-contact-icon support-viber-icon"
                       src="/icons/viber.svg"
                       alt=""

@@ -7,6 +7,7 @@ import {
   doctorPatientGroupOptions,
   getDoctorInitials,
   formatDoctorConsultations,
+  formatDoctorConsultationPrice,
   canBookDoctorConsultation,
   getScheduleSummary,
   weekDays,
@@ -30,7 +31,7 @@ const formatDoctorBranch = (branch: string) => {
   return value;
 };
 
-type MobileDoctorView = "single" | "double" | "quad";
+type MobileDoctorView = "double" | "quad";
 
 
 
@@ -69,11 +70,6 @@ const changeMobileView = (nextView: MobileDoctorView) => {
   };
 
   const focusDoctorPhoto = (doctorId: string) => {
-    if (mobileView === "single") {
-      toggleDoctorDetails(doctorId);
-      return;
-    }
-
     if (focusedDoctorId === doctorId) {
       setFocusedDoctorId(null);
       setExpandedDoctorId(null);
@@ -93,12 +89,10 @@ const changeMobileView = (nextView: MobileDoctorView) => {
 
   const toggleDoctorDetails = (doctorId: string) => {
     const willExpand = expandedDoctorId !== doctorId;
-    if (mobileView !== "single") {
-      setFocusedDoctorId(doctorId);
-    }
+    setFocusedDoctorId(doctorId);
     setExpandedDoctorId(willExpand ? doctorId : null);
 
-    if (willExpand && mobileView !== "single") {
+    if (willExpand) {
       window.setTimeout(() => {
         document.getElementById(`doctor-card-${doctorId}`)?.scrollIntoView({
           behavior: "smooth",
@@ -180,7 +174,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
     <section className="doctors-directory-section" aria-label="Каталог лікарів">
       <div className="directory-toolbar doctor-directory-toolbar">
         <label htmlFor="doctor-search">
-          <span>Пошук лікаря</span>
+          <span className="sr-only">Пошук лікаря</span>
           <input
             id="doctor-search"
             type="search"
@@ -191,7 +185,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
           />
         </label>
         <label htmlFor="doctor-specialty">
-          <span>Напрям</span>
+          <span className="sr-only">Напрям</span>
           <select
             id="doctor-specialty"
             value={specialty}
@@ -212,7 +206,6 @@ const changeMobileView = (nextView: MobileDoctorView) => {
         <div role="group" aria-label="Оберіть щільність карток">
           {(
             [
-              ["single", "Одна картка", "1"],
               ["double", "Дві картки", "2"],
               ["quad", "Чотири картки", "4"],
             ] as const
@@ -278,11 +271,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
                   <button
                     className="doctor-card-photo-toggle"
                     type="button"
-                    aria-label={
-                      mobileView === "single"
-                        ? `${isExpanded ? "Сховати" : "Показати"} інформацію про лікаря ${doctor.name}`
-                        : `Збільшити фотографію лікаря ${doctor.name}`
-                    }
+                    aria-label={`Збільшити фотографію лікаря ${doctor.name}`}
                     onClick={() => focusDoctorPhoto(doctor.id)}
                   />
 
@@ -296,19 +285,29 @@ const changeMobileView = (nextView: MobileDoctorView) => {
                     <span aria-hidden="true" />
                   </button>
 
+                  <div className="doctor-photo-caption">
                   <span className="doctor-card-photo-identity">
                     <span>
                       <b>{doctor.name}</b>
                       <small>{formatDoctorSpecialty(doctor.specialty)}</small>
                       {canBookDoctorConsultation(doctor) && (<span className="doctor-card-consultation-price">
-                        Консультація · {formatDoctorConsultations(doctor)}
+                        {doctor.repeatConsultationPrice != null ? <>
+                          <span className="doctor-price-row"><span>Первинна</span><span>{formatDoctorConsultationPrice(doctor.consultationPrice)}</span></span>
+                          <span className="doctor-price-row"><span>Повторна</span><span>{formatDoctorConsultationPrice(doctor.repeatConsultationPrice)}</span></span>
+                        </> : <>Консультація · {formatDoctorConsultations(doctor)}</>}
                       </span>)}
                     </span>
                   </span>
 
-                  {canBookDoctorConsultation(doctor) && !isExpanded && (<a className="doctor-book-on-photo" href={bookingHref}>
-                    Записатися <span aria-hidden="true">→</span>
-                  </a>)}
+                  {!isExpanded && (
+                    <div className="doctor-photo-actions">
+                      <a className="doctor-photo-biography" href={profileHref}>Біографія</a>
+                      {canBookDoctorConsultation(doctor) && (
+                        <a className="doctor-photo-booking" href={bookingHref}>Записатися</a>
+                      )}
+                    </div>
+                  )}
+                  </div>
                 </div>
 
                 <div className="doctor-profile-content doctor-card-editorial-content">

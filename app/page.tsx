@@ -397,7 +397,7 @@ export default async function Home() {
 
       <section id="home-hero" className="hero" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="eyebrow">Медичний центр у Рівному</p>
+          <p className="eyebrow">Медичний центр</p>
           <h1 id="hero-title">
             <span className="hero-title-line">
               Здорова родина<span className="hero-title-dash"> —</span>
@@ -405,7 +405,7 @@ export default async function Home() {
             <span className="hero-title-line">здорове майбутнє</span>
           </h1>
           <p className="hero-lead">
-            Аналізи, КТ, МРТ, УЗД та консультації лікарів у Рівному — для дорослих і дітей.
+            Аналізи, КТ, МРТ, УЗД та консультації лікарів — для дорослих і дітей.
           </p>
           <div className="hero-actions">
             <Link className="book-button" href="/contacts#booking">

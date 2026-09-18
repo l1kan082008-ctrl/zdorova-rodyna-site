@@ -12,7 +12,7 @@
 .home-page .promo-slider { box-shadow: 0 8px 24px rgb(29 72 73 / 8%); }
 .home-page :is(.service-card--ct, .service-card--mri)::before { opacity: .9; filter: saturate(.94) contrast(1.08); }
 .home-page :is(.advantage p, .service-description, .about-copy > p) { color: #587276; }
-.home-page .quick-strip article { display: block; padding: 0; }
+.home-page .quick-strip article { display: block; padding: 0; border: 0; }
 .home-page .home-quick-action {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr);
@@ -112,7 +112,7 @@
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 15%) 15%, rgb(0 0 0 / 65%) 40%, #000 70%);
     mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 15%) 15%, rgb(0 0 0 / 65%) 40%, #000 70%);
   }
-  .home-page .quick-strip { padding: 8px; }
+  .home-page .quick-strip { gap: 0; padding: 0 8px; }
   .home-page .quick-strip article { padding: 0; }
   .home-page :is(.hero-art, .promo-slider, .about-section) { border-radius: 24px; }
 }
@@ -135,3 +135,15 @@
 .header-home-action > .is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 @media (max-width: 1080px) { .header-home-action { display: none; } }
 @media (prefers-reduced-motion: reduce) { .header-home-action > a { transition: none; } }
+
+@media (max-width: 720px) {
+  .home-page #home-hero .hero-copy > .eyebrow { display: none; }
+  .home-page .quick-strip article:not(:last-child) { border-bottom: 1px solid rgba(255, 255, 255, 0.35); }
+  .home-page .quick-strip .home-quick-action {
+    min-height: 104px;
+    padding: 24px 16px;
+    align-items: center;
+  }
+  .home-page .quick-strip h2 { margin: 0 0 8px; }
+  .home-page .quick-strip p { margin: 0; }
+}

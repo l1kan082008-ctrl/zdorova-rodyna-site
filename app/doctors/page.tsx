@@ -14,7 +14,7 @@ export default async function DoctorsPage() {
   const doctors = await listDoctors().catch(() => defaultDoctors);
 
   return (
-    <main className="inner-page">
+    <main className="inner-page doctors-page">
       <SiteHeader active="doctors" />
       <section className="page-hero">
         <span className="section-kicker">Лікарі</span>

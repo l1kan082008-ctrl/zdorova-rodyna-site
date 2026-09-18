@@ -136,7 +136,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
         </article>
         <div className={styles.doctorsPanel}>
           <SectionTitle title="Наші лікарі-рентгенологи" />
-          <div className={styles.doctorRail}>{shownDoctors.map((doctor) => <article className={styles.doctorCard} data-doctor-id={doctor.id} key={doctor.id}><div className={styles.doctorPhoto}><Image src={doctor.photoUrl} alt={doctor.name} fill unoptimized sizes="(max-width: 760px) 70vw, (max-width: 1100px) 31vw, 19vw" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></article>)}</div>
+          <div className={styles.doctorRail}>{shownDoctors.map((doctor) => <Link href={`/doctors/${doctor.id}`} aria-label={`Профіль лікаря: ${doctor.name}`} className={styles.doctorCard} data-doctor-id={doctor.id} key={doctor.id}><div className={styles.doctorPhoto}><Image src={doctor.photoUrl} alt={doctor.name} fill unoptimized sizes="(max-width: 760px) 70vw, (max-width: 1100px) 31vw, 19vw" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></Link>)}</div>
         </div>
       </section>
 

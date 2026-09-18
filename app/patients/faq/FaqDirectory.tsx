@@ -265,6 +265,7 @@ export function FaqDirectory() {
           {categories.map((category) => (
             <button
               className={activeCategory === category ? "is-active" : ""}
+              aria-pressed={activeCategory === category}
               type="button"
               key={category}
               onClick={() => {

@@ -15,7 +15,7 @@ export function ServiceBookingCta({
       <div>
         {showKicker && <span className={styles.kicker}>{kicker}</span>}
         <h2>{title}</h2>
-        <p>{description}</p>
+        {description && <p>{description}</p>}
       </div>
       <div className={styles.actions}>
         <Link className="book-button" href={bookingHref}>{buttonLabel} <span aria-hidden="true">→</span></Link>

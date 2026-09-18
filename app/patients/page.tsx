@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ServiceBookingCta } from "../services/[slug]/ServiceBookingCta";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
 
 export const metadata: Metadata = {
@@ -65,8 +66,9 @@ export default function PatientsPage() {
               <span>02</span>
               <h3>Дистанційно</h3>
               <p>
-                За погодженням результати можна отримати електронною поштою,
-                у Viber або Telegram. Оберіть зручний спосіб під час оформлення.
+                Електронною поштою, у Viber або Telegram — за погодженням.
+                Якщо ви здалеку, результати КТ чи МРТ можна надіслати Новою поштою
+                без повторного візиту. Спосіб узгодьте з адміністратором.
               </p>
             </article>
             <article>
@@ -101,6 +103,15 @@ export default function PatientsPage() {
             ))}
           </div>
         </section>
+        <ServiceBookingCta
+          id="patients-support"
+          bookingHref="/contacts#booking"
+          title="Потрібна допомога перед візитом?"
+          description="Залиште контакти — адміністратор підкаже підготовку, пояснить, як отримати результати, та допоможе із записом."
+          buttonLabel="Зв’язатися з адміністратором"
+          showKicker={false}
+          ariaLabel="Допомога перед візитом"
+        />
       </div>
 
       <SiteFooter />

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ServiceBookingCta } from "./ServiceBookingCta";
 
 import { doctorCategories } from "../../doctors/doctorCategories";
 
@@ -32,6 +33,7 @@ const consultationDirections = doctorCategories.map((category, index) => ({
 
 export function ConsultationExperience() {
   return (
+    <>
     <section className="consultation-experience" aria-labelledby="consultation-directions-title">
       <div className="consultation-direction-panel" id="consultation-directions">
         <div className="consultation-direction-heading">
@@ -61,15 +63,15 @@ export function ConsultationExperience() {
         </div>
       </div>
 
-      <div className="consultation-help">
-        <div>
-          <span className="section-kicker">Не впевнені у виборі?</span>
-          <h2>Опишіть свій запит — допоможемо визначити потрібний напрям</h2>
-        </div>
-        <Link href="/contacts?service=Консультація%20лікаря#booking">
-          Порадитися з адміністратором <span aria-hidden="true">→</span>
-        </Link>
-      </div>
     </section>
+    <ServiceBookingCta
+      bookingHref="/contacts?service=Консультація%20лікаря#booking"
+      kicker="Не впевнені у виборі?"
+      title="Опишіть свій запит — допоможемо визначити потрібний напрям"
+      description=""
+      buttonLabel="Порадитися з адміністратором"
+      ariaLabel="Допомога з вибором спеціаліста"
+    />
+    </>
   );
 }

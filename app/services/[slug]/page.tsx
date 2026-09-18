@@ -1230,7 +1230,7 @@ export default async function ServiceDetailPage({
                   ))}
                 </ol>
               </div>
-              <div className="ultrasound-equipment-visual"><img className="ultrasound-equipment-photo" src={`/equipment/acuson-${device.model.toLowerCase()}.jpg`} alt={`Ультразвуковий апарат Siemens ACUSON ${device.model}`} width="1536" height="2048" loading="lazy" /></div>
+              <div className="ultrasound-equipment-visual"><Image className="ultrasound-equipment-photo" src={`/equipment/acuson-${device.model.toLowerCase()}.jpg`} alt={`Ультразвуковий апарат Siemens ACUSON ${device.model}`} width={1536} height={2048} sizes="(max-width: 360px) 210px, (max-width: 540px) 246px, (max-width: 760px) 270px, (max-width: 1000px) 50vw, 40vw" /></div>
             </article>
           ))}
         </section>

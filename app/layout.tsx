@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
 import "./release-2026-09-04.css";
@@ -7,9 +7,19 @@ import "./overlays.css";
 import "./search-improvements.css";
 import "./close-controls.css";
 import "./service-banners.css";
+import "./page-spacing.css";
+import "./mobile-safe-area.css";
+import { MobileOverlayChrome } from "./components/MobileOverlayChrome";
 import { Suspense } from "react";
 import { BookingLauncher } from "./components/BookingLauncher";
 import { GlobalCalculator } from "./components/GlobalCalculator";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#ffffff",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -67,7 +77,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="uk">
-      <body>{children}<Suspense fallback={null}><BookingLauncher /><GlobalCalculator /></Suspense></body>
+      <body><MobileOverlayChrome />{children}<Suspense fallback={null}><BookingLauncher /><GlobalCalculator /></Suspense></body>
     </html>
   );
 }

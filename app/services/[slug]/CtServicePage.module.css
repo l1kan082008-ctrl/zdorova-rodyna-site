@@ -693,3 +693,8 @@
   .locationGrid article:hover,
   .locationGrid article:focus-within { transform: none; }
 }
+
+/* The complete radiologist card links to the doctor's profile. */
+.doctorCard { display: block; text-decoration: none; }
+.doctorCard:hover strong { text-decoration: underline; text-underline-offset: 3px; }
+.doctorCard:focus-visible { outline: 2px solid var(--ct-ink); outline-offset: 4px; border-radius: 4px; }

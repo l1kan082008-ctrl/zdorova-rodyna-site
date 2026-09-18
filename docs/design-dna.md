@@ -76,3 +76,15 @@ Public directory framing uses neutral #dedfe1 borders and black-alpha shadows, w
 Public editorial section headings share 36px desktop / 28px mobile, 1.15 line height, weight 450. Section rhythm is 64px desktop / 48px mobile, with a 24px heading-to-content gap. These tokens exclude hero titles, card titles, footer navigation, and bespoke CT/MRI/cardiology/family sections.
 
 The preparation guide reuses FAQ disclosure cards, including their radius, surfaces, typography, spacing, orange numbers, and plus/minus controls. Expanded recommendations and visit checklists have no nested cards. Its closing panel reuses ServiceBookingCta with preparation-specific copy.
+
+Public floating dialogs share white surfaces, neutral #e5e7eb borders, a grey 0 24px 70px rgba(25,32,45,.16) shadow, 28px corners and 60px padding. At <=760px use 24px corners and 24px/20px vertical/horizontal padding. Branch dialogs apply the padding to their header and content panels.
+
+Public overlay scrollbars use one neutral treatment: 4px in WebKit/Blink, thin in Firefox, transparent track, #d5d8dd thumb and #b8bec6 on hover, without decorative gradients or arrow buttons.
+
+Booking and callback fields share 48px height, 12px corners, 16px text, neutral #c9ced5 borders and a #087f82 focus border with a restrained 3px teal-alpha ring. Composite phone fields render focus only around their outer wrapper. Textareas retain natural multiline height and error states retain semantic red.
+
+Directory search controls (prices, doctors and FAQ) use a separate spacious capsule treatment: 62px height and 999px radius, matching the price toolbar and CITO control. Booking fields retain their compact 48px/12px geometry.
+
+## Public page start spacing
+
+All public routes use `--page-start-gap`: 40px desktop/tablet, 24px at 720px and below. Text intros use top padding; visual banners use top margin. Patient wrappers own this spacing so nested introductions and breadcrumbs do not double it. Defined in `app/page-spacing.css`.

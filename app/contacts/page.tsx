@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { ServiceBookingCta } from "../services/[slug]/ServiceBookingCta";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
 import { LocationsExplorer } from "./LocationsExplorer";
@@ -22,18 +23,19 @@ export default function ContactsPage() {
       }).catch(() => undefined);
     return () => controller.abort();
   }, []);
+  const bookingHref = `/contacts?location=${encodeURIComponent(selectedLocationId)}#booking`;
   return <main className="inner-page contacts-page contacts-page--compact">
-    <SiteHeader active="contacts" />
+    <SiteHeader active="contacts" bookingHref={bookingHref} />
     <section className="contacts-intro">
       <div><span className="section-kicker">Ми на зв’язку</span><h1>Контакти та відділення</h1><p>Оберіть зручну адресу або зв’яжіться з нами — допоможемо з записом.</p></div>
       <div className="contacts-intro__support">
         <a className="contacts-intro__phone" href="tel:+380676714444">+38 (067) 671-44-44</a>
-        <div className="contacts-intro__actions"><a className="outline-button" href="tel:+380676714444"><img className="support-contact-icon support-call-icon" src="/icons/phone.svg" alt="" aria-hidden="true" />Зателефонувати</a><a className="outline-button" href="viber://chat?number=%2B380676714444"><img className="support-contact-icon support-viber-icon" src="/icons/viber-teal.svg" alt="" aria-hidden="true" />Написати у Viber</a></div>
+        <div className="contacts-intro__actions"><a className="outline-button" href="tel:+380676714444"><Image width={32} height={32} className="support-contact-icon support-call-icon" src="/icons/phone.svg" alt="" aria-hidden="true" />Зателефонувати</a><a className="outline-button" href="viber://chat?number=%2B380676714444"><Image width={32} height={32} className="support-contact-icon support-viber-icon" src="/icons/viber-teal.svg" alt="" aria-hidden="true" />Написати у Viber</a></div>
         <a className="contacts-intro__email" href="mailto:zdorovarodynarivne@ukr.net"><svg className="contacts-email-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>zdorovarodynarivne@ukr.net</span></a>
       </div>
     </section>
     <LocationsExplorer locations={locations} selectedLocationId={selectedLocationId} onSelectLocation={setSelectedLocationId} />
-    <ServiceBookingCta bookingHref="/contacts#booking" id="booking" title="Допомогти з записом?" description="Залиште ім’я та телефон. Адміністратор допоможе обрати послугу, відділення й час візиту." buttonLabel="Записатися на прийом" showKicker={false} />
+    <ServiceBookingCta bookingHref={bookingHref} id="booking" title="Допомогти з записом?" description="Залиште ім’я та телефон. Адміністратор допоможе обрати послугу, відділення й час візиту." buttonLabel="Записатися на прийом" showKicker={false} />
     <SiteFooter />
   </main>;
 }

@@ -4,8 +4,17 @@
 .heroContent h1 { font-size: clamp(38px, 4.1vw, 66px); overflow-wrap: normal; hyphens: manual; }
 .heroContent { width: 64%; }
 .heroImage { object-position: 74% center; }
-/* Crop the frame baked into the source image; the hero supplies its own corners. */
-.page .heroImage { transform: scale(1.07); transform-origin: center; }
+/* Fit the complete scanner vertically; feather the frame baked into the artwork. */
+.page .heroImage {
+  object-fit: contain;
+  object-position: right center;
+  transform: translateX(3%) scale(1.06);
+  transform-origin: right center;
+  mask-image: linear-gradient(180deg, transparent, #000 4%, #000 96%, transparent);
+}
+@media (max-width: 760px) {
+  .page .heroImage { object-fit: cover; object-position: right center; }
+}
 .page .heroField { top: 5%; right: -3%; bottom: 2%; left: 39%; height: auto; opacity: 1; }
 /* Match the photo matte and feather only its empty outer margins. */
 .page .equipmentCard { background: var(--brand-panel-gradient); }

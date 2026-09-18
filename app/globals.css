@@ -152,8 +152,7 @@
   color: var(--ink, #063f46);
 }
 
-.consultation-directory-heading h2,
-.consultation-help h2 {
+.consultation-directory-heading h2 {
   margin: 10px 0 14px;
   font-size: clamp(36px, 4.2vw, 70px);
   font-weight: 400;
@@ -490,43 +489,6 @@
   color: #718589;
 }
 
-.consultation-help {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 40px;
-  margin-top: 48px;
-  padding: 52px 58px;
-  border-radius: 30px;
-  color: #fff;
-  background: #075b61;
-}
-
-.consultation-help h2 {
-  max-width: 900px;
-  margin-bottom: 0;
-  font-size: clamp(34px, 3.5vw, 58px);
-}
-
-.consultation-help .section-kicker {
-  color: #ff8a1a;
-}
-
-.consultation-help > a {
-  display: flex;
-  flex: 0 0 auto;
-  min-height: 58px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 0 24px;
-  border-radius: 999px;
-  color: #fff;
-  background: #ff7a00;
-  font-weight: 700;
-  text-decoration: none;
-}
-
 @media (max-width: 1120px) {
   .consultation-doctor-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -539,8 +501,7 @@
     margin: 32px auto;
   }
 
-  .consultation-directory-heading h2,
-  .consultation-help h2 {
+  .consultation-directory-heading h2 {
     font-size: 38px;
   }
 
@@ -633,18 +594,6 @@
 
   .consultation-doctor-actions {
     grid-template-columns: 1fr 1.3fr;
-  }
-
-  .consultation-help {
-    display: block;
-    margin-top: 32px;
-    padding: 32px 22px;
-    border-radius: 24px;
-  }
-
-  .consultation-help > a {
-    width: 100%;
-    margin-top: 26px;
   }
 }
 
@@ -18009,8 +17958,7 @@ body.calculator-is-open .site-header {
 }
 
 .doctor-card-photo-toggle,
-.doctor-card-details-toggle,
-.doctor-book-on-photo {
+.doctor-card-details-toggle {
   display: none;
 }
 
@@ -18441,9 +18389,9 @@ body.calculator-is-open .site-header {
 
   .doctor-mobile-view-picker > div {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 3px;
-    width: min(100%, 228px);
+    width: min(100%, 148px);
     padding: 4px;
     border: 1px solid rgba(5, 76, 82, 0.12);
     border-radius: 15px;
@@ -18585,51 +18533,6 @@ body.calculator-is-open .site-header {
 
   .doctor-card-photo-toggle:focus-visible {
     outline: none;
-  }
-
-  .doctor-book-on-photo {
-    position: absolute;
-    right: 22px;
-    bottom: 22px;
-    left: 22px;
-    z-index: 4;
-    isolation: isolate;
-    display: flex;
-    min-height: 54px;
-    align-items: center;
-    justify-content: space-between;
-    overflow: hidden;
-    padding: 0 22px;
-    border: 1px solid #ff7900;
-    border-radius: 16px;
-    background: linear-gradient(105deg, #ed6800, #ff8700);
-    color: #fff;
-    box-shadow: none;
-    font-size: 14px;
-    font-weight: 780;
-    text-decoration: none;
-    transition:
-      opacity 320ms ease,
-      transform 620ms cubic-bezier(0.45, 0, 0.2, 1);
-  }
-
-  .doctor-book-on-photo::before {
-    content: "";
-    position: absolute;
-    top: -45%;
-    bottom: -45%;
-    left: -38%;
-    z-index: -1;
-    width: 28%;
-    transform: skewX(-22deg);
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.56), transparent);
-    animation: doctor-booking-shine 3.5s ease-in-out infinite;
-  }
-
-  .doctor-profile-card-v2.is-expanded .doctor-book-on-photo {
-    pointer-events: none;
-    opacity: 0;
-    transform: translateY(18px);
   }
 
   .doctor-card-photo-identity {
@@ -18815,11 +18718,6 @@ body.calculator-is-open .site-header {
     grid-column: 1 / -1;
   }
 
-  .doctors-directory-v2.is-mobile-view-double .doctor-profile-card-v2.is-focused .doctor-book-on-photo,
-  .doctors-directory-v2.is-mobile-view-quad .doctor-profile-card-v2.is-focused .doctor-book-on-photo {
-    display: flex;
-  }
-
   .doctors-directory-v2.is-mobile-view-double .doctor-profile-card-v2.is-focused .doctor-card-photo-identity,
   .doctors-directory-v2.is-mobile-view-quad .doctor-profile-card-v2.is-focused .doctor-card-photo-identity {
     right: 22px;
@@ -18908,11 +18806,6 @@ body.calculator-is-open .site-header {
   .doctors-directory-v2.is-mobile-view-double .doctor-card-photo-link,
   .doctors-directory-v2.is-mobile-view-quad .doctor-card-photo-link {
     border-radius: 19px;
-  }
-
-  .doctors-directory-v2.is-mobile-view-double .doctor-book-on-photo,
-  .doctors-directory-v2.is-mobile-view-quad .doctor-book-on-photo {
-    display: none;
   }
 
   .doctors-directory-v2.is-mobile-view-double .doctor-card-photo-identity,
@@ -19012,8 +18905,7 @@ body.calculator-is-open .site-header {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .doctor-card-text-actions a.doctor-book-cta::before,
-  .doctor-book-on-photo::before {
+  .doctor-card-text-actions a.doctor-book-cta::before {
     animation: none;
   }
 

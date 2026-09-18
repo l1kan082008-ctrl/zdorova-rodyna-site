@@ -1,0 +1,20 @@
+/* One header-to-content rhythm across public routes. */
+:root { --page-start-gap: 40px; }
+@media (max-width: 720px) { :root { --page-start-gap: 24px; } }
+body .inner-page > .page-hero,
+body .contacts-page--compact > .contacts-intro,
+body .inner-page > .doctor-detail-shell {
+  margin-top: 0;
+  padding-top: var(--page-start-gap);
+}
+body .patients-page > .patients-shell,
+body .preparation-page > .preparation-shell,
+body .faq-page > .faq-shell {
+  margin-top: 0;
+  padding-top: var(--page-start-gap);
+}
+body .patients-shell > .patients-intro,
+body .preparation-shell > .preparation-breadcrumbs,
+body .faq-shell > .faq-breadcrumbs { padding-top: 0; margin-top: 0; }
+body main[class] > section:is(.service-detail-hero, .service-banner-shell):is(.service-detail-hero, .service-banner-shell),
+body .home-page > #home-hero { margin-top: var(--page-start-gap); }
