@@ -108,7 +108,8 @@ test("CT prices separate categories and highlight contrast booking", async () =>
 
   assert.match(tabs, /className=\{styles\.priceTabsLabel\}>Категорії досліджень/);
   assert.match(tabs, /item=\{item\.withContrast\} label="З контрастом" contrast/);
-  assert.match(css, /\.priceTabsViewport\s*\{[^}]*background:\s*#f1f3f5;/);
+  assert.match(css, /\.priceTabsViewport\s*\{[^}]*background:\s*var\(--surface-neutral\);/);
+  assert.match(await readSource("app/globals.css"), /--surface-neutral:\s*#f1f3f5;/);
   assert.match(
     css,
     /\.priceBookingContrast \.priceBookingAction\s*\{[^}]*color:\s*#fff;[^}]*background:\s*var\(--ct-orange\);/,

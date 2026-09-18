@@ -24,9 +24,9 @@ export default async function ServicesPage() {
   return (
     <main className="inner-page">
       <SiteHeader active="services" />
-      <section className="page-hero">
+      <section className="page-hero services-overview-hero">
         <span className="section-kicker">Послуги</span>
-        <h1>Діагностика, аналізи та лікарі в одному центрі</h1>
+        <h1 id="services-title">Діагностика, аналізи та лікарі в одному центрі</h1>
         <p>
           Оберіть потрібний напрям і залиште заявку. Адміністратор уточнить
           підготовку, доступний час, відділення та актуальну вартість.

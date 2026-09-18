@@ -59,15 +59,15 @@ Substantial UI work is complete only after desktop and mobile visual QA, interac
 
 ## Public banner typography
 
-- All public hero and promotional headings share Manrope, weight 450, line-height 1.14 and letter-spacing -0.02em through banner heading tokens in globals.css.
-- Service hero titles share clamp(38px, 4.1vw, 66px); below 760px they use clamp(28px, 7.5vw, 44px). The homepage keeps a smaller desktop scale to fit its two-line slogan.
+- Public hero and promotional headings share Manrope, weight 450 and letter-spacing -0.02em. The general banner tokens in globals.css use line-height 1.14; service banners use the approved 1.16 scale below.
+- Service hero titles and the All Services intro follow the approved wart-removal scale: clamp(36px, 3.4vw, 48px), weight 450, line-height 1.16 and tracking -0.02em; at <=760px use clamp(28px, 7.2vw, 32px). Shared service-banner tokens live in service-banners.css. Descriptions use 17px/1.62 (15px/1.5 mobile), kickers 12px (10px mobile), and hero actions 19px/700 with 54px minimum height (14px/48px mobile), all in Manrope. Keep route-specific artwork and button colours. The homepage retains its own slogan scale.
 - Preserve room for Ukrainian accents and descenders; do not restore compressed line heights below 1 or page-specific negative tracking overrides.
 
 ## Teal information panels
 - Large teal information and support panels use the shared `--brand-panel-gradient`, matching the About page: a restrained upper-right radial highlight over the deep teal diagonal gradient. Apply to NSZU, consultation support, preparation contact panels, and CT/MRI closing calls to action. Keep existing image-backed heroes and control states independent.
 
 ## Service hero geometry
-All service heroes share app/service-banners.css: 640px desktop, 700px tablet, 760px mobile (800px at 360px and below), with natural growth for enlarged text. Hero outer width follows `--site-content-width`, including 16px mobile gutters; top gap is 12px, corners 24px and content inset 20px. Photography and colour treatment remain service-specific. CT/MRI use the same geometry via explicit shared classes.
+All service heroes share app/service-banners.css: 640px desktop, 700px tablet, 760px mobile (800px at 360px and below), with natural growth for enlarged text. Hero outer width follows `--site-content-width`, including 16px mobile gutters; desktop content padding is 48px (32px on tablet). On mobile, the top gap is 12px, corners 24px and content padding 28px 20px 240px, reserving space for the artwork. Photography and colour treatment remain service-specific. CT/MRI use the same geometry via explicit shared classes.
 
 Service information sections use one editorial treatment at every viewport: white canvas, orange markers, unboxed preparation and process rows, and fine teal-grey separators. Desktop keeps paired information columns and three process columns; mobile uses one column. Important notes keep their semantic label/icon without a separate coloured card.
 
@@ -99,6 +99,24 @@ The selected-price summary is a solid brand-teal floating bar, matching the sele
 
 CT/MRI body-area navigation uses compact three-column cards (196px minimum height, 14px gaps) with natural content growth; tablet retains two columns and mobile one column at 176px minimum. Keep the artwork, readable descriptions and full-card links; never duplicate a tall minimum height on the inner content.
 
-Within the shared public frame, mobile header logos may shrink while action targets remain at least 44px. At 360px and below home advantages stack and long city/benefit labels retain room. Family medicine editorial headings cap at 56px and step titles at 24px; declaration fields stack at 900px and below to stay inside the panel.
+Within the shared public frame, mobile header logos may shrink while action targets remain at least 44px. At 360px and below home advantages stack and long city/benefit labels retain room. Family medicine feature-panel headings cap at 56px and their point titles at 24px; declaration fields stack at 900px and below to stay inside the panel.
 
 CT/MRI body-area cards have no decorative border in default or hover states. Their shadows use neutral black alpha (.055 at rest, .10 on hover), without a teal cast. Preserve the visible keyboard-only focus outline and the original anatomy artwork.
+
+At <=760px, booking dialogs use a compact rhythm: 20px padding, 12px between form blocks, 6px label gaps and 16px after the introduction. Selected-doctor and study summaries sit directly on the white form, with a muted label, 16px semibold value, 4px gap and a neutral bottom divider. They have no coloured panel or side rail; bottom padding is 16px on desktop and 12px on mobile. Keep 48px fields and submit actions, 44px comment/consent targets, full branch addresses and existing Safari overlay behavior. Desktop dialog spacing is unchanged.
+
+The family declaration application retains its approved mint background (#edf6f5) with a subtle upper-right radial teal highlight (rgba(42,165,164,.16), fading at 34%). This is an intentional exception to neutral information surfaces.
+
+Homepage search fields and result panels have opaque white fills (#fff). The closed field and result panel use neutral black-alpha shadows; the open field sits above the panel and has no shadow of its own, so neither shadow can tint the adjacent white surface. Keep the full-screen mobile panel above the original field.
+
+Homepage search frames use the same light neutral card border in default, focused and expanded states, without darkening on click. The CSS magnifier is optically raised by 4px to centre its circle and descending handle together at every size.
+
+Homepage search rectangular surfaces and controls share --radius-card (20px): search fields, desktop result panel, suggestion buttons and action buttons. Keep circular icon controls and portraits circular; the full-screen mobile panel has square viewport edges. Search results use white unboxed rows with thin neutral separators; a faint neutral tint appears only on pointer hover or keyboard focus within the row.
+
+The homepage About section uses a full-width neutral-grey band. Its copy and reception image remain inside the shared content width and responsive gutters; only the image retains rounded corners.
+
+Homepage Services and About share the neutral-grey full-width surface (--surface-neutral, #f1f3f5). Both use 32px vertical padding on desktop/tablet and 24px at <=760px. Service card surfaces and their legibility gradients remain white.
+
+Booking dialogs begin directly with their functional title; omit the redundant “Зворотний зв’язок” eyebrow for doctor, service, calculator and home-visit bookings. The calculator also starts with “Калькулятор вартості”, without the “Ваш вибір” eyebrow. Keep submission status messages and descriptive page-section labels.
+
+The family declaration introduction follows the public editorial scale (36px/28px headings, 16px body copy) and shared 64px/48px section rhythm. Its three steps are a semantic ordered list on white with neutral dividers and orange numbers: three columns on desktop/tablet, compact rows on mobile. Keep the approved mint declaration form and teal NSZU panel independent.

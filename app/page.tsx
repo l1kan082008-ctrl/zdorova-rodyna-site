@@ -395,7 +395,7 @@ export default async function Home() {
       <SiteHeader home />
       <HomeSearch items={searchItems} />
 
-      <section id="home-hero" className="hero" aria-labelledby="hero-title">
+      <section id="home-hero" className="hero hero--family-walking-trial" aria-labelledby="hero-title">
         <div className="hero-copy">
           <p className="eyebrow">Медичний центр</p>
           <h1 id="hero-title">

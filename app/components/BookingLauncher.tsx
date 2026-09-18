@@ -183,7 +183,6 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
       <p id="quick-booking-description">{isHomeVisit ? "Адміністратор зателефонує, щоб підтвердити адресу та час виїзду." : "Адміністратор зателефонує, щоб узгодити час візиту."}</p>
       <button className="book-button" type="button" onClick={onClose}>Готово</button>
     </div> : <>
-      <span className="section-kicker">Зворотний зв’язок</span>
       <h2 id="quick-booking-title">{isHomeVisit ? "Замовити виїзд медсестри" : "Запис на прийом"}</h2>
       <p id="quick-booking-description">{isHomeVisit ? "Виїзд доступний тільки у Рівному. Адміністратор уточнить аналізи, адресу та зручний час." : "Залиште контакти — адміністратор погодить з вами час візиту."}</p>
       <form onSubmit={submit} aria-busy={submitting}>

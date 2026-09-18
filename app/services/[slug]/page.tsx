@@ -893,29 +893,29 @@ export default async function ServiceDetailPage({
                 охорони здоров’я.
               </p>
             </div>
-            <div className="family-route-steps">
-              <article>
-                <span>01</span>
+            <ol className="family-route-steps" role="list" aria-label="Як оформити декларацію">
+              <li>
+                <span aria-hidden="true">01</span>
                 <h3>Оберіть лікаря</h3>
                 <p>Перегляньте сімейних лікарів центру та оберіть свого.</p>
-              </article>
-              <article>
-                <span>02</span>
+              </li>
+              <li>
+                <span aria-hidden="true">02</span>
                 <h3>Залиште контакти</h3>
                 <p>
                   Вкажіть дані дорослого або дитини. Адміністратор уточнить
                   документи й перевірить можливість оформлення.
                 </p>
-              </article>
-              <article>
-                <span>03</span>
+              </li>
+              <li>
+                <span aria-hidden="true">03</span>
                 <h3>Підтвердьте в ЕСОЗ</h3>
                 <p>
                   Після перевірки даних пацієнт підтверджує декларацію, а
                   заклад реєструє її в системі.
                 </p>
-              </article>
-            </div>
+              </li>
+            </ol>
           </section>
 
           <FamilyDeclarationForm

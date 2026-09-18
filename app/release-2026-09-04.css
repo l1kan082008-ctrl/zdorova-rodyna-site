@@ -37,11 +37,6 @@
   -webkit-backdrop-filter: blur(42px);
 }
 
-.home-search-bar,
-.home-search-panel {
-  z-index: 2;
-}
-
 @media (min-width: 721px) {
   .home-search-label {
     display: flex;

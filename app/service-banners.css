@@ -24,13 +24,6 @@ body main[class] > section:is(.service-detail-hero, .service-banner-shell):is(.s
 }
 body main[class] > section:is(.service-detail-hero, .service-banner-shell):is(.service-detail-hero, .service-banner-shell) h1 {
   margin: 16px 0 20px;
-  font-size: clamp(40px, 4.3vw, 64px);
-  line-height: 1.08;
-  letter-spacing: -.04em;
-}
-body main[class] > section:is(.service-detail-hero, .service-banner-shell):is(.service-detail-hero, .service-banner-shell) :is(.service-detail-actions, .service-banner-actions) {
-  gap: 12px;
-  margin-top: 24px;
 }
 @media (min-width: 761px) and (max-width: 1080px) {
   body main[class] > section:is(.service-detail-hero, .service-banner-shell):is(.service-detail-hero, .service-banner-shell) { min-height: 700px; padding: 32px; }
@@ -52,33 +45,118 @@ body main[class] > section:is(.service-detail-hero, .service-banner-shell):is(.s
   }
   body main[class] > section:is(.service-detail-hero, .service-banner-shell):is(.service-detail-hero, .service-banner-shell) h1 {
     max-width: none;
-    font-size: clamp(28px, 7.7vw, 36px);
-    line-height: 1.1;
     margin: 12px 0 20px;
   }
   body main[class] > section:is(.service-detail-hero, .service-banner-shell):is(.service-detail-hero, .service-banner-shell) .section-kicker { margin-bottom: 0; }
   body main[class] > section:is(.service-detail-hero, .service-banner-shell):is(.service-detail-hero, .service-banner-shell) :is(.service-detail-hero-copy, .service-banner-copy) > p {
     max-width: none;
     margin: 0;
-    font-size: 15px;
-    line-height: 1.5;
-  }
-  body main[class] > section:is(.service-detail-hero, .service-banner-shell):is(.service-detail-hero, .service-banner-shell) :is(.service-detail-actions, .service-banner-actions) {
-    display: grid;
-    grid-template-columns: 1fr;
-    width: 100%;
-  }
-  body main[class] > section:is(.service-detail-hero, .service-banner-shell):is(.service-detail-hero, .service-banner-shell) :is(.service-detail-actions, .service-banner-actions) > a {
-    width: 100%;
-    min-height: 48px;
-    justify-content: center;
-    gap: 16px;
-    padding: 12px 16px;
-    font-size: 14px;
   }
 }
 @media (max-width: 360px) {
   body main[class] > section:is(.service-detail-hero, .service-banner-shell):is(.service-detail-hero, .service-banner-shell) { min-height: 800px; }
+}
+/* One service-banner type scale, based on the approved wart-removal banner. */
+:root {
+  --service-banner-title-size: clamp(36px, 3.4vw, 48px);
+  --service-banner-copy-size: 17px;
+  --service-banner-copy-leading: 1.62;
+  --service-banner-kicker-size: 12px;
+  --service-banner-button-size: 19px;
+  --service-banner-button-height: 54px;
+  --service-banner-button-padding: 0 30px;
+}
+body :is(.service-detail-hero, .service-banner-shell, .services-overview-hero)
+  :is(#service-detail-title, #ct-title, #mri-title, #services-title) {
+  font-family: "Manrope", Arial, Helvetica, sans-serif;
+  font-size: var(--service-banner-title-size);
+  font-weight: 450;
+  line-height: 1.16;
+  letter-spacing: -.02em;
+  overflow-wrap: anywhere;
+}
+body main[class] > section:is(.service-detail-hero, .service-banner-shell, .services-overview-hero)
+  :is(.service-detail-hero-copy, .service-banner-copy) > p,
+body main[class] > .services-overview-hero > p {
+  font-family: "Manrope", Arial, Helvetica, sans-serif;
+  font-size: var(--service-banner-copy-size);
+  font-weight: 400;
+  line-height: var(--service-banner-copy-leading);
+  letter-spacing: normal;
+}
+body main[class] > section:is(.service-detail-hero, .service-banner-shell, .services-overview-hero)
+  :is(.section-kicker, .service-banner-copy > span) {
+  font-family: "Manrope", Arial, Helvetica, sans-serif;
+  font-size: var(--service-banner-kicker-size);
+  font-weight: 800;
+  line-height: 1.5;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+body main[class] > section:is(.service-detail-hero, .service-banner-shell, .services-overview-hero)
+  :is(.service-detail-actions, .service-banner-actions, .services-hero-actions) {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 12px;
+  margin-top: 24px;
+}
+body main[class] > section:is(.service-detail-hero, .service-banner-shell, .services-overview-hero)
+  :is(.service-detail-actions, .service-banner-actions, .services-hero-actions) > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  width: auto;
+  max-width: 100%;
+  min-height: var(--service-banner-button-height);
+  padding: var(--service-banner-button-padding);
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 999px;
+  font-family: "Manrope", Arial, Helvetica, sans-serif;
+  font-size: var(--service-banner-button-size);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: normal;
+  white-space: normal;
+  text-align: center;
+}
+body main[class] > section:is(.service-detail-hero, .service-banner-shell, .services-overview-hero)
+  :is(.service-detail-actions, .service-banner-actions, .services-hero-actions) > :is(.book-button, .service-banner-booking) {
+  border-color: transparent;
+}
+body main[class] > section:is(.service-detail-hero, .service-banner-shell, .services-overview-hero)
+  :is(.service-detail-actions, .service-banner-actions, .services-hero-actions) > a > span {
+  flex: 0 0 auto;
+  font-size: 20px;
+  line-height: 1;
+}
+@media (max-width: 760px) {
+  :root {
+    --service-banner-title-size: clamp(28px, 7.2vw, 32px);
+    --service-banner-copy-size: 15px;
+    --service-banner-copy-leading: 1.5;
+    --service-banner-kicker-size: 10px;
+    --service-banner-button-size: 14px;
+    --service-banner-button-height: 48px;
+    --service-banner-button-padding: 12px 16px;
+  }
+  body main[class] > section:is(.service-detail-hero, .service-banner-shell, .services-overview-hero)
+    :is(.service-detail-actions, .service-banner-actions, .services-hero-actions) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  body main[class] > section:is(.service-detail-hero, .service-banner-shell, .services-overview-hero)
+    :is(.service-detail-actions, .service-banner-actions, .services-hero-actions) > a {
+    width: 100%;
+    gap: 16px;
+  }
+}
+@media (max-width: 760px) {
+  body .service-detail-hero .laboratory-cinematic-badge {
+    margin-bottom: 12px;
+  }
 }
 /* Fade the photo itself so its rectangular top edge never shows on mobile. */
 @media (max-width: 760px) {

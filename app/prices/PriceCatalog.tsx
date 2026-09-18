@@ -1109,7 +1109,6 @@ export function PriceCatalog({
           >
             <div className="calculator-dialog-head">
               <div>
-                <span className="section-kicker">Ваш вибір</span>
                 <h2 id="calculator-title">Калькулятор вартості</h2>
               </div>
               <button
