@@ -1078,19 +1078,13 @@ export function PriceCatalog({
       ) : null}
 
       {!calculatorOnly && selectedItems.length ? (
-        <div className="price-calculator-bar has-items" aria-live="polite">
-          <div className="calculator-bar-icon" aria-hidden="true">
-            {selectedItems.length}
+        <div className="price-calculator-bar has-items" role="region" aria-label="Обрані послуги">
+          <div className="calculator-bar-copy" aria-live="polite" aria-atomic="true">
+            <span>{formatServiceCount(selectedItems.length)}</span>
+            <strong>{formatPrice(total)}</strong>
           </div>
-          <div className="calculator-bar-copy">
-            <span>Калькулятор досліджень</span>
-            <strong>
-              {formatServiceCount(selectedItems.length)} ·{" "}
-              {formatPrice(total)}
-            </strong>
-          </div>
-          <button type="button" onClick={() => setCalculatorOpen(true)}>
-            Переглянути
+          <button type="button" aria-label="Відкрити калькулятор вартості" aria-haspopup="dialog" onClick={() => setCalculatorOpen(true)}>
+            Калькулятор
             <span aria-hidden="true">→</span>
           </button>
         </div>
