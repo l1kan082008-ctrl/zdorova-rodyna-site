@@ -6,7 +6,7 @@
     padding-right: env(safe-area-inset-right, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-  html[data-mobile-overlay], html[data-mobile-overlay] body { background-color: #eef1f6; }
+  html[data-mobile-overlay], html[data-mobile-overlay] body { background-color: #ffffff; }
   .support-dialog-backdrop,
   .calculator-dialog-backdrop,
   .branch-modal-backdrop {
@@ -19,5 +19,17 @@
   .branch-modal,
   .quick-booking {
     max-height: calc(100dvh - max(16px, env(safe-area-inset-top, 0px)) - max(16px, env(safe-area-inset-bottom, 0px)));
+  }
+}
+
+/* Safari chrome is outside the page. Fade the page-side blur to an opaque
+   white edge so changing content cannot create a hard coloured seam there. */
+@media (max-width: 1080px) {
+  html[data-mobile-overlay] :is(.home-search-backdrop, .site-menu-backdrop, .support-dialog-backdrop, .calculator-dialog-backdrop, .branch-modal-backdrop),
+  html[data-mobile-overlay] .quick-booking::backdrop {
+    background:
+      linear-gradient(to bottom, #fff 0, #fff env(safe-area-inset-top, 0px), transparent calc(env(safe-area-inset-top, 0px) + 120px)),
+      linear-gradient(to top, #fff 0, #fff env(safe-area-inset-bottom, 0px), transparent calc(env(safe-area-inset-bottom, 0px) + 120px)),
+      var(--overlay-tint);
   }
 }

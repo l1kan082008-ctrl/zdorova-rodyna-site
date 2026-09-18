@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 
-// Safari paints its own chrome; match its colour to the open overlay surface.
+// Request white browser chrome to match the opaque edges of mobile overlays.
+// Safari may ignore theme-color; the page-side fade must work independently.
 export function MobileOverlayChrome() {
   useEffect(() => {
     const root = document.documentElement;
@@ -15,7 +16,7 @@ export function MobileOverlayChrome() {
       frame = 0;
       const open = mobile.matches && (document.body.classList.contains("home-search-open") || Boolean(document.querySelector(overlays)));
       root.toggleAttribute("data-mobile-overlay", open);
-      if (theme) theme.content = open ? "#eef1f6" : previousTheme;
+      if (theme) theme.content = open ? "#ffffff" : previousTheme;
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(sync); };
     const observer = new MutationObserver(schedule);
