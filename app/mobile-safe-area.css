@@ -15,19 +15,20 @@
   /* Blur the document itself: Safari can extend this content behind its toolbar.
      The panels live outside main and do not inherit the filter. No transition:
      opening/closing the panel and its blur must happen in the same frame. */
-  body:has(> .quick-booking[open], > .support-dialog-backdrop, > .calculator-dialog-backdrop, > .branch-modal-backdrop, > .site-menu-portal) > main {
+  body:has(> .quick-booking-backdrop, > .support-dialog-backdrop, > .calculator-dialog-backdrop, > .branch-modal-backdrop, > .site-menu-portal) > main {
     filter: blur(24px);
   }
-  body:has(> .quick-booking[open], > .support-dialog-backdrop, > .calculator-dialog-backdrop, > .branch-modal-backdrop, > .site-menu-portal) > main .site-header {
+  body:has(> .quick-booking-backdrop, > .support-dialog-backdrop, > .calculator-dialog-backdrop, > .branch-modal-backdrop, > .site-menu-portal) > main .site-header {
     position: relative;
     top: auto;
   }
-  html:has(body > :is(.support-dialog-backdrop, .calculator-dialog-backdrop, .branch-modal-backdrop, .site-menu-portal)) {
+  html:has(body > :is(.quick-booking-backdrop, .support-dialog-backdrop, .calculator-dialog-backdrop, .branch-modal-backdrop, .site-menu-portal)) {
     overflow: hidden;
   }
 
   /* Full-viewport wrappers with children affect Safari's toolbar sampling even
      when transparent. Only the panel and an empty hit target need a box. */
+  .quick-booking-backdrop,
   .support-dialog-backdrop,
   .calculator-dialog-backdrop,
   .branch-modal-backdrop {
@@ -62,13 +63,12 @@
   .calculator-dialog { max-width: 620px; }
   .branch-modal { max-width: 1180px; }
   .quick-booking {
+    position: fixed;
+    inset: 0;
+    z-index: 20001;
+    /* Preserve the former native dialog's effective mobile side gutters. */
+    max-width: calc(100% - 38px);
     max-height: calc(100dvh - max(16px, env(safe-area-inset-top, 0px)) - max(16px, env(safe-area-inset-bottom, 0px)));
-  }
-  .quick-booking::backdrop {
-    display: none;
-    background: transparent;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
   }
 
   main:has(> .site-header-placeholder) { overflow: visible; }

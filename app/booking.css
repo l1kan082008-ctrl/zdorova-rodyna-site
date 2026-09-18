@@ -45,8 +45,8 @@ html.quick-booking-open, html.quick-booking-open body { overflow: hidden !import
 .contacts-page--compact .branch-full-hours summary { min-height: 32px; display: flex; align-items: center; font-size: 12px; }
 .contacts-page--compact .branch-full-hours div { position: static; box-shadow: none; margin-top: 4px; }
 
-.quick-booking { position: fixed; inset: 0; width: min(560px, calc(100% - 32px)); max-height: calc(100dvh - 32px); margin: auto; padding: 32px; border: 1px solid #d5e4e2; border-radius: 20px; background: #fff; color: var(--ink); box-shadow: 0 24px 80px #073f4529; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #87b0b2 transparent; }
-.quick-booking::backdrop { background: #073f4566; backdrop-filter: blur(6px); }
+.quick-booking-backdrop { position: fixed; inset: 0; z-index: 20000; display: grid; place-items: center; background: transparent; }
+.quick-booking { position: relative; height: fit-content; width: min(560px, calc(100% - 32px)); max-height: calc(100dvh - 32px); margin: auto; padding: 32px; border: 1px solid #d5e4e2; border-radius: 20px; background: #fff; color: var(--ink); box-shadow: 0 24px 80px #073f4529; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #87b0b2 transparent; }
 .quick-booking__close { position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; padding: 0; border: 0; background: none; color: var(--teal); font: inherit; font-size: 32px; cursor: pointer; }
 .quick-booking h2 { margin: 12px 24px 12px 0; font-size: 30px; font-weight: 500; line-height: 1.2; letter-spacing: -.035em; }
 .quick-booking p { color: #587276; font-size: 14px; line-height: 1.55; }

@@ -9,6 +9,7 @@ const FOCUSABLE_SELECTOR = [
   "input:not([disabled])",
   "select:not([disabled])",
   "textarea:not([disabled])",
+  "summary",
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
@@ -24,7 +25,40 @@ type InertSnapshot = {
   element: HTMLElement;
   inert: boolean;
   ariaHidden: string | null;
+  users: number;
 };
+
+// A closing overlay and its replacement can run effects in either order.
+// Keep the background locked until the final owner releases it.
+const backgroundLocks = new WeakMap<HTMLElement, InertSnapshot>();
+
+function lockBackground(element: HTMLElement) {
+  const existing = backgroundLocks.get(element);
+  if (existing) {
+    existing.users += 1;
+    return existing;
+  }
+  const snapshot: InertSnapshot = {
+    element,
+    inert: element.inert,
+    ariaHidden: element.getAttribute("aria-hidden"),
+    users: 1,
+  };
+  backgroundLocks.set(element, snapshot);
+  element.inert = true;
+  element.setAttribute("aria-hidden", "true");
+  return snapshot;
+}
+
+function releaseBackground(snapshot: InertSnapshot) {
+  snapshot.users -= 1;
+  if (snapshot.users > 0) return;
+  const { element, inert, ariaHidden } = snapshot;
+  element.inert = inert;
+  if (ariaHidden === null) element.removeAttribute("aria-hidden");
+  else element.setAttribute("aria-hidden", ariaHidden);
+  backgroundLocks.delete(element);
+}
 
 function collectBackgroundSiblings(dialog: HTMLElement) {
   const snapshots: InertSnapshot[] = [];
@@ -35,13 +69,7 @@ function collectBackgroundSiblings(dialog: HTMLElement) {
 
     Array.from(parent.children).forEach((child) => {
       if (!(child instanceof HTMLElement) || child === activeBranch) return;
-      snapshots.push({
-        element: child,
-        inert: child.inert,
-        ariaHidden: child.getAttribute("aria-hidden"),
-      });
-      child.inert = true;
-      child.setAttribute("aria-hidden", "true");
+      snapshots.push(lockBackground(child));
     });
 
     activeBranch = parent;
@@ -50,13 +78,7 @@ function collectBackgroundSiblings(dialog: HTMLElement) {
   if (activeBranch?.parentElement === document.body) {
     Array.from(document.body.children).forEach((child) => {
       if (!(child instanceof HTMLElement) || child === activeBranch) return;
-      snapshots.push({
-        element: child,
-        inert: child.inert,
-        ariaHidden: child.getAttribute("aria-hidden"),
-      });
-      child.inert = true;
-      child.setAttribute("aria-hidden", "true");
+      snapshots.push(lockBackground(child));
     });
   }
 
@@ -89,8 +111,9 @@ export function useModalDialog({
     const getFocusableElements = () =>
       Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
         (element) =>
-          !element.hasAttribute("disabled") &&
-          element.getAttribute("aria-hidden") !== "true" &&
+          element.tabIndex >= 0 &&
+          !element.matches(":disabled") &&
+          !element.closest('[inert], [aria-hidden="true"]') &&
           element.getClientRects().length > 0 &&
           window.getComputedStyle(element).visibility !== "hidden",
       );
@@ -131,11 +154,7 @@ export function useModalDialog({
     return () => {
       window.cancelAnimationFrame(focusFrame);
       document.removeEventListener("keydown", handleKeyDown);
-      backgroundSnapshots.forEach(({ element, inert, ariaHidden }) => {
-        element.inert = inert;
-        if (ariaHidden === null) element.removeAttribute("aria-hidden");
-        else element.setAttribute("aria-hidden", ariaHidden);
-      });
+      backgroundSnapshots.forEach(releaseBackground);
 
       window.requestAnimationFrame(() => {
         // Portalled navigation remounts its trigger when it closes.

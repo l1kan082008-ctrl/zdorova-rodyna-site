@@ -54,7 +54,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .support-dialog,
-  .quick-booking[open],
+  .quick-booking,
   .calculator-dialog,
   .branch-modal,
   .admin-history-dialog,
@@ -62,7 +62,7 @@
   .calculator-dialog-backdrop,
   .branch-modal-backdrop,
   .admin-history-backdrop,
-  .quick-booking[open]::backdrop { animation: none; }
+  .quick-booking-backdrop { animation: none; }
 }
 
 .home-search-backdrop,
@@ -71,7 +71,7 @@
 .calculator-dialog-backdrop,
 .branch-modal-backdrop,
 .admin-history-backdrop,
-.quick-booking::backdrop {
+.quick-booking-backdrop {
   background: var(--overlay-tint, transparent);
   -webkit-backdrop-filter: blur(var(--overlay-blur, 24px));
   backdrop-filter: blur(var(--overlay-blur, 24px));
@@ -135,7 +135,7 @@ body.home-search-open #top > :not(.home-search-shell) {
   .calculator-dialog-backdrop,
   .branch-modal-backdrop,
   .admin-history-backdrop,
-  .quick-booking::backdrop { background: rgba(238, 241, 246, .92); }
+  .quick-booking-backdrop { background: rgba(238, 241, 246, .92); }
 }
 
 @media (max-width: 1080px) {
@@ -1515,12 +1515,12 @@ body .faq-categories button:focus-visible { outline: 2px solid var(--teal); outl
 .calculator-dialog-backdrop,
 .branch-modal-backdrop,
 .admin-history-backdrop,
-.quick-booking[open]::backdrop {
+.quick-booking-backdrop {
   animation: none;
   transition: none;
 }
 /* Explicit values avoid inherited custom-property differences in older Safari. */
-.quick-booking::backdrop {
+.quick-booking-backdrop {
   background: transparent;
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
@@ -1528,7 +1528,7 @@ body .faq-categories button:focus-visible { outline: 2px solid var(--teal); outl
 
 @media (max-width: 1080px) {
   .support-dialog,
-  .quick-booking[open],
+  .quick-booking,
   .calculator-dialog,
   .branch-modal,
   .admin-history-dialog {

@@ -2,6 +2,8 @@
 import { CloseIcon } from "./CloseIcon";
 
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useModalDialog } from "./useModalDialog";
 import { usePathname } from "next/navigation";
 import { TurnstileField } from "./TurnstileField";
 import { clearPriceCalculatorSelection } from "../prices/calculatorSelection";
@@ -74,7 +76,8 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [reference, setReference] = useState("");
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const successRef = useRef<HTMLHeadingElement>(null);
   const submittingRef = useRef(false);
   const isHomeVisit = !doctor && !studies && isHomeVisitService(service);
@@ -82,11 +85,18 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
   const availableLocations = compatibleLocations(locations, doctor ? "Консультації лікарів" : service);
   const selectedLocation = availableLocations.length === 1 ? availableLocations[0] : availableLocations.find(({ id }) => id === locationId);
 
+  const closeBooking = () => {
+    if (!submittingRef.current) onClose();
+  };
+  useModalDialog({
+    open: true,
+    dialogRef: overlayRef,
+    initialFocusRef: closeButtonRef,
+    onClose: closeBooking,
+  });
+
   useEffect(() => {
-    const dialog = dialogRef.current!;
-    const previousFocus = document.activeElement;
     const root = document.documentElement;
-    dialog.showModal();
     root.classList.add("quick-booking-open");
     const controller = new AbortController();
     fetch("/api/locations", { signal: controller.signal })
@@ -101,35 +111,9 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
       }).finally(() => { if (!controller.signal.aborted) setLocationsLoading(false); });
     return () => {
       controller.abort();
-      dialog.close();
       root.classList.remove("quick-booking-open");
-      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true });
     };
   }, []);
-  // With no mobile ::backdrop, outside taps reach the document rather than the dialog.
-  useEffect(() => {
-    let pressedOutside = false;
-    const isOutside = (event: PointerEvent) => {
-      const rect = dialogRef.current?.getBoundingClientRect();
-      return !!rect && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom);
-    };
-    const handlePointerDown = (event: PointerEvent) => {
-      pressedOutside = window.matchMedia("(max-width: 1080px)").matches && isOutside(event);
-    };
-    const handlePointerUp = (event: PointerEvent) => {
-      if (pressedOutside && isOutside(event)) onClose();
-      pressedOutside = false;
-    };
-    const cancelPointer = () => { pressedOutside = false; };
-    document.addEventListener("pointerdown", handlePointerDown, true);
-    document.addEventListener("pointerup", handlePointerUp, true);
-    document.addEventListener("pointercancel", cancelPointer, true);
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown, true);
-      document.removeEventListener("pointerup", handlePointerUp, true);
-      document.removeEventListener("pointercancel", cancelPointer, true);
-    };
-  }, [onClose]);
   useEffect(() => { if (reference) successRef.current?.focus(); }, [reference]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -186,19 +170,13 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
     } finally { window.clearTimeout(timeout); submittingRef.current = false; setSubmitting(false); }
   }
 
-  return <dialog className="quick-booking" ref={dialogRef} aria-labelledby="quick-booking-title" aria-describedby="quick-booking-description" onKeyDown={(event) => {
-    if (event.key !== "Tab") return;
-    const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), summary, [tabindex]')).filter((element) => element.tabIndex >= 0 && element.getClientRects().length > 0);
-    const first = controls[0];
-    const last = controls.at(-1);
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
-    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
-  }} onCancel={(event) => { event.preventDefault(); if (!submittingRef.current) onClose(); }} onClick={(event) => {
-    if (event.target !== event.currentTarget || submittingRef.current) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) onClose();
-  }}>
-    <button className="quick-booking__close" type="button" aria-label="Закрити форму запису" disabled={submitting} onClick={onClose}><CloseIcon /></button>
+  return createPortal(
+    <div ref={overlayRef} className="quick-booking-backdrop" onMouseDown={(event) => {
+      if (event.target === event.currentTarget) closeBooking();
+    }}>
+      <div className="mobile-overlay-dismiss" aria-hidden="true" onClick={closeBooking} />
+      <section className="quick-booking" role="dialog" aria-modal="true" aria-labelledby="quick-booking-title" aria-describedby="quick-booking-description" tabIndex={-1}>
+    <button ref={closeButtonRef} className="quick-booking__close" type="button" aria-label="Закрити форму запису" disabled={submitting} onClick={onClose}><CloseIcon /></button>
     {reference ? <div className="quick-booking__success" role="status">
       <span className="section-kicker">Заявку отримано</span>
       <h2 id="quick-booking-title" tabIndex={-1} ref={successRef}>Дякуємо!</h2>
@@ -243,5 +221,8 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
         </fieldset>
       </form>
     </>}
-  </dialog>;
+      </section>
+    </div>,
+    document.body,
+  );
 }
