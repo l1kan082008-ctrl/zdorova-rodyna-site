@@ -273,11 +273,11 @@
 .sectionTitle > span + h2 { margin-top: 12px; }
 .sectionTitle p { max-width: 650px; margin: 14px auto 0; color: var(--ct-muted); font-size: 17px; line-height: 1.55; }
 
-.areaGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.areaGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .areaCard {
   position: relative;
-  display: block;
-  min-height: 310px;
+  display: flex;
+  min-height: 196px;
   overflow: hidden;
   border: 1px solid var(--ct-border);
   border-radius: 20px;
@@ -300,13 +300,13 @@
   position: relative;
   z-index: 2;
   display: flex;
-  width: 61%;
-  min-height: 310px;
+  width: 64%;
+  min-height: 0;
   flex-direction: column;
   align-items: flex-start;
-  padding: 24px 0 22px 24px;
+  padding: 20px 0 20px 20px;
 }
-.areaCard h3 { margin: 26px 0 10px; font-size: clamp(20px, 1.45vw, 26px); line-height: 1.14; letter-spacing: -.025em; overflow-wrap: anywhere; }
+.areaCard h3 { margin: 12px 0 8px; font-size: clamp(20px, 1.45vw, 26px); line-height: 1.14; letter-spacing: -.025em; overflow-wrap: anywhere; }
 .areaCard p { margin: 0; color: var(--ct-muted); font-size: 14px; line-height: 1.5; }
 .areaNumber { color: var(--ct-ink); font-size: 13px; font-weight: 850; letter-spacing: .06em; }
 .areaNumber::after { content: ""; display: block; width: 20px; height: 2px; margin-top: 6px; border-radius: 999px; background: var(--ct-orange); }
@@ -567,7 +567,7 @@
   .sectionTitle p { margin-inline: 0; font-size: 15px; }
   .areaGrid { grid-template-columns: 1fr; gap: 10px; }
   .areaCard { min-height: 176px; }
-  .areaContent { width: 66%; min-height: 176px; padding: 16px 0 16px 16px; }
+  .areaContent { width: 66%; min-height: 0; padding: 16px 0 16px 16px; }
   .areaCard h3 { margin: 12px 0 6px; font-size: 20px; }
   .areaCard p { font-size: 13px; line-height: 1.4; }
   .areaArtwork { inset: -2px; }
