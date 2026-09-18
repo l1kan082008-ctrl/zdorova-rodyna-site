@@ -37,7 +37,7 @@ Warm, trustworthy and precise medical care. The public site feels calm and human
 
 ## Responsive behavior
 
-- Desktop: content is capped at 1420 px; editor workspaces use a compact list rail and a flexible editor.
+- Public pages: header, footer, hero banners, catalogs and editorial sections share `--site-content-width`, capped at 1240 px with 24 px side gutters (16 px at 760 px and below). Nested sections use their parent width without subtracting the gutters again. Mobile header/footer surfaces stay full-bleed while their content uses the same gutter. Admin editor workspaces keep their independent widths.
 - Tablet below 1180 px: workspace stacks while preserving preview and action order.
 - Mobile below 760 px: all paired fields become one column; actions remain touch-friendly and never overflow.
 - Small mobile below 430 px: horizontal padding and typography tighten without hiding core actions.
@@ -67,7 +67,7 @@ Substantial UI work is complete only after desktop and mobile visual QA, interac
 - Large teal information and support panels use the shared `--brand-panel-gradient`, matching the About page: a restrained upper-right radial highlight over the deep teal diagonal gradient. Apply to NSZU, consultation support, preparation contact panels, and CT/MRI closing calls to action. Keep existing image-backed heroes and control states independent.
 
 ## Service hero geometry
-All service heroes share app/service-banners.css: 640px desktop, 700px tablet, 760px mobile (800px at 360px and below), with natural growth for enlarged text. Mobile gutters are 12px, top gap 12px, corners 24px, content inset 20px. Photography and colour treatment remain service-specific. CT/MRI use the same geometry via explicit shared classes.
+All service heroes share app/service-banners.css: 640px desktop, 700px tablet, 760px mobile (800px at 360px and below), with natural growth for enlarged text. Hero outer width follows `--site-content-width`, including 16px mobile gutters; top gap is 12px, corners 24px and content inset 20px. Photography and colour treatment remain service-specific. CT/MRI use the same geometry via explicit shared classes.
 
 Service information sections use one editorial treatment at every viewport: white canvas, orange markers, unboxed preparation and process rows, and fine teal-grey separators. Desktop keeps paired information columns and three process columns; mobile uses one column. Important notes keep their semantic label/icon without a separate coloured card.
 
@@ -98,3 +98,5 @@ Mobile booking cards use the existing neutral border without an outer shadow: a 
 The selected-price summary is a solid brand-teal floating bar, matching the selected “Додано” buttons: a separate service count, prominent white total and an orange “Калькулятор →” action. It retains a 48px mobile tap target, safe-area bottom clearance and space after the catalog; it uses no backdrop filter or duplicate count badge.
 
 CT/MRI body-area navigation uses compact three-column cards (196px minimum height, 14px gaps) with natural content growth; tablet retains two columns and mobile one column at 176px minimum. Keep the artwork, readable descriptions and full-card links; never duplicate a tall minimum height on the inner content.
+
+Within the shared public frame, mobile header logos may shrink while action targets remain at least 44px. At 360px and below home advantages stack and long city/benefit labels retain room. Family medicine editorial headings cap at 56px and step titles at 24px; declaration fields stack at 900px and below to stay inside the panel.

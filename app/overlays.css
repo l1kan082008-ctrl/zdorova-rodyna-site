@@ -734,11 +734,11 @@ body :is(.inner-page h1, #patients-title) {
   .site-footer-minimal .footer-directory-column > h2 a { justify-content: center; }
 }
 
-.branch-information-only { width: min(1180px, calc(100% - 48px)); margin: 24px auto 40px; padding: 24px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .5fr); gap: 24px; border: 1px solid #d5e4e2; border-radius: 20px; color: #073f45; background: #f5f9f8; scroll-margin-top: 100px; }
+.branch-information-only { width: var(--site-content-width); margin: 24px auto 40px; padding: 24px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .5fr); gap: 24px; border: 1px solid #d5e4e2; border-radius: 20px; color: #073f45; background: #f5f9f8; scroll-margin-top: 100px; }
 .branch-information-only h2 { margin: 8px 0 12px; font-size: 28px; }
 .branch-information-only p { margin: 8px 0; color: #587276; line-height: 1.6; }
 .branch-information-only a { display: block; width: fit-content; padding-block: 10px; color: #087f82; }
-@media (max-width: 720px) { .branch-information-only { width: calc(100% - 40px); padding: 20px; grid-template-columns: 1fr; gap: 12px; } }
+@media (max-width: 720px) { .branch-information-only { width: var(--site-content-width); padding: 20px; grid-template-columns: 1fr; gap: 12px; } }
 
 /* Audiometry section headings share centered alignment on all screens. */
 .audiometry-page > :is(.service-overview, .service-information-grid, .service-process, .service-detail-cta) :is(h2, h3, .section-kicker) {
@@ -879,7 +879,7 @@ body :is(.inner-page h1, #patients-title) {
 /* Shared editorial style for service information, preparation and steps. */
 @media (min-width: 0px) {
   body .service-detail-page > :is(.service-overview, .service-information-grid, .service-process, .service-important) {
-    width: calc(100% - 40px);
+    width: var(--site-content-width);
     margin: 0 auto 48px;
     padding: 0;
     border: 0;
@@ -972,7 +972,7 @@ body :is(.inner-page h1, #patients-title) {
   }
   body .service-detail-page > .service-important p { color: #587276; font-size: 14px; line-height: 1.6; }
   body .service-detail-page > .service-facts:not(.service-facts--booking) {
-    width: calc(100% - 40px);
+    width: var(--site-content-width);
     margin: 0 auto 48px;
     border: 0;
     border-radius: 0;
@@ -982,7 +982,7 @@ body :is(.inner-page h1, #patients-title) {
 }
 @media (min-width: 761px) {
   body .service-detail-page > :is(.service-overview, .service-information-grid, .service-process, .service-important, .service-facts:not(.service-facts--booking)) {
-    width: min(1180px, calc(100% - 48px));
+    width: var(--site-content-width);
     margin-bottom: 72px;
   }
   body .service-detail-page .service-information-grid { gap: 56px; align-items: start; }
@@ -1066,7 +1066,7 @@ body main > :is(.services-section, .promo-slider-section, .doctors-section, .pri
 body .section-heading { margin-bottom: var(--public-heading-gap); }
 /* Preparation guide follows the shared editorial sections and booking CTA. */
 body .preparation-page { --patient-section-gap: var(--public-section-gap); }
-body .preparation-shell { width: min(1180px, calc(100% - 48px)); margin-bottom: 0; }
+body .preparation-shell { width: var(--site-content-width); margin-bottom: 0; }
 body .preparation-directory { padding-block: var(--public-section-gap); }
 body .preparation-checklist { padding: 0; gap: 48px; }
 body .preparation-checklist h2 { font-size: var(--public-section-title); line-height: 1.15; font-weight: 450; letter-spacing: -.035em; margin: 0 0 var(--public-heading-gap); }
@@ -1103,7 +1103,7 @@ body .preparation-checklist li strong { font-size: 18px; font-weight: 500; }
   body .preparation-advice-grid { grid-template-columns: 1fr; gap: 24px; }
 }
 @media (max-width: 760px) {
-  body .preparation-shell { width: calc(100% - 40px); }
+  body .preparation-shell { width: var(--site-content-width); }
   body .preparation-checklist { grid-template-columns: 1fr; gap: 0; }
   body .preparation-checklist h2 { max-width: none; }
   body .preparation-accordion-item summary { gap: 12px; padding-block: 20px; }
@@ -1148,12 +1148,12 @@ body .patients-benefit-list p { color: var(--text-muted); font-size: 16px; line-
 }
 
 /* Preparation disclosures reuse the FAQ card, typography, and plus/minus control. */
-body .preparation-shell { width: min(1120px, calc(100% - 48px)); }
+body .preparation-shell { width: var(--site-content-width); }
 .preparation-page summary.faq-question { list-style: none; }
 .preparation-page summary.faq-question::-webkit-details-marker { display: none; }
 .preparation-page .preparation-faq-content { padding: 0 76px 24px 94px; }
 @media (max-width: 720px) {
-  body .preparation-shell { width: min(560px, calc(100% - 32px)); }
+  body .preparation-shell { width: var(--site-content-width); }
   .preparation-page .preparation-faq-content { padding: 0 45px 18px 55px; }
 }
 
@@ -1534,4 +1534,9 @@ body .faq-categories button:focus-visible { outline: 2px solid var(--teal); outl
   .admin-history-dialog {
     animation: none;
   }
+}
+/* Keep long labels inside the shared gutter on narrow phones. */
+@media (max-width: 360px) {
+  .contacts-page--compact .branch-city-nav button { padding-inline: 4px; }
+  body .patients-page .patients-benefit-list article { grid-template-columns: 44px minmax(0, 1fr); gap: 12px; }
 }

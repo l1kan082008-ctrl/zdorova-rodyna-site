@@ -101,7 +101,7 @@
 
 @media (min-width: 721px) and (max-width: 1080px) {
   .site-menu-portal > .site-header {
-    width: calc(100% - 48px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    width: calc(100% - var(--site-gutter) * 2 - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
     margin-inline: auto;
   }
 }

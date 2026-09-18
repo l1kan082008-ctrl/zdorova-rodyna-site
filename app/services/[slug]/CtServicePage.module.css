@@ -21,7 +21,7 @@
 .anchorNav,
 .section,
 .finalCta {
-  width: min(1504px, calc(100% - 64px));
+  width: var(--site-content-width);
   margin-inline: auto;
 }
 
@@ -539,11 +539,6 @@
 }
 
 @media (max-width: 760px) {
-  .hero,
-  .benefits,
-  .anchorNav,
-  .section,
-  .finalCta { width: calc(100% - 24px); }
   .hero { min-height: 690px; border-radius: 0 0 24px 24px; }
   .heroImage { top: auto !important; height: 320px !important; object-position: right center; }
   .heroShade { background: linear-gradient(180deg, #023035 0%, #023035 calc(100% - 320px), rgba(2,48,53,.85) calc(100% - 260px), rgba(2,48,53,.12) calc(100% - 170px), rgba(2,48,53,.12) 100%); }
@@ -559,7 +554,7 @@
   .secondaryButton { width: 100%; }
   .benefits { grid-template-columns: 1fr; gap: 10px; margin-top: 12px; }
   .benefits article { min-height: 104px; padding: 18px; }
-  .anchorNav { width: 100%; margin-top: 28px; padding-inline: 12px; scroll-snap-type: x proximity; }
+  .anchorNav { margin-top: 28px; padding-inline: 12px; scroll-snap-type: x proximity; }
   .anchorTrack { min-width: 720px; }
   .section { padding-top: 64px; }
   .sectionTitle { margin-bottom: 26px; text-align: left; }

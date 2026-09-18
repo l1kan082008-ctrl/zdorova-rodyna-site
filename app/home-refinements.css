@@ -147,3 +147,7 @@
   .home-page .quick-strip h2 { margin: 0 0 8px; }
   .home-page .quick-strip p { margin: 0; }
 }
+
+@media (max-width: 360px) {
+  .home-page .advantages { grid-template-columns: minmax(0, 1fr); }
+}

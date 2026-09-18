@@ -147,7 +147,7 @@
 
 /* Consultation directory */
 .consultation-experience {
-  width: min(1780px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin: 48px auto;
   color: var(--ink, #063f46);
 }
@@ -497,7 +497,7 @@
 
 @media (max-width: 720px) {
   .consultation-experience {
-    width: calc(100% - 32px);
+    width: var(--site-content-width);
     margin: 32px auto;
   }
 
@@ -603,7 +603,7 @@
   isolation: isolate;
   display: flex;
   align-items: center;
-  width: min(1500px, calc(100% - 48px));
+  width: var(--site-content-width);
   min-height: 630px;
   margin-top: 16px;
   padding: clamp(48px, 5.4vw, 78px);
@@ -805,7 +805,7 @@
 @media (max-width: 700px) {
   .service-detail-hero.service-detail-hero--wart-removal-cinematic {
     align-items: flex-start;
-    width: calc(100% - 32px);
+    width: var(--site-content-width);
     min-height: 820px;
     margin-top: 12px;
     padding: 30px 24px 360px;
@@ -908,6 +908,9 @@
 }
 
 :root {
+  --site-content-max: 1240px;
+  --site-gutter: 24px;
+  --site-content-width: min(var(--site-content-max), calc(100% - var(--site-gutter) * 2));
   --ink: #073f46;
   --ink-dark: #153035;
   --text-muted: #536a6e;
@@ -922,6 +925,10 @@
   --radius-card: 20px;
   --paper: #ffffff;
   --white: #ffffff;
+}
+
+@media (max-width: 760px) {
+  :root { --site-gutter: 16px; }
 }
 
 * {
@@ -974,7 +981,7 @@ main {
 .pricing-section,
 .contact-section,
 footer {
-  width: min(1180px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin-inline: auto;
 }
 
@@ -3923,7 +3930,7 @@ footer {
 .booking-journey,
 .price-notice,
 .contact-route {
-  width: min(1180px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin-inline: auto;
 }
 
@@ -4307,9 +4314,8 @@ footer {
   padding-bottom: 54px;
 }
 
-.doctors-directory-section,
-.directory-toolbar {
-  width: min(1180px, calc(100% - 48px));
+.doctors-directory-section {
+  width: var(--site-content-width);
   margin-inline: auto;
 }
 
@@ -4700,7 +4706,7 @@ footer {
 
 .doctor-detail-shell,
 .doctor-detail-state {
-  width: min(1180px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin-inline: auto;
 }
 
@@ -5722,7 +5728,7 @@ footer {
 .catalog-section,
 .price-directory,
 .locations-grid {
-  width: min(1180px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin-inline: auto;
 }
 
@@ -5842,7 +5848,7 @@ footer {
   grid-template-columns: 240px minmax(0, 1fr);
   grid-template-areas: "categories prices";
   gap: 22px;
-  width: min(1240px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin: 0 auto 30px;
 }
 
@@ -7886,7 +7892,7 @@ body.calculator-is-open .site-header {
 
 @media (max-width: 1080px) {
   .site-header {
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
   }
 
   .header-mobile-controls {
@@ -8048,7 +8054,7 @@ body.calculator-is-open .site-header {
 
   .footer-socials {
     justify-items: center;
-  }
+  }.site-header > .logo { min-width: 0; max-width: 100%; }
 }
 
 @media (max-width: 900px) {
@@ -8159,11 +8165,11 @@ body.calculator-is-open .site-header {
   .doctor-detail-shell,
   .doctor-detail-state,
   footer {
-    width: min(100% - 28px, 600px);
+    width: var(--site-content-width);
   }
 
   .site-header {
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     gap: 10px;
     min-height: 88px;
   }
@@ -8452,9 +8458,8 @@ body.calculator-is-open .site-header {
     grid-template-columns: 1fr;
   }
 
-  .doctors-directory-section,
-  .directory-toolbar {
-    width: min(100% - 28px, 600px);
+  .doctors-directory-section {
+    width: var(--site-content-width);
   }
 
   .directory-toolbar {
@@ -9509,7 +9514,7 @@ body.calculator-is-open .site-header {
 }
 
 .branch-directory {
-  width: min(1180px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin: 0 auto 88px;
 }
 
@@ -10240,7 +10245,7 @@ body.calculator-is-open .site-header {
   }
 
   .branch-directory {
-    width: min(100% - 28px, 600px);
+    width: var(--site-content-width);
     margin-bottom: 60px;
   }
 
@@ -11325,7 +11330,7 @@ body.calculator-is-open .site-header {
   isolation: isolate;
   display: flex;
   align-items: center;
-  width: min(1500px, calc(100% - 48px));
+  width: var(--site-content-width);
   min-height: 630px;
   margin-top: 16px;
   padding: clamp(48px, 5.4vw, 78px);
@@ -11431,7 +11436,7 @@ body.calculator-is-open .site-header {
 @media (max-width: 700px) {
   .service-detail-hero.service-detail-hero--audiometry-cinematic {
     align-items: flex-start;
-    width: calc(100% - 24px);
+    width: var(--site-content-width);
     min-height: 770px;
     padding: 30px 22px 330px;
     border-radius: 28px;
@@ -12734,7 +12739,7 @@ body.calculator-is-open .site-header {
 .service-information-grid,
 .service-process,
 .service-important {
-  width: min(1180px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin-inline: auto;
 }
 
@@ -13627,7 +13632,7 @@ body.calculator-is-open .site-header {
   .service-information-grid,
   .service-process,
   .service-important {
-    width: calc(100% - 28px);
+    width: var(--site-content-width);
   }
 
   .service-detail-hero {
@@ -13667,7 +13672,7 @@ body.calculator-is-open .site-header {
   }
 
   .service-detail-hero.service-detail-hero--editorial {
-    width: calc(100% - 24px);
+    width: var(--site-content-width);
     gap: 24px;
     margin-top: 14px;
     padding: 28px 20px 20px;
@@ -13791,7 +13796,7 @@ body.calculator-is-open .site-header {
   position: relative;
   isolation: isolate;
   display: flex;
-  width: min(1500px, calc(100% - 48px));
+  width: var(--site-content-width);
   min-height: 630px;
   margin-top: 16px;
   padding: clamp(48px, 5.4vw, 78px);
@@ -14175,7 +14180,7 @@ body.calculator-is-open .site-header {
   isolation: isolate;
   display: flex;
   align-items: center;
-  width: min(1500px, calc(100% - 48px));
+  width: var(--site-content-width);
   min-height: 690px;
   margin-top: 16px;
   padding: clamp(48px, 5.6vw, 84px);
@@ -14431,7 +14436,7 @@ body.calculator-is-open .site-header {
   isolation: isolate;
   display: flex;
   align-items: center;
-  width: min(1500px, calc(100% - 48px));
+  width: var(--site-content-width);
   min-height: 630px;
   margin-top: 16px;
   padding: clamp(48px, 5.4vw, 78px);
@@ -15179,7 +15184,7 @@ body.calculator-is-open .site-header {
 @media (max-width: 720px) {
   .service-detail-hero.service-detail-hero--cinematic {
     align-items: flex-start;
-    width: calc(100% - 28px);
+    width: var(--site-content-width);
     min-height: 720px;
     margin-top: 8px;
     padding: 28px 22px 34px;
@@ -15289,7 +15294,7 @@ body.calculator-is-open .site-header {
   .service-detail-hero.service-detail-hero--mri-cinematic {
     display: flex;
     align-items: flex-start;
-    width: calc(100% - 28px);
+    width: var(--site-content-width);
     min-height: 760px;
     margin-top: 8px;
     padding: 28px 22px 24px;
@@ -15363,7 +15368,7 @@ body.calculator-is-open .site-header {
   .service-detail-hero.service-detail-hero--ultrasound-cinematic {
     display: flex;
     align-items: flex-start;
-    width: calc(100% - 28px);
+    width: var(--site-content-width);
     min-height: 760px;
     margin-top: 8px;
     padding: 28px 22px 26px;
@@ -15645,7 +15650,7 @@ body.calculator-is-open .site-header {
 .home-search-shell {
   position: relative;
   z-index: 24;
-  width: min(1040px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin: 10px auto 0;
 }
 
@@ -16180,7 +16185,7 @@ body.calculator-is-open .site-header {
   }
 
   .home-search-shell {
-    width: min(100% - 28px, 600px);
+    width: var(--site-content-width);
     margin-top: 4px;
   }
 
@@ -16488,7 +16493,7 @@ body.calculator-is-open .site-header {
   isolation: isolate;
   display: flex;
   align-items: center;
-  width: min(1500px, calc(100% - 48px));
+  width: var(--site-content-width);
   min-height: 630px;
   margin-top: 16px;
   padding: clamp(48px, 5.4vw, 78px);
@@ -16993,7 +16998,7 @@ body.calculator-is-open .site-header {
 @media (max-width: 700px) {
   .service-detail-hero.service-detail-hero--dermoscopy-cinematic {
     align-items: flex-start;
-    width: calc(100% - 24px);
+    width: var(--site-content-width);
     min-height: 780px;
     margin-top: 10px;
     padding: 30px 24px 300px;
@@ -17103,7 +17108,7 @@ body.calculator-is-open .site-header {
   isolation: isolate;
   display: flex;
   align-items: center;
-  width: min(1500px, calc(100% - 48px));
+  width: var(--site-content-width);
   min-height: 630px;
   margin-top: 16px;
   padding: clamp(48px, 5.4vw, 78px);
@@ -17292,7 +17297,7 @@ body.calculator-is-open .site-header {
 @media (max-width: 700px) {
   .service-detail-hero.service-detail-hero--ear-piercing-cinematic {
     align-items: flex-start;
-    width: calc(100% - 24px);
+    width: var(--site-content-width);
     min-height: 790px;
     margin-top: 10px;
     padding: 30px 24px 330px;
@@ -17801,7 +17806,7 @@ body.calculator-is-open .site-header {
 
   .doctor-detail-shell,
   .doctor-detail-state {
-    width: calc(100% - 28px);
+    width: var(--site-content-width);
   }
 
   .doctor-detail-hero {
@@ -18905,7 +18910,7 @@ body.calculator-is-open .site-header {
   position: relative;
   display: flex;
   align-items: center;
-  width: min(1500px, calc(100% - 48px));
+  width: var(--site-content-width);
   min-height: 630px;
   margin-top: 16px;
   padding: clamp(48px, 5.4vw, 78px);
@@ -19027,7 +19032,7 @@ body.calculator-is-open .site-header {
 .family-nszu,
 .family-coverage,
 .family-nszu-note {
-  width: min(1760px, calc(100% - 72px));
+  width: var(--site-content-width);
   margin-inline: auto;
 }
 
@@ -19045,7 +19050,7 @@ body.calculator-is-open .site-header {
 .family-coverage h2 {
   margin: 14px 0 20px;
   color: #073f45;
-  font-size: clamp(42px, 4.1vw, 76px);
+  font-size: clamp(38px, 3.6vw, 56px);
   font-weight: 500;
   line-height: 1.02;
   letter-spacing: -0.048em;
@@ -19088,7 +19093,7 @@ body.calculator-is-open .site-header {
 .family-nszu-points h3 {
   margin: 0 0 12px;
   color: #073f45;
-  font-size: clamp(21px, 1.65vw, 29px);
+  font-size: clamp(21px, 1.65vw, 24px);
 }
 
 .family-route-steps p,
@@ -19750,7 +19755,7 @@ body.calculator-is-open .site-header {
   .service-detail-hero.service-detail-hero--family-medicine {
     display: flex;
     align-items: flex-start;
-    width: calc(100% - 28px);
+    width: var(--site-content-width);
     min-height: 760px;
     margin-top: 8px;
     padding: 28px 22px 26px;
@@ -19822,7 +19827,7 @@ body.calculator-is-open .site-header {
   .family-nszu,
   .family-coverage,
   .family-nszu-note {
-    width: min(100% - 32px, 720px);
+    width: var(--site-content-width);
   }
 
   .family-route {
@@ -19990,7 +19995,7 @@ body.calculator-is-open .site-header {
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.58fr);
   gap: clamp(32px, 5vw, 80px);
   align-items: center;
-  width: min(1500px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin: 16px auto clamp(46px, 5vw, 76px);
   padding: clamp(30px, 3.2vw, 52px) clamp(34px, 4.2vw, 68px);
   overflow: hidden;
@@ -20245,7 +20250,7 @@ body.calculator-is-open .site-header {
 
 @media (max-width: 720px) {
   .contacts-overview {
-    width: calc(100% - 32px);
+    width: var(--site-content-width);
     margin-top: 10px;
     margin-bottom: 38px;
     padding: 24px 22px 26px;
@@ -21568,7 +21573,7 @@ body.calculator-is-open .site-header {
 
 
 .patients-shell {
-  width: min(1120px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin: 20px auto 110px;
 }
 
@@ -21883,7 +21888,7 @@ body.calculator-is-open .site-header {
 
 @media (max-width: 720px) {
   .patients-shell {
-    width: min(100% - 32px, 620px);
+    width: var(--site-content-width);
     margin-top: 0;
     margin-bottom: 72px;
   }
@@ -21986,7 +21991,7 @@ body.calculator-is-open .site-header {
 
 /* Preparation guide */
 .preparation-shell {
-  width: min(1120px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin: 0 auto 104px;
 }
 
@@ -22381,7 +22386,7 @@ body.calculator-is-open .site-header {
 
 @media (max-width: 720px) {
   .preparation-shell {
-    width: min(100% - 32px, 620px);
+    width: var(--site-content-width);
     margin-bottom: 72px;
   }
 
@@ -22666,7 +22671,7 @@ body.calculator-is-open .site-header {
     width: 100%;
     max-width: none;
     margin-inline: 0;
-    padding-inline: 14px;
+    padding-inline: var(--site-gutter);
   }
 
   .main-nav {
@@ -22686,7 +22691,7 @@ body.calculator-is-open .site-header {
 
 /* Patients: frequently asked questions */
 .faq-shell {
-  width: min(1120px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin: 0 auto 104px;
 }
 
@@ -23070,7 +23075,7 @@ body.calculator-is-open .site-header {
 
 @media (max-width: 720px) {
   .faq-shell {
-    width: min(100% - 32px, 560px);
+    width: var(--site-content-width);
     margin-bottom: 68px;
   }
 
@@ -23430,7 +23435,7 @@ body.calculator-is-open .site-header {
 
 @media (max-width: 720px) {
   .site-footer {
-    width: min(100% - 32px, 560px);
+    width: var(--site-content-width);
     margin-top: 38px;
     margin-bottom: 16px;
     border-radius: 24px;
@@ -23709,7 +23714,7 @@ body.calculator-is-open .site-header {
 
   .footer-directory-grid {
     display: block;
-    padding: 20px 20px 12px;
+    padding: 20px var(--site-gutter) 12px;
     border: 0;
   }
 
@@ -23892,7 +23897,7 @@ body.calculator-is-open .site-header {
 
 @media (max-width: 500px) {
   .footer-directory-grid {
-    padding: 18px 18px 10px;
+    padding: 18px var(--site-gutter) 10px;
   }
 
   .site-footer-minimal .footer-mark {
@@ -23923,7 +23928,7 @@ body.calculator-is-open .site-header {
 /* Keep the desktop navigation and action controls in separate grid columns. */
 @media (min-width: 1081px) {
   .site-header {
-    width: min(1240px, calc(100% - 48px));
+    width: var(--site-content-width);
     grid-template-columns: 270px minmax(0, 1fr) max-content;
     gap: 16px;
   }
@@ -23975,7 +23980,7 @@ body.calculator-is-open .site-header {
 @media (max-width: 360px) {
   .site-header {
     gap: 6px;
-    padding-inline: 10px;
+    padding-inline: var(--site-gutter);
   }
 
   .site-header .logo {
@@ -24114,7 +24119,7 @@ body.calculator-is-open .site-header {
 
   .preparation-shell,
   .faq-shell {
-    width: min(100% - 32px, 560px);
+    width: var(--site-content-width);
     margin-bottom: 56px;
   }
 
@@ -24280,7 +24285,7 @@ body :is(#ct-title, #mri-title, #service-detail-title) {
 
 /* Ultrasound: continuous price list, without separate service cards. */
 .ultrasound-price-list {
-  width: min(1180px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin: 0 auto 48px;
   scroll-margin-top: 110px;
 }
@@ -24295,7 +24300,7 @@ body :is(#ct-title, #mri-title, #service-detail-title) {
 .ultrasound-page .service-information-grid,
 .ultrasound-page .service-process { margin-bottom: 48px; gap: 32px; }
 @media (max-width: 720px) {
-  .ultrasound-price-list { width: calc(100% - 32px); margin-bottom: 32px; }
+  .ultrasound-price-list { width: var(--site-content-width); margin-bottom: 32px; }
   .ultrasound-price-row { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding-block: 16px; }
   .ultrasound-price-row > div { grid-column: 1 / -1; }
   .ultrasound-price-row .book-button { min-width: 140px; }
@@ -24741,7 +24746,7 @@ body .service-preparation-list li > p { margin: 0; align-self: center; color: #5
   .service-process { padding: 24px 20px; gap: 20px; }
 }
 
-.ultrasound-equipment { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; width: min(1180px, calc(100% - 48px)); margin: 0 auto var(--ultrasound-section-gap,48px); }
+.ultrasound-equipment { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; width: var(--site-content-width); margin: 0 auto var(--ultrasound-section-gap,48px); }
 .ultrasound-equipment-card { display: grid; grid-template-columns: minmax(0,1.55fr) minmax(0,1fr); gap: 12px; padding: 24px; border: 1px solid #d5e4e2; border-radius: 24px; background: #fff; overflow: hidden; align-items: stretch; }
 .ultrasound-equipment .section-kicker { font-size: 10px; letter-spacing: .12em; }
 .ultrasound-equipment h2 { margin: 14px 0 0; color: var(--ink); font-weight: 400; line-height: 1.05; letter-spacing: -.035em; }
@@ -24775,7 +24780,7 @@ body .service-preparation-list li > p { margin: 0; align-self: center; color: #5
 }
 
 .ultrasound-page > .ultrasound-price-list { margin-bottom:24px; }
-@media(max-width:720px) { .ultrasound-equipment { width:calc(100% - 32px); } .ultrasound-page > .ultrasound-price-list { margin-bottom:20px; } }
+@media(max-width:720px) { .ultrasound-equipment { width:var(--site-content-width); } .ultrasound-page > .ultrasound-price-list { margin-bottom:20px; } }
 
 /* Mobile equipment: model and apparatus together, details below. */
 @media (max-width: 540px) {
@@ -24813,4 +24818,9 @@ body .service-preparation-list li > p { margin: 0; align-self: center; color: #5
 
 @media (max-width:540px) {
  .ultrasound-equipment-visual { margin-left:-12px; margin-right:-8px; width:calc(100% + 20px); }
+}
+
+
+@media (min-width: 761px) and (max-width: 900px) {
+  .family-declaration-layout { grid-template-columns: minmax(0, 1fr); }
 }

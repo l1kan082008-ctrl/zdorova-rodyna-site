@@ -3,7 +3,7 @@
   grid-template-columns: minmax(0, 1fr) 260px;
   align-items: center;
   gap: 40px;
-  width: min(1180px, calc(100% - 48px));
+  width: var(--site-content-width);
   margin: 64px auto;
   padding: 40px;
   border: 0;
@@ -18,7 +18,7 @@
 .actions > a:first-child { width: 100%; justify-content: center; gap: 16px; }
 @media (max-width: 900px) { .panel { grid-template-columns: 1fr; gap: 24px; } .actions { width: min(100%, 320px); } }
 @media (max-width: 760px) {
-  .panel { width: calc(100% - 40px); margin: 48px auto; padding: 28px 20px; gap: 24px; }
+  .panel { margin: 48px auto; padding: 28px 20px; gap: 24px; }
   .panel h2, .panel p, .kicker { text-align: center; }
   .panel h2 { font-size: 28px; }
   .panel p { font-size: 14px; }
