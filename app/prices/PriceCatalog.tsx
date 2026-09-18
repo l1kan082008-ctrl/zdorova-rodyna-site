@@ -198,7 +198,7 @@ export function PriceCatalog({
   const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
   const [selectionHydrated, setSelectionHydrated] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const calculatorDialogRef = useRef<HTMLElement>(null);
+  const calculatorDialogRef = useRef<HTMLDivElement>(null);
   const calculatorCloseRef = useRef<HTMLButtonElement>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<
     Set<PriceItem["category"]>
@@ -630,9 +630,12 @@ export function PriceCatalog({
     const previousRootOverflow = root.style.overflow;
 
     body.classList.add("calculator-is-open");
-    body.style.position = "fixed";
-    body.style.top = `-${scrollY}px`;
-    body.style.width = "100%";
+    // Keep the mobile page in the document so Safari can extend its blurred content.
+    if (!window.matchMedia("(max-width: 1080px)").matches) {
+      body.style.position = "fixed";
+      body.style.top = `-${scrollY}px`;
+      body.style.width = "100%";
+    }
     body.style.overflow = "hidden";
     root.style.overflow = "hidden";
 
@@ -643,7 +646,7 @@ export function PriceCatalog({
       body.style.width = previousBodyStyles.width;
       body.style.overflow = previousBodyStyles.overflow;
       root.style.overflow = previousRootOverflow;
-      window.scrollTo(0, scrollY);
+      window.scrollTo({ top: scrollY, behavior: "instant" });
     };
   }, [calculatorOpen]);
 
@@ -1097,14 +1100,15 @@ export function PriceCatalog({
 
       {calculatorOpen && typeof document !== "undefined" ? createPortal(
         <div
+          ref={calculatorDialogRef}
           className="calculator-dialog-backdrop"
           role="presentation"
           onMouseDown={(event) => {
             if (event.currentTarget === event.target) setCalculatorOpen(false);
           }}
         >
+          <div className="mobile-overlay-dismiss" aria-hidden="true" onClick={() => setCalculatorOpen(false)} />
           <section
-            ref={calculatorDialogRef}
             className="calculator-dialog"
             role="dialog"
             aria-modal="true"

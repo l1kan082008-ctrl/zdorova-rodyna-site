@@ -88,3 +88,7 @@ Directory search controls (prices, doctors and FAQ) use a separate spacious caps
 ## Public page start spacing
 
 All public routes use `--page-start-gap`: 40px desktop/tablet, 24px at 720px and below. Text intros use top padding; visual banners use top margin. Patient wrappers own this spacing so nested introductions and breadcrumbs do not double it. Defined in `app/page-spacing.css`.
+
+## Mobile overlay rendering
+
+At <=1080px, public floating dialogs and navigation blur the normal-flow main element with filter: blur(24px). Panels are body portals (booking uses a native dialog); wrappers use display: contents and dismissal targets are empty transparent elements. Do not add full-screen backdrop-filter surfaces, edge gradients or delayed blur transitions: these break Safari toolbar continuity. Keep safe-area spacing on controls and restore scroll/focus when closing. Desktop retains backdrop-filter overlays.

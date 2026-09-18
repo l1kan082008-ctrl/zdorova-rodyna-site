@@ -1,31 +1,103 @@
-/* Extend the canvas into iPhone safe areas without placing controls there. */
+/* Empty dismissal targets have no visual surface of their own. */
+.mobile-overlay-dismiss { display: none; }
+.site-menu-portal { display: contents; }
+
 @media (max-width: 1080px) {
+  /* Keep classic-scrollbar layouts steady when locked; iOS overlay scrollbars reserve no gutter. */
+  html { scrollbar-gutter: stable; }
   body {
     padding-top: env(safe-area-inset-top, 0px);
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+
+  /* Blur the document itself: Safari can extend this content behind its toolbar.
+     The panels live outside main and do not inherit the filter. No transition:
+     opening/closing the panel and its blur must happen in the same frame. */
+  body:has(> .quick-booking[open], > .support-dialog-backdrop, > .calculator-dialog-backdrop, > .branch-modal-backdrop, > .site-menu-portal) > main {
+    filter: blur(24px);
+  }
+  body:has(> .quick-booking[open], > .support-dialog-backdrop, > .calculator-dialog-backdrop, > .branch-modal-backdrop, > .site-menu-portal) > main .site-header {
+    position: relative;
+    top: auto;
+  }
+  html:has(body > :is(.support-dialog-backdrop, .calculator-dialog-backdrop, .branch-modal-backdrop, .site-menu-portal)) {
+    overflow: hidden;
+  }
+
+  /* Full-viewport wrappers with children affect Safari's toolbar sampling even
+     when transparent. Only the panel and an empty hit target need a box. */
   .support-dialog-backdrop,
   .calculator-dialog-backdrop,
   .branch-modal-backdrop {
-    box-sizing: border-box;
-    padding-top: max(16px, env(safe-area-inset-top, 0px));
-    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    display: contents;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    animation: none;
+  }
+  .mobile-overlay-dismiss {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 20000;
+    background: none;
   }
   .support-dialog,
   .calculator-dialog,
-  .branch-modal,
+  .branch-modal {
+    position: fixed;
+    inset: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    z-index: 20001;
+    width: auto;
+    height: fit-content;
+    margin: auto;
+    overflow: auto;
+    overscroll-behavior: contain;
+    max-height: calc(100dvh - max(16px, env(safe-area-inset-top, 0px)) - max(16px, env(safe-area-inset-bottom, 0px)));
+    animation: none;
+  }
+  .support-dialog { max-width: 680px; }
+  .calculator-dialog { max-width: 620px; }
+  .branch-modal { max-width: 1180px; }
   .quick-booking {
     max-height: calc(100dvh - max(16px, env(safe-area-inset-top, 0px)) - max(16px, env(safe-area-inset-bottom, 0px)));
   }
-}
+  .quick-booking::backdrop {
+    display: none;
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 
-/* Hidden mobile menus must release their compositor blur immediately. */
-@media (max-width: 1080px) {
-  .site-menu-backdrop:not(.is-visible) {
+  main:has(> .site-header-placeholder) { overflow: visible; }
+  .site-menu-portal > .site-header {
+    position: fixed;
+    top: env(safe-area-inset-top, 0px);
+    left: env(safe-area-inset-left, 0px);
+    right: env(safe-area-inset-right, 0px);
+    width: auto;
+    margin: 0;
+  }
+  .site-menu-backdrop {
+    background: none;
     transition: none;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .calculator-dialog {
+    top: auto;
+    margin-block: 0;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1080px) {
+  .site-menu-portal > .site-header {
+    width: calc(100% - 48px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    margin-inline: auto;
   }
 }

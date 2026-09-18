@@ -107,7 +107,7 @@ export function LocationsExplorer({
   const [mobileMapOpen, setMobileMapOpen] = useState(false);
   const cityNavRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLElement>(null);
-  const mediaDialogRef = useRef<HTMLElement>(null);
+  const mediaDialogRef = useRef<HTMLDivElement>(null);
   const mediaCloseRef = useRef<HTMLButtonElement>(null);
   useModalDialog({ open: openLocationId !== null, dialogRef: mediaDialogRef,
     initialFocusRef: mediaCloseRef, onClose: () => setOpenLocationId(null) });
@@ -353,6 +353,7 @@ export function LocationsExplorer({
 
       {openLocation ? createPortal(
         <div
+          ref={mediaDialogRef}
           className="branch-modal-backdrop"
           role="presentation"
           onMouseDown={(event) => {
@@ -361,8 +362,8 @@ export function LocationsExplorer({
             }
           }}
         >
+          <div className="mobile-overlay-dismiss" aria-hidden="true" onClick={() => setOpenLocationId(null)} />
           <section
-            ref={mediaDialogRef}
             className="branch-modal"
             role="dialog"
             aria-modal="true"

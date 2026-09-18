@@ -86,10 +86,6 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
     const dialog = dialogRef.current!;
     const previousFocus = document.activeElement;
     const root = document.documentElement;
-    const previousBlurPreview = root.getAttribute("data-booking-blur");
-    // Opt-in physical-device comparison; ordinary visits keep the current blur.
-    const contentBlurPreview = window.location.pathname === "/" && new URLSearchParams(window.location.search).get("blur-preview") === "content";
-    if (contentBlurPreview) root.setAttribute("data-booking-blur", "content");
     dialog.showModal();
     root.classList.add("quick-booking-open");
     const controller = new AbortController();
@@ -107,13 +103,33 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
       controller.abort();
       dialog.close();
       root.classList.remove("quick-booking-open");
-      if (contentBlurPreview) {
-        if (previousBlurPreview === null) root.removeAttribute("data-booking-blur");
-        else root.setAttribute("data-booking-blur", previousBlurPreview);
-      }
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true });
     };
   }, []);
+  // With no mobile ::backdrop, outside taps reach the document rather than the dialog.
+  useEffect(() => {
+    let pressedOutside = false;
+    const isOutside = (event: PointerEvent) => {
+      const rect = dialogRef.current?.getBoundingClientRect();
+      return !!rect && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom);
+    };
+    const handlePointerDown = (event: PointerEvent) => {
+      pressedOutside = window.matchMedia("(max-width: 1080px)").matches && isOutside(event);
+    };
+    const handlePointerUp = (event: PointerEvent) => {
+      if (pressedOutside && isOutside(event)) onClose();
+      pressedOutside = false;
+    };
+    const cancelPointer = () => { pressedOutside = false; };
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    document.addEventListener("pointerup", handlePointerUp, true);
+    document.addEventListener("pointercancel", cancelPointer, true);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+      document.removeEventListener("pointerup", handlePointerUp, true);
+      document.removeEventListener("pointercancel", cancelPointer, true);
+    };
+  }, [onClose]);
   useEffect(() => { if (reference) successRef.current?.focus(); }, [reference]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {

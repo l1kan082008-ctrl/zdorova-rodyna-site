@@ -148,20 +148,3 @@ html.quick-booking-open, html.quick-booking-open body { overflow: hidden !import
   .quick-booking__comment summary span { margin-left: 4px; }
 }
 @media (prefers-reduced-motion: reduce) { .quick-booking *, .contacts-page--compact .branch-navigator-actions * { transition: none; scroll-behavior: auto; } }
-
-/* Isolated iPhone comparison: /?blur-preview=content, then open booking.
-   The dialog is a body sibling of main, so it remains outside the page filter.
-   Removing the native backdrop renderer avoids its toolbar-color sampling. */
-html.quick-booking-open[data-booking-blur="content"] body > main.home-page {
-  filter: blur(24px);
-}
-html.quick-booking-open[data-booking-blur="content"] .site-header {
-  position: relative;
-  top: auto;
-}
-html.quick-booking-open[data-booking-blur="content"] .quick-booking::backdrop {
-  display: none;
-  background: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}

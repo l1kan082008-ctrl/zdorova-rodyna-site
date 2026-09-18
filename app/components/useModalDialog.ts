@@ -91,11 +91,12 @@ export function useModalDialog({
         (element) =>
           !element.hasAttribute("disabled") &&
           element.getAttribute("aria-hidden") !== "true" &&
-          element.getClientRects().length > 0,
+          element.getClientRects().length > 0 &&
+          window.getComputedStyle(element).visibility !== "hidden",
       );
 
     const focusTarget = initialFocusRef?.current ?? getFocusableElements()[0] ?? dialog;
-    const focusFrame = window.requestAnimationFrame(() => focusTarget.focus());
+    const focusFrame = window.requestAnimationFrame(() => focusTarget.focus({ preventScroll: true }));
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -136,8 +137,13 @@ export function useModalDialog({
         else element.setAttribute("aria-hidden", ariaHidden);
       });
 
-      const restoreTarget = explicitRestoreTarget ?? previouslyFocusedRef.current;
-      window.requestAnimationFrame(() => restoreTarget?.focus());
+      window.requestAnimationFrame(() => {
+        // Portalled navigation remounts its trigger when it closes.
+        // Intentionally read the current node: the opening trigger was unmounted by the portal.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const restoreTarget = restoreFocusRef?.current ?? explicitRestoreTarget ?? previouslyFocusedRef.current;
+        if (restoreTarget?.isConnected) restoreTarget.focus({ preventScroll: true });
+      });
     };
   }, [dialogRef, initialFocusRef, open, restoreFocusRef]);
 }

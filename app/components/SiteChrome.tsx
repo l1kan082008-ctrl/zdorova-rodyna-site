@@ -3,7 +3,8 @@ import { doctorCategories } from "../doctors/doctorCategories";
 import { CloseIcon } from "./CloseIcon";
 
 import { useEffect, useRef, useState } from "react";
-import type { FormEvent } from "react";
+import type { CSSProperties, FormEvent } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -155,6 +156,7 @@ function formatSupportPhone(value: string) {
 export function SiteHeader({ active, home = false, bookingHref = "/contacts#booking" }: { active?: string; home?: boolean; bookingHref?: string }) {
   const [heroPassed, setHeroPassed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [headerPlaceholderStyle, setHeaderPlaceholderStyle] = useState<CSSProperties>();
   const [openNavigationMenu, setOpenNavigationMenu] = useState<string | null>(null);
   const [supportOpen, setSupportOpen] = useState(false);
   const [supportClosing, setSupportClosing] = useState(false);
@@ -166,9 +168,10 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
   const [selectedServiceCount, setSelectedServiceCount] = useState(0);
   const supportButtonRef = useRef<HTMLButtonElement>(null);
   const headerRef = useRef<HTMLElement>(null);
+  const menuDialogRef = useRef<HTMLDivElement>(null);
   const navigationRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const supportDialogRef = useRef<HTMLElement>(null);
+  const supportDialogRef = useRef<HTMLDivElement>(null);
   const supportPhoneRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -201,7 +204,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
 
   useModalDialog({
     open: menuOpen,
-    dialogRef: headerRef,
+    dialogRef: menuDialogRef,
     onClose: () => setMenuOpen(false),
     initialFocusRef: menuButtonRef,
     restoreFocusRef: menuButtonRef,
@@ -287,6 +290,15 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
   }, [menuOpen]);
 
   useEffect(() => {
+    const desktopViewport = window.matchMedia("(min-width: 1081px)");
+    const closeMobileMenu = () => {
+      if (desktopViewport.matches) setMenuOpen(false);
+    };
+    desktopViewport.addEventListener("change", closeMobileMenu);
+    return () => desktopViewport.removeEventListener("change", closeMobileMenu);
+  }, []);
+
+  useEffect(() => {
     if (!openNavigationMenu) return;
     const closeOutside = (event: PointerEvent) => {
       if (event.target instanceof Node && !navigationRef.current?.contains(event.target)) {
@@ -352,7 +364,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
     };
   }, []);
 
-  return (
+  const header = (
     <>
       <div
         className={menuOpen ? "site-menu-backdrop is-visible" : "site-menu-backdrop"}
@@ -554,6 +566,20 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
           aria-expanded={menuOpen}
           onClick={() => {
             const nextMenuOpen = !menuOpen;
+            if (nextMenuOpen && headerRef.current) {
+              // Reserve the original flow box while the active header is portalled.
+              const rect = headerRef.current.getBoundingClientRect();
+              const styles = window.getComputedStyle(headerRef.current);
+              setHeaderPlaceholderStyle({
+                boxSizing: "border-box",
+                width: rect.width,
+                height: rect.height,
+                marginTop: styles.marginTop,
+                marginRight: styles.marginRight,
+                marginBottom: styles.marginBottom,
+                marginLeft: styles.marginLeft,
+              });
+            }
             setMenuOpen(nextMenuOpen);
             if (nextMenuOpen) {
               window.dispatchEvent(new Event(SITE_MENU_OPEN_EVENT));
@@ -566,16 +592,33 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
         </button>
       </div>
       </header>
+    </>
+  );
 
-      {supportOpen ? (
+  return (
+    <>
+      {menuOpen ? (
+        <>
+          <div className="site-header-placeholder" style={headerPlaceholderStyle} aria-hidden="true" />
+          {createPortal(
+            <div ref={menuDialogRef} className="site-menu-portal">
+              {header}
+            </div>,
+            document.body,
+          )}
+        </>
+      ) : header}
+
+      {supportOpen ? createPortal(
         <div
+          ref={supportDialogRef}
           className={`support-dialog-backdrop${supportClosing ? " is-closing" : ""}`}
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) closeSupport();
           }}
         >
+          <div className="mobile-overlay-dismiss" aria-hidden="true" onClick={closeSupport} />
           <section
-            ref={supportDialogRef}
             className="support-dialog"
             role="dialog"
             aria-modal="true"
@@ -694,7 +737,8 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
               </>
             )}
           </section>
-        </div>
+        </div>,
+        document.body,
       ) : null}
     </>
   );
