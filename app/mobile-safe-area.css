@@ -71,6 +71,10 @@
     max-height: calc(100dvh - max(16px, env(safe-area-inset-top, 0px)) - max(16px, env(safe-area-inset-bottom, 0px)));
   }
 
+  /* A tall fixed card's outer shadow is clipped at Safari's toolbar edge.
+     The border separates the card without painting into that region. */
+  body .quick-booking { box-shadow: none; }
+
   main:has(> .site-header-placeholder) { overflow: visible; }
   .site-menu-portal > .site-header {
     position: fixed;

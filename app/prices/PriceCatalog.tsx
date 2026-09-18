@@ -500,20 +500,12 @@ export function PriceCatalog({
   }, [initialItems]);
 
   useEffect(() => {
-    if (!selectionHydrated) return;
-    window.localStorage.setItem(
-      PRICE_CALCULATOR_STORAGE_KEY,
-      JSON.stringify(selectedIds),
-    );
-    announcePriceCalculatorSelection(selectedIds);
-  }, [selectedIds, selectionHydrated]);
-
-  useEffect(() => {
     const sync = (event: Event) => {
       const ids = (event as CustomEvent<string[]>).detail;
       if (!Array.isArray(ids)) return;
       setSelectedIds(current => current.length === ids.length && current.every((id, index) => id === ids[index]) ? current : ids);
-      setCitoSelectedIds(readPriceCalculatorCitoSelection());
+      const citoIds = readPriceCalculatorCitoSelection();
+      setCitoSelectedIds(current => current.length === citoIds.length && current.every((id, index) => id === citoIds[index]) ? current : citoIds);
     };
     window.addEventListener(PRICE_CALCULATOR_CHANGED_EVENT, sync);
     return () => window.removeEventListener(PRICE_CALCULATOR_CHANGED_EVENT, sync);
@@ -530,10 +522,16 @@ export function PriceCatalog({
     const nextIds = citoSelectedIds.filter(
       (id) => selectedSet.has(id) && eligibleSet.has(id),
     );
+    // Listeners read CITO from storage, so publish only after both sets are saved.
     writePriceCalculatorCitoSelection(nextIds);
+    window.localStorage.setItem(
+      PRICE_CALCULATOR_STORAGE_KEY,
+      JSON.stringify(selectedIds),
+    );
     if (nextIds.length !== citoSelectedIds.length) {
       setCitoSelectedIds(nextIds);
     }
+    announcePriceCalculatorSelection(selectedIds);
   }, [citoSelectedIds, initialItems, selectedIds, selectionHydrated]);
 
   useEffect(() => {
