@@ -10,8 +10,8 @@ Warm, trustworthy and precise medical care. The public site feels calm and human
 - Brand teal: `#087f82`
 - Accent orange: shared site token `--orange` (`#ff7900`) for brand accents and primary actions
 - On orange action surfaces, text and arrows are white, never dark (owner preference, 2026-09-05). Preserve this in default, hover and focus states.
-- Soft surface: `#f5f9f8`
-- Neutral information surface: `#f1f3f5`, used where a calm grey background should not carry a teal tint
+- Soft surface: alias of `--surface-neutral` (`#f1f3f5`)
+- Neutral information surface: `--surface-neutral: #f1f3f5`, shared by pale public information panels, preparation blocks, schedules, price headers and disclosure backgrounds. Avoid separate mint/grey default fills and decorative gradients on these surfaces. White canvas/cards, brand panels, semantic selection/hover/error/success states and image treatments remain independent.
 - Canvas: `#ffffff`
 - Border: `#d5e4e2`
 - Muted text: `#587276` on white; lighter teal-grey values are reserved for non-text decoration

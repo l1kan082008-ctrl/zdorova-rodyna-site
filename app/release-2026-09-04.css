@@ -3,10 +3,6 @@
  * a fresh immutable CSS asset instead of reusing the stale pre-release bundle.
  */
 
-:root {
-  --surface-neutral: #f1f3f5;
-}
-
 .consultation-direction-panel {
   margin-top: 0;
 }

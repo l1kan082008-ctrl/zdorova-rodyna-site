@@ -734,7 +734,7 @@ body :is(.inner-page h1, #patients-title) {
   .site-footer-minimal .footer-directory-column > h2 a { justify-content: center; }
 }
 
-.branch-information-only { width: var(--site-content-width); margin: 24px auto 40px; padding: 24px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .5fr); gap: 24px; border: 1px solid #d5e4e2; border-radius: 20px; color: #073f45; background: #f5f9f8; scroll-margin-top: 100px; }
+.branch-information-only { width: var(--site-content-width); margin: 24px auto 40px; padding: 24px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .5fr); gap: 24px; border: 1px solid #d5e4e2; border-radius: 20px; color: #073f45; background: var(--surface-neutral); scroll-margin-top: 100px; }
 .branch-information-only h2 { margin: 8px 0 12px; font-size: 28px; }
 .branch-information-only p { margin: 8px 0; color: #587276; line-height: 1.6; }
 .branch-information-only a { display: block; width: fit-content; padding-block: 10px; color: #087f82; }
@@ -804,7 +804,7 @@ body :is(.inner-page h1, #patients-title) {
   padding: 16px;
   border: 0;
   border-radius: 12px;
-  background: #f5f9f8;
+  background: var(--surface-neutral);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -1016,7 +1016,7 @@ body :is(.inner-page h1, #patients-title) {
 }
 /* CT preparation matches the light family declaration section. */
 body .ct-preparation-gradient > div {
-  background: radial-gradient(circle at 100% 0%, rgba(42,165,164,.16), transparent 34%), #edf6f5;
+  background: var(--surface-neutral);
   border-color: transparent;
 }
 /* Public directory cards share neutral framing; brand surfaces remain intact. */
@@ -1201,7 +1201,7 @@ body > .calculator-dialog-backdrop {
 .calculator-dialog { background: #fff; box-shadow: 0 24px 70px rgba(25, 32, 45, .16); }
 .calculator-dialog :is(.calculator-items article, .calculator-share-actions) { border-color: #e5e7eb; }
 .calculator-dialog .calculator-share-actions > button + button { border-color: #e5e7eb; }
-.calculator-dialog .calculator-total { background: #f4f5f7; }
+.calculator-dialog .calculator-total { background: var(--surface-neutral); }
 .calculator-dialog .calculator-items article > button { background: transparent; border: 0; border-radius: 0; color: #657080; }
 .calculator-dialog .calculator-close { background: transparent; border: 0; border-radius: 0; box-shadow: none; }
 .calculator-dialog .calculator-total .outline-button { background: #fff; border-color: #d4d8df; }

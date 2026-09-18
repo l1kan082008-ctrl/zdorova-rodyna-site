@@ -26,7 +26,7 @@
   mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent), linear-gradient(180deg, transparent, #000 3%, #000 97%, transparent);
   mask-composite: intersect;
 }
-.placeholder { display: grid; place-items: center; background: #eff6f5; }
+.placeholder { display: grid; place-items: center; background: var(--surface-neutral); }
 .placeholder svg { width: 46%; height: 54%; fill: none; stroke: #a6c5c5; stroke-width: 2; }
 @media (min-width: 761px) and (max-width: 1100px) {
  .heroContent { width: 75%; }
@@ -84,7 +84,7 @@
   .page .areaCard[data-area="additional"]:hover .areaArtwork img { transform: none; }
 }
 
-.page .preparationGrid > div { background: radial-gradient(circle at 100% 0%, rgba(42,165,164,.16), transparent 34%), #edf6f5; border-color: transparent; }
+.page .preparationGrid > div { background: var(--surface-neutral); border-color: transparent; }
 
 .page .equipmentMedia { mix-blend-mode: lighten; }
 
@@ -101,14 +101,14 @@
     border-color: transparent;
   }
 }
-.page .priceCategories { background: #f1f3f5; box-shadow: 0 10px 24px rgba(0,0,0,.07); }
+.page .priceCategories { background: var(--surface-neutral); box-shadow: 0 10px 24px rgba(0,0,0,.07); }
 /* Neutral framing for the MRI price section; action colours stay semantic. */
 .page .neutralPricePanel {
   --ct-border: #dedfe1;
   box-shadow: 0 14px 36px rgba(0,0,0,.065);
 }
 .page .priceCategories { border-color: #dedfe1; }
-.page .neutralPriceHeader { background: #f7f7f8; }
+.page .neutralPriceHeader { background: var(--surface-neutral); }
 .page .neutralPriceRow:hover { background: #f7f7f8; }
 @media (max-width: 760px) {
   .page .neutralPricePanel { box-shadow: none; }

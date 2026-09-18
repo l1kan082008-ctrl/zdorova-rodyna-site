@@ -4,7 +4,7 @@
   --ct-orange: var(--orange, #ff7900);
   --ct-border: #d5e4e2;
   --ct-muted: #587276;
-  --ct-surface: #f6faf9;
+  --ct-surface: var(--surface-neutral);
   color: var(--ct-ink);
   background: #fff;
 }
@@ -370,7 +370,7 @@
 .doctorCard > span { display: block; margin: 0 2px 2px; color: var(--ct-muted); font-size: 13px; }
 
 .preparationGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }
-.preparationGrid > div { padding: clamp(22px, 3vw, 40px); border-radius: 20px; background: #f1f3f5; border: 1px solid var(--ct-border); }
+.preparationGrid > div { padding: clamp(22px, 3vw, 40px); border-radius: 20px; background: var(--surface-neutral); border: 1px solid var(--ct-border); }
 .preparationLabel { margin: 0 0 24px; font-size: 22px; font-weight: 700; }
 .preparationSteps { margin: 0; padding-left: 28px; display: grid; gap: 20px; list-style: decimal; }
 .preparationSteps li { padding: 12px 0 20px 8px; border-bottom: 1px solid var(--ct-border); }
@@ -399,7 +399,7 @@
 .locationGrid a { color: var(--ct-teal); font-size: 13px; font-weight: 800; }
 
 .pricePanel { --ct-border: #dedfe1; overflow: hidden; border: 1px solid var(--ct-border); border-radius: 20px; background: #fff; box-shadow: 0 14px 36px rgba(0,0,0,.065); }
-.priceTabsViewport { position: relative; z-index: 1; padding: 18px; border-bottom: 1px solid #dedfe1; background: #f1f3f5; box-shadow: 0 10px 24px rgba(0,0,0,.07); }
+.priceTabsViewport { position: relative; z-index: 1; padding: 18px; border-bottom: 1px solid #dedfe1; background: var(--surface-neutral); box-shadow: 0 10px 24px rgba(0,0,0,.07); }
 .priceTabsLabel { display: block; margin: 0 2px 10px; color: var(--ct-muted); font-size: 11px; font-weight: 820; letter-spacing: .08em; text-transform: uppercase; }
 .priceTabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .priceMobileNav { display: none; }
@@ -437,7 +437,7 @@
 .priceMobileOptionActive:focus-visible { outline: 3px solid rgba(244,119,11,.35); outline-offset: 2px; }
 .priceTableHead,
 .priceRow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(190px, 228px) minmax(190px, 228px); align-items: stretch; gap: 16px; }
-.priceTableHead { padding: 14px 22px; color: var(--ct-muted); background: #f7f7f8; font-size: 12px; font-weight: 750; letter-spacing: .01em; }
+.priceTableHead { padding: 14px 22px; color: var(--ct-muted); background: var(--surface-neutral); font-size: 12px; font-weight: 750; letter-spacing: .01em; }
 .priceTableHead span:not(:first-child) { padding-left: 2px; }
 .priceRow { min-height: 82px; padding: 14px 22px; border-top: 1px solid var(--ct-border); transition: background-color .18s ease; }
 .priceRow:hover { background: #f7f7f8; }

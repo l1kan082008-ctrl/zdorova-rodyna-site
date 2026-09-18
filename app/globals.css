@@ -408,7 +408,7 @@
   padding: 13px 14px;
   border-radius: 14px;
   color: #718589;
-  background: #f2f7f6;
+  background: var(--surface-neutral);
   font-size: 12px;
 }
 
@@ -919,7 +919,7 @@
   --teal-soft: #dceeed;
   --orange: #ff7900;
   --border-soft: #d4e2e1;
-  --surface-soft: #f7faf9;
+  --surface-soft: var(--surface-neutral);
   --surface-neutral: #f1f3f5;
   --radius-control: 14px;
   --radius-card: 20px;
@@ -2898,9 +2898,7 @@ footer {
   overflow: hidden;
   border: 1px solid rgba(4, 87, 92, 0.14);
   border-radius: 30px;
-  background:
-    radial-gradient(circle at 6% 0%, rgba(218, 239, 237, 0.8), transparent 30%),
-    #f7faf9;
+  background: var(--surface-neutral);
   box-shadow:
     0 28px 70px rgba(2, 61, 66, 0.11),
     inset 0 1px 0 #fff;
@@ -3374,7 +3372,7 @@ footer {
   margin-top: 6px;
   overflow: hidden;
   border-radius: 25px;
-  background: linear-gradient(120deg, #eef8f7, #ffffff 36%);
+  background: var(--surface-neutral);
   box-shadow: 0 20px 55px rgba(24, 73, 76, 0.09);
 }
 
@@ -3561,7 +3559,7 @@ footer {
   border: 1px solid rgba(113, 137, 141, 0.2);
   border-radius: 22px;
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.84), rgba(235, 240, 241, 0.64));
+    var(--surface-neutral);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.96),
     inset 0 -1px 0 rgba(61, 85, 88, 0.06);
@@ -3841,7 +3839,7 @@ footer {
   height: 44px;
   border: 1px solid #c6d9d7;
   border-radius: 50%;
-  background: #f7fbfa;
+  background: var(--surface-neutral);
   color: var(--teal);
   touch-action: manipulation;
   transition:
@@ -4482,7 +4480,7 @@ footer {
   margin-bottom: 13px;
   padding: 6px 10px;
   border-radius: 12px;
-  background: #edf6f5;
+  background: var(--surface-neutral);
   color: var(--teal);
   font-size: 10px;
   font-weight: 700;
@@ -4594,7 +4592,7 @@ footer {
   margin-top: auto;
   padding: 14px;
   border-radius: 14px;
-  background: #f4f8f7;
+  background: var(--surface-neutral);
 }
 
 .doctor-schedule-preview > span {
@@ -4893,7 +4891,7 @@ footer {
 
 .doctor-detail-schedule {
   align-self: start;
-  background: #eaf5f3;
+  background: var(--surface-neutral);
 }
 
 .doctor-detail-schedule > div {
@@ -5710,7 +5708,7 @@ footer {
   margin-bottom: 18px;
   padding: 30px 34px;
   border-radius: 22px;
-  background: #e8f4f3;
+  background: var(--surface-neutral);
   color: var(--ink);
 }
 
@@ -6315,7 +6313,7 @@ footer {
   height: 31px;
   padding: 0 9px;
   border-radius: 999px;
-  background: #e8f4f3;
+  background: var(--surface-neutral);
   color: var(--teal);
   font-size: 12px;
   font-weight: 800;
@@ -6489,7 +6487,7 @@ footer {
   padding: 12px 14px 12px 22px;
   border: 0;
   border-radius: 0;
-  background: #f4f8f7;
+  background: var(--surface-neutral);
   color: var(--ink);
   box-shadow: none;
   text-align: left;
@@ -6555,7 +6553,7 @@ footer {
 }
 
 .price-group-view-all[aria-expanded="true"] {
-  background: #f4f8f7;
+  background: var(--surface-neutral);
   box-shadow: none;
 }
 
@@ -6766,7 +6764,7 @@ body.calculator-is-open .site-header {
   padding: 7px 10px;
   border: 1px solid #dde7e6;
   border-radius: 13px;
-  background: #f7f9f9;
+  background: var(--surface-neutral);
   transition:
     border-color 180ms ease,
     background 180ms ease;
@@ -6830,7 +6828,7 @@ body.calculator-is-open .site-header {
   height: 34px;
   border: 0;
   border-radius: 50%;
-  background: #f0f4f3;
+  background: var(--surface-neutral);
   color: #617578;
   font-size: 18px;
   cursor: pointer;
@@ -7004,7 +7002,7 @@ body.calculator-is-open .site-header {
   margin-top: 22px;
   padding: 21px;
   border-radius: 19px;
-  background: #e8f3f2;
+  background: var(--surface-neutral);
 }
 
 .calculator-total > div {
@@ -7082,7 +7080,7 @@ body.calculator-is-open .site-header {
   margin-top: 12px;
   border: 1px solid #c7dcda;
   border-radius: 14px;
-  background: #f3f8f7;
+  background: var(--surface-neutral);
   color: var(--ink);
   font-size: 12px;
   font-weight: 800;
@@ -7157,7 +7155,7 @@ body.calculator-is-open .site-header {
   padding: 16px;
   border: 1px solid #cfe1df;
   border-radius: 15px;
-  background: #edf6f5;
+  background: var(--surface-neutral);
 }
 
 .selected-booking-summary > span {
@@ -8549,7 +8547,7 @@ body.calculator-is-open .site-header {
     padding: 8px 10px;
     border: 0;
     border-radius: 16px;
-    background: #eff7f6;
+    background: var(--surface-neutral);
     color: var(--ink);
     text-align: left;
     cursor: pointer;
@@ -9852,7 +9850,7 @@ body.calculator-is-open .site-header {
   padding: 0 10px;
   border-radius: 999px;
   color: #3e6262;
-  background: #edf5f4;
+  background: var(--surface-neutral);
   font-size: 10px;
   font-weight: 700;
 }
@@ -9965,7 +9963,7 @@ body.calculator-is-open .site-header {
   height: 21px;
   margin-left: 5px;
   border-radius: 999px;
-  background: #e4efee;
+  background: var(--surface-neutral);
   font-size: 9px;
 }
 
@@ -9988,7 +9986,7 @@ body.calculator-is-open .site-header {
 .branch-media-viewer {
   min-width: 0;
   padding: 24px 26px 28px;
-  background: #f2f7f6;
+  background: var(--surface-neutral);
 }
 
 .branch-main-photo {
@@ -10089,7 +10087,7 @@ body.calculator-is-open .site-header {
   margin: 24px 0;
   padding: 18px;
   border-radius: 16px;
-  background: #edf5f4;
+  background: var(--surface-neutral);
 }
 
 .branch-modal-hours strong {
@@ -10125,7 +10123,7 @@ body.calculator-is-open .site-header {
   padding: 18px 19px;
   border: 1px solid #d0e2df;
   border-radius: 17px;
-  background: #edf6f5;
+  background: var(--surface-neutral);
 }
 
 .contact-selected-branch small {
@@ -12924,7 +12922,7 @@ body.calculator-is-open .site-header {
   overflow: hidden;
   border: 1px solid #d8e5e4;
   border-radius: 22px;
-  background: #f8fbfa;
+  background: var(--surface-neutral);
 }
 
 .service-facts > div {
@@ -13492,7 +13490,7 @@ body.calculator-is-open .site-header {
   margin-bottom: 34px;
   padding: 32px;
   border-radius: 30px;
-  background: #f3f7f6;
+  background: var(--surface-neutral);
 }
 
 .service-process-steps {
@@ -15902,7 +15900,7 @@ body.calculator-is-open .site-header {
   padding: 0 14px;
   border: 1px solid #d6e5e3;
   border-radius: 999px;
-  background: #f4f9f8;
+  background: var(--surface-neutral);
   color: var(--ink);
   font-size: 12px;
   font-weight: 700;
@@ -15977,7 +15975,7 @@ body.calculator-is-open .site-header {
   min-height: 74px;
   border: 1px solid transparent;
   border-radius: 17px;
-  background: #f7faf9;
+  background: var(--surface-neutral);
   transition:
     border-color 160ms ease,
     background 160ms ease;
@@ -16277,7 +16275,7 @@ body.calculator-is-open .site-header {
     padding: 0 14px;
     border: 1px solid #cbdedc;
     border-radius: 17px;
-    background: #f5f9f8;
+    background: var(--surface-neutral);
   }
 
   .home-search-mobile-head .home-search-icon {
@@ -17605,7 +17603,7 @@ body.calculator-is-open .site-header {
 }
 
 .doctor-patient-pill.is-unset {
-  background: #f1f4f4;
+  background: var(--surface-neutral);
   color: #607173;
   box-shadow: none;
 }
@@ -17662,7 +17660,7 @@ body.calculator-is-open .site-header {
 }
 
 .doctor-week div {
-  background: #f4f8f7;
+  background: var(--surface-neutral);
 }
 
 .doctor-card-actions {
@@ -17697,7 +17695,7 @@ body.calculator-is-open .site-header {
   min-height: 570px;
   border-color: #d8e5e4;
   border-radius: 32px;
-  background: linear-gradient(145deg, #f7fbfa, #fff 54%);
+  background: var(--surface-neutral);
   box-shadow: none;
 }
 
@@ -18372,7 +18370,7 @@ body.calculator-is-open .site-header {
     padding: 4px;
     border: 1px solid rgba(5, 76, 82, 0.12);
     border-radius: 15px;
-    background: #f1f6f5;
+    background: var(--surface-neutral);
   }
 
   .doctor-mobile-view-picker button {
@@ -19077,7 +19075,7 @@ body.calculator-is-open .site-header {
   min-height: 250px;
   padding: 28px 26px;
   border-top: 2px solid #07858a;
-  background: linear-gradient(180deg, rgba(235, 246, 246, 0.74), rgba(255, 255, 255, 0));
+  background: var(--surface-neutral);
 }
 
 .family-route-steps article > span,
@@ -19107,9 +19105,7 @@ body.calculator-is-open .site-header {
 .family-declaration {
   padding: clamp(34px, 4.5vw, 74px);
   border-radius: 36px;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(42, 165, 164, 0.16), transparent 34%),
-    #edf6f5;
+  background: var(--surface-neutral);
 }
 
 .family-declaration-heading {
@@ -19296,7 +19292,7 @@ body.calculator-is-open .site-header {
   gap: 8px;
   padding: 5px;
   border-radius: 999px;
-  background: #edf3f2;
+  background: var(--surface-neutral);
 }
 
 .family-patient-switch button {
@@ -19697,7 +19693,7 @@ body.calculator-is-open .site-header {
   color: #49686c;
   font-size: clamp(15px, 1vw, 18px);
   line-height: 1.55;
-  background: #f6f9f8;
+  background: var(--surface-neutral);
 }
 
 .family-coverage li {
@@ -21752,7 +21748,7 @@ body.calculator-is-open .site-header {
   min-height: 260px;
   padding: 26px;
   border-top: 2px solid var(--teal);
-  background: #f3f8f7;
+  background: var(--surface-neutral);
 }
 
 .patients-result-grid article > span {
@@ -22095,7 +22091,7 @@ body.calculator-is-open .site-header {
   overflow: clip;
   border: 1px solid rgb(12 67 70 / 14%);
   border-radius: 22px;
-  background: linear-gradient(145deg, #ffffff 0%, #f8f8f5 100%);
+  background: var(--surface-neutral);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 90%),
     0 10px 30px rgb(16 46 49 / 3%);
@@ -22115,9 +22111,7 @@ body.calculator-is-open .site-header {
 
 .preparation-accordion-item[open] {
   border-color: rgb(8 98 101 / 24%);
-  background:
-    radial-gradient(circle at 100% 0%, rgb(9 132 132 / 9%), transparent 40%),
-    linear-gradient(145deg, #fefefd 0%, #f1f2ef 100%);
+  background: var(--surface-neutral);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 96%),
     0 18px 50px rgb(12 48 51 / 8%);
@@ -22278,7 +22272,7 @@ body.calculator-is-open .site-header {
   padding: 20px;
   border: 1px solid rgb(12 67 70 / 12%);
   border-radius: 18px;
-  background: linear-gradient(145deg, #fff 0%, #f7faf9 100%);
+  background: var(--surface-neutral);
 }
 
 .preparation-checklist li:first-child {
@@ -22872,7 +22866,7 @@ body.calculator-is-open .site-header {
   overflow: clip;
   border: 1px solid rgb(12 67 70 / 14%);
   border-radius: 20px;
-  background: linear-gradient(145deg, #fff 0%, #fbfbf8 100%);
+  background: var(--surface-neutral);
   box-shadow: 0 8px 28px rgb(15 52 54 / 3%);
   transition: border-color 220ms ease, box-shadow 280ms ease, transform 280ms ease;
 }
@@ -22884,9 +22878,7 @@ body.calculator-is-open .site-header {
 
 .faq-item:is(.is-open, [open]) {
   border-color: rgb(8 110 112 / 30%);
-  background:
-    radial-gradient(circle at 100% 0%, rgb(8 126 127 / 7%), transparent 34%),
-    linear-gradient(145deg, #fff 0%, #f8f8f5 100%);
+  background: var(--surface-neutral);
 }
 
 .faq-question {
@@ -23773,7 +23765,7 @@ body.calculator-is-open .site-header {
     height: 44px;
     border-color: #c8dcda;
     color: var(--teal);
-    background: #f7fbfa;
+    background: var(--surface-neutral);
     box-shadow: none;
   }
 
@@ -24311,7 +24303,7 @@ body :is(#ct-title, #mri-title, #service-detail-title) {
 .ultrasound-page > :is(.service-detail-hero,.ultrasound-price-list,.service-information-grid,.service-process,.service-important,.service-detail-cta) { margin-top:0; margin-bottom:var(--ultrasound-section-gap); }
 .ultrasound-page > .site-footer { margin-top:0; }
 .ultrasound-page .service-information-grid { grid-template-columns:minmax(0,1fr); }
-.ultrasound-page .service-process { background:#f1f3f5; border-color:transparent; box-shadow:none; }
+.ultrasound-page .service-process { background:var(--surface-neutral); border-color:transparent; box-shadow:none; }
 .ultrasound-page .service-process-steps article { background:transparent; box-shadow:none; }
 .ultrasound-price-row { min-height:82px; padding:14px 0; gap:16px; grid-template-columns:minmax(0,1fr) 104px 140px; }
 .ultrasound-price-row h3 { font-size:15px; font-weight:720; line-height:1.4; }
@@ -24367,7 +24359,7 @@ body :is(#ct-title, #mri-title, #service-detail-title) {
 .ultrasound-description-toggle:focus-visible { outline:2px solid #087f82; outline-offset:3px; border-radius:4px; }
 .ultrasound-page .ultrasound-price-row > .ultrasound-description { grid-column:1/-1; grid-row:auto; width:100%; min-width:0; }
 .ultrasound-description[hidden] { display:none; }
-.ultrasound-description dl { display:grid; gap:12px; margin:0; padding:16px; border-radius:10px; background:#f1f3f5; }
+.ultrasound-description dl { display:grid; gap:12px; margin:0; padding:16px; border-radius:10px; background:var(--surface-neutral); }
 .ultrasound-description dt { margin-bottom:4px; font-size:14px; font-weight:700; color:#073f45; }
 .ultrasound-description dd { margin:0; font-size:14px; line-height:1.55; color:#41575a; }
 
@@ -24431,7 +24423,7 @@ body :is(#ct-title, #mri-title, #service-detail-title) {
 }
 
 /* Ultrasound audit: compact sections and a quieter final action. */
-.ultrasound-page .service-detail-cta { box-shadow:none; background:#f1f3f5; color:#073f45; }
+.ultrasound-page .service-detail-cta { box-shadow:none; background:var(--surface-neutral); color:#073f45; }
 .ultrasound-page .service-detail-cta::before,
 .ultrasound-page .service-detail-cta::after { display:none; }
 .ultrasound-page .service-detail-cta h2 { color:#073f45; }
@@ -24511,7 +24503,7 @@ body .service-banner-secondary { border-radius:999px; }
 }
 
 /* Column labels and centered desktop price actions. */
-.ultrasound-price-head { display:grid; grid-template-columns:minmax(0,1fr) 104px 140px; gap:16px; padding:14px 22px; background:#f1f3f5; color:#41575a; font-size:12px; font-weight:700; }
+.ultrasound-price-head { display:grid; grid-template-columns:minmax(0,1fr) 104px 140px; gap:16px; padding:14px 22px; background:var(--surface-neutral); color:#41575a; font-size:12px; font-weight:700; }
 .ultrasound-price-head > span:last-child { text-align:center; }
 @media(min-width:761px) {
  .ultrasound-page .ultrasound-price-row > div:first-child { grid-column:1; grid-row:1; }
@@ -24524,7 +24516,7 @@ body .service-banner-secondary { border-radius:999px; }
 
 /* Compact home visit introduction and service area. */
 .service-overview--home-nurse { display: block; margin-bottom: 32px; }
-.service-overview--home-nurse > article:not(.service-center-card) { display: block; padding: 24px 28px; border-radius: 20px; background: #f1f3f5; }
+.service-overview--home-nurse > article:not(.service-center-card) { display: block; padding: 24px 28px; border-radius: 20px; background: var(--surface-neutral); }
 .home-nurse-intro-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 24px; }
 .service-overview--home-nurse h2 { font-size: 30px; line-height: 1.2; letter-spacing: -.02em; }
 .home-nurse-area { display: inline-flex; padding: 6px 12px; border-radius: 8px; background: var(--orange); color: #fff; font-size: 13px; line-height: 1.5; font-weight: 700; }
@@ -24554,7 +24546,7 @@ body .service-banner-secondary { border-radius:999px; }
 
 /* Home visit visual alignment with the shared service-page palette. */
 .home-nurse-page {
-  --home-nurse-surface: #f1f3f5;
+  --home-nurse-surface: var(--surface-neutral);
   --home-nurse-copy: #41575a;
 }
 .home-nurse-page :is(.service-overview, .service-information-grid, .service-detail-cta) h2 {
