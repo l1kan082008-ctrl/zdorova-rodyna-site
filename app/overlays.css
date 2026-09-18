@@ -31,24 +31,15 @@
 :root {
   --dialog-enter-duration: 300ms;
   --overlay-blur: 24px;
-  --overlay-tint: rgba(238, 241, 246, .58);
+  --overlay-tint: transparent;
 }
 
 /* Shared form/dialog reveal, matching the restrained zoom-and-rise reference. */
 .support-dialog,
-.quick-booking[open],
 .calculator-dialog,
 .branch-modal,
 .admin-history-dialog {
   animation: dialog-zoom-in-up var(--dialog-enter-duration) ease both;
-}
-
-.support-dialog-backdrop:not(.is-closing),
-.calculator-dialog-backdrop,
-.branch-modal-backdrop,
-.admin-history-backdrop,
-.quick-booking[open]::backdrop {
-  animation: dialog-backdrop-in 300ms ease both;
 }
 
 @keyframes dialog-zoom-in-up {
@@ -81,9 +72,9 @@
 .branch-modal-backdrop,
 .admin-history-backdrop,
 .quick-booking::backdrop {
-  background: var(--overlay-tint);
-  -webkit-backdrop-filter: blur(var(--overlay-blur));
-  backdrop-filter: blur(var(--overlay-blur));
+  background: var(--overlay-tint, transparent);
+  -webkit-backdrop-filter: blur(var(--overlay-blur, 24px));
+  backdrop-filter: blur(var(--overlay-blur, 24px));
 }
 
 /* Do not compound a content blur with the overlay's backdrop blur. */
@@ -1513,4 +1504,34 @@ body .faq-categories button:focus-visible { outline: 2px solid var(--teal); outl
 @media (max-width: 720px) {
   .doctors-page > .page-hero { padding-bottom: 16px; }
   .doctors-page .doctor-directory-toolbar { margin-bottom: 16px; }
+}
+
+/* Blur is present on the first frame and disappears with the overlay.
+   No colour wash, gradient or separately animated backdrop. */
+.home-search-backdrop,
+.site-menu-backdrop,
+.support-dialog-backdrop,
+.support-dialog-backdrop.is-closing,
+.calculator-dialog-backdrop,
+.branch-modal-backdrop,
+.admin-history-backdrop,
+.quick-booking[open]::backdrop {
+  animation: none;
+  transition: none;
+}
+/* Explicit values avoid inherited custom-property differences in older Safari. */
+.quick-booking::backdrop {
+  background: transparent;
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
+
+@media (max-width: 1080px) {
+  .support-dialog,
+  .quick-booking[open],
+  .calculator-dialog,
+  .branch-modal,
+  .admin-history-dialog {
+    animation: none;
+  }
 }

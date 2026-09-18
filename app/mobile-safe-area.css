@@ -21,19 +21,6 @@
   }
 }
 
-/* Safari chrome is outside the page. Fade the page-side blur to an opaque
-   white edge so changing content cannot create a hard coloured seam there. */
-@media (max-width: 1080px) {
-  :is(.home-search-backdrop, .site-menu-backdrop, .support-dialog-backdrop, .calculator-dialog-backdrop, .branch-modal-backdrop, .admin-history-backdrop),
-  dialog.quick-booking::backdrop,
-  dialog::backdrop {
-    background:
-      linear-gradient(to bottom, #fff 0, #fff env(safe-area-inset-top, 0px), transparent calc(env(safe-area-inset-top, 0px) + 120px)),
-      linear-gradient(to top, #fff 0, #fff env(safe-area-inset-bottom, 0px), transparent calc(env(safe-area-inset-bottom, 0px) + 120px)),
-      var(--overlay-tint);
-  }
-}
-
 /* Hidden mobile menus must release their compositor blur immediately. */
 @media (max-width: 1080px) {
   .site-menu-backdrop:not(.is-visible) {

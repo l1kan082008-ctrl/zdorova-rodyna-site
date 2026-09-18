@@ -44,7 +44,7 @@ Warm, trustworthy and precise medical care. The public site feels calm and human
 
 ## Motion and accessibility
 
-- Interactive overlays share `--overlay-blur: 24px` and a light neutral tint `rgba(238, 241, 246, .58)` (owner preference, 2026-09-17). Do not stack content blur with backdrop blur. Decorative photo filters remain independent.
+- Interactive overlays share `--overlay-blur: 24px` on a transparent background without tint, edge gradients or backdrop fade (owner preference, 2026-09-18). Do not stack content blur with backdrop blur. Decorative photo filters remain independent.
 
 - State transitions last 150–220 ms and animate opacity/transform only where possible.
 - Modal forms share a 300 ms ease entrance: opacity 0–1, scale .975–1 and a 16 px upward reveal; corners stay fixed. Reduced motion disables the reveal.
