@@ -33,12 +33,13 @@ export const dynamic = "force-dynamic";
 const advantages = [
   {
     icon: "mri",
-    title: "МРТ 1,5 Тесла",
-    text: "Siemens MAGNETOM Flow Plus",
+    title: "МРТ та КТ",
+    text: "Siemens MAGNETOM",
+    extraText: "Philips Brilliance 64",
   },
   {
     icon: "team",
-    title: "Дорослим і дітям",
+    title: "Прийом лікарів",
     text: "Сімейні лікарі, терапевти та педіатри",
   },
   {
@@ -428,6 +429,7 @@ export default async function Home() {
             <div>
               <h2>{item.title}</h2>
               <p>{item.text}</p>
+              {"extraText" in item && item.extraText ? <p>{item.extraText}</p> : null}
             </div>
           </article>
         ))}

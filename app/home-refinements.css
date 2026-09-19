@@ -298,6 +298,28 @@ body .home-page > #about.about-section { background: var(--surface-neutral); }
     background-size: auto 100%;
   }
 }
+/* Keep the first benefit row within a typical phone's first viewport. */
 @media (max-width: 720px) {
-  .home-page .hero--family-walking-trial .hero-lead { margin: 16px 0 20px; }
+  .home-page > .site-header { min-height: 76px; }
+  .home-page .home-search-bar { min-height: 50px; padding-block: 1px; }
+  body .home-page > #home-hero.hero--family-walking-trial { margin-top: 16px; }
+  .home-page .hero--family-walking-trial .hero-copy { padding: 0 0 12px; }
+  .home-page .hero--family-walking-trial .hero-lead { margin: 12px 0 16px; }
+  .home-page .hero--family-walking-trial .hero-actions { gap: 8px; }
+  .home-page .hero--family-walking-trial .hero-actions a { min-height: 46px; }
+  .home-page .hero--family-walking-trial .hero-art {
+    height: clamp(150px, 45vw, 200px);
+    aspect-ratio: auto;
+    border-radius: 24px;
+    background-size: contain;
+  }
+  .home-page .hero--family-walking-trial + .advantages { margin-top: 12px; padding: 8px; }
+  .home-page .advantage { padding: 10px 6px; }
+}
+@media (max-width: 720px) and (max-height: 700px) {
+  body .home-page > #home-hero.hero--family-walking-trial { margin-top: 12px; }
+  .home-page .hero--family-walking-trial .hero-art { height: clamp(128px, 20svh, 140px); }
+  .home-page .hero--family-walking-trial .hero-copy { padding-bottom: 8px; }
+  .home-page .hero--family-walking-trial .hero-lead { margin: 8px 0 12px; }
+  .home-page .hero--family-walking-trial + .advantages { margin-top: 8px; }
 }
