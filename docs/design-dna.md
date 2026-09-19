@@ -115,8 +115,10 @@ Homepage search rectangular surfaces and controls share --radius-card (20px): se
 
 The homepage About section uses a full-width neutral-grey band. Its copy and reception image remain inside the shared content width and responsive gutters; only the image retains rounded corners.
 
-Homepage Services and About share the neutral-grey full-width surface (--surface-neutral, #f1f3f5). Both use 32px vertical padding on desktop/tablet and 24px at <=760px. Service card surfaces and their legibility gradients remain white.
+Homepage Services uses the white canvas; About retains the neutral-grey full-width surface (--surface-neutral, #f1f3f5). Both use 32px vertical padding on desktop/tablet and 24px at <=760px. Service card surfaces and their legibility gradients remain white.
 
 Booking dialogs begin directly with their functional title; omit the redundant “Зворотний зв’язок” eyebrow for doctor, service, calculator and home-visit bookings. The calculator also starts with “Калькулятор вартості”, without the “Ваш вибір” eyebrow. Keep submission status messages and descriptive page-section labels.
 
 The family declaration introduction follows the public editorial scale (36px/28px headings, 16px body copy) and shared 64px/48px section rhythm. Its three steps are a semantic ordered list on white with neutral dividers and orange numbers: three columns on desktop/tablet, compact rows on mobile. Keep the approved mint declaration form and teal NSZU panel independent.
+
+Mobile modal panels retain the shared 300ms entrance on their own surface. The portalled navigation uses a matching opacity/transform entrance; background blur and dismissal remain immediate. The selected-services icon uses a brief 220ms entrance. Reduced motion disables these reveals. Mobile submenus expand to their natural content height without clipping or long per-item delays.

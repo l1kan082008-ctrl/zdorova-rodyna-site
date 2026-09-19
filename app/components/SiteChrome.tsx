@@ -450,18 +450,20 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
                 id={`main-nav-submenu-${item.key}`}
                 aria-label={item.label}
               >
-                {item.children.map((child) => (
-                  <a
-                    href={child.href}
-                    key={child.href}
-                    onClick={() => {
-                      setOpenNavigationMenu(null);
-                      setMenuOpen(false);
-                    }}
-                  >
-                    {child.label}
-                  </a>
-                ))}
+                <div className="main-nav-submenu-inner">
+                  {item.children.map((child) => (
+                    <a
+                      href={child.href}
+                      key={child.href}
+                      onClick={() => {
+                        setOpenNavigationMenu(null);
+                        setMenuOpen(false);
+                      }}
+                    >
+                      {child.label}
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
           ) : (

@@ -35,6 +35,7 @@
 }
 
 /* Shared form/dialog reveal, matching the restrained zoom-and-rise reference. */
+.quick-booking,
 .support-dialog,
 .calculator-dialog,
 .branch-modal,
@@ -146,10 +147,6 @@ body.home-search-open #top > :not(.home-search-shell) {
   .main-nav-group {
     flex-shrink: 0;
     min-width: 0;
-  }
-
-  .main-nav-group.is-expanded .main-nav-submenu {
-    max-height: none;
   }
 
   .main-nav-submenu a {
@@ -1482,6 +1479,18 @@ body .faq-categories button:focus-visible { outline: 2px solid var(--teal); outl
   body .doctors-directory-v2 .doctor-profile-card-v2.is-focused:not(.is-expanded) .doctor-card-photo-identity { position: static; min-width: 0; }
 }
 
+/* These actions enter from display:none; animate the controls without resizing the portrait. */
+@media (max-width: 1080px) and (prefers-reduced-motion: no-preference) {
+  .doctors-directory-v2 .doctor-profile-card-v2.is-focused:not(.is-expanded) .doctor-photo-actions {
+    animation: doctor-photo-actions-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes doctor-photo-actions-in {
+    from { opacity: 0; transform: translate3d(0, 8px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+}
+
 /* Keep consultation labels and amounts legible in compact portraits. */
 .doctor-card-consultation-price .doctor-price-row {
   display: flex;
@@ -1526,15 +1535,6 @@ body .faq-categories button:focus-visible { outline: 2px solid var(--teal); outl
   backdrop-filter: blur(24px);
 }
 
-@media (max-width: 1080px) {
-  .support-dialog,
-  .quick-booking,
-  .calculator-dialog,
-  .branch-modal,
-  .admin-history-dialog {
-    animation: none;
-  }
-}
 /* Keep long labels inside the shared gutter on narrow phones. */
 @media (max-width: 360px) {
   .contacts-page--compact .branch-city-nav button { padding-inline: 4px; }

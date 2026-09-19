@@ -158,13 +158,13 @@
   .home-page .advantages { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* Homepage Services and About share full-width neutral-grey bands. */
+/* Homepage sections share gutters; only About retains the neutral-grey band. */
 body .home-page > :is(#services.services-section, #about.about-section) {
   width: 100%;
   padding: 32px max(var(--site-gutter), calc((100% - var(--site-content-max)) / 2));
   border-radius: 0;
 }
-body .home-page > #services.services-section { background: var(--surface-neutral); }
+body .home-page > #services.services-section { background: #fff; }
 body .home-page > #about.about-section { background: var(--surface-neutral); }
 .home-page #services .service-card { background: #fff; }
 .home-page #services .service-card::after {

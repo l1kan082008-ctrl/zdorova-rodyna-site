@@ -81,10 +81,10 @@ const quickItems = [
 ];
 
 const featuredDoctorOrder = [
+  "pochtar-kateryna",
   "voloshko-tetiana",
   "iziumska-olena",
   "ishchuk-nadiia",
-  "pochtar-kateryna",
 ];
 
 type PopularPriceDirection = {
