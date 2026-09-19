@@ -156,6 +156,7 @@ function formatSupportPhone(value: string) {
 export function SiteHeader({ active, home = false, bookingHref = "/contacts#booking" }: { active?: string; home?: boolean; bookingHref?: string }) {
   const [heroPassed, setHeroPassed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuClosing, setMenuClosing] = useState(false);
   const [headerPlaceholderStyle, setHeaderPlaceholderStyle] = useState<CSSProperties>();
   const [openNavigationMenu, setOpenNavigationMenu] = useState<string | null>(null);
   const [supportOpen, setSupportOpen] = useState(false);
@@ -185,6 +186,30 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
     return () => observer.disconnect();
   }, [home]);
 
+  const closeMenu = () => {
+    if (!menuOpen) {
+      setOpenNavigationMenu(null);
+      return;
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setMenuClosing(false);
+      setMenuOpen(false);
+    } else {
+      setMenuClosing(true);
+    }
+  };
+
+  useEffect(() => {
+    if (!menuClosing) return;
+    // Keep the portal, focus trap and scroll lock until the exit finishes.
+    // The timeout also covers interrupted animations or a motion preference change.
+    const timer = window.setTimeout(() => {
+      setMenuOpen(false);
+      setMenuClosing(false);
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [menuClosing]);
+
   const closeSupport = () => {
     if (window.matchMedia("(max-width: 1080px), (prefers-reduced-motion: reduce)").matches) {
       setSupportOpen(false);
@@ -205,7 +230,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
   useModalDialog({
     open: menuOpen,
     dialogRef: menuDialogRef,
-    onClose: () => setMenuOpen(false),
+    onClose: closeMenu,
     initialFocusRef: menuButtonRef,
     restoreFocusRef: menuButtonRef,
   });
@@ -301,12 +326,13 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
   useEffect(() => {
     if (!openNavigationMenu) return;
     const closeOutside = (event: PointerEvent) => {
+      if (menuOpen) return;
       if (event.target instanceof Node && !navigationRef.current?.contains(event.target)) {
         setOpenNavigationMenu(null);
       }
     };
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+      if (event.key !== "Escape" || menuOpen) return;
       const toggle = navigationRef.current?.querySelector<HTMLButtonElement>('[aria-expanded="true"]');
       setOpenNavigationMenu(null);
       toggle?.focus();
@@ -317,7 +343,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
       document.removeEventListener("pointerdown", closeOutside);
       document.removeEventListener("keydown", closeOnEscape);
     };
-  }, [openNavigationMenu]);
+  }, [openNavigationMenu, menuOpen]);
 
   useEffect(() => {
     if (!supportOpen) return;
@@ -369,10 +395,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
       <div
         className={menuOpen ? "site-menu-backdrop is-visible" : "site-menu-backdrop"}
         aria-hidden="true"
-        onClick={() => {
-          setMenuOpen(false);
-          setOpenNavigationMenu(null);
-        }}
+        onClick={closeMenu}
       />
       <header
         ref={headerRef}
@@ -407,10 +430,16 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
       <nav
         ref={navigationRef}
         onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) setOpenNavigationMenu(null);
+          if (!menuOpen && !event.currentTarget.contains(event.relatedTarget)) setOpenNavigationMenu(null);
         }}
         className={menuOpen ? "main-nav is-open" : "main-nav"}
         aria-label="Основна навігація"
+        onAnimationEnd={(event) => {
+          if (event.target === event.currentTarget && event.animationName === "mobile-menu-exit") {
+            setMenuOpen(false);
+            setMenuClosing(false);
+          }
+        }}
       >
         {navigation.map((item) =>
           item.children ? (
@@ -567,8 +596,12 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
           aria-label={menuOpen ? "Закрити меню" : "Відкрити меню"}
           aria-expanded={menuOpen}
           onClick={() => {
-            const nextMenuOpen = !menuOpen;
-            if (nextMenuOpen && headerRef.current) {
+            if (menuOpen) {
+              if (!menuClosing) closeMenu();
+              return;
+            }
+            setMenuClosing(false);
+            if (headerRef.current) {
               // Reserve the original flow box while the active header is portalled.
               const rect = headerRef.current.getBoundingClientRect();
               const styles = window.getComputedStyle(headerRef.current);
@@ -582,10 +615,8 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
                 marginLeft: styles.marginLeft,
               });
             }
-            setMenuOpen(nextMenuOpen);
-            if (nextMenuOpen) {
-              window.dispatchEvent(new Event(SITE_MENU_OPEN_EVENT));
-            }
+            setMenuOpen(true);
+            window.dispatchEvent(new Event(SITE_MENU_OPEN_EVENT));
           }}
         >
           <span />
@@ -603,7 +634,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
         <>
           <div className="site-header-placeholder" style={headerPlaceholderStyle} aria-hidden="true" />
           {createPortal(
-            <div ref={menuDialogRef} className="site-menu-portal">
+            <div ref={menuDialogRef} className={`site-menu-portal${menuClosing ? " is-closing" : ""}`}>
               {header}
             </div>,
             document.body,
