@@ -112,11 +112,6 @@
   to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
-@keyframes mobile-menu-exit {
-  from { opacity: 1; transform: translate3d(0, 0, 0); }
-  to { opacity: 0; transform: translate3d(0, -20px, 0); }
-}
-
 @keyframes header-selection-enter {
   from { opacity: 0; transform: translate3d(0, 6px, 0) scale(.94); }
   to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
@@ -125,10 +120,6 @@
 @media (max-width: 1080px) and (prefers-reduced-motion: no-preference) {
   .site-menu-portal .main-nav.is-open {
     animation: mobile-menu-enter 400ms ease both;
-  }
-  .site-menu-portal.is-closing .main-nav.is-open {
-    animation: mobile-menu-exit 240ms ease-in both;
-    pointer-events: none;
   }
   .header-selection { animation: header-selection-enter 220ms ease backwards; }
 }
