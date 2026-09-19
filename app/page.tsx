@@ -13,6 +13,7 @@ import {
 import { DoctorsShowcase } from "./components/DoctorsShowcase";
 import { GlowPriceCard } from "./components/GlowPriceCard";
 import { PopularAnalysisButton } from "./components/PopularAnalysisButton";
+import { HomeHeroViewport } from "./components/HomeHeroViewport";
 import { HomeSearch, type HomeSearchItem } from "./components/HomeSearch";
 import { HorizontalCardScroller } from "./components/HorizontalCardScroller";
 import { PromoSlider } from "./components/PromoSlider";
@@ -395,6 +396,7 @@ export default async function Home() {
     <main id="top" className="home-page">
       <SiteHeader home />
       <HomeSearch items={searchItems} />
+      <HomeHeroViewport />
 
       <section id="home-hero" className="hero hero--family-walking-trial" aria-labelledby="hero-title">
         <div className="hero-copy">
