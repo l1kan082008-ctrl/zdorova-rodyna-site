@@ -315,6 +315,7 @@ body .home-page > #about.about-section { background: var(--surface-neutral); }
   }
   .home-page .hero--family-walking-trial + .advantages { margin-top: 12px; padding: 8px; }
   .home-page .advantage { padding: 10px 6px; }
+  .home-page #advantages > .advantage:nth-child(n + 3) { display: none; }
 }
 @media (max-width: 720px) and (max-height: 700px) {
   body .home-page > #home-hero.hero--family-walking-trial { margin-top: 12px; }
