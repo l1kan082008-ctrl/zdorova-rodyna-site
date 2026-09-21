@@ -128,3 +128,20 @@ Doctor directory search and specialty selection are separate modes: typing a nam
 ## Image delivery
 
 Preserve original public assets and approved crops. Public raster images use Next Image at quality 85 (brand marks 90), accurate responsive sizes and lazy loading below the fold; preload only prominent above-the-fold media. CSS promotional and managed editorial backgrounds use responsive image-set URLs from the same optimizer. Prepare current and adjacent promo images near the viewport, and autoplay only while visible. Resolve the known public image redirect routes to their trusted Vercel Blob source before optimization. Admin uploads retain existing byte limits, validate the complete raster, reject animation, auto-orient and resize without enlargement (1600px doctors, 2400px other images); use WebP quality 88 only when resizing is needed or the result is smaller.
+
+The homepage doctor ribbon supports primary-button mouse dragging with a 6px horizontal threshold, grab/grabbing feedback and a short glide capped at 220px. Dragging cancels pending automatic alignment and suppresses the resulting pointer click; normal card selection, profile links, keyboard and native touch scrolling remain available. Reduced motion removes the glide.
+
+## Admin interface — 2026-09-21
+
+The admin shell and history portals use the scoped `admin-ui` design language: Manrope, white panels on #f1f3f5, #087f82 primary actions, quiet secondary actions and red outlined destructive actions. Controls have a 44px minimum target and 12px radius; panels use 20px corners and light neutral borders/shadows. Sidebar icons share one 20px SVG stroke style. The mobile navigation is a focus-trapped dialog with Escape, focus restoration and inert closed content.
+
+Doctor management includes 44px list portraits with initials fallback, separate primary/repeat consultation prices, a location selector using published branch addresses, and one searchable multi-specialty picker for create/edit. Academic titles and age qualifiers are not suggested as specialties; existing profile labels remain intact. New doctors are only created after submitting the form. Safe drafts, navigation guards, Ctrl+S and revision restore remain supported. Price fields normalize to the saved server values; empty prices mean unspecified, not zero.
+
+QA: production build; browser checks at 360, 390, 768 and 1440px; create/edit/clear prices and specialty validation with isolated in-memory UI fixtures. Persistent doctor CRUD, legacy schema migration and revision restore are covered with isolated SQLite tests; PostgreSQL adapter translation is checked without a live connection. No production records, live migrations or deployment were performed.
+
+
+Doctor visibility and ordering use the same create/edit save flow: a labelled switch, a nonnegative numeric rank (lower first), and a separate visibility filter alongside search. Hidden profiles remain editable with a muted portrait and explicit status badge. Keep the existing homepage priority during migration; published consumers share the saved order and never restore hidden records from default content after a database failure.
+
+The Settings section owns the common site phone, email, address, working hours and optional social links. It follows the existing admin panels, 44px controls, save feedback, Ctrl+S and recoverable drafts. Per-branch contacts stay in Locations. Shared public contacts are supplied from the server through a context provider, without an extra browser fetch.
+
+Follow-up QA: 91 automated checks and production build passed; desktop 1440px, tablet 768px and mobile 390/360px inspected. Isolated browser fixtures verified hide/save/filter, rank zero, settings save/error/retry, Ctrl+S, optional social clearing, draft recovery, mobile navigation Escape/focus return and no horizontal overflow. Native leave-confirmation automation stalled in the preview browser, so its dismissal path was not fully verified in this pass. No real data was modified and nothing was deployed.

@@ -340,7 +340,7 @@ function PriceEditor({
                 hasUnsavedChanges={safeSave.dirty}
               />
               <button
-                className="admin-danger-button"
+                className="admin-danger-button admin-ui-button" data-variant="danger"
                 type="button"
                 onClick={deleteItem}
                 disabled={saving || deleting}
@@ -350,7 +350,7 @@ function PriceEditor({
             </>
           ) : null}
           <button
-            className="admin-save-button admin-safe-save-button"
+            className="admin-save-button admin-safe-save-button admin-ui-button" data-variant="primary"
             type="submit"
             disabled={!safeSave.dirty || saving || deleting}
             aria-keyshortcuts="Control+S Meta+S"
@@ -477,7 +477,7 @@ export default function PricesAdminPage() {
                   />
                 </label>
                 <button
-                  className="outline-button"
+                  className="outline-button admin-ui-button" data-variant="primary"
                   type="button"
                   onClick={() => {
                     if (

@@ -36,7 +36,8 @@ const fieldLabels: Record<string, string> = {
   shortTitle: "назва",
   specialty: "спеціальність",
   experienceYears: "досвід",
-  consultationPrice: "вартість консультації",
+  consultationPrice: "первинна консультація",
+  repeatConsultationPrice: "повторна консультація",
   branch: "відділення",
   description: "опис",
   biography: "біографія",
@@ -192,7 +193,7 @@ export default function AdminRevisionHistory({
     <>
       <button
         ref={triggerRef}
-        className="admin-history-trigger"
+        className="admin-history-trigger admin-ui-button" data-variant="secondary"
         type="button"
         onClick={showHistory}
         disabled={disabled || !entityId}
@@ -202,7 +203,7 @@ export default function AdminRevisionHistory({
 
       {open ? createPortal((
         <div
-          className="admin-history-backdrop"
+          className="admin-history-backdrop admin-ui" data-admin-ui
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) close();
           }}
@@ -221,7 +222,7 @@ export default function AdminRevisionHistory({
                 <h2 id="admin-history-title">{entityLabel}</h2>
                 <p>Зберігаємо до 20 попередніх версій тексту й налаштувань.</p>
               </div>
-              <button ref={closeRef} type="button" onClick={close} aria-label="Закрити історію">
+              <button className="admin-ui-icon-button" data-variant="ghost" ref={closeRef} type="button" onClick={close} aria-label="Закрити історію">
                 <CloseIcon />
               </button>
             </header>
@@ -231,7 +232,7 @@ export default function AdminRevisionHistory({
               {!loading && error ? (
                 <div className="admin-history-state is-error" role="alert">
                   <p>{error}</p>
-                  <button type="button" onClick={() => void loadHistory()}>Спробувати ще раз</button>
+                  <button className="admin-ui-button" data-variant="secondary" type="button" onClick={() => void loadHistory()}>Спробувати ще раз</button>
                 </div>
               ) : null}
               {!loading && !error && revisions.length === 0 ? (
@@ -252,6 +253,7 @@ export default function AdminRevisionHistory({
                         <p>Змінено: {changedFieldsLabel(revision.changedFields)}</p>
                       </div>
                       <button
+                        className="admin-ui-button" data-variant="secondary"
                         type="button"
                         onClick={() => setConfirmingId(revision.id)}
                         disabled={Boolean(restoringId)}
@@ -266,8 +268,8 @@ export default function AdminRevisionHistory({
                             {hasUnsavedChanges ? " Незбережені зміни буде втрачено." : ""}
                           </p>
                           <div>
-                            <button type="button" onClick={() => setConfirmingId("")}>Скасувати</button>
-                            <button type="button" onClick={() => void restore(revision)}>Підтвердити відновлення</button>
+                            <button className="admin-ui-button" data-variant="secondary" type="button" onClick={() => setConfirmingId("")}>Скасувати</button>
+                            <button className="admin-ui-button" data-variant="primary" type="button" onClick={() => void restore(revision)}>Підтвердити відновлення</button>
                           </div>
                         </div>
                       ) : null}

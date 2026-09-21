@@ -179,10 +179,10 @@ export default function PriceImportPanel({
           </p>
         </div>
         <div className="admin-import-file-actions">
-          <button type="button" onClick={downloadPrices} disabled={exporting || importing}>
+          <button className="admin-ui-button" data-variant="secondary" type="button" onClick={downloadPrices} disabled={exporting || importing}>
             {exporting ? "Готуємо Excel…" : "Скачати актуальний прайс Excel"}
           </button>
-          <label className="admin-import-file">
+          <label className="admin-import-file admin-ui-button" data-variant="primary">
             <input
               ref={fileInput}
               type="file"
@@ -193,7 +193,7 @@ export default function PriceImportPanel({
             <span>{parsing ? "Перевіряємо…" : "Обрати Excel-файл"}</span>
           </label>
           {fileName ? (
-            <button type="button" onClick={reset} disabled={importing}>
+            <button className="admin-ui-button" data-variant="ghost" type="button" onClick={reset} disabled={importing}>
               Скасувати
             </button>
           ) : null}
@@ -287,7 +287,7 @@ export default function PriceImportPanel({
           <div className="admin-import-confirm">
             <p role="status">{status}</p>
             <button
-              className="book-button"
+              className="book-button admin-ui-button" data-variant="primary"
               type="button"
               onClick={importRows}
               disabled={importing || issues.length > 0}

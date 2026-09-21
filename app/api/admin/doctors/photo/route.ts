@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
     if (previousPhotoKey) await deleteMediaReference(previousPhotoKey, "doctors");
 
-    return Response.json({ doctors: await listDoctors() });
+    return Response.json({ doctors: await listDoctors({ includeInactive: true }) });
   } catch (error) {
     if (error instanceof ImageOptimizationError) return Response.json({ error: error.message }, { status: 400 });
     const message =

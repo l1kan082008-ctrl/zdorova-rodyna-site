@@ -4,7 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import "../doctors/portraits.css";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMouseDragScroll } from "./useMouseDragScroll";
 import type { Doctor } from "../doctors/doctorData";
 import { getDoctorInitials } from "../doctors/doctorData";
 
@@ -25,6 +26,15 @@ export function DoctorsShowcase({ doctors }: DoctorsShowcaseProps) {
   const [activeId, setActiveId] = useState(doctors[0]?.id ?? "");
   const viewportRef = useRef<HTMLDivElement>(null);
   const alignTimeoutRef = useRef<number | null>(null);
+  const alignFrameRef = useRef<number | null>(null);
+  const cancelAlignment = useCallback(() => {
+    if (alignFrameRef.current !== null) cancelAnimationFrame(alignFrameRef.current);
+    if (alignTimeoutRef.current !== null) window.clearTimeout(alignTimeoutRef.current);
+    alignFrameRef.current = null;
+    alignTimeoutRef.current = null;
+  }, []);
+  useMouseDragScroll(viewportRef, cancelAlignment);
+  useEffect(() => cancelAlignment, [cancelAlignment]);
   const activeIndex = Math.max(
     0,
     doctors.findIndex((doctor) => doctor.id === activeId),
@@ -65,11 +75,10 @@ export function DoctorsShowcase({ doctors }: DoctorsShowcaseProps) {
   const selectDoctor = useCallback((doctorId: string) => {
     setActiveId(doctorId);
 
-    if (alignTimeoutRef.current !== null) {
-      window.clearTimeout(alignTimeoutRef.current);
-    }
+    cancelAlignment();
 
-    requestAnimationFrame(() => {
+    alignFrameRef.current = requestAnimationFrame(() => {
+      alignFrameRef.current = null;
       alignDoctorInsideViewport(doctorId);
 
       alignTimeoutRef.current = window.setTimeout(() => {
@@ -77,7 +86,7 @@ export function DoctorsShowcase({ doctors }: DoctorsShowcaseProps) {
         alignTimeoutRef.current = null;
       }, 520);
     });
-  }, [alignDoctorInsideViewport]);
+  }, [alignDoctorInsideViewport, cancelAlignment]);
 
   const selectAtIndex = useCallback(
     (nextIndex: number) => {

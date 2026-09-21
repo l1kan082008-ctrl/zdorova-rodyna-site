@@ -28,6 +28,8 @@ export type Doctor = {
   experienceLabel?: string;
   consultationPrice: number | null;
   repeatConsultationPrice?: number | null;
+  isActive?: boolean;
+  sortOrder?: number;
   branch: string;
   description: string;
   biography: string;
@@ -35,6 +37,30 @@ export type Doctor = {
   schedule: DoctorSchedule;
   photoUrl: string;
 };
+
+export const DEFAULT_DOCTOR_SORT_ORDER = 1000;
+export const defaultFeaturedDoctorIds = [
+  "pochtar-kateryna", "voloshko-tetiana", "iziumska-olena", "ishchuk-nadiia",
+] as const;
+
+export function getDefaultDoctorSortOrder(id: string) {
+  const rank = defaultFeaturedDoctorIds.findIndex((featuredId) => featuredId === id);
+  return rank < 0 ? DEFAULT_DOCTOR_SORT_ORDER : rank;
+}
+
+export function getDoctorSortOrder(doctor: Pick<Doctor, "id" | "sortOrder">): number {
+  return doctor.sortOrder ?? getDefaultDoctorSortOrder(doctor.id);
+}
+
+export function compareDoctors(first: Doctor, second: Doctor): number {
+  return getDoctorSortOrder(first) - getDoctorSortOrder(second) ||
+    first.name.localeCompare(second.name, "uk-UA", { sensitivity: "base" }) ||
+    first.id.localeCompare(second.id);
+}
+
+export function getPublicDoctors(doctors: readonly Doctor[]): Doctor[] {
+  return doctors.filter((doctor) => doctor.isActive !== false).sort(compareDoctors);
+}
 
 export const doctorPhotoUrls: Record<string, string> = {
   "voloshko-tetiana": "/doctors/voloshko-tetiana.webp",
@@ -88,6 +114,8 @@ const doctor = (
   specialty,
   experienceYears: null,
   consultationPrice: null,
+  isActive: true,
+  sortOrder: getDefaultDoctorSortOrder(id),
   branch: "",
   description,
   biography: "",

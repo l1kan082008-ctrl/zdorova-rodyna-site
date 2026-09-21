@@ -2984,6 +2984,24 @@ footer {
   scrollbar-width: none;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .doctors-showcase-viewport,
+  .doctors-showcase-viewport .doctor-showcase-trigger {
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .doctors-showcase-viewport[data-dragging],
+  .doctors-showcase-viewport[data-dragging] * {
+    cursor: grabbing;
+  }
+}
+
+.doctors-showcase-viewport[data-dragging] {
+  scroll-behavior: auto;
+}
+
 .doctors-showcase-viewport::-webkit-scrollbar {
   display: none;
 }
@@ -3047,7 +3065,7 @@ footer {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .doctor-showcase-panel:not(.is-active):hover {
+  .doctors-showcase-viewport:not([data-dragging]) .doctor-showcase-panel:not(.is-active):hover {
     z-index: 2;
     flex-basis: 82px;
     box-shadow:

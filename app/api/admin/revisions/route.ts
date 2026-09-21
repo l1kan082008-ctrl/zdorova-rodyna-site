@@ -1,4 +1,7 @@
 import { readBoundedJson } from "@/lib/requestBody";
+import { parseDoctorPrice } from "@/lib/doctorPricing";
+import { parseDoctorIsActive, parseDoctorSortOrder } from "@/lib/doctorPublication";
+import { getDefaultDoctorSortOrder } from "../../../doctors/doctorData";
 import { isAuthorizedAdmin, unauthorizedAdminResponse } from "../adminAuth";
 import { createBanner, listBanners, updateBanner } from "../../banners/bannerStore";
 import { createDoctor, getDoctorById, updateDoctor } from "../../doctors/doctorStore";
@@ -44,7 +47,7 @@ async function getCurrentSnapshot(entityType: ContentEntityType, entityId: strin
     case "banner":
       return (await listBanners()).find((item) => item.id === entityId) ?? null;
     case "doctor":
-      return await getDoctorById(entityId);
+      return await getDoctorById(entityId, { includeInactive: true });
     case "service":
       return (await listManagedServices({ includeInactive: true }))
         .find((item) => item.id === entityId) ?? null;
@@ -62,9 +65,14 @@ function doctorValues(snapshot: Record<string, unknown>) {
     experienceYears: typeof snapshot.experienceYears === "number"
       ? Math.max(0, Math.round(snapshot.experienceYears))
       : null,
-    consultationPrice: typeof snapshot.consultationPrice === "number"
-      ? Math.min(100_000, Math.max(0, Math.round(snapshot.consultationPrice)))
-      : null,
+    consultationPrice: snapshot.consultationPrice === undefined
+      ? undefined
+      : parseDoctorPrice(snapshot.consultationPrice),
+    repeatConsultationPrice: snapshot.repeatConsultationPrice === undefined
+      ? undefined
+      : parseDoctorPrice(snapshot.repeatConsultationPrice),
+    isActive: snapshot.isActive === undefined ? undefined : parseDoctorIsActive(snapshot.isActive),
+    sortOrder: snapshot.sortOrder === undefined ? undefined : parseDoctorSortOrder(snapshot.sortOrder),
     branch: String(snapshot.branch ?? "").trim(),
     description: String(snapshot.description ?? "").trim(),
     biography: String(snapshot.biography ?? "").trim(),
@@ -111,9 +119,11 @@ async function restoreSnapshot(
     case "doctor": {
       const values = doctorValues(snapshot);
       if (!values.name || !values.specialty) throw new Error("Збережена версія лікаря неповна.");
-      if (!current) await createDoctor({ id: entityId, name: values.name, specialty: values.specialty });
+      if (!current) await createDoctor({
+        ...values, id: entityId, sortOrder: values.sortOrder ?? getDefaultDoctorSortOrder(entityId),
+      });
       await updateDoctor(entityId, values);
-      return getDoctorById(entityId);
+      return getDoctorById(entityId, { includeInactive: true });
     }
     case "service": {
       const values = {
@@ -165,6 +175,7 @@ export async function POST(request: Request) {
     const stored = await getContentRevision(entityType, entityId, revisionId);
     if (!stored) return Response.json({ error: "Версію не знайдено." }, { status: 404 });
 
+    if (entityType === "doctor") doctorValues(stored.snapshot);
     const current = await getCurrentSnapshot(entityType, entityId);
     if (current) {
       await recordContentRevision({

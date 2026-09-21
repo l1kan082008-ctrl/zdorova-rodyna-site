@@ -1,0 +1,78 @@
+.page { min-width: 0; }
+.page .editor { min-width: 0; }
+.page .formGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.page .formGrid > * { min-width: 0; }
+.page .formGrid label, .page .specialtyPicker legend { font-size: 13px; line-height: 1.45; font-weight: 650; }
+.page .formGrid label small, .fieldHint { color: #587276; font-size: 12px; line-height: 1.5; font-weight: 500; }
+.page .formGrid input, .page .formGrid select { min-width: 0; font: inherit; font-size: 14px; }
+.fullWidth { grid-column: 1 / -1; }
+.formFields { display: grid; gap: 18px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.page .formFields:disabled { opacity: .7; }
+.fieldHint, .fieldError { margin: 0; }
+.fieldError { color: #a0443b; font-size: 13px; line-height: 1.5; }
+.createHeader { margin-bottom: 24px; }
+.createHeader h2 { margin: 0 0 8px; font-size: 24px; line-height: 1.25; font-weight: 650; }
+.createHeader p { margin: 0; max-width: 60ch; color: #587276; font-size: 14px; line-height: 1.6; }
+.createActions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+.createStatus { margin: 0; color: #587276; font-size: 13px; line-height: 1.5; }
+.page .listActions { padding: 16px; border-bottom: 1px solid #e2ebea; }
+.page .listActions button { display: flex; align-items: center; justify-content: center; width: 100%; }
+.page .listActions button > span { width: auto; height: auto; background: none; color: inherit; font: inherit; }
+.page .doctorList button { grid-template-columns: 44px minmax(0, 1fr); min-height: 72px; }
+.page .doctorList button strong { font-size: 13px; line-height: 1.35; white-space: normal; }
+.page .doctorList button small { font-size: 12px; line-height: 1.4; }
+.page .doctorList button > .thumbnail { position: relative; width: 44px; height: 48px; flex: 0 0 auto; overflow: hidden; border-radius: 10px; }
+.thumbnail img, .editorPhoto img { object-fit: cover; object-position: center 18%; }
+.editorPhoto { position: relative; overflow: hidden; }
+.emptyList { margin: 0; padding: 20px 16px; color: #587276; font-size: 13px; line-height: 1.6; }
+.emptyEditor { align-self: start; padding: 28px; border: 1px solid #dce7e6; border-radius: 24px; background: #fff; }
+.emptyEditor h2 { margin: 0 0 8px; font-size: 22px; }
+.emptyEditor p { margin: 0; color: #587276; font-size: 14px; line-height: 1.6; }
+.specialtyPicker { min-width: 0; margin: 0; padding: 0; border: 0; }
+.specialtyPicker legend { margin-bottom: 7px; padding: 0; color: #073f45; }
+.specialtyChips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; padding: 0; list-style: none; }
+.specialtyChips li { min-width: 0; max-width: 100%; }
+.page .specialtyChip { max-width: 100%; padding-inline: 10px; border-radius: 11px; white-space: normal; overflow-wrap: anywhere; text-align: left; background: #f1f3f5; }
+.page .specialtyChip span { flex-shrink: 0; font-size: 18px; }
+.page .specialtyTrigger { width: 100%; justify-content: space-between; text-align: left; }
+.specialtyPanel { display: grid; gap: 8px; margin-top: 8px; padding: 12px; border: 1px solid #d5e4e2; border-radius: 12px; background: #fff; }
+.specialtyPanel[hidden] { display: none; }
+.page .specialtyPanel > input { height: 44px; font-size: 14px; }
+.specialtyOptions { display: grid; max-height: 224px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.page .specialtyOption { display: flex; min-height: 44px; align-items: center; gap: 10px; padding: 8px 4px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; }
+.page .specialtyOption:hover { background: #f1f3f5; }
+.page .specialtyOption > input { width: 18px; height: 18px; flex: 0 0 18px; margin: 0; padding: 0; accent-color: #087f82; }
+.page .specialtyOption > span { overflow-wrap: anywhere; }
+.page .customSpecialty { min-width: 0; white-space: normal; overflow-wrap: anywhere; text-align: left; }
+.page :is(input, select, textarea, button):focus-visible { outline: 2px solid #087f82; outline-offset: 3px; }
+@media (max-width: 760px) {
+  .page .formGrid { grid-template-columns: minmax(0, 1fr); }
+  .page .formGrid input, .page .formGrid select, .page .specialtyPanel > input { font-size: 16px; }
+  .createActions > button { flex: 1 1 180px; }
+  .createHeader h2 { font-size: 22px; }
+}
+
+.page .formFields > label { display: grid; gap: 7px; color: #073f45; font-size: 13px; line-height: 1.45; font-weight: 650; }
+.page .formFields > label small { color: #587276; font-size: 12px; line-height: 1.5; font-weight: 500; }
+
+/* Nested editor grids and fieldsets must fit the allocated column. */
+.page .editor { max-width: 100%; }
+.page .editor > *, .page .formFields > * { min-width: 0; }
+.page .editor :global(.admin-doctor-form), .page .formFields { grid-template-columns: minmax(0, 1fr); }
+.page .editor :global(.admin-editor-heading) > div { min-width: 0; }
+.page .editor :global(.admin-editor-heading) h1 { overflow-wrap: anywhere; }
+.page .editor :global(.admin-safe-save-bar), .page .editor :global(.admin-safe-save-buttons) { min-width: 0; flex-wrap: wrap; }
+.page .editor :global(.admin-photo-panel) > * { min-width: 0; overflow-wrap: anywhere; }
+
+.publicationGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; min-width: 0; padding-block: 18px; border-block: 1px solid var(--admin-border, #d7dde2); }
+.publicationGrid > label { display: grid; min-width: 0; align-content: start; }
+.publicationGrid small { color: var(--admin-muted, #587276); font-size: 12px; line-height: 1.5; font-weight: 500; }
+.page .publicationGrid .visibilityControl { display: flex; align-items: center; align-self: start; gap: 12px; width: 100%; min-height: 44px; margin: 0; }
+.page .visibilityControl > span:first-child { min-width: 0; gap: 5px; }
+.page .visibilityControl strong { font-size: 13px; line-height: 1.45; }
+.page .visibilityControl small { font-size: 12px; line-height: 1.5; }
+.page .listFilter { font-size: 12px; }
+.page .doctorList button[data-hidden] > .thumbnail { filter: grayscale(1); opacity: .65; }
+.page .doctorList button[data-hidden] strong { color: var(--admin-muted, #587276); }
+.hiddenStatus { width: fit-content; padding: 2px 7px; border: 1px solid var(--admin-border, #d7dde2); border-radius: 6px; color: var(--admin-muted, #587276); background: var(--admin-canvas, #f1f3f5); font-size: 11px; line-height: 1.5; font-weight: 650; }
+@media (max-width: 760px) { .publicationGrid { grid-template-columns: minmax(0, 1fr); } }

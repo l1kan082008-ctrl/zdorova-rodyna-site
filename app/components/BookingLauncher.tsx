@@ -1,5 +1,7 @@
 "use client";
 import { CloseIcon } from "./CloseIcon";
+import { useSiteSettings } from "./SiteSettingsProvider";
+import { sitePhoneHref } from "@/lib/siteSettings";
 
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -59,6 +61,7 @@ export function BookingLauncher() {
 }
 
 function BookingDialog({ request, onClose }: { request: URL; onClose: () => void }) {
+  const settings = useSiteSettings();
   const params = request.searchParams;
   const studies = params.get("services")?.trim() || "";
   const doctor = params.get("doctor")?.trim() || "";
@@ -215,7 +218,7 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
           <label className="quick-booking__consent"><input type="checkbox" name="consent" required /><span>Погоджуюся на обробку контактних даних для організації запису.</span></label>
           <label className="booking-honeypot" aria-hidden="true">Ваш сайт<input name="website" tabIndex={-1} autoComplete="off" /></label>
           <TurnstileField key={captchaAttempt} onToken={setToken} />
-          {error && <p className="booking-submit-error" role="alert">{error} Також можна <a href="tel:+380676714444">зателефонувати</a>.</p>}
+          {error && <p className="booking-submit-error" role="alert">{error} Також можна <a href={sitePhoneHref(settings.phone)}>зателефонувати</a>.</p>}
           <button className="book-button" type="submit" disabled={submitting || (!isHomeVisit && Boolean(locationId) && locationsLoading)}>{submitting ? "Надсилаємо…" : "Надіслати заявку"}<span aria-hidden="true">→</span></button>
         </fieldset>
       </form>

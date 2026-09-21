@@ -1,18 +1,10 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
-import { getDoctorById } from "../../api/doctors/doctorStore";
-import { defaultDoctors, type Doctor } from "../doctorData";
+import { getPublicDoctorById as loadDoctor } from "../../api/doctors/publicDoctors";
 import { DoctorProfileDetails } from "./DoctorProfileDetails";
 
-async function loadDoctor(id: string): Promise<Doctor | null> {
-  const fallback = defaultDoctors.find((doctor) => doctor.id === id) ?? null;
-
-  try {
-    return (await getDoctorById(id)) ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -22,12 +14,7 @@ export async function generateMetadata({
   const { id } = await params;
   const doctor = await loadDoctor(id);
 
-  if (!doctor) {
-    return {
-      title: "Лікаря не знайдено — Здорова Родина",
-      description: "Перегляньте каталог лікарів медичного центру.",
-    };
-  }
+  if (!doctor) notFound();
 
   return {
     title: `${doctor.name} — Здорова Родина`,
@@ -52,6 +39,7 @@ export default async function DoctorProfilePage({
       ? requestedReturnTo
       : undefined;
   const doctor = await loadDoctor(id);
+  if (!doctor) notFound();
 
   return (
     <main className="inner-page">

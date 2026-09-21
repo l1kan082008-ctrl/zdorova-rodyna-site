@@ -62,11 +62,11 @@ export default function LoginForm() {
             value={password}
           />
           <p className={styles.error} role="alert">{error}</p>
-          <button className={styles.submit} disabled={pending} type="submit">
+          <button className={`${styles.submit} admin-ui-button`} data-variant="primary" disabled={pending} type="submit">
             {pending ? "Перевіряємо…" : "Увійти"}
           </button>
         </form>
-        <Link className={styles.back} href="/">← Повернутися на сайт</Link>
+        <Link className={`${styles.back} admin-ui-button`} data-variant="ghost" href="/">← Повернутися на сайт</Link>
       </section>
     </main>
   );

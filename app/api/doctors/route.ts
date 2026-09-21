@@ -1,4 +1,4 @@
-import { getDoctorById, listDoctors } from "./doctorStore";
+import { getPublicDoctorById as getDoctorById, listPublicDoctors as listDoctors } from "./publicDoctors";
 
 export async function GET(request: Request) {
   try {
@@ -6,12 +6,12 @@ export async function GET(request: Request) {
     if (id) {
       const doctor = await getDoctorById(id);
       if (!doctor) {
-        return Response.json({ error: "Лікаря не знайдено" }, { status: 404 });
+        return Response.json({ error: "Лікаря не знайдено" }, { status: 404, headers: { "cache-control": "no-store" } });
       }
-      return Response.json({ doctor });
+      return Response.json({ doctor }, { headers: { "cache-control": "no-store" } });
     }
 
-    return Response.json({ doctors: await listDoctors() });
+    return Response.json({ doctors: await listDoctors() }, { headers: { "cache-control": "no-store" } });
   } catch (error) {
     const incidentId = crypto.randomUUID();
     console.error(JSON.stringify({

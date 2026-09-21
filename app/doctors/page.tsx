@@ -1,9 +1,10 @@
 import { ServiceBookingCta } from "../services/[slug]/ServiceBookingCta";
 import type { Metadata } from "next";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
-import { listDoctors } from "../api/doctors/doctorStore";
+import { listPublicDoctors as listDoctors } from "../api/doctors/publicDoctors";
 import { DoctorsDirectory } from "./DoctorsDirectory";
-import { defaultDoctors } from "./doctorData";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Лікарі — Здорова Родина",
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function DoctorsPage() {
-  const doctors = await listDoctors().catch(() => defaultDoctors);
+  const doctors = await listDoctors();
 
   return (
     <main className="inner-page doctors-page">

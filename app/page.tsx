@@ -1,10 +1,12 @@
 import { isInformationOnlyLocation } from "../lib/locationPolicy";
+import { getSiteSettings } from "./api/settings/settingsStore";
+import { sitePhoneHref } from "@/lib/siteSettings";
 import { priceSearchIdentity } from "./prices/deduplicateSearch";
 import Link from "next/link";
 import "./home-refinements.css";
 import type { CSSProperties } from "react";
 import { listPopularBookingServices } from "./api/bookings/bookingStore";
-import { listDoctors } from "./api/doctors/doctorStore";
+import { listPublicDoctors as listDoctors } from "./api/doctors/publicDoctors";
 import { listPublicPriceItems } from "./api/prices/priceStore";
 import {
   getDefaultManagedServices,
@@ -19,7 +21,7 @@ import { HorizontalCardScroller } from "./components/HorizontalCardScroller";
 import { PromoSlider } from "./components/PromoSlider";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome";
 import { centerLocations } from "./contacts/locationData";
-import { defaultDoctors } from "./doctors/doctorData";
+import { getPublicDoctors } from "./doctors/doctorData";
 import { catalogItems, type PriceItem } from "./prices/priceData";
 import {
   formatPrice,
@@ -55,12 +57,12 @@ const advantages = [
   },
 ];
 
-const quickItems = [
+const quickItems = (phone: string) => [
   {
     icon: "calendar",
     title: "Зручний запис",
-    text: "Телефоном +38 (067) 671-44-44",
-    href: "tel:+380676714444",
+    text: `Телефоном ${phone}`,
+    href: sitePhoneHref(phone),
   },
   {
     icon: "home",
@@ -80,13 +82,6 @@ const quickItems = [
     text: "Підкажемо підготовку та оберемо час",
     href: "/contacts#booking",
   },
-];
-
-const featuredDoctorOrder = [
-  "pochtar-kateryna",
-  "voloshko-tetiana",
-  "iziumska-olena",
-  "ishchuk-nadiia",
 ];
 
 type PopularPriceDirection = {
@@ -322,27 +317,17 @@ function LineIcon({ type }: { type: string }) {
 }
 
 export default async function Home() {
+  const settings = await getSiteSettings();
   const [priceDirections, doctors, priceItems, managedServices] = await Promise.all([
     getPopularPriceDirections(),
-    listDoctors().catch(() => defaultDoctors),
+    listDoctors(),
     listPublicPriceItems().catch(() => catalogItems),
     listManagedServices().catch(() => getDefaultManagedServices()),
   ]);
   const homeServiceDetails = managedServices
     .filter((service) => service.active && (service.showOnHome || service.slug === "ultrasound"))
     .sort((first, second) => first.sortOrder - second.sortOrder);
-  const showcaseDoctors = doctors.sort((first, second) => {
-    const firstIndex = featuredDoctorOrder.indexOf(first.id);
-    const secondIndex = featuredDoctorOrder.indexOf(second.id);
-    const featuredDifference =
-      (firstIndex === -1 ? Number.MAX_SAFE_INTEGER : firstIndex) -
-      (secondIndex === -1 ? Number.MAX_SAFE_INTEGER : secondIndex);
-
-    return (
-      featuredDifference ||
-      first.name.localeCompare(second.name, "uk-UA", { sensitivity: "base" })
-    );
-  });
+  const showcaseDoctors = getPublicDoctors(doctors);
   const searchItems: HomeSearchItem[] = [
     ...serviceDetails.map((service) => ({
       id: service.slug,
@@ -542,7 +527,7 @@ export default async function Home() {
       </section>
 
       <section className="quick-strip" aria-label="Зручності для пацієнтів">
-        {quickItems.map((item) => (
+        {quickItems(settings.phone).map((item) => (
           <article key={item.title}>
             <Link className="home-quick-action" href={item.href}>
             <span className="quick-icon" aria-hidden="true">

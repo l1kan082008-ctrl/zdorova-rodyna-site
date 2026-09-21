@@ -5,7 +5,7 @@ import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
 import type { CenterLocation } from "../../contacts/locationData";
 import { centerLocations, getDirectionsUrl } from "../../contacts/locationData";
-import type { Doctor } from "../../doctors/doctorData";
+import { getPublicDoctors, type Doctor } from "../../doctors/doctorData";
 import type { PriceItem } from "../../prices/priceData";
 import type { ServiceDetail } from "../serviceData";
 import { CtFaqAccordion } from "./CtFaqAccordion";
@@ -62,16 +62,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
     "kostopil-hrushevskoho-4",
   ]);
   const locations = centerLocations.filter((location) => ctLocationIds.has(location.id));
-  const doctorOrder = new Map([
-    ["rohalskyi-vitalii", 0],
-    ["zhyber-kostiantyn", 1],
-    ["pysarchuk-taras", 2],
-    ["verchenko-dmytro", 3],
-    ["novak-bohdana", 4],
-  ]);
-  const shownDoctors = [...doctors]
-    .sort((left, right) => (doctorOrder.get(left.id) ?? 99) - (doctorOrder.get(right.id) ?? 99))
-    .slice(0, 5);
+  const shownDoctors = getPublicDoctors(doctors).slice(0, 5);
 
   return (
     <main className={styles.page}>

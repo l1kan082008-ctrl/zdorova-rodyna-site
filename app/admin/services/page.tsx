@@ -210,7 +210,7 @@ export default function ServicesAdminPage() {
           <h1>Наші послуги</h1>
           <p>Керуйте картками послуг, їхнім порядком, зображеннями та видимістю на сайті.</p>
         </div>
-        <Link className={styles.siteLink} href="/services">Переглянути на сайті <span aria-hidden="true">↗</span></Link>
+        <Link className={`${styles.siteLink} admin-ui-button`} data-variant="ghost" href="/services">Переглянути на сайті <span aria-hidden="true">↗</span></Link>
       </header>
 
       {error ? <p className={styles.error} role="alert">{error}</p> : null}
@@ -221,7 +221,7 @@ export default function ServicesAdminPage() {
           <aside className={styles.catalogPanel}>
             <div className={styles.catalogHeader}>
               <div><strong>Усі послуги</strong><span>{services.length} у каталозі</span></div>
-              <button className={styles.createButton} type="button" onClick={create} disabled={creating}>
+              <button className={`${styles.createButton} admin-ui-button`} data-variant="primary" type="button" onClick={create} disabled={creating}>
                 <span aria-hidden="true">+</span>{creating ? "Створюємо" : "Додати"}
               </button>
             </div>
@@ -292,7 +292,7 @@ export default function ServicesAdminPage() {
                   <div className={styles.mediaThumb} style={{ backgroundImage: `url("${imageUrl(draft)}")` }} aria-hidden="true" />
                   <div className={styles.mediaActions}>
                     <input ref={fileInput} className={styles.fileInput} type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => void uploadImage(event.target.files?.[0])} />
-                    <button type="button" className={styles.uploadButton} onClick={() => fileInput.current?.click()} disabled={uploading}>
+                    <button type="button" className={`${styles.uploadButton} admin-ui-button`} data-variant="secondary" onClick={() => fileInput.current?.click()} disabled={uploading}>
                       {uploading ? "Завантажуємо…" : "Замінити зображення"}
                     </button>
                     <small>Нове зображення застосовується після збереження картки.</small>
@@ -326,9 +326,9 @@ export default function ServicesAdminPage() {
                     disabled={saving || uploading}
                     hasUnsavedChanges={safeSave.dirty}
                   />
-                  <button className={styles.deleteButton} type="button" onClick={remove} disabled={saving}>Видалити послугу</button>
+                  <button className={`${styles.deleteButton} admin-ui-button`} data-variant="danger" type="button" onClick={remove} disabled={saving}>Видалити послугу</button>
                   <button
-                    className={styles.saveButton}
+                    className={`${styles.saveButton} admin-ui-button`} data-variant="primary"
                     type="submit"
                     disabled={!safeSave.dirty || saving || uploading}
                     aria-keyshortcuts="Control+S Meta+S"
@@ -340,7 +340,7 @@ export default function ServicesAdminPage() {
               </div>
             </form>
           ) : (
-            <div className={styles.emptyEditor}><strong>Оберіть послугу</strong><p>Або створіть нову картку в каталозі.</p><button type="button" onClick={create}>Додати послугу</button></div>
+            <div className={styles.emptyEditor}><strong>Оберіть послугу</strong><p>Або створіть нову картку в каталозі.</p><button className="admin-ui-button" data-variant="primary" type="button" onClick={create}>Додати послугу</button></div>
           )}
         </section>
       ) : null}
@@ -355,6 +355,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (val
         className={`${styles.toggle}${checked ? ` ${styles.toggleOn}` : ""}`}
         type="button"
         role="switch"
+        aria-label={label}
         aria-checked={checked}
         onClick={() => onChange(!checked)}
       ><span /></button>

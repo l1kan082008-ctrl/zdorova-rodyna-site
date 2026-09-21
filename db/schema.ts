@@ -6,6 +6,10 @@ export const doctors = sqliteTable("doctors", {
   name: text("name").notNull(),
   specialty: text("specialty").notNull(),
   experienceYears: integer("experience_years"),
+  consultationPrice: integer("consultation_price"),
+  repeatConsultationPrice: integer("repeat_consultation_price"),
+  isActive: integer("is_active").notNull().default(1),
+  sortOrder: integer("sort_order"),
   branch: text("branch").notNull().default(""),
   description: text("description").notNull().default(""),
   biography: text("biography").notNull().default(""),
@@ -99,3 +103,9 @@ export const adminContentRevisions = sqliteTable("admin_content_revisions", {
     table.createdAt,
   ),
 ]);
+
+export const siteSettings = sqliteTable("site_settings", {
+  id: text("id").primaryKey(),
+  settingsJson: text("settings_json").notNull(),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});

@@ -218,7 +218,7 @@ export default function BookingsAdminPage() {
                     </select>
                   </label>
                   <button
-                    className="admin-booking-delete"
+                    className="admin-booking-delete admin-ui-button" data-variant="danger"
                     type="button"
                     disabled={deletingId === booking.id || savingId === booking.id}
                     onClick={() => removeBooking(booking)}

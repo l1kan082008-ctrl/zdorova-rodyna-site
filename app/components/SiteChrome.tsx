@@ -2,7 +2,9 @@
 import { doctorCategories } from "../doctors/doctorCategories";
 import { CloseIcon } from "./CloseIcon";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
+import { useSiteSettings } from "./SiteSettingsProvider";
+import { sitePhoneHref, siteViberHref } from "@/lib/siteSettings";
 import type { CSSProperties, FormEvent } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
@@ -154,6 +156,7 @@ function formatSupportPhone(value: string) {
 }
 
 export function SiteHeader({ active, home = false, bookingHref = "/contacts#booking" }: { active?: string; home?: boolean; bookingHref?: string }) {
+  const settings = useSiteSettings();
   const [heroPassed, setHeroPassed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [headerPlaceholderStyle, setHeaderPlaceholderStyle] = useState<CSSProperties>();
@@ -504,11 +507,11 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
         <div className="header-contact-actions">
         {home ? (
           <div className="header-home-action">
-            <a className={`header-home-phone${heroPassed ? " is-hidden" : ""}`} href="tel:+380676714444" aria-hidden={heroPassed} tabIndex={heroPassed ? -1 : 0}>
+            <a className={`header-home-phone${heroPassed ? " is-hidden" : ""}`} href={sitePhoneHref(settings.phone)} aria-hidden={heroPassed} tabIndex={heroPassed ? -1 : 0}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.69 2.79a2 2 0 0 1-.45 2.11L8.09 9.89a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.89.33 1.83.56 2.79.69A2 2 0 0 1 22 16.92Z" />
               </svg>
-              <span>+38 (067) 671-44-44</span>
+              <span>{settings.phone}</span>
             </a>
             <a className={`book-button header-book${heroPassed ? "" : " is-hidden"}`} href={bookingHref} aria-hidden={!heroPassed} tabIndex={heroPassed ? 0 : -1}>
               Записатися на прийом
@@ -640,7 +643,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
               <div className="support-dialog-success" role="status">
                 <span aria-hidden="true">✓</span>
                 <strong>Заявку прийнято</strong>
-                <p>Адміністратор зателефонує вам у робочий час: пн–пт, 08:00–20:00; сб, 08:00–17:00. Неділя — вихідний.</p>
+                <p>Адміністратор зателефонує вам у робочий час: {settings.hours.join("; ")}.</p>
                 <button type="button" onClick={closeSupport}>
                   Готово
                 </button>
@@ -651,12 +654,12 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
                   <div className="support-dialog-intro">
                     <h2>Зворотний дзвінок</h2>
                     <p>Залиште номер — передзвонимо.</p>
-                    <div className="support-dialog-hours" aria-label="Графік адміністраторів: понеділок — субота, з 08:00 до 20:00. Неділя — вихідний.">
+                    <div className="support-dialog-hours" aria-label={`Графік адміністраторів: ${settings.hours.join("; ")}`}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
                         <circle cx="12" cy="12" r="8.5" />
                         <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      <span>Пн–пт 08:00–20:00 <span aria-hidden="true">·</span> Сб 08:00–17:00</span>
+                      <span>{settings.hours.join(" · ")}</span>
                     </div>
                   </div>
                   <div className="support-phone-row">
@@ -710,7 +713,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
                 </div>
 
                 <div className="support-contact-actions">
-                  <a className="support-contact-link support-call-link" href="tel:+380676714444">
+                  <a className="support-contact-link support-call-link" href={sitePhoneHref(settings.phone)}>
                     <Image
                       width={32}
                       height={32}
@@ -723,7 +726,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
                   </a>
                   <a
                     className="support-contact-link support-viber-link"
-                    href="viber://chat?number=%2B380676714444"
+                    href={siteViberHref(settings.phone)}
                   >
                     <Image
                       width={32}
@@ -747,6 +750,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
 }
 
 export function SiteFooter() {
+  const settings = useSiteSettings();
   const [openFooterSection, setOpenFooterSection] = useState<string | null>(null);
 
   const toggleFooterSection = (section: string) => {
@@ -778,9 +782,9 @@ export function SiteFooter() {
           </p>
           <div className="footer-socials" aria-label="Соціальні мережі">
             <div>
-              <a
+              {settings.facebookUrl && (<a
                 className="footer-social-link"
-                href="https://www.facebook.com/zdorovarodina.rivne"
+                href={settings.facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Здорова Родина у Facebook"
@@ -793,10 +797,10 @@ export function SiteFooter() {
                 >
                   <path d="M13.7 21v-8h2.7l.4-3h-3.1V8.1c0-.9.3-1.5 1.6-1.5H17V3.9c-.8-.1-1.5-.2-2.3-.2-2.3 0-3.9 1.4-3.9 4.1V10H8.2v3h2.6v8h2.9Z" />
                 </svg>
-              </a>
-              <a
+              </a>)}
+              {settings.instagramUrl && (<a
                 className="footer-social-link"
-                href="https://www.instagram.com/zdorova_rodyna_rivne/"
+                href={settings.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Здорова Родина в Instagram"
@@ -811,7 +815,29 @@ export function SiteFooter() {
                   <circle cx="12" cy="12" r="3.65" />
                   <circle className="footer-social-icon-dot" cx="17.35" cy="6.8" r="1" />
                 </svg>
-              </a>
+              </a>)}
+              {settings.tiktokUrl && (<a
+                className="footer-social-link"
+                href={settings.tiktokUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Здорова Родина в TikTok"
+              >
+                <svg className="footer-social-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                  <path d="M14 3h3a5 5 0 0 0 4 4.8v3a8 8 0 0 1-4-1.4V16a6 6 0 1 1-6-6v3a3 3 0 1 0 3 3V3Z" />
+                </svg>
+              </a>)}
+              {settings.threadsUrl && (<a
+                className="footer-social-link"
+                href={settings.threadsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Здорова Родина у Threads"
+              >
+                <svg className="footer-social-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                  <path d="M19.3 8.3C18.4 4.5 16 2.5 12 2.5c-5.7 0-8.5 3.7-8.5 9.5s2.8 9.5 8.5 9.5c4.5 0 7.8-2.5 7.8-6 0-3.2-2.7-5.4-6.5-5.4-3.4 0-5.3 1.6-5.3 3.8 0 1.8 1.4 3 3.3 3 2.7 0 4-2.3 4-6.1 0-3-1.3-4.6-3.5-4.6-1.4 0-2.5.5-3.2 1.6" />
+                </svg>
+              </a>)}
             </div>
           </div>
         </section>
@@ -893,12 +919,12 @@ export function SiteFooter() {
         <section className="footer-directory-column footer-contact-column">
           <h2><Link href="/contacts">Контакти</Link></h2>
           <div className="footer-contact-list">
-            <a href="tel:+380676714444">+38 (067) 671-44-44</a>
-            <a href="mailto:zdorovarodynarivne@ukr.net">zdorovarodynarivne@ukr.net</a>
+            <a href={sitePhoneHref(settings.phone)}>{settings.phone}</a>
+            <a href={`mailto:${settings.email}`}>{settings.email}</a>
             <Link href="/contacts">
-              м. Рівне, вул. Володимира Стельмаха (Курчатова), 18-М
+              {settings.address}
             </Link>
-            <p>Пн–Пт 08:00–19:00<br />Сб 08:00–17:00</p>
+            <p>{settings.hours.map((line, index) => <Fragment key={`${index}-${line}`}>{index > 0 && <br />}{line}</Fragment>)}</p>
           </div>
         </section>
       </div>

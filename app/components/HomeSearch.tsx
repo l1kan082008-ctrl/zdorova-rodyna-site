@@ -1,5 +1,7 @@
 "use client";
 import { CloseIcon as SearchCloseIcon } from "./CloseIcon";
+import { useSiteSettings } from "./SiteSettingsProvider";
+import { sitePhoneHref } from "@/lib/siteSettings";
 
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "../../lib/imageSource";
@@ -83,6 +85,7 @@ const formatPrice = (amount: number) =>
   `${new Intl.NumberFormat("uk-UA").format(amount)} ₴`;
 
 export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
+  const settings = useSiteSettings();
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPriceIds, setSelectedPriceIds] = useState<string[]>([]);
@@ -535,7 +538,7 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
             <div className="home-search-empty">
               <strong>Нічого не знайшли за цим запитом</strong>
               <p>Спробуйте коротшу назву або зверніться до адміністратора.</p>
-              <a className="home-search-admin-call" href="tel:+380676714444" onClick={closeSearch}>
+              <a className="home-search-admin-call" href={sitePhoneHref(settings.phone)} onClick={closeSearch}>
                 Зателефонувати адміністратору <span aria-hidden="true">→</span>
               </a>
             </div>

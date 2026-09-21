@@ -12,6 +12,8 @@ import "./mobile-safe-area.css";
 import { Suspense } from "react";
 import { BookingLauncher } from "./components/BookingLauncher";
 import { GlobalCalculator } from "./components/GlobalCalculator";
+import { SiteSettingsProvider } from "./components/SiteSettingsProvider";
+import { getSiteSettings } from "./api/settings/settingsStore";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -74,9 +76,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await getSiteSettings();
   return (
     <html lang="uk">
-      <body>{children}<Suspense fallback={null}><BookingLauncher /><GlobalCalculator /></Suspense></body>
+      <body><SiteSettingsProvider settings={settings}>{children}<Suspense fallback={null}><BookingLauncher /><GlobalCalculator /></Suspense></SiteSettingsProvider></body>
     </html>
   );
 }

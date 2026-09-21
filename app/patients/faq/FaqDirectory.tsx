@@ -2,6 +2,7 @@
 import { CloseIcon } from "../../components/CloseIcon";
 
 import { useMemo, useState } from "react";
+import { useSiteSettings } from "../../components/SiteSettingsProvider";
 
 type FaqCategory =
   | "Запис і візит"
@@ -15,7 +16,7 @@ type FaqItem = {
   category: FaqCategory;
 };
 
-const faqItems: FaqItem[] = [
+const faqItems = (phone: string): FaqItem[] => [
   {
     category: "Запис і візит",
     question: "Чи потрібне направлення на обстеження?",
@@ -26,7 +27,7 @@ const faqItems: FaqItem[] = [
     category: "Запис і візит",
     question: "Як записатися до центру?",
     answer:
-      "Оберіть послугу на сайті та надішліть заявку або зателефонуйте за номером +38 (067) 671-44-44. Адміністратор підтвердить відділення, дату, час, вартість і правила підготовки.",
+      `Оберіть послугу на сайті та надішліть заявку або зателефонуйте за номером ${phone}. Адміністратор підтвердить відділення, дату, час, вартість і правила підготовки.`,
   },
   {
     category: "Запис і візит",
@@ -44,7 +45,7 @@ const faqItems: FaqItem[] = [
     category: "Запис і візит",
     question: "Як перенести або скасувати візит?",
     answer:
-      "Зателефонуйте адміністратору за номером +38 (067) 671-44-44. Бажано повідомити про зміни завчасно — ми скасуємо запис або запропонуємо інший зручний час.",
+      `Зателефонуйте адміністратору за номером ${phone}. Бажано повідомити про зміни завчасно — ми скасуємо запис або запропонуємо інший зручний час.`,
   },
   {
     category: "Запис і візит",
@@ -223,6 +224,7 @@ function normalize(value: string) {
 }
 
 export function FaqDirectory() {
+  const settings = useSiteSettings();
   const [activeCategory, setActiveCategory] = useState<(typeof categories)[number]>("Усі");
   const [query, setQuery] = useState("");
   const [openItem, setOpenItem] = useState<number | null>(null);
@@ -230,14 +232,14 @@ export function FaqDirectory() {
   const filteredItems = useMemo(() => {
     const normalizedQuery = normalize(query);
 
-    return faqItems
+    return faqItems(settings.phone)
       .map((item, index) => ({ ...item, originalIndex: index }))
       .filter((item) => activeCategory === "Усі" || item.category === activeCategory)
       .filter((item) => {
         if (!normalizedQuery) return true;
         return normalize(`${item.question} ${item.answer} ${item.category}`).includes(normalizedQuery);
       });
-  }, [activeCategory, query]);
+  }, [activeCategory, query, settings.phone]);
 
   return (
     <section className="faq-directory" aria-label="Відповіді на часті запитання">

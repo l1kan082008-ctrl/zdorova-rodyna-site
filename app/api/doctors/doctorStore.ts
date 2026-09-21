@@ -1,7 +1,13 @@
 import { initializeOnce } from "../../../lib/initializeOnce";
 import { env } from "@/lib/runtimeEnv";
+import { parseDoctorPrice } from "@/lib/doctorPricing";
+import { parseDoctorIsActive, parseDoctorSortOrder } from "@/lib/doctorPublication";
 import {
   defaultDoctors,
+  defaultFeaturedDoctorIds,
+  DEFAULT_DOCTOR_SORT_ORDER,
+  compareDoctors,
+  getDoctorSortOrder,
   doctorPhotoUrls,
   type Doctor,
   type DoctorPatientGroup,
@@ -14,6 +20,9 @@ type DoctorRow = {
   specialty: string;
   experience_years: number | null;
   consultation_price: number | null;
+  repeat_consultation_price: number | null;
+  is_active: number;
+  sort_order: number | null;
   branch: string;
   description: string;
   biography: string;
@@ -29,6 +38,9 @@ const createDoctorsTable = `
     specialty TEXT NOT NULL,
     experience_years INTEGER,
     consultation_price INTEGER,
+    repeat_consultation_price INTEGER,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    sort_order INTEGER,
     branch TEXT NOT NULL DEFAULT '',
     description TEXT NOT NULL DEFAULT '',
     biography TEXT NOT NULL DEFAULT '',
@@ -42,14 +54,17 @@ const createDoctorsTable = `
 function prepareDefaultDoctorInsert(doctor: Doctor) {
   return env.DB.prepare(
     `INSERT OR IGNORE INTO doctors
-      (id, name, specialty, experience_years, consultation_price, branch, description, biography, patient_groups, schedule, photo_key)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '')`,
+      (id, name, specialty, experience_years, consultation_price, repeat_consultation_price, is_active, sort_order, branch, description, biography, patient_groups, schedule, photo_key)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '')`,
   ).bind(
     doctor.id,
     doctor.name,
     doctor.specialty,
     doctor.experienceYears,
     doctor.consultationPrice,
+    doctor.repeatConsultationPrice ?? null,
+    doctor.isActive === false ? 0 : 1,
+    getDoctorSortOrder(doctor),
     doctor.branch,
     doctor.description,
     doctor.biography,
@@ -92,15 +107,38 @@ async function initializeSchemaTables() {
       "ALTER TABLE doctors ADD COLUMN biography TEXT NOT NULL DEFAULT ''",
     ).run();
   }
-  if (!columns.results.some((column) => column.name === "consultation_price")) {
-    await env.DB.prepare(
-      "ALTER TABLE doctors ADD COLUMN consultation_price INTEGER",
-    ).run();
+  const doctorColumnMigrations = [
+    ["consultation_price", "ALTER TABLE doctors ADD COLUMN consultation_price INTEGER"],
+    ["repeat_consultation_price", "ALTER TABLE doctors ADD COLUMN repeat_consultation_price INTEGER"],
+    ["is_active", "ALTER TABLE doctors ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1"],
+    ["sort_order", "ALTER TABLE doctors ADD COLUMN sort_order INTEGER"],
+  ] as const;
+  for (const [columnName, migration] of doctorColumnMigrations) {
+    if (columns.results.some((column) => column.name === columnName)) continue;
+    try {
+      await env.DB.prepare(migration).run();
+    } catch (error) {
+      // Another server instance may have added the column after our first read.
+      const currentColumns = await env.DB.prepare("PRAGMA table_info(doctors)")
+        .all<{ name: string }>();
+      if (!currentColumns.results.some((column) => column.name === columnName)) throw error;
+    }
   }
   if (!columns.results.some((column) => column.name === "patient_groups")) {
     await env.DB.prepare(
       "ALTER TABLE doctors ADD COLUMN patient_groups TEXT NOT NULL DEFAULT '[]'",
     ).run();
+  }
+  // NULL marks legacy rows only. Each update is retry-safe and never overwrites an edited rank.
+  const legacyOrder = await env.DB.prepare("SELECT id FROM doctors WHERE sort_order IS NULL LIMIT 1")
+    .first<{ id: string }>();
+  if (legacyOrder) {
+    for (const [rank, id] of defaultFeaturedDoctorIds.entries()) {
+      await env.DB.prepare("UPDATE doctors SET sort_order = ? WHERE id = ? AND sort_order IS NULL")
+        .bind(rank, id).run();
+    }
+    await env.DB.prepare("UPDATE doctors SET sort_order = ? WHERE sort_order IS NULL")
+      .bind(DEFAULT_DOCTOR_SORT_ORDER).run();
   }
   const count = await env.DB.prepare(
     "SELECT COUNT(*) AS total FROM doctors",
@@ -139,6 +177,9 @@ function toDoctor(row: DoctorRow): Doctor {
     specialty: row.specialty,
     experienceYears: row.experience_years,
     consultationPrice: row.consultation_price,
+    repeatConsultationPrice: row.repeat_consultation_price,
+    isActive: row.is_active === 1,
+    sortOrder: row.sort_order ?? getDoctorSortOrder({ id: row.id }),
     branch: row.branch,
     description: row.description,
     biography: row.biography,
@@ -150,27 +191,28 @@ function toDoctor(row: DoctorRow): Doctor {
   };
 }
 
-export async function listDoctors() {
+export async function listDoctors(options: { includeInactive?: boolean } = {}) {
   await ensureDoctorsTable();
   const result = await env.DB.prepare(
-    `SELECT id, name, specialty, experience_years, consultation_price, branch, description, biography,
-            patient_groups, schedule, photo_key
+    `SELECT id, name, specialty, experience_years, consultation_price, repeat_consultation_price, branch, description, biography,
+            patient_groups, schedule, photo_key, is_active, sort_order
      FROM doctors
-     ORDER BY name COLLATE NOCASE`,
-  ).all<DoctorRow>();
+     WHERE (? = 1 OR is_active = 1)
+     ORDER BY sort_order, name COLLATE NOCASE`,
+  ).bind(options.includeInactive ? 1 : 0).all<DoctorRow>();
 
-  return result.results.map(toDoctor);
+  return result.results.map(toDoctor).sort(compareDoctors);
 }
 
-export async function getDoctorById(id: string) {
+export async function getDoctorById(id: string, options: { includeInactive?: boolean } = {}) {
   await ensureDoctorsTable();
   const row = await env.DB.prepare(
-    `SELECT id, name, specialty, experience_years, consultation_price, branch, description, biography,
-            patient_groups, schedule, photo_key
+    `SELECT id, name, specialty, experience_years, consultation_price, repeat_consultation_price, branch, description, biography,
+            patient_groups, schedule, photo_key, is_active, sort_order
      FROM doctors
-     WHERE id = ?`,
+     WHERE id = ? AND (? = 1 OR is_active = 1)`,
   )
-    .bind(id)
+    .bind(id, options.includeInactive ? 1 : 0)
     .first<DoctorRow>();
 
   return row ? toDoctor(row) : null;
@@ -192,7 +234,10 @@ export async function updateDoctor(
     name: string;
     specialty: string;
     experienceYears: number | null;
-    consultationPrice: number | null;
+    consultationPrice?: number | null;
+    repeatConsultationPrice?: number | null;
+    isActive?: boolean;
+    sortOrder?: number;
     branch: string;
     description: string;
     biography: string;
@@ -200,19 +245,35 @@ export async function updateDoctor(
     schedule: DoctorSchedule;
   },
 ) {
+  const consultationPrice = parseDoctorPrice(values.consultationPrice);
+  const repeatConsultationPrice = parseDoctorPrice(values.repeatConsultationPrice);
+  const isActive = parseDoctorIsActive(values.isActive);
+  const sortOrder = parseDoctorSortOrder(values.sortOrder, DEFAULT_DOCTOR_SORT_ORDER);
+  // Bound presence flags preserve omitted fields; explicit null still clears prices.
   await ensureDoctorsTable();
   const result = await env.DB.prepare(
     `UPDATE doctors
-     SET name = ?, specialty = ?, experience_years = ?, consultation_price = ?, branch = ?, description = ?,
+     SET consultation_price = CASE WHEN ? = 1 THEN ? ELSE consultation_price END,
+         repeat_consultation_price = CASE WHEN ? = 1 THEN ? ELSE repeat_consultation_price END,
+         is_active = CASE WHEN ? = 1 THEN ? ELSE is_active END,
+         sort_order = CASE WHEN ? = 1 THEN ? ELSE sort_order END,
+         name = ?, specialty = ?, experience_years = ?, branch = ?, description = ?,
          biography = ?, patient_groups = ?, schedule = ?,
          updated_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
   )
     .bind(
+      values.consultationPrice === undefined ? 0 : 1,
+      consultationPrice,
+      values.repeatConsultationPrice === undefined ? 0 : 1,
+      repeatConsultationPrice,
+      values.isActive === undefined ? 0 : 1,
+      isActive ? 1 : 0,
+      values.sortOrder === undefined ? 0 : 1,
+      sortOrder,
       values.name,
       values.specialty,
       values.experienceYears,
-      values.consultationPrice,
       values.branch,
       values.description,
       values.biography,
@@ -225,17 +286,30 @@ export async function updateDoctor(
   return result.meta.changes > 0;
 }
 
-export async function createDoctor(values: { name: string; specialty: string; id?: string }) {
+export async function createDoctor(values: {
+  name: string;
+  specialty: string;
+  id?: string;
+  branch?: string;
+  consultationPrice?: number | null;
+  repeatConsultationPrice?: number | null;
+  isActive?: boolean;
+  sortOrder?: number;
+}) {
+  const consultationPrice = parseDoctorPrice(values.consultationPrice);
+  const repeatConsultationPrice = parseDoctorPrice(values.repeatConsultationPrice);
+  const isActive = parseDoctorIsActive(values.isActive);
+  const sortOrder = parseDoctorSortOrder(values.sortOrder, DEFAULT_DOCTOR_SORT_ORDER);
   await ensureDoctorsTable();
   const id = values.id?.trim() || `doctor-${crypto.randomUUID()}`;
   await env.DB.prepare(
     `INSERT INTO doctors
-      (id, name, specialty, experience_years, consultation_price, branch, description, biography, patient_groups, schedule, photo_key)
-     VALUES (?, ?, ?, NULL, NULL, '', '', '', '[]', '{}', '')`,
+      (id, name, specialty, experience_years, consultation_price, repeat_consultation_price, is_active, sort_order, branch, description, biography, patient_groups, schedule, photo_key)
+     VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, '', '', '[]', '{}', '')`,
   )
-    .bind(id, values.name, values.specialty)
+    .bind(id, values.name, values.specialty, consultationPrice, repeatConsultationPrice, isActive ? 1 : 0, sortOrder, values.branch?.trim() ?? "")
     .run();
-  return getDoctorById(id);
+  return getDoctorById(id, { includeInactive: true });
 }
 
 export async function deleteDoctor(id: string) {

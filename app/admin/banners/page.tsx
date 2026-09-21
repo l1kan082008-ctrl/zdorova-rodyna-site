@@ -235,7 +235,7 @@ export default function BannersAdminPage() {
               <strong>Банери</strong>
               <span>{banners.length} у списку</span>
             </div>
-            <button className="admin-banner-create-button" type="button" onClick={create} disabled={creating}>
+            <button className="admin-banner-create-button admin-ui-button" data-variant="primary" type="button" onClick={create} disabled={creating}>
               <span aria-hidden="true">+</span>
               <span>{creating ? "Створення…" : "Додати"}</span>
             </button>
@@ -280,9 +280,9 @@ export default function BannersAdminPage() {
                     disabled={saving || uploadingImage}
                     hasUnsavedChanges={safeSave.dirty}
                   />
-                  <button className="admin-danger-button" type="button" onClick={remove} disabled={saving || uploadingImage}>Видалити банер</button>
+                  <button className="admin-danger-button admin-ui-button" data-variant="danger" type="button" onClick={remove} disabled={saving || uploadingImage}>Видалити банер</button>
                   <button
-                    className="admin-save-button admin-banner-save-button"
+                    className="admin-save-button admin-banner-save-button admin-ui-button" data-variant="primary"
                     type="button"
                     onClick={save}
                     disabled={!safeSave.dirty || saving || uploadingImage}
@@ -339,7 +339,7 @@ export default function BannersAdminPage() {
                   <div className="admin-banner-media-actions">
                     <button
                       type="button"
-                      className="admin-banner-upload-button"
+                      className="admin-banner-upload-button admin-ui-button" data-variant="secondary"
                       onClick={() => imageInputRef.current?.click()}
                       disabled={uploadingImage || saving}
                     >
@@ -349,7 +349,7 @@ export default function BannersAdminPage() {
                     {draft.imageKey ? (
                       <button
                         type="button"
-                        className="admin-banner-media-reset"
+                        className="admin-banner-media-reset admin-ui-button" data-variant="ghost"
                         onClick={() => update("imageKey", "")}
                         disabled={uploadingImage || saving}
                       >

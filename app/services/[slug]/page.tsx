@@ -9,11 +9,10 @@ import { UltrasoundPriceList } from "./UltrasoundPriceList";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { listDoctors } from "../../api/doctors/doctorStore";
+import { listPublicDoctors as listDoctors } from "../../api/doctors/publicDoctors";
 import { listPublicPriceItems } from "../../api/prices/priceStore";
 import { GlowPriceCard } from "../../components/GlowPriceCard";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
-import { defaultDoctors } from "../../doctors/doctorData";
 import { catalogItems } from "../../prices/priceData";
 import {
   priceReferences,
@@ -147,22 +146,19 @@ export default async function ServiceDetailPage({
   ].includes(service.slug);
   if (isCinematicMri) {
     const [doctors, prices] = await Promise.all([
-      listDoctors().catch(() => defaultDoctors),
+      listDoctors(),
       listPublicPriceItems().catch(() => catalogItems),
     ]);
     const mriPrices = prices.filter(item => item.category === "mri" && item.isActive !== false);
-    const rohal = doctors.find(doctor => doctor.id === "rohalskyi-vitalii") ?? defaultDoctors.find(doctor => doctor.id === "rohalskyi-vitalii");
+    const rohal = doctors.find(doctor => doctor.id === "rohalskyi-vitalii");
     return <MriServicePage service={service} doctors={rohal ? [rohal] : []} prices={mriPrices.length ? mriPrices : catalogItems.filter(item => item.category === "mri" && item.isActive !== false)} bookingHref={bookingHref} priceHref={priceHref} />;
   }
   if (isCinematicCt) {
     const [doctors, prices] = await Promise.all([
-      listDoctors().catch(() => defaultDoctors),
+      listDoctors(),
       listPublicPriceItems().catch(() => catalogItems),
     ]);
     const radiologists = doctors.filter((doctor) =>
-      doctor.specialty.toLocaleLowerCase("uk-UA").includes("рентгенолог"),
-    );
-    const fallbackRadiologists = defaultDoctors.filter((doctor) =>
       doctor.specialty.toLocaleLowerCase("uk-UA").includes("рентгенолог"),
     );
     const ctPrices = prices.filter(
@@ -175,7 +171,7 @@ export default async function ServiceDetailPage({
     return (
       <CtServicePage
         service={service}
-        doctors={radiologists.length > 0 ? radiologists : fallbackRadiologists}
+        doctors={radiologists}
         prices={ctPrices.length > 0 ? ctPrices : fallbackCtPrices}
         bookingHref={bookingHref}
         priceHref={priceHref}
@@ -183,7 +179,7 @@ export default async function ServiceDetailPage({
     );
   }
   const relevantDoctors = isCardiology || isFamilyMedicine
-    ? await listDoctors().catch(() => defaultDoctors)
+    ? await listDoctors()
     : [];
   const availableCardiologists = isCardiology
     ? relevantDoctors.filter(

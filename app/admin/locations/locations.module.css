@@ -1,7 +1,8 @@
 .page {
+  min-width: 0;
   width: min(1420px, 100%);
   margin: 0 auto;
-  color: #073f45;
+  color: var(--admin-ink);
 }
 
 .pageHeader {
@@ -16,7 +17,7 @@
 .editorLabel {
   display: block;
   margin-bottom: 10px;
-  color: #f4770b;
+  color: var(--admin-muted);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.11em;
@@ -25,29 +26,29 @@
 
 .pageHeader h1 {
   margin: 0;
-  font-size: clamp(36px, 4.2vw, 64px);
-  font-weight: 500;
-  letter-spacing: -0.045em;
-  line-height: 0.98;
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
 }
 
 .pageHeader p {
   max-width: 650px;
   margin: 14px 0 0;
-  color: #688084;
+  color: var(--admin-muted);
   font-size: 16px;
   line-height: 1.55;
 }
 
 .siteLink {
   display: inline-flex;
-  min-height: 42px;
+  min-height: 44px;
   align-items: center;
   gap: 9px;
   padding: 0 15px;
-  border: 1px solid #c7dcda;
+  border: 1px solid var(--admin-border);
   border-radius: 12px;
-  color: #075f64;
+  color: var(--admin-ink);
   background: #fff;
   font-size: 14px;
   font-weight: 750;
@@ -57,8 +58,8 @@
 }
 
 .siteLink:hover {
-  border-color: #8fc2bf;
-  background: #f8fbfa;
+  border-color: var(--admin-border-hover);
+  background: var(--admin-canvas);
 }
 
 .error,
@@ -71,13 +72,13 @@
 
 .error {
   border: 1px solid #f0c3bc;
-  color: #9e352b;
+  color: var(--admin-danger);
   background: #fff8f6;
 }
 
 .loading {
-  border: 1px solid #d5e4e2;
-  color: #668084;
+  border: 1px solid var(--admin-border);
+  color: var(--admin-muted);
   background: #fff;
 }
 
@@ -91,10 +92,11 @@
 .locationPanel,
 .editor,
 .emptyEditor {
-  border: 1px solid #d5e4e2;
-  border-radius: 20px;
+  min-width: 0;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-panel-radius);
   background: #fff;
-  box-shadow: 0 14px 38px rgba(3, 63, 69, 0.055);
+  box-shadow: var(--admin-panel-shadow);
 }
 
 .locationPanel {
@@ -110,7 +112,7 @@
   justify-content: space-between;
   gap: 14px;
   padding: 0 16px 0 20px;
-  border-bottom: 1px solid #e2eceb;
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .locationPanelHeader > div {
@@ -123,20 +125,20 @@
 }
 
 .locationPanelHeader div > span {
-  color: #839497;
+  color: var(--admin-muted);
   font-size: 12px;
 }
 
 .createButton {
   display: inline-flex;
-  min-height: 38px;
+  min-height: 44px;
   align-items: center;
   gap: 7px;
   padding: 0 12px;
   border: 0;
   border-radius: 10px;
   color: #fff;
-  background: #087f82;
+  background: var(--admin-primary);
   font: inherit;
   font-size: 13px;
   font-weight: 800;
@@ -169,8 +171,8 @@
   min-height: 70px;
   padding: 10px 10px;
   border: 0;
-  border-radius: 13px;
-  color: #244f53;
+  border-radius: var(--admin-control-radius);
+  color: var(--admin-ink);
   background: transparent;
   font: inherit;
   text-align: left;
@@ -179,13 +181,13 @@
 }
 
 .locationItem:hover {
-  background: #f5f9f8;
+  background: var(--admin-canvas);
 }
 
 .locationItemActive,
 .locationItemActive:hover {
-  color: #073f45;
-  background: #e8f4f2;
+  color: var(--admin-ink);
+  background: var(--admin-selection);
 }
 
 .locationNumber {
@@ -195,14 +197,14 @@
   place-items: center;
   border-radius: 10px;
   color: #0a8385;
-  background: #f0f7f6;
+  background: var(--admin-canvas);
   font-size: 11px;
   font-weight: 850;
 }
 
 .locationItemActive .locationNumber {
   color: #fff;
-  background: #087f82;
+  background: var(--admin-primary);
 }
 
 .locationCopy {
@@ -220,7 +222,7 @@
 
 .locationCopy small {
   overflow: hidden;
-  color: #829497;
+  color: var(--admin-muted);
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -235,13 +237,13 @@
   display: grid;
   gap: 5px;
   padding: 30px 22px;
-  color: #72888a;
+  color: var(--admin-muted);
   font-size: 13px;
   text-align: center;
 }
 
 .emptyList strong {
-  color: #244f53;
+  color: var(--admin-ink);
 }
 
 .editor {
@@ -255,7 +257,7 @@
   justify-content: space-between;
   gap: 20px;
   padding: 0 clamp(22px, 3vw, 38px);
-  border-bottom: 1px solid #e2eceb;
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .editorLabel {
@@ -294,7 +296,7 @@
   grid-template-columns: 220px minmax(0, 1fr);
   gap: clamp(24px, 4vw, 52px);
   padding: 34px clamp(22px, 3vw, 38px);
-  border-bottom: 1px solid #e2eceb;
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .sectionHeading {
@@ -306,7 +308,7 @@
 
 .sectionHeading > span {
   padding-top: 3px;
-  color: #f4770b;
+  color: var(--admin-muted);
   font-size: 11px;
   font-weight: 850;
 }
@@ -319,7 +321,7 @@
 
 .sectionHeading p {
   margin: 7px 0 0;
-  color: #849598;
+  color: var(--admin-muted);
   font-size: 12px;
   line-height: 1.45;
 }
@@ -334,13 +336,13 @@
   display: grid;
   align-content: start;
   gap: 8px;
-  color: #315b5e;
+  color: var(--admin-ink);
   font-size: 12px;
   font-weight: 750;
 }
 
 .formGrid label small {
-  color: #92a1a3;
+  color: var(--admin-muted);
   font-size: 11px;
   font-weight: 500;
 }
@@ -349,10 +351,10 @@
 .formGrid textarea {
   box-sizing: border-box;
   width: 100%;
-  border: 1px solid #cbdedc;
-  border-radius: 11px;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-control-radius);
   outline: none;
-  color: #073f45;
+  color: var(--admin-ink);
   background: #fff;
   font: inherit;
   font-size: 14px;
@@ -374,7 +376,7 @@
 
 .formGrid input::placeholder,
 .formGrid textarea::placeholder {
-  color: #a0afb1;
+  color: var(--admin-muted);
 }
 
 .formGrid input:focus,
@@ -399,9 +401,9 @@
   align-items: center;
   gap: 10px;
   padding: 0 13px;
-  border: 1px solid #d3e2e0;
+  border: 1px solid var(--admin-border);
   border-radius: 12px;
-  color: #315b5e;
+  color: var(--admin-ink);
   background: #fff;
   font: inherit;
   font-size: 13px;
@@ -422,19 +424,19 @@
   place-items: center;
   border-radius: 8px;
   color: #0b8587;
-  background: #edf6f5;
+  background: var(--admin-canvas);
   font-size: 15px;
 }
 
 .serviceOptionSelected {
   border-color: #82c0bb;
   color: #07565a;
-  background: #eaf6f4;
+  background: var(--admin-selection);
 }
 
 .serviceOptionSelected span {
   color: #fff;
-  background: #087f82;
+  background: var(--admin-primary);
 }
 
 .actions {
@@ -443,14 +445,14 @@
   justify-content: space-between;
   gap: 14px;
   padding: 22px clamp(22px, 3vw, 38px);
-  background: #fbfcfc;
+  background: var(--admin-canvas);
 }
 
 .actions button,
 .emptyEditor button {
   min-height: 44px;
   padding: 0 18px;
-  border-radius: 11px;
+  border-radius: var(--admin-control-radius);
   font: inherit;
   font-size: 13px;
   font-weight: 800;
@@ -459,7 +461,7 @@
 
 .deleteButton {
   border: 1px solid #e1cbca;
-  color: #a0443b;
+  color: var(--admin-danger);
   background: transparent;
 }
 
@@ -467,7 +469,7 @@
 .emptyEditor button {
   border: 0;
   color: #fff;
-  background: #087f82;
+  background: var(--admin-primary);
   box-shadow: 0 9px 20px rgba(8, 127, 130, 0.16);
 }
 
@@ -488,8 +490,8 @@
   margin-bottom: 8px;
   place-items: center;
   border-radius: 14px;
-  color: #087f82;
-  background: #eaf6f4;
+  color: var(--admin-primary);
+  background: var(--admin-selection);
   font-size: 24px;
 }
 
@@ -500,7 +502,7 @@
 .emptyEditor p {
   max-width: 360px;
   margin: 0 0 14px;
-  color: #7b9092;
+  color: var(--admin-muted);
   font-size: 14px;
 }
 
@@ -530,7 +532,7 @@
   }
 
   .pageHeader h1 {
-    font-size: 38px;
+    font-size: 30px;
   }
 
   .pageHeader p {
@@ -546,7 +548,7 @@
   .locationPanel,
   .editor,
   .emptyEditor {
-    border-radius: 16px;
+    border-radius: var(--admin-panel-radius);
   }
 
   .locationList {
@@ -600,10 +602,10 @@
   }
 
   .createButton {
-    width: 38px;
-    padding: 0;
+    min-width: 44px;
+    padding: 0 12px;
     justify-content: center;
-    font-size: 0;
+    font-size: 14px;
   }
 
   .createButton span {
@@ -612,10 +614,10 @@
 }
 
 .photoGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 16px; margin-block: 16px; }
-.photoCard { min-width: 0; display: grid; gap: 12px; padding: 12px; border: 1px solid #d5e4e2; border-radius: 16px; background: #fff; }
+.photoCard { min-width: 0; display: grid; gap: 12px; padding: 12px; border: 1px solid var(--admin-border); border-radius: 16px; background: #fff; }
 .photoCard img { width: 100%; height: 160px; object-fit: cover; border-radius: 10px; }
-.photoCard span { overflow-wrap: anywhere; color: #073f45; }
+.photoCard span { overflow-wrap: anywhere; color: var(--admin-ink); }
 .photoCard button { min-height: 44px; }
 .mediaHint { color: #587276; font-size: 13px; line-height: 1.6; }
-.mediaDetails summary { cursor: pointer; min-height: 44px; padding-block: 12px; color: #073f45; }
-.photoCard button:focus-visible, .mediaDetails summary:focus-visible { outline: 2px solid #087f82; outline-offset: 3px; }
+.mediaDetails summary { cursor: pointer; min-height: 44px; padding-block: 12px; color: var(--admin-ink); }
+.photoCard button:focus-visible, .mediaDetails summary:focus-visible { outline: 2px solid var(--admin-primary); outline-offset: 3px; }

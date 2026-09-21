@@ -1,7 +1,8 @@
 .page {
+  min-width: 0;
   width: min(1420px, 100%);
   margin: 0 auto;
-  color: #073f45;
+  color: var(--admin-ink);
 }
 
 .pageHeader {
@@ -16,7 +17,7 @@
 .editorLabel {
   display: block;
   margin-bottom: 9px;
-  color: #f4770b;
+  color: var(--admin-muted);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: .11em;
@@ -25,16 +26,16 @@
 
 .pageHeader h1 {
   margin: 0;
-  font-size: clamp(36px, 4.2vw, 64px);
-  font-weight: 500;
-  letter-spacing: -.045em;
-  line-height: .98;
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 650;
+  letter-spacing: -.025em;
+  line-height: 1.2;
 }
 
 .pageHeader p {
   max-width: 690px;
   margin: 14px 0 0;
-  color: #688084;
+  color: var(--admin-muted);
   font-size: 16px;
   line-height: 1.55;
 }
@@ -45,8 +46,8 @@
 .saveButton,
 .deleteButton,
 .emptyEditor button {
-  min-height: 42px;
-  border-radius: 11px;
+  min-height: 44px;
+  border-radius: var(--admin-control-radius);
   font: inherit;
   font-size: 14px;
   font-weight: 800;
@@ -59,8 +60,8 @@
   align-items: center;
   gap: 9px;
   padding: 0 15px;
-  border: 1px solid #c7dcda;
-  color: #075f64;
+  border: 1px solid var(--admin-border);
+  color: var(--admin-ink);
   background: #fff;
   text-decoration: none;
   white-space: nowrap;
@@ -68,8 +69,8 @@
 
 .siteLink:hover,
 .uploadButton:hover {
-  border-color: #8fc2bf;
-  background: #f8fbfa;
+  border-color: var(--admin-border-hover);
+  background: var(--admin-canvas);
 }
 
 .siteLink:active,
@@ -91,13 +92,13 @@
 
 .error {
   border: 1px solid #f0c3bc;
-  color: #9e352b;
+  color: var(--admin-danger);
   background: #fff8f6;
 }
 
 .loading {
-  border: 1px solid #d5e4e2;
-  color: #668084;
+  border: 1px solid var(--admin-border);
+  color: var(--admin-muted);
   background: #fff;
 }
 
@@ -111,10 +112,11 @@
 .catalogPanel,
 .editor,
 .emptyEditor {
-  border: 1px solid #d5e4e2;
-  border-radius: 20px;
+  min-width: 0;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-panel-radius);
   background: #fff;
-  box-shadow: 0 14px 38px rgba(3, 63, 69, .055);
+  box-shadow: var(--admin-panel-shadow);
 }
 
 .catalogPanel {
@@ -130,7 +132,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 0 15px 0 19px;
-  border-bottom: 1px solid #e2eceb;
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .catalogHeader > div,
@@ -145,7 +147,7 @@
 }
 
 .catalogHeader div > span {
-  color: #839497;
+  color: var(--admin-muted);
   font-size: 12px;
 }
 
@@ -153,17 +155,17 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 38px;
+  min-height: 44px;
   padding: 0 12px;
   border: 0;
   color: #fff;
-  background: #087f82;
+  background: var(--admin-primary);
 }
 
 .createButton:hover,
 .saveButton:hover,
 .emptyEditor button:hover {
-  background: #066f72;
+  background: var(--admin-primary-hover);
 }
 
 .createButton span {
@@ -188,8 +190,8 @@
   min-height: 68px;
   padding: 10px;
   border: 0;
-  border-radius: 13px;
-  color: #244f53;
+  border-radius: var(--admin-control-radius);
+  color: var(--admin-ink);
   background: transparent;
   font: inherit;
   text-align: left;
@@ -198,13 +200,13 @@
 }
 
 .serviceItem:hover {
-  background: #f5f9f8;
+  background: var(--admin-canvas);
 }
 
 .serviceItemActive,
 .serviceItemActive:hover {
-  color: #073f45;
-  background: #e8f4f2;
+  color: var(--admin-ink);
+  background: var(--admin-selection);
 }
 
 .order {
@@ -214,14 +216,14 @@
   place-items: center;
   border-radius: 10px;
   color: #0a8385;
-  background: #f0f7f6;
+  background: var(--admin-canvas);
   font-size: 11px;
   font-weight: 850;
 }
 
 .serviceItemActive .order {
   color: #fff;
-  background: #087f82;
+  background: var(--admin-primary);
 }
 
 .serviceCopy strong,
@@ -236,7 +238,7 @@
 }
 
 .serviceCopy small {
-  color: #829497;
+  color: var(--admin-muted);
   font-size: 11px;
 }
 
@@ -249,13 +251,13 @@
   display: grid;
   gap: 5px;
   padding: 30px 22px;
-  color: #72888a;
+  color: var(--admin-muted);
   font-size: 13px;
   text-align: center;
 }
 
 .emptyList strong {
-  color: #244f53;
+  color: var(--admin-ink);
 }
 
 .editor {
@@ -269,7 +271,7 @@
   justify-content: space-between;
   gap: 20px;
   padding: 0 clamp(22px, 3vw, 38px);
-  border-bottom: 1px solid #e2eceb;
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .editorHeader h2 {
@@ -280,7 +282,7 @@
 }
 
 .saveState {
-  color: #087f82;
+  color: var(--admin-primary);
   font-size: 13px;
   font-weight: 750;
   opacity: 0;
@@ -300,12 +302,12 @@
   justify-content: space-between;
   gap: clamp(24px, 5vw, 72px);
   padding: 28px clamp(22px, 3vw, 38px);
-  border-bottom: 1px solid #e2eceb;
-  background: #f8fbfa;
+  border-bottom: 1px solid var(--admin-border);
+  background: var(--admin-canvas);
 }
 
 .previewCopy span {
-  color: #f4770b;
+  color: var(--admin-muted);
   font-size: 11px;
   font-weight: 850;
   letter-spacing: .1em;
@@ -314,7 +316,7 @@
 
 .previewCopy p {
   margin: 8px 0 0;
-  color: #71878a;
+  color: var(--admin-muted);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -328,8 +330,8 @@
   gap: 18px;
   overflow: hidden;
   padding: 24px;
-  border: 1px solid #d5e4e2;
-  border-radius: 20px;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-panel-radius);
   background: #eef6f5;
   isolation: isolate;
 }
@@ -361,7 +363,7 @@
 }
 
 .previewCard small {
-  color: #607a7d;
+  color: var(--admin-muted);
   font-size: 13px;
 }
 
@@ -373,7 +375,7 @@
   place-items: center;
   border-radius: 50%;
   color: #fff;
-  background: #087f82;
+  background: var(--admin-primary);
   font-size: 20px;
   font-style: normal;
 }
@@ -383,7 +385,7 @@
   grid-template-columns: 190px minmax(0, 1fr);
   gap: clamp(24px, 5vw, 72px);
   padding: 30px clamp(22px, 3vw, 38px);
-  border-bottom: 1px solid #e2eceb;
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .sectionHeading {
@@ -393,7 +395,7 @@
 }
 
 .sectionHeading > span {
-  color: #f4770b;
+  color: var(--admin-muted);
   font-size: 12px;
   font-weight: 850;
 }
@@ -405,7 +407,7 @@
 
 .sectionHeading p {
   margin: 0;
-  color: #829497;
+  color: var(--admin-muted);
   font-size: 12px;
   line-height: 1.45;
 }
@@ -420,7 +422,7 @@
 .orderField {
   display: grid;
   gap: 8px;
-  color: #315d61;
+  color: var(--admin-ink);
   font-size: 12px;
   font-weight: 800;
 }
@@ -433,10 +435,10 @@
 .formGrid textarea,
 .orderField input {
   width: 100%;
-  border: 1px solid #cbdedc;
-  border-radius: 11px;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-control-radius);
   outline: 0;
-  color: #073f45;
+  color: var(--admin-ink);
   background: #fff;
   font: inherit;
   font-size: 14px;
@@ -473,7 +475,7 @@
 
 .mediaThumb {
   aspect-ratio: 16 / 10;
-  border: 1px solid #d5e4e2;
+  border: 1px solid var(--admin-border);
   border-radius: 14px;
   background-position: center;
   background-size: cover;
@@ -487,7 +489,7 @@
 
 .mediaActions small {
   max-width: 290px;
-  color: #829497;
+  color: var(--admin-muted);
   font-size: 12px;
   line-height: 1.45;
 }
@@ -505,7 +507,7 @@
 .uploadButton {
   padding: 0 15px;
   border: 1px solid #9fc9c6;
-  color: #087f82;
+  color: var(--admin-primary);
   background: #fff;
 }
 
@@ -516,7 +518,7 @@
   gap: 14px 18px;
   padding: 18px;
   border-radius: 15px;
-  background: #f5f9f8;
+  background: var(--admin-canvas);
 }
 
 .orderField input {
@@ -528,28 +530,30 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #315d61;
+  color: var(--admin-ink);
   font-size: 12px;
   font-weight: 750;
 }
 
 .toggle {
   position: relative;
-  width: 42px;
-  height: 24px;
+  width: 44px;
+  height: 44px;
   flex: 0 0 auto;
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: #cbdad8;
+  background: transparent;
   cursor: pointer;
   transition: background-color 160ms ease;
 }
 
+.toggle::before { content: ""; position: absolute; inset: 10px 1px; border-radius: 999px; background: var(--admin-border-hover); transition: background-color 160ms ease; }
+
 .toggle span {
   position: absolute;
-  top: 3px;
-  left: 3px;
+  top: 13px;
+  left: 4px;
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -559,8 +563,10 @@
 }
 
 .toggleOn {
-  background: #087f82;
+  background: transparent;
 }
+
+.toggleOn::before { background: var(--admin-primary); }
 
 .toggleOn span {
   transform: translateX(18px);
@@ -572,7 +578,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 22px clamp(22px, 3vw, 38px);
-  background: #fbfcfc;
+  background: var(--admin-canvas);
 }
 
 .deleteButton,
@@ -583,7 +589,7 @@
 
 .deleteButton {
   border: 1px solid #d9a9a4;
-  color: #a0443b;
+  color: var(--admin-danger);
   background: transparent;
 }
 
@@ -596,7 +602,7 @@
 .emptyEditor button {
   border: 0;
   color: #fff;
-  background: #087f82;
+  background: var(--admin-primary);
 }
 
 .saveButton:disabled,
@@ -649,8 +655,11 @@
 
 @media (max-width: 1180px) {
   .workspace {
-    grid-template-columns: 250px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
+
+  .catalogPanel { position: static; }
+  .serviceList { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: 320px; }
 
   .previewSection,
   .formSection {
@@ -675,7 +684,7 @@
   }
 
   .pageHeader h1 {
-    font-size: 38px;
+    font-size: 30px;
   }
 
   .workspace {
@@ -687,6 +696,7 @@
   }
 
   .serviceList {
+    grid-template-columns: minmax(0, 1fr);
     max-height: 280px;
   }
 

@@ -38,7 +38,7 @@ function SectionTitle({ eyebrow, title, lead }: { eyebrow?: string; title: strin
 
 export function MriServicePage({ service, doctors, prices, bookingHref }: Props) {
   const locations = centerLocations.filter(location => location.services.includes("mri"));
-  const shownDoctors = doctors.filter(doctor => doctor.id === "rohalskyi-vitalii").slice(0, 1);
+  const shownDoctors = doctors.filter(doctor => doctor.isActive !== false && doctor.id === "rohalskyi-vitalii").slice(0, 1);
 
   return (
     <main className={`${styles.page} ${mri.page}`}>

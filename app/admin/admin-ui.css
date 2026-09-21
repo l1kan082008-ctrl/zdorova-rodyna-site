@@ -1,0 +1,163 @@
+/* Shared admin language. Portals opt in with the same class and data attribute. */
+.admin-ui {
+  --admin-primary: #087f82;
+  --admin-primary-hover: #066b6e;
+  --admin-ink: #153b40;
+  --admin-muted: #596a70;
+  --admin-canvas: #f1f3f5;
+  --admin-panel: #fff;
+  --admin-border: #d7dde2;
+  --admin-border-hover: #aebbc2;
+  --admin-selection: #eaf5f3;
+  --admin-selection-border: #b7d7d2;
+  --admin-danger: #a43d35;
+  --admin-danger-border: #d9aaa5;
+  --admin-danger-surface: #fff2f0;
+  --admin-focus: #087f82;
+  --admin-control-radius: 12px;
+  --admin-panel-radius: 20px;
+  --admin-panel-shadow: 0 4px 16px rgb(25 32 45 / 4%);
+  font-family: "Manrope", Arial, sans-serif;
+  color: var(--admin-ink);
+  line-height: 1.5;
+}
+
+.admin-ui[data-admin-ui] :is(.admin-ui-button, .admin-ui-icon-button, .admin-save-button, .admin-danger-button, .admin-banner-create-button, .admin-banner-upload-button, .admin-booking-delete, .outline-button, .book-button) {
+  --admin-button-bg: var(--admin-panel);
+  --admin-button-ink: var(--admin-ink);
+  --admin-button-border: var(--admin-border);
+  --admin-button-hover: var(--admin-canvas);
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--admin-button-border);
+  border-radius: var(--admin-control-radius);
+  color: var(--admin-button-ink);
+  background: var(--admin-button-bg);
+  box-shadow: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  white-space: normal;
+  cursor: pointer;
+  transform: none;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.admin-ui[data-admin-ui] :is(.admin-save-button, .admin-banner-create-button, .book-button),
+.admin-ui[data-admin-ui] :is(.admin-ui-button, .admin-ui-icon-button)[data-variant="primary"] {
+  --admin-button-bg: var(--admin-primary);
+  --admin-button-ink: #fff;
+  --admin-button-border: var(--admin-primary);
+  --admin-button-hover: var(--admin-primary-hover);
+}
+.admin-ui[data-admin-ui] :is(.admin-danger-button, .admin-booking-delete),
+.admin-ui[data-admin-ui] :is(.admin-ui-button, .admin-ui-icon-button)[data-variant="danger"] {
+  --admin-button-bg: var(--admin-panel);
+  --admin-button-ink: var(--admin-danger);
+  --admin-button-border: var(--admin-danger-border);
+  --admin-button-hover: var(--admin-danger-surface);
+}
+.admin-ui[data-admin-ui] :is(.admin-ui-button, .admin-ui-icon-button)[data-variant="secondary"] {
+  --admin-button-bg: var(--admin-panel);
+  --admin-button-ink: var(--admin-ink);
+  --admin-button-border: var(--admin-border);
+  --admin-button-hover: var(--admin-canvas);
+}
+.admin-ui[data-admin-ui] :is(.admin-ui-button, .admin-ui-icon-button)[data-variant="ghost"] {
+  --admin-button-bg: transparent;
+  --admin-button-ink: var(--admin-muted);
+  --admin-button-border: transparent;
+  --admin-button-hover: var(--admin-canvas);
+}
+.admin-ui[data-admin-ui] :is(.admin-ui-button, .admin-ui-icon-button, .admin-save-button, .admin-danger-button, .admin-banner-create-button, .admin-banner-upload-button, .admin-booking-delete, .outline-button, .book-button):hover:not(:disabled):not([aria-disabled="true"]) {
+  color: var(--admin-button-ink);
+  border-color: var(--admin-button-border);
+  background: var(--admin-button-hover);
+  box-shadow: none;
+  transform: none;
+}
+.admin-ui[data-admin-ui] :is(.admin-ui-button, .admin-ui-icon-button):active:not(:disabled):not([aria-disabled="true"]) { transform: translateY(1px); }
+.admin-ui[data-admin-ui] .admin-ui-icon-button { width: 44px; height: 44px; flex-shrink: 0; padding: 0; }
+.admin-ui[data-admin-ui] :is(.admin-ui-button, .admin-ui-icon-button) > svg { width: 20px; height: 20px; flex: 0 0 20px; }
+.admin-ui[data-admin-ui] :is(button, .admin-ui-button, .admin-ui-icon-button):is(:disabled, [aria-disabled="true"]) { opacity: .55; cursor: not-allowed; box-shadow: none; transform: none; }
+.admin-ui[data-admin-ui] :is(button, .admin-ui-button, .admin-ui-icon-button)[aria-busy="true"] { cursor: progress; }
+.admin-ui[data-admin-ui] :where(button, a, input, select, textarea, summary):focus-visible { outline: 2px solid var(--admin-focus); outline-offset: 3px; }
+
+.admin-ui[data-admin-ui] input:not([type="checkbox"], [type="radio"], [type="file"], [type="hidden"], [type="range"], [type="color"], [type="button"], [type="submit"], [type="reset"]),
+.admin-ui[data-admin-ui] :is(select, textarea) {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-control-radius);
+  color: var(--admin-ink);
+  background-color: var(--admin-panel);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.admin-ui[data-admin-ui] select { padding-right: 38px; }
+.admin-ui[data-admin-ui] textarea { min-height: 104px; height: auto; resize: vertical; }
+.admin-ui[data-admin-ui] :is(input, textarea)::placeholder { color: #6b7880; opacity: 1; }
+.admin-ui[data-admin-ui] :is(input, select, textarea):focus { border-color: var(--admin-focus); box-shadow: 0 0 0 3px rgb(8 127 130 / 12%); }
+.admin-ui[data-admin-ui] :is(input, select, textarea)[aria-invalid="true"] { border-color: var(--admin-danger); }
+.admin-ui[data-admin-ui] :is(input, select, textarea):disabled { color: var(--admin-muted); background-color: var(--admin-canvas); cursor: not-allowed; opacity: .75; }
+.admin-ui[data-admin-ui] :is(input[type="checkbox"], input[type="radio"]) { accent-color: var(--admin-primary); }
+.admin-ui[data-admin-ui] :is(.admin-doctor-form, .admin-form-grid, .admin-price-form-grid, .admin-editor-grid) label { min-width: 0; gap: 8px; color: var(--admin-ink); font-size: 13px; font-weight: 650; }
+.admin-ui[data-admin-ui] :is(.admin-active-switch, .admin-cito-switch, .admin-toggle-row, .admin-patient-groups label) { min-height: 44px; }
+
+.admin-ui[data-admin-ui] :is(.admin-doctors-page, .admin-prices-page, .admin-bookings-page, .admin-editor-page) { min-width: 0; min-height: 0; padding: 0; background: transparent; overflow: visible; }
+.admin-ui[data-admin-ui] :is(.admin-intro, .admin-page-heading, .admin-editor-layout, .admin-doctors-layout, .admin-prices-layout, .admin-bookings-shell, .admin-price-import, .admin-state) { width: 100%; max-width: none; margin-inline: 0; }
+.admin-ui[data-admin-ui] .admin-topbar { min-height: 44px; padding: 0; margin-bottom: 24px; border: 0; background: transparent; }
+.admin-ui[data-admin-ui] :is(.admin-topbar, .admin-page-links, .admin-navigation) { flex-wrap: wrap; gap: 12px; }
+.admin-ui[data-admin-ui] :is(.admin-intro, .admin-page-heading) { padding: 0; margin-top: 0; margin-bottom: 24px; }
+.admin-ui[data-admin-ui] :is(.admin-intro, .admin-page-heading) h1 { margin: 4px 0 12px; color: var(--admin-ink); font-size: clamp(28px, 3vw, 36px); font-weight: 650; line-height: 1.2; letter-spacing: -.025em; }
+.admin-ui[data-admin-ui] :is(.admin-intro, .admin-page-heading) p { margin: 0; color: var(--admin-muted); font-size: 15px; line-height: 1.6; }
+.admin-ui[data-admin-ui] :is(.admin-intro, .admin-page-heading) .section-kicker { color: var(--admin-muted); font-size: 11px; letter-spacing: .08em; }
+.admin-ui[data-admin-ui] :is(.admin-doctors-list, .admin-doctor-editor, .admin-prices-list, .admin-price-editor, .admin-editor-sidebar, .admin-editor-panel, .admin-booking-card, .admin-price-import, .admin-ui-panel) { min-width: 0; border: 1px solid var(--admin-border); border-radius: var(--admin-panel-radius); background: var(--admin-panel); box-shadow: var(--admin-panel-shadow); }
+.admin-ui[data-admin-ui] :is(.admin-photo-panel, .admin-banner-preview, .admin-banner-settings, .admin-ui-subpanel) { border-color: var(--admin-border); border-radius: 16px; background: var(--admin-canvas); box-shadow: none; }
+.admin-ui[data-admin-ui] :is(.admin-editor-heading, .admin-price-editor-heading, .admin-banner-preview__header) { border-color: var(--admin-border); }
+.admin-ui[data-admin-ui] :is(.admin-editor-list-item, .admin-location-list-item, .admin-doctors-list button, .admin-prices-scroll button) { min-height: 44px; border-radius: var(--admin-control-radius); }
+.admin-ui[data-admin-ui] :is(.admin-editor-list-item, .admin-location-list-item, .admin-doctors-list button, .admin-prices-scroll button).is-active { color: var(--admin-ink); background: var(--admin-selection); }
+.admin-ui[data-admin-ui] :is(.admin-editor-list-item, .admin-location-list-item, .admin-doctors-list button, .admin-prices-scroll button):hover { background: var(--admin-selection); }
+.admin-ui[data-admin-ui] :is(.admin-safe-save-bar, .admin-banner-action-bar) { border-color: var(--admin-border); border-radius: 16px; background: var(--admin-panel); box-shadow: var(--admin-panel-shadow); }
+.admin-ui[data-admin-ui] :is(.admin-safe-save-summary small, .admin-state, .admin-editor-state) { color: var(--admin-muted); }
+.admin-ui[data-admin-ui] :is(.admin-error, .admin-booking-error, .admin-editor-state.is-error, .admin-safe-save-state.is-error) { color: var(--admin-danger); }
+.admin-ui[data-admin-ui] .admin-button-loader { width: 16px; height: 16px; flex: 0 0 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: admin-ui-spin .8s linear infinite; }
+@keyframes admin-ui-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 900px) {
+  .admin-ui[data-admin-ui] .admin-safe-save-bar { top: 84px; }
+}
+@media (max-width: 760px) {
+  .admin-ui[data-admin-ui] :is(.admin-topbar, .admin-page-heading) { align-items: flex-start; }
+  .admin-ui[data-admin-ui] :is(.admin-editor-layout, .admin-doctors-layout, .admin-prices-layout, .admin-form-grid, .admin-price-form-grid, .admin-editor-grid) { grid-template-columns: minmax(0, 1fr); }
+  .admin-ui[data-admin-ui] :is(.admin-safe-save-buttons, .admin-price-action-buttons, .admin-banner-media-actions) { flex-wrap: wrap; }
+  .admin-ui[data-admin-ui] :is(.admin-editor-panel, .admin-doctor-editor, .admin-price-editor) { padding: 20px 16px; }
+  .admin-ui[data-admin-ui] .admin-banner-editor-panel { padding: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-ui[data-admin-ui] *, .admin-ui[data-admin-ui] *::before, .admin-ui[data-admin-ui] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+.admin-ui[data-admin-ui] .admin-editor-list-item strong { font-size: 13px; line-height: 1.45; }
+.admin-ui[data-admin-ui] .admin-editor-list-item small { color: var(--admin-muted); font-size: 12px; line-height: 1.5; }
+.admin-ui[data-admin-ui] .admin-import-file:focus-within { outline: 2px solid var(--admin-focus); outline-offset: 3px; }
+
+.admin-ui[data-admin-ui] .admin-price-import-heading h2 { font-size: 24px; font-weight: 650; line-height: 1.3; }
+.admin-ui[data-admin-ui] .admin-booking-search { border-color: var(--admin-border); border-radius: var(--admin-panel-radius); }
+.admin-ui[data-admin-ui] .admin-history-dialog { border-color: var(--admin-border); box-shadow: -12px 0 36px rgb(25 32 45 / 12%); }
+.admin-ui[data-admin-ui] :is(.admin-history-heading, .admin-history-note) { border-color: var(--admin-border); }

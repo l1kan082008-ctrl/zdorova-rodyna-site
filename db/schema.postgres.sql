@@ -3,6 +3,10 @@ CREATE TABLE IF NOT EXISTS doctors (
   name TEXT NOT NULL,
   specialty TEXT NOT NULL,
   experience_years INTEGER,
+  consultation_price INTEGER,
+  repeat_consultation_price INTEGER,
+  is_active INTEGER NOT NULL DEFAULT 1,
+  sort_order INTEGER,
   branch TEXT NOT NULL DEFAULT '',
   description TEXT NOT NULL DEFAULT '',
   biography TEXT NOT NULL DEFAULT '',
@@ -11,6 +15,11 @@ CREATE TABLE IF NOT EXISTS doctors (
   photo_key TEXT NOT NULL DEFAULT '',
   updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE doctors ADD COLUMN IF NOT EXISTS consultation_price INTEGER;
+ALTER TABLE doctors ADD COLUMN IF NOT EXISTS repeat_consultation_price INTEGER;
+ALTER TABLE doctors ADD COLUMN IF NOT EXISTS is_active INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE doctors ADD COLUMN IF NOT EXISTS sort_order INTEGER;
 
 CREATE TABLE IF NOT EXISTS home_banners (
   id TEXT PRIMARY KEY,
@@ -154,3 +163,9 @@ CREATE INDEX IF NOT EXISTS admin_login_attempts_updated_idx ON admin_login_attem
 CREATE INDEX IF NOT EXISTS public_submission_attempts_updated_idx ON public_submission_attempts (updated_at);
 CREATE INDEX IF NOT EXISTS admin_content_revisions_entity_idx
   ON admin_content_revisions (entity_type, entity_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS site_settings (
+  id TEXT PRIMARY KEY CHECK (id = 'site'),
+  settings_json TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

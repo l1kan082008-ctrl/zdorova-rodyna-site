@@ -8,6 +8,7 @@ const cards = [
   { href: "/admin/prices", number: "04", title: "Прайс", text: "Послуги, аналізи та актуальні ціни" },
   { href: "/admin/locations", number: "05", title: "Відділення", text: "Адреси, графік і доступні послуги" },
   { href: "/admin/banners", number: "06", title: "Банери", text: "Головні повідомлення сайту" },
+  { href: "/admin/settings", number: "07", title: "Налаштування", text: "Загальні контакти, графік і соціальні мережі" },
 ];
 
 export default function AdminPage() {

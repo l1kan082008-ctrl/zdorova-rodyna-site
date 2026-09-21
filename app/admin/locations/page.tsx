@@ -10,10 +10,11 @@ import {
 import styles from "./locations.module.css";
 import { useAdminSafeSave } from "../useAdminSafeSave";
 import AdminRevisionHistory from "../AdminRevisionHistory";
+import { useSiteSettings } from "../../components/SiteSettingsProvider";
 
 type ApiPayload = { locations?: CenterLocation[]; location?: CenterLocation; error?: string };
 
-const emptyLocation = (): CenterLocation => ({
+const emptyLocation = (phone: string): CenterLocation => ({
   id: "",
   city: "Рівне",
   name: "Нове відділення",
@@ -22,7 +23,7 @@ const emptyLocation = (): CenterLocation => ({
   fullAddress: "м. Рівне, нова адреса",
   description: "",
   hours: ["Пн–Пт · 08:00–18:00"],
-  phone: "+38 (067) 671-44-44",
+  phone,
   services: ["laboratory"],
   coordinates: { lat: 50.6199, lng: 26.2516 },
   gallery: [],
@@ -57,6 +58,7 @@ function formatSaveTime(timestamp: number) {
 }
 
 export default function LocationsAdminPage() {
+  const settings = useSiteSettings();
   const [locations, setLocations] = useState<CenterLocation[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [draft, setDraft] = useState<CenterLocation | null>(null);
@@ -184,7 +186,7 @@ export default function LocationsAdminPage() {
       const response = await fetch("/api/admin/locations", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(emptyLocation()),
+        body: JSON.stringify(emptyLocation(settings.phone)),
       });
       const payload = (await response.json()) as ApiPayload;
       if (!response.ok || !payload.location) throw new Error(payload.error || "Не вдалося створити відділення.");
@@ -242,7 +244,7 @@ export default function LocationsAdminPage() {
           <h1>Керуйте відділеннями</h1>
           <p>Адреси, графік, доступні послуги та медіа — в одному місці.</p>
         </div>
-        <Link className={styles.siteLink} href="/contacts">Переглянути на сайті <span aria-hidden="true">↗</span></Link>
+        <Link className={`${styles.siteLink} admin-ui-button`} data-variant="ghost" href="/contacts">Переглянути на сайті <span aria-hidden="true">↗</span></Link>
       </header>
 
       {error ? <p className={styles.error} role="alert">{error}</p> : null}
@@ -256,7 +258,7 @@ export default function LocationsAdminPage() {
                 <strong>Усі відділення</strong>
                 <span>{locations.length} {locations.length === 1 ? "пункт" : "пунктів"}</span>
               </div>
-              <button className={styles.createButton} type="button" onClick={create} disabled={creating || uploading || saving} aria-label="Додати відділення">
+              <button className={`${styles.createButton} admin-ui-button`} data-variant="primary" type="button" onClick={create} disabled={creating || uploading || saving} aria-label="Додати відділення">
                 <span aria-hidden="true">+</span>
                 {creating ? "Створюємо" : "Додати"}
               </button>
@@ -377,7 +379,7 @@ export default function LocationsAdminPage() {
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={photo.src} alt={photo.alt || `Фото відділення ${index + 1}`} loading="lazy" />
                           <span>{photo.caption || `Фото ${index + 1}`}</span>
-                          <button type="button" className={styles.deleteButton} disabled={uploading || saving}
+                          <button type="button" className={`${styles.deleteButton} admin-ui-button`} data-variant="danger" disabled={uploading || saving}
                             aria-label={`Видалити фото ${index + 1}`}
                             onClick={() => {
                               if (!window.confirm(`Видалити фото ${index + 1}${photo.caption ? ` «${photo.caption}»` : ""}? Зміна набуде чинності після збереження відділення.`)) return;
@@ -412,9 +414,9 @@ export default function LocationsAdminPage() {
                     disabled={saving || uploading}
                     hasUnsavedChanges={safeSave.dirty}
                   />
-                  <button className={styles.deleteButton} type="button" onClick={remove} disabled={saving || uploading}>Видалити відділення</button>
+                  <button className={`${styles.deleteButton} admin-ui-button`} data-variant="danger" type="button" onClick={remove} disabled={saving || uploading}>Видалити відділення</button>
                   <button
-                    className={styles.saveButton}
+                    className={`${styles.saveButton} admin-ui-button`} data-variant="primary"
                     type="button"
                     onClick={() => void save()}
                     disabled={!safeSave.dirty || saving || uploading}
@@ -431,7 +433,7 @@ export default function LocationsAdminPage() {
               <span aria-hidden="true">＋</span>
               <strong>Додайте перше відділення</strong>
               <p>Після створення тут з’являться всі налаштування пункту.</p>
-              <button type="button" onClick={create} disabled={creating || uploading || saving}>{creating ? "Створюємо…" : "Створити відділення"}</button>
+              <button className="admin-ui-button" data-variant="primary" type="button" onClick={create} disabled={creating || uploading || saving}>{creating ? "Створюємо…" : "Створити відділення"}</button>
             </div>
           )}
         </section>
