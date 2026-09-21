@@ -591,6 +591,16 @@ body :is(.inner-page h1, #patients-title) {
 .inner-page .doctor-detail-schedule--inline p strong { font-size: 15px; line-height: 1.4; }
 .inner-page .doctor-detail-schedule--inline p strong { text-align: right; font-weight: 600; }
 .inner-page .doctor-detail-schedule--inline small { display: block; margin-top: 12px; font-size: 13px; line-height: 1.5; }
+.doctor-schedule-notice {
+  margin: 0 0 20px;
+  color: #587276;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.inner-page .doctor-detail-heading > .doctor-schedule-notice {
+  margin: 0 0 24px;
+  font-size: 15px;
+}
 /* Compact schedule chevron with a full-size disclosure target. */
 .doctor-card-schedule-line summary { min-height: 44px; }
 .doctor-card-schedule-line summary i { background: transparent; border-radius: 0; }

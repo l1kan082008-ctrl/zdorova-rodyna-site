@@ -199,9 +199,19 @@ export function formatDoctorConsultationPrice(price: number | null) {
   return `${new Intl.NumberFormat("uk-UA").format(price)} ₴`;
 }
 
+export function getDoctorScheduleDays(schedule: DoctorSchedule) {
+  return weekDays.filter((day) => schedule[day.key]?.trim());
+}
+
+export function getDoctorScheduleNotice(doctor: Pick<Doctor, "specialty">) {
+  return canBookDoctorConsultation(doctor)
+    ? "Графік прийому уточнюйте в адміністратора."
+    : "Графік роботи уточнюйте в адміністратора.";
+}
+
 export function getScheduleSummary(schedule: DoctorSchedule) {
-  const activeDays = weekDays.filter((day) => schedule[day.key]);
-  if (!activeDays.length) return "Графік уточнюється";
+  const activeDays = getDoctorScheduleDays(schedule);
+  if (!activeDays.length) return "Графік уточнюйте в адміністратора.";
 
   if (activeDays.length === 1) {
     const day = activeDays[0];

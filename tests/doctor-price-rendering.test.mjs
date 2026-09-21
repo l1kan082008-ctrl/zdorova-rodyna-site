@@ -88,3 +88,49 @@ test('empty pricing summary is null, without a dangling separator or label', () 
   assert.equal(formatDoctorConsultations({ ...baseline, consultationPrice: 700 }), '700 ₴');
   assert.equal(formatDoctorConsultations({ ...baseline, repeatConsultationPrice: 0 }), 'Повторна — 0 ₴');
 });
+
+for (const [name, render] of surfaces) {
+  test(name + ': empty schedule shows only the administrator notice and retains booking', () => {
+    for (const schedule of [{}, { mon: '  ', tue: '\n' }]) {
+      const html = render({ ...baseline, schedule });
+      assert.ok(html.includes('Графік прийому уточнюйте в адміністратора.'));
+      assert.ok(!html.includes('doctor-detail-schedule'));
+      assert.ok(!html.includes('doctor-card-schedule-line'));
+      assert.ok(!html.includes('Графік на тиждень'));
+      assert.ok(!html.includes('Найближчий графік'));
+      assert.ok(text(html).includes('Записатися'));
+    }
+  });
+  test(name + ': a populated schedule is retained instead of the empty notice', () => {
+    const html = render({ ...baseline, schedule: { mon: '09:00–15:00' } });
+    assert.ok(html.includes('09:00–15:00'));
+    assert.ok(!html.includes('Графік прийому уточнюйте в адміністратора.'));
+    assert.ok(html.includes(name === 'profile' ? 'Години прийому' : 'Графік на тиждень'));
+  });
+  test(name + ': no appointment promise for an unscheduled radiologist', () => {
+    const html = render({ ...baseline, specialty: 'Рентгенолог', schedule: {} });
+    assert.ok(html.includes('Графік роботи уточнюйте в адміністратора.'));
+    assert.ok(!html.includes('Години роботи'));
+  });
+}
+test('empty and whitespace biographies leave no heading, placeholder or empty section', () => {
+  for (const biography of ['', '  \n \t']) {
+    const doctor = { ...baseline, biography };
+    const profile = surfaces[1][1](doctor);
+    assert.ok(!profile.includes('doctor-biography'));
+    assert.ok(!profile.includes('doctor-detail-content'));
+    assert.ok(!profile.includes('Інформація доповнюється'));
+    assert.ok(!profile.includes('Біографія та професійний досвід'));
+    const directory = surfaces[0][1](doctor);
+    assert.ok(!text(directory).includes('Біографія'));
+    assert.ok(text(directory).includes('Профіль'));
+  }
+});
+test('real biography remains visible with its paragraphs and directory label', () => {
+  const doctor = { ...baseline, biography: 'Освіта лікаря.\n\nПрофесійний досвід.' };
+  const profile = surfaces[1][1](doctor);
+  assert.ok(profile.includes('Біографія та професійний досвід'));
+  assert.ok(profile.includes('<p>Освіта лікаря.</p>'));
+  assert.ok(profile.includes('<p>Професійний досвід.</p>'));
+  assert.ok(text(surfaces[0][1](doctor)).includes('Біографія'));
+});

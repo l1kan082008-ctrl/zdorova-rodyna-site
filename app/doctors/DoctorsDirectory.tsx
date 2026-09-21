@@ -14,7 +14,8 @@ import {
   getDoctorConsultationPrices,
   canBookDoctorConsultation,
   getScheduleSummary,
-  weekDays,
+  getDoctorScheduleDays,
+  getDoctorScheduleNotice,
   type Doctor,
 } from "./doctorData";
 
@@ -258,9 +259,8 @@ const changeMobileView = (nextView: MobileDoctorView) => {
       {visibleDoctors.length ? (
         <div className={`doctors-directory doctors-directory-v2 is-mobile-view-${mobileView}`}>
           {visibleDoctors.map((doctor) => {
-            const activeSchedule = weekDays.filter(
-              (day) => doctor.schedule[day.key],
-            );
+            const activeSchedule = getDoctorScheduleDays(doctor.schedule);
+            const profileLinkLabel = doctor.biography.trim() ? "Біографія" : "Профіль";
             const returnTo = `${directoryUrl(specialty, query)}#doctor-card-${doctor.id}`;
             const profileHref = `/doctors/${doctor.id}?returnTo=${encodeURIComponent(returnTo)}`;
             const bookingHref = `/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`;
@@ -339,7 +339,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
 
                   {!isExpanded && (
                     <div className="doctor-photo-actions">
-                      <a className="doctor-photo-biography" href={profileHref}>Біографія</a>
+                      <a className="doctor-photo-biography" href={profileHref}>{profileLinkLabel}</a>
                       {canBookDoctorConsultation(doctor) && (
                         <a className="doctor-photo-booking" href={bookingHref}>Записатися</a>
                       )}
@@ -367,37 +367,33 @@ const changeMobileView = (nextView: MobileDoctorView) => {
                     </div>)}
                   </div>
 
-                  <div className="doctor-card-schedule-line">
+                  {activeSchedule.length ? <div className="doctor-card-schedule-line">
                     <div>
                       <span>Найближчий графік</span>
                       <strong>{getScheduleSummary(doctor.schedule)}</strong>
                     </div>
-                    {activeSchedule.length ? (
-                      <details>
-                        <summary>
-                          <span>Графік на тиждень</span>
-                          <i aria-hidden="true" />
-                        </summary>
-                        <div className="doctor-week">
-                          {activeSchedule.map((day) => (
-                            <div key={day.key}>
-                              <span>{day.label}</span>
-                              <b>{doctor.schedule[day.key]}</b>
-                            </div>
-                          ))}
-                        </div>
-                      </details>
-                    ) : (
-                      <small>Час підтвердить адміністратор</small>
-                    )}
-                  </div>
+                    <details>
+                      <summary>
+                        <span>Графік на тиждень</span>
+                        <i aria-hidden="true" />
+                      </summary>
+                      <div className="doctor-week">
+                        {activeSchedule.map((day) => (
+                          <div key={day.key}>
+                            <span>{day.label}</span>
+                            <b>{doctor.schedule[day.key]}</b>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  </div> : <p className="doctor-schedule-notice">{getDoctorScheduleNotice(doctor)}</p>}
 
                   <div className="doctor-card-text-actions">
                     <a
                       className="doctor-biography-link"
                       href={profileHref}
                     >
-                      Біографія
+                      {profileLinkLabel}
                     </a>
                     {canBookDoctorConsultation(doctor) && (<a
                       className="doctor-book-text-link doctor-book-cta"

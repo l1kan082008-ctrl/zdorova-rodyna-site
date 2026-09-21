@@ -307,9 +307,9 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
                   <Link
                     className="family-doctor-biography"
                     href={`/doctors/${doctor.id}?returnTo=${encodeURIComponent("/services/family#family-declaration")}`}
-                    aria-label={`Переглянути біографію: ${doctor.name}`}
+                    aria-label={`Переглянути профіль: ${doctor.name}`}
                   >
-                    Біографія <span aria-hidden="true">→</span>
+                    Профіль <span aria-hidden="true">→</span>
                   </Link>
                 </div>
               );

@@ -7,6 +7,8 @@ import {
   formatDoctorConsultations,
   canBookDoctorConsultation,
   getDoctorPatientGroups,
+  getDoctorScheduleDays,
+  getDoctorScheduleNotice,
   weekDays,
   type Doctor,
 } from "../doctorData";
@@ -31,6 +33,7 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
   }
 
   const consultationSummary = formatDoctorConsultations(doctor);
+  const activeDays = getDoctorScheduleDays(doctor.schedule);
   const biographyParagraphs = doctor.biography
     .split(/\n+/)
     .map((paragraph) => paragraph.trim())
@@ -90,21 +93,24 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
               <p className="doctor-detail-lead">{doctor.description}</p>
             ) : null}
 
-          <aside className="doctor-detail-schedule doctor-detail-schedule--inline">
-
-            <h2>{canBookDoctorConsultation(doctor) ? "Години прийому" : "Години роботи"}</h2>
-            <div>
-              {Object.values(doctor.schedule).some(Boolean) ? weekDays.map((day) => (
-                <p key={day.key}>
-                  <span>{day.label}</span>
-                  <strong>{doctor.schedule[day.key] || "Не приймає"}</strong>
-                </p>
-              )) : <p className="doctor-schedule-empty">Графік уточнюється</p>}
-            </div>
-            <small>
-              Перед візитом радимо підтвердити актуальний час в адміністратора.
-            </small>
-          </aside>
+            {activeDays.length ? (
+              <aside className="doctor-detail-schedule doctor-detail-schedule--inline">
+                <h2>{canBookDoctorConsultation(doctor) ? "Години прийому" : "Години роботи"}</h2>
+                <div>
+                  {weekDays.map((day) => (
+                    <p key={day.key}>
+                      <span>{day.label}</span>
+                      <strong>{doctor.schedule[day.key]?.trim() || "Не приймає"}</strong>
+                    </p>
+                  ))}
+                </div>
+                <small>
+                  Перед візитом радимо підтвердити актуальний час в адміністратора.
+                </small>
+              </aside>
+            ) : (
+              <p className="doctor-schedule-notice">{getDoctorScheduleNotice(doctor)}</p>
+            )}
 
             {canBookDoctorConsultation(doctor) && (<div className="doctor-detail-actions">
               <a
@@ -117,27 +123,17 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
           </div>
         </div>
 
-        <div className="doctor-detail-content">
-          <article className="doctor-biography">
-            <span className="section-kicker">Про лікаря</span>
-            <h2>Біографія та професійний досвід</h2>
-            {biographyParagraphs.length ? (
-              biographyParagraphs.map((paragraph, index) => (
+        {biographyParagraphs.length > 0 && (
+          <div className="doctor-detail-content">
+            <article className="doctor-biography">
+              <span className="section-kicker">Про лікаря</span>
+              <h2>Біографія та професійний досвід</h2>
+              {biographyParagraphs.map((paragraph, index) => (
                 <p key={`${index}-${paragraph.slice(0, 20)}`}>{paragraph}</p>
-              ))
-            ) : (
-              <div className="doctor-biography-empty">
-                <strong>Інформація доповнюється</strong>
-                <p>
-                  Детальну інформацію про освіту, кваліфікацію та професійний
-                  досвід можна уточнити в адміністратора центру.
-                </p>
-              </div>
-            )}
-          </article>
-
-
-        </div>
+              ))}
+            </article>
+          </div>
+        )}
       </section>
     </>
   );
