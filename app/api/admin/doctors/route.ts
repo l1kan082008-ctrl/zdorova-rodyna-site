@@ -11,7 +11,7 @@ import type {
   DoctorSchedule,
 } from "../../../doctors/doctorData";
 import { readBoundedJson, RequestBodyError, requestBodyErrorResponse } from "@/lib/requestBody";
-import { DoctorPriceValidationError, parseDoctorPrice } from "@/lib/doctorPricing";
+import { DoctorPriceValidationError, parseDoctorPrice, parseDoctorShowConsultationPriceOnRequest } from "@/lib/doctorPricing";
 import { DoctorPublicationValidationError, parseDoctorIsActive, parseDoctorSortOrder } from "@/lib/doctorPublication";
 import { getDoctorSortOrder } from "../../../doctors/doctorData";
 import { changedSnapshotFields, recordContentRevision } from "../revisions/revisionStore";
@@ -35,6 +35,7 @@ type DoctorPayload = {
   experienceYears?: number | null;
   consultationPrice?: number | null;
   repeatConsultationPrice?: number | null;
+  showConsultationPriceOnRequest?: boolean;
   isActive?: boolean;
   sortOrder?: number;
   branch?: string;
@@ -67,6 +68,7 @@ async function readDoctorPayload(request: Request, maximumBytes: number): Promis
   // Validate before any database or revision write; omitted fields remain optional.
   parseDoctorPrice(values.consultationPrice);
   parseDoctorPrice(values.repeatConsultationPrice);
+  parseDoctorShowConsultationPriceOnRequest(values.showConsultationPriceOnRequest);
   parseDoctorIsActive(values.isActive);
   parseDoctorSortOrder(values.sortOrder);
   return values as DoctorPayload;
@@ -142,6 +144,7 @@ export async function PUT(request: Request) {
           : null,
       consultationPrice: parseDoctorPrice(payload.consultationPrice, existing.consultationPrice),
       repeatConsultationPrice: parseDoctorPrice(payload.repeatConsultationPrice, existing.repeatConsultationPrice ?? null),
+      showConsultationPriceOnRequest: parseDoctorShowConsultationPriceOnRequest(payload.showConsultationPriceOnRequest, existing.showConsultationPriceOnRequest === true),
       isActive: parseDoctorIsActive(payload.isActive, existing.isActive !== false),
       sortOrder: parseDoctorSortOrder(payload.sortOrder, getDoctorSortOrder(existing)),
       branch: payload.branch?.trim() ?? existing.branch,
@@ -194,6 +197,7 @@ export async function POST(request: Request) {
       branch: payload.branch?.trim() ?? "",
       consultationPrice: parseDoctorPrice(payload.consultationPrice),
       repeatConsultationPrice: parseDoctorPrice(payload.repeatConsultationPrice),
+      showConsultationPriceOnRequest: parseDoctorShowConsultationPriceOnRequest(payload.showConsultationPriceOnRequest),
       isActive: parseDoctorIsActive(payload.isActive),
       sortOrder: parseDoctorSortOrder(payload.sortOrder),
     });

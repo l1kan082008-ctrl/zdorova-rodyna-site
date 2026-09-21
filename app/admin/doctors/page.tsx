@@ -90,8 +90,18 @@ function DoctorPublicationFields({ isActive, sortOrder, onActiveChange, onOrderC
   );
 }
 
-type NewDoctorDraft = Pick<DoctorProfileDraft, "name" | "specialty" | "branch" | "consultationPrice" | "repeatConsultationPrice" | "isActive" | "sortOrder">;
-const emptyNewDoctorDraft: NewDoctorDraft = { name: "", specialty: "", branch: "", consultationPrice: "", repeatConsultationPrice: "", isActive: true, sortOrder: String(DEFAULT_DOCTOR_SORT_ORDER) };
+function DoctorPriceVisibilityField({ checked, onChange }: { checked: boolean; onChange: (value: boolean) => void }) {
+  return (
+    <label className={`admin-toggle-row ${styles.visibilityControl}`}>
+      <span><strong>Показувати “Уточнюйте”, якщо ціну не вказано</strong><small>Порожня ціна прихована за замовчуванням. Вказана сума показується завжди.</small></span>
+      <input type="checkbox" role="switch" aria-label="Показувати “Уточнюйте”, якщо ціну не вказано" checked={checked} onChange={(event) => onChange(event.target.checked)} />
+      <span className="admin-toggle" aria-hidden="true"><span /></span>
+    </label>
+  );
+}
+
+type NewDoctorDraft = Pick<DoctorProfileDraft, "name" | "specialty" | "branch" | "consultationPrice" | "repeatConsultationPrice" | "isActive" | "sortOrder" | "showConsultationPriceOnRequest">;
+const emptyNewDoctorDraft: NewDoctorDraft = { name: "", specialty: "", branch: "", consultationPrice: "", repeatConsultationPrice: "", isActive: true, sortOrder: String(DEFAULT_DOCTOR_SORT_ORDER), showConsultationPriceOnRequest: false };
 
 function CreateDoctorForm({ specialtyOptions, branches, onCreated, onCancel, onRegisterGuard }: {
   specialtyOptions: string[];
@@ -124,6 +134,7 @@ function CreateDoctorForm({ specialtyOptions, branches, onCreated, onCancel, onR
           repeatConsultationPrice: draft.repeatConsultationPrice === "" ? null : Number(draft.repeatConsultationPrice),
           isActive: draft.isActive,
           sortOrder: Number(draft.sortOrder),
+          showConsultationPriceOnRequest: draft.showConsultationPriceOnRequest,
         }),
       });
       const payload = await response.json() as ApiPayload;
@@ -186,7 +197,7 @@ function CreateDoctorForm({ specialtyOptions, branches, onCreated, onCancel, onR
               <input type="number" min="0" max="100000" step="1" value={draft.repeatConsultationPrice} onChange={(event) => update("repeatConsultationPrice", event.target.value)} placeholder="Не вказано" />
             </label>
           </div>
-          <p className={styles.fieldHint}>Ціни можна залишити порожніми, якщо вартість потрібно уточнювати.</p>
+          <DoctorPriceVisibilityField checked={draft.showConsultationPriceOnRequest} onChange={(value) => update("showConsultationPriceOnRequest", value)} />
           <DoctorPublicationFields isActive={draft.isActive} sortOrder={draft.sortOrder} onActiveChange={(value) => update("isActive", value)} onOrderChange={(value) => update("sortOrder", value)} />
         </fieldset>
         {error && <p className={styles.fieldError} role="alert">{error}</p>}
@@ -228,6 +239,7 @@ function DoctorEditor({
   const [repeatConsultationPrice, setRepeatConsultationPrice] = useState(
     doctor.repeatConsultationPrice?.toString() ?? "",
   );
+  const [showConsultationPriceOnRequest, setShowConsultationPriceOnRequest] = useState(doctor.showConsultationPriceOnRequest === true);
   const [isActive, setIsActive] = useState(doctor.isActive !== false);
   const [sortOrder, setSortOrder] = useState(() => doctorProfileDraft(doctor).sortOrder);
   const [branch, setBranch] = useState(doctor.branch);
@@ -259,6 +271,7 @@ function DoctorEditor({
     schedule,
     isActive,
     sortOrder,
+    showConsultationPriceOnRequest,
   }), [
     biography,
     branch,
@@ -273,6 +286,7 @@ function DoctorEditor({
     specialty,
     isActive,
     sortOrder,
+    showConsultationPriceOnRequest,
   ]);
 
   const applyProfileDraft = useCallback((restored: DoctorProfileDraft) => {
@@ -288,6 +302,7 @@ function DoctorEditor({
     setSchedule(restored.schedule);
     setIsActive(restored.isActive !== false);
     setSortOrder(restored.sortOrder ?? String(DEFAULT_DOCTOR_SORT_ORDER));
+    setShowConsultationPriceOnRequest(restored.showConsultationPriceOnRequest === true);
   }, []);
 
   const saveProfile = useCallback(async () => {
@@ -546,7 +561,7 @@ function DoctorEditor({
           <label>
             Первинна консультація, ₴
             <input type="number" min="0" max="100000" step="1" value={consultationPrice} onChange={(event) => setConsultationPrice(event.target.value)} placeholder="Не вказано" />
-            <small>Порожнє поле — вартість уточнюється.</small>
+            <small>Залиште порожнім, якщо ціну ще не визначено.</small>
           </label>
           <label>
             Повторна консультація, ₴
@@ -554,6 +569,8 @@ function DoctorEditor({
             <small>Вкажіть окрему ціну повторного прийому.</small>
           </label>
         </div>
+
+        <DoctorPriceVisibilityField checked={showConsultationPriceOnRequest} onChange={setShowConsultationPriceOnRequest} />
 
         <DoctorPublicationFields isActive={isActive} sortOrder={sortOrder} onActiveChange={setIsActive} onOrderChange={setSortOrder} />
 

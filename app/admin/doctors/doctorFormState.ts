@@ -14,6 +14,7 @@ export type DoctorProfileDraft = {
   schedule: DoctorSchedule;
   isActive: boolean;
   sortOrder: string;
+  showConsultationPriceOnRequest: boolean;
 };
 
 export function doctorProfileDraft(doctor: Doctor): DoctorProfileDraft {
@@ -31,6 +32,7 @@ export function doctorProfileDraft(doctor: Doctor): DoctorProfileDraft {
     schedule: doctor.schedule,
     isActive: doctor.isActive !== false,
     sortOrder: String(getDoctorSortOrder(doctor)),
+    showConsultationPriceOnRequest: doctor.showConsultationPriceOnRequest === true,
   };
 }
 
@@ -57,7 +59,7 @@ export function getSpecialtyOptions(values: readonly string[], preservedValue = 
     .sort((a, b) => a.localeCompare(b, "uk-UA"));
 }
 
-// Upgrade original, two-price and creation drafts only if their server baseline still matches.
+// Upgrade older profile and creation drafts only if their server baseline still matches.
 export function upgradeLegacyDoctorDraft(raw: string, baseline: Partial<DoctorProfileDraft>): string {
   try {
     const stored = JSON.parse(raw);
@@ -65,7 +67,7 @@ export function upgradeLegacyDoctorDraft(raw: string, baseline: Partial<DoctorPr
         !stored.value || typeof stored.value !== "object" || Array.isArray(stored.value)) return raw;
     const storedBaseline = JSON.parse(stored.baseline);
     if (!storedBaseline || typeof storedBaseline !== "object" || Array.isArray(storedBaseline)) return raw;
-    const addedFields = ["repeatConsultationPrice", "isActive", "sortOrder"] as const;
+    const addedFields = ["repeatConsultationPrice", "isActive", "sortOrder", "showConsultationPriceOnRequest"] as const;
     const missingFields = addedFields.filter((field) => Object.hasOwn(baseline, field) && !Object.hasOwn(storedBaseline, field));
     if (!missingFields.length || missingFields.some((field) => Object.hasOwn(stored.value, field))) return raw;
     const previousBaseline = { ...baseline };

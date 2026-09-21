@@ -79,6 +79,7 @@ test("original pre-price draft gains new fields without replacing its unsaved co
   delete original.repeatConsultationPrice;
   delete original.isActive;
   delete original.sortOrder;
+  delete original.showConsultationPriceOnRequest;
   const raw = JSON.stringify({ version: 1, baseline: JSON.stringify(original), value: { ...original, biography: "Незбережена біографія" }, updatedAt: 321 });
   const upgraded = JSON.parse(upgradeLegacyDoctorDraft(raw, baseline));
   assert.equal(upgraded.baseline, JSON.stringify(baseline));
@@ -94,6 +95,7 @@ test("previous two-price draft preserves its unsaved repeat price during visibil
   const previous = { ...baseline };
   delete previous.isActive;
   delete previous.sortOrder;
+  delete previous.showConsultationPriceOnRequest;
   const raw = JSON.stringify({ version: 1, baseline: JSON.stringify(previous), value: { ...previous, repeatConsultationPrice: "550" }, updatedAt: 321 });
   const upgraded = JSON.parse(upgradeLegacyDoctorDraft(raw, baseline));
   assert.equal(upgraded.value.repeatConsultationPrice, "550");
@@ -102,10 +104,11 @@ test("previous two-price draft preserves its unsaved repeat price during visibil
 });
 
 test("new-doctor browser drafts gain publication defaults without creating a record", () => {
-  const baseline = { name: "", specialty: "", branch: "", consultationPrice: "", repeatConsultationPrice: "", isActive: true, sortOrder: "1000" };
+  const baseline = { name: "", specialty: "", branch: "", consultationPrice: "", repeatConsultationPrice: "", isActive: true, sortOrder: "1000", showConsultationPriceOnRequest: false };
   const previous = { ...baseline };
   delete previous.isActive;
   delete previous.sortOrder;
+  delete previous.showConsultationPriceOnRequest;
   const raw = JSON.stringify({ version: 1, baseline: JSON.stringify(previous), value: { ...previous, name: "Чернетка лікаря", specialty: "Кардіолог" }, updatedAt: 321 });
   const upgraded = JSON.parse(upgradeLegacyDoctorDraft(raw, baseline));
   assert.equal(upgraded.baseline, JSON.stringify(baseline));
@@ -113,10 +116,51 @@ test("new-doctor browser drafts gain publication defaults without creating a rec
   assert.equal(upgraded.value.specialty, "Кардіолог");
   assert.equal(upgraded.value.isActive, true);
   assert.equal(upgraded.value.sortOrder, "1000");
+  assert.equal(upgraded.value.showConsultationPriceOnRequest, false);
 });
 
 test("a current hidden draft is not rewritten or reset to published", () => {
   const baseline = doctorProfileDraft(doctor);
   const raw = JSON.stringify({ version: 1, baseline: JSON.stringify(baseline), value: { ...baseline, isActive: false, sortOrder: "0" }, updatedAt: 321 });
+  assert.equal(upgradeLegacyDoctorDraft(raw, baseline), raw);
+});
+
+test("unknown-price visibility is opt-in and remains explicit in the profile draft", () => {
+  assert.equal(doctorProfileDraft(doctor).showConsultationPriceOnRequest, false);
+  assert.equal(doctorProfileDraft({ ...doctor, showConsultationPriceOnRequest: false }).showConsultationPriceOnRequest, false);
+  assert.equal(doctorProfileDraft({ ...doctor, showConsultationPriceOnRequest: true }).showConsultationPriceOnRequest, true);
+});
+
+test("previous publication drafts inherit the saved price opt-in without losing unsaved edits", () => {
+  for (const showConsultationPriceOnRequest of [false, true]) {
+    const baseline = doctorProfileDraft({ ...doctor, showConsultationPriceOnRequest });
+    const previous = { ...baseline };
+    delete previous.showConsultationPriceOnRequest;
+    const raw = JSON.stringify({ version: 1, baseline: JSON.stringify(previous), value: { ...previous, consultationPrice: "", isActive: false, sortOrder: "0" }, updatedAt: 321 });
+    const upgraded = JSON.parse(upgradeLegacyDoctorDraft(raw, baseline));
+    assert.equal(upgraded.baseline, JSON.stringify(baseline));
+    assert.equal(upgraded.value.showConsultationPriceOnRequest, showConsultationPriceOnRequest);
+    assert.equal(upgraded.value.consultationPrice, "");
+    assert.equal(upgraded.value.isActive, false);
+    assert.equal(upgraded.value.sortOrder, "0");
+    assert.equal(upgraded.updatedAt, 321);
+  }
+});
+
+test("a current opt-in draft is retained and the opt-in participates in dirty comparisons", () => {
+  const baseline = doctorProfileDraft(doctor);
+  const value = { ...baseline, showConsultationPriceOnRequest: true };
+  assert.notEqual(JSON.stringify(value), JSON.stringify(baseline));
+  const raw = JSON.stringify({ version: 1, baseline: JSON.stringify(baseline), value, updatedAt: 321 });
+  assert.equal(upgradeLegacyDoctorDraft(raw, baseline), raw);
+  const saved = doctorProfileDraft({ ...doctor, showConsultationPriceOnRequest: true });
+  assert.equal(JSON.stringify(value), JSON.stringify(saved));
+});
+
+test("migration leaves an existing price opt-in untouched when its legacy baseline is incomplete", () => {
+  const baseline = doctorProfileDraft(doctor);
+  const previous = { ...baseline };
+  delete previous.showConsultationPriceOnRequest;
+  const raw = JSON.stringify({ version: 1, baseline: JSON.stringify(previous), value: { ...previous, showConsultationPriceOnRequest: true }, updatedAt: 321 });
   assert.equal(upgradeLegacyDoctorDraft(raw, baseline), raw);
 });

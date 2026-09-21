@@ -1,6 +1,6 @@
 import { initializeOnce } from "../../../lib/initializeOnce";
 import { env } from "@/lib/runtimeEnv";
-import { parseDoctorPrice } from "@/lib/doctorPricing";
+import { parseDoctorPrice, parseDoctorShowConsultationPriceOnRequest } from "@/lib/doctorPricing";
 import { parseDoctorIsActive, parseDoctorSortOrder } from "@/lib/doctorPublication";
 import {
   defaultDoctors,
@@ -21,6 +21,7 @@ type DoctorRow = {
   experience_years: number | null;
   consultation_price: number | null;
   repeat_consultation_price: number | null;
+  show_consultation_price_on_request: number;
   is_active: number;
   sort_order: number | null;
   branch: string;
@@ -39,6 +40,7 @@ const createDoctorsTable = `
     experience_years INTEGER,
     consultation_price INTEGER,
     repeat_consultation_price INTEGER,
+    show_consultation_price_on_request INTEGER NOT NULL DEFAULT 0,
     is_active INTEGER NOT NULL DEFAULT 1,
     sort_order INTEGER,
     branch TEXT NOT NULL DEFAULT '',
@@ -54,8 +56,8 @@ const createDoctorsTable = `
 function prepareDefaultDoctorInsert(doctor: Doctor) {
   return env.DB.prepare(
     `INSERT OR IGNORE INTO doctors
-      (id, name, specialty, experience_years, consultation_price, repeat_consultation_price, is_active, sort_order, branch, description, biography, patient_groups, schedule, photo_key)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '')`,
+      (id, name, specialty, experience_years, consultation_price, repeat_consultation_price, show_consultation_price_on_request, is_active, sort_order, branch, description, biography, patient_groups, schedule, photo_key)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '')`,
   ).bind(
     doctor.id,
     doctor.name,
@@ -63,6 +65,7 @@ function prepareDefaultDoctorInsert(doctor: Doctor) {
     doctor.experienceYears,
     doctor.consultationPrice,
     doctor.repeatConsultationPrice ?? null,
+    doctor.showConsultationPriceOnRequest === true ? 1 : 0,
     doctor.isActive === false ? 0 : 1,
     getDoctorSortOrder(doctor),
     doctor.branch,
@@ -110,6 +113,7 @@ async function initializeSchemaTables() {
   const doctorColumnMigrations = [
     ["consultation_price", "ALTER TABLE doctors ADD COLUMN consultation_price INTEGER"],
     ["repeat_consultation_price", "ALTER TABLE doctors ADD COLUMN repeat_consultation_price INTEGER"],
+    ["show_consultation_price_on_request", "ALTER TABLE doctors ADD COLUMN show_consultation_price_on_request INTEGER NOT NULL DEFAULT 0"],
     ["is_active", "ALTER TABLE doctors ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1"],
     ["sort_order", "ALTER TABLE doctors ADD COLUMN sort_order INTEGER"],
   ] as const;
@@ -178,6 +182,7 @@ function toDoctor(row: DoctorRow): Doctor {
     experienceYears: row.experience_years,
     consultationPrice: row.consultation_price,
     repeatConsultationPrice: row.repeat_consultation_price,
+    showConsultationPriceOnRequest: row.show_consultation_price_on_request === 1,
     isActive: row.is_active === 1,
     sortOrder: row.sort_order ?? getDoctorSortOrder({ id: row.id }),
     branch: row.branch,
@@ -195,7 +200,7 @@ export async function listDoctors(options: { includeInactive?: boolean } = {}) {
   await ensureDoctorsTable();
   const result = await env.DB.prepare(
     `SELECT id, name, specialty, experience_years, consultation_price, repeat_consultation_price, branch, description, biography,
-            patient_groups, schedule, photo_key, is_active, sort_order
+            patient_groups, schedule, photo_key, is_active, sort_order, show_consultation_price_on_request
      FROM doctors
      WHERE (? = 1 OR is_active = 1)
      ORDER BY sort_order, name COLLATE NOCASE`,
@@ -208,7 +213,7 @@ export async function getDoctorById(id: string, options: { includeInactive?: boo
   await ensureDoctorsTable();
   const row = await env.DB.prepare(
     `SELECT id, name, specialty, experience_years, consultation_price, repeat_consultation_price, branch, description, biography,
-            patient_groups, schedule, photo_key, is_active, sort_order
+            patient_groups, schedule, photo_key, is_active, sort_order, show_consultation_price_on_request
      FROM doctors
      WHERE id = ? AND (? = 1 OR is_active = 1)`,
   )
@@ -236,6 +241,7 @@ export async function updateDoctor(
     experienceYears: number | null;
     consultationPrice?: number | null;
     repeatConsultationPrice?: number | null;
+    showConsultationPriceOnRequest?: boolean;
     isActive?: boolean;
     sortOrder?: number;
     branch: string;
@@ -247,6 +253,7 @@ export async function updateDoctor(
 ) {
   const consultationPrice = parseDoctorPrice(values.consultationPrice);
   const repeatConsultationPrice = parseDoctorPrice(values.repeatConsultationPrice);
+  const showConsultationPriceOnRequest = parseDoctorShowConsultationPriceOnRequest(values.showConsultationPriceOnRequest);
   const isActive = parseDoctorIsActive(values.isActive);
   const sortOrder = parseDoctorSortOrder(values.sortOrder, DEFAULT_DOCTOR_SORT_ORDER);
   // Bound presence flags preserve omitted fields; explicit null still clears prices.
@@ -255,6 +262,7 @@ export async function updateDoctor(
     `UPDATE doctors
      SET consultation_price = CASE WHEN ? = 1 THEN ? ELSE consultation_price END,
          repeat_consultation_price = CASE WHEN ? = 1 THEN ? ELSE repeat_consultation_price END,
+         show_consultation_price_on_request = CASE WHEN ? = 1 THEN ? ELSE show_consultation_price_on_request END,
          is_active = CASE WHEN ? = 1 THEN ? ELSE is_active END,
          sort_order = CASE WHEN ? = 1 THEN ? ELSE sort_order END,
          name = ?, specialty = ?, experience_years = ?, branch = ?, description = ?,
@@ -267,6 +275,8 @@ export async function updateDoctor(
       consultationPrice,
       values.repeatConsultationPrice === undefined ? 0 : 1,
       repeatConsultationPrice,
+      values.showConsultationPriceOnRequest === undefined ? 0 : 1,
+      showConsultationPriceOnRequest ? 1 : 0,
       values.isActive === undefined ? 0 : 1,
       isActive ? 1 : 0,
       values.sortOrder === undefined ? 0 : 1,
@@ -293,21 +303,23 @@ export async function createDoctor(values: {
   branch?: string;
   consultationPrice?: number | null;
   repeatConsultationPrice?: number | null;
+  showConsultationPriceOnRequest?: boolean;
   isActive?: boolean;
   sortOrder?: number;
 }) {
   const consultationPrice = parseDoctorPrice(values.consultationPrice);
   const repeatConsultationPrice = parseDoctorPrice(values.repeatConsultationPrice);
+  const showConsultationPriceOnRequest = parseDoctorShowConsultationPriceOnRequest(values.showConsultationPriceOnRequest);
   const isActive = parseDoctorIsActive(values.isActive);
   const sortOrder = parseDoctorSortOrder(values.sortOrder, DEFAULT_DOCTOR_SORT_ORDER);
   await ensureDoctorsTable();
   const id = values.id?.trim() || `doctor-${crypto.randomUUID()}`;
   await env.DB.prepare(
     `INSERT INTO doctors
-      (id, name, specialty, experience_years, consultation_price, repeat_consultation_price, is_active, sort_order, branch, description, biography, patient_groups, schedule, photo_key)
-     VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, '', '', '[]', '{}', '')`,
+      (id, name, specialty, experience_years, consultation_price, repeat_consultation_price, show_consultation_price_on_request, is_active, sort_order, branch, description, biography, patient_groups, schedule, photo_key)
+     VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, '', '', '[]', '{}', '')`,
   )
-    .bind(id, values.name, values.specialty, consultationPrice, repeatConsultationPrice, isActive ? 1 : 0, sortOrder, values.branch?.trim() ?? "")
+    .bind(id, values.name, values.specialty, consultationPrice, repeatConsultationPrice, showConsultationPriceOnRequest ? 1 : 0, isActive ? 1 : 0, sortOrder, values.branch?.trim() ?? "")
     .run();
   return getDoctorById(id, { includeInactive: true });
 }

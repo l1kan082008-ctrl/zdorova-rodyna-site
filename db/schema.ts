@@ -8,6 +8,7 @@ export const doctors = sqliteTable("doctors", {
   experienceYears: integer("experience_years"),
   consultationPrice: integer("consultation_price"),
   repeatConsultationPrice: integer("repeat_consultation_price"),
+  showConsultationPriceOnRequest: integer("show_consultation_price_on_request").notNull().default(0),
   isActive: integer("is_active").notNull().default(1),
   sortOrder: integer("sort_order"),
   branch: text("branch").notNull().default(""),

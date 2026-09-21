@@ -11,7 +11,7 @@ import {
   doctorPatientGroupOptions,
   getDoctorInitials,
   formatDoctorConsultations,
-  formatDoctorConsultationPrice,
+  getDoctorConsultationPrices,
   canBookDoctorConsultation,
   getScheduleSummary,
   weekDays,
@@ -264,6 +264,8 @@ const changeMobileView = (nextView: MobileDoctorView) => {
             const returnTo = `${directoryUrl(specialty, query)}#doctor-card-${doctor.id}`;
             const profileHref = `/doctors/${doctor.id}?returnTo=${encodeURIComponent(returnTo)}`;
             const bookingHref = `/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`;
+            const consultationPrices = getDoctorConsultationPrices(doctor);
+            const consultationSummary = formatDoctorConsultations(doctor);
             const isFocused = focusedDoctorId === doctor.id;
             const isExpanded = expandedDoctorId === doctor.id;
             const patientGroups = doctorPatientGroupOptions
@@ -327,11 +329,10 @@ const changeMobileView = (nextView: MobileDoctorView) => {
                     <span>
                       <b>{doctor.name}</b>
                       <small>{formatDoctorSpecialty(doctor.specialty)}</small>
-                      {canBookDoctorConsultation(doctor) && (<span className="doctor-card-consultation-price">
-                        {doctor.repeatConsultationPrice != null ? <>
-                          <span className="doctor-price-row"><span>Первинна</span><span>{formatDoctorConsultationPrice(doctor.consultationPrice)}</span></span>
-                          <span className="doctor-price-row"><span>Повторна</span><span>{formatDoctorConsultationPrice(doctor.repeatConsultationPrice)}</span></span>
-                        </> : <>Консультація · {formatDoctorConsultations(doctor)}</>}
+                      {canBookDoctorConsultation(doctor) && consultationSummary && (<span className="doctor-card-consultation-price">
+                        {doctor.repeatConsultationPrice != null ? consultationPrices.map(({ label, value }) => (
+                          <span className="doctor-price-row" key={label}><span>{label}</span><span>{value}</span></span>
+                        )) : <>Консультація · {consultationSummary}</>}
                       </span>)}
                     </span>
                   </span>
@@ -360,9 +361,9 @@ const changeMobileView = (nextView: MobileDoctorView) => {
                       <span>Відділення</span>
                       <strong>{formatDoctorBranch(doctor.branch)}</strong>
                     </div>
-                    {canBookDoctorConsultation(doctor) && (<div>
+                    {canBookDoctorConsultation(doctor) && consultationSummary && (<div>
                       <span>Консультація</span>
-                      <strong>{formatDoctorConsultations(doctor)}</strong>
+                      <strong>{consultationSummary}</strong>
                     </div>)}
                   </div>
 

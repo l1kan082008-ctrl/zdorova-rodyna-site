@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS doctors (
   experience_years INTEGER,
   consultation_price INTEGER,
   repeat_consultation_price INTEGER,
+  show_consultation_price_on_request INTEGER NOT NULL DEFAULT 0,
   is_active INTEGER NOT NULL DEFAULT 1,
   sort_order INTEGER,
   branch TEXT NOT NULL DEFAULT '',
@@ -18,6 +19,7 @@ CREATE TABLE IF NOT EXISTS doctors (
 
 ALTER TABLE doctors ADD COLUMN IF NOT EXISTS consultation_price INTEGER;
 ALTER TABLE doctors ADD COLUMN IF NOT EXISTS repeat_consultation_price INTEGER;
+ALTER TABLE doctors ADD COLUMN IF NOT EXISTS show_consultation_price_on_request INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE doctors ADD COLUMN IF NOT EXISTS is_active INTEGER NOT NULL DEFAULT 1;
 ALTER TABLE doctors ADD COLUMN IF NOT EXISTS sort_order INTEGER;
 

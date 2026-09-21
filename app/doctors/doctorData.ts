@@ -28,6 +28,7 @@ export type Doctor = {
   experienceLabel?: string;
   consultationPrice: number | null;
   repeatConsultationPrice?: number | null;
+  showConsultationPriceOnRequest?: boolean;
   isActive?: boolean;
   sortOrder?: number;
   branch: string;
@@ -227,7 +228,24 @@ export function canBookDoctorConsultation(doctor: Pick<Doctor, 'specialty'>): bo
   return !/рентгенолог|radiolog/iu.test(doctor.specialty);
 }
 
-export function formatDoctorConsultations(doctor: Pick<Doctor, "consultationPrice" | "repeatConsultationPrice">) {
-  if (doctor.repeatConsultationPrice == null) return formatDoctorConsultationPrice(doctor.consultationPrice);
-  return `Первинна — ${formatDoctorConsultationPrice(doctor.consultationPrice)} · Повторна — ${formatDoctorConsultationPrice(doctor.repeatConsultationPrice)}`;
+type DoctorConsultationPricing = Pick<Doctor, "consultationPrice" | "repeatConsultationPrice" | "showConsultationPriceOnRequest">;
+
+export function getDoctorConsultationPrices(doctor: DoctorConsultationPricing) {
+  const prices: { label: string; value: string }[] = [];
+  if (doctor.consultationPrice != null || doctor.showConsultationPriceOnRequest === true) {
+    prices.push({
+      label: doctor.repeatConsultationPrice != null ? "Первинна" : "Консультація",
+      value: formatDoctorConsultationPrice(doctor.consultationPrice ?? null),
+    });
+  }
+  if (doctor.repeatConsultationPrice != null) {
+    prices.push({ label: "Повторна", value: formatDoctorConsultationPrice(doctor.repeatConsultationPrice) });
+  }
+  return prices;
+}
+
+export function formatDoctorConsultations(doctor: DoctorConsultationPricing) {
+  const prices = getDoctorConsultationPrices(doctor);
+  if (!prices.length) return null;
+  return prices.map(({ label, value }) => label === "Консультація" ? value : `${label} — ${value}`).join(" · ");
 }

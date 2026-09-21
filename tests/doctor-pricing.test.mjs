@@ -320,9 +320,11 @@ test("PostgreSQL adapter translates migration and binds both prices correctly wi
     "@neondatabase/serverless": { neon: () => client },
   }, { process: { env: { DATABASE_URL: "postgresql://test.invalid/no-connection" } } });
   const store = storeFor(getDatabase());
-  const doctor = await store.createDoctor({ ...identity, consultationPrice: 700, repeatConsultationPrice: 450 });
+  const doctor = await store.createDoctor({ ...identity, consultationPrice: 700, repeatConsultationPrice: 450, showConsultationPriceOnRequest: true });
   await store.updateDoctor(doctor.id, { ...doctor, repeatConsultationPrice: null });
   assert.equal((await store.listDoctors()).find((item) => item.id === doctor.id).repeatConsultationPrice, null);
+  assert.equal((await store.getDoctorById(doctor.id)).showConsultationPriceOnRequest, true);
+  assert.ok(queries.some(({ sql }) => sql === "ALTER TABLE doctors ADD COLUMN show_consultation_price_on_request INTEGER NOT NULL DEFAULT 0"));
   assert.ok(queries.some(({ sql }) => sql === "ALTER TABLE doctors ADD COLUMN repeat_consultation_price INTEGER"));
   assert.ok(queries.some(({ sql, values }) => sql.includes("INSERT INTO doctors") && values.includes(450)));
 });
@@ -489,4 +491,114 @@ test("configured database failures never republish bundled doctors, while local 
   assert.ok((await local.listPublicDoctors()).length > 0);
   assert.equal((await local.getPublicDoctorById("voloshko-tetiana")).id, "voloshko-tetiana");
   assert.equal(reads, 6, "local preview must not attempt a database read");
+});
+
+
+test("unknown-price opt-in defaults off for migrated, new, and bootstrapped doctors and round-trips independently of prices", async (context) => {
+  const { sqlite, DB } = fixture(context);
+  legacyTable(sqlite);
+  const store = storeFor(DB);
+  const legacy = await store.getDoctorById("voloshko-tetiana");
+  assert.equal(legacy.showConsultationPriceOnRequest, false);
+  assert.equal(legacy.consultationPrice, 700);
+  const created = await store.createDoctor(identity);
+  assert.equal(created.showConsultationPriceOnRequest, false);
+  await store.updateDoctor(created.id, { ...created, showConsultationPriceOnRequest: true });
+  const optedIn = await storeFor(DB).getDoctorById(created.id);
+  assert.equal(optedIn.showConsultationPriceOnRequest, true);
+  assert.equal(optedIn.consultationPrice, null);
+  const { showConsultationPriceOnRequest, ...legacyUpdate } = optedIn;
+  assert.equal(showConsultationPriceOnRequest, true);
+  await store.updateDoctor(created.id, { ...legacyUpdate, name: "Змінене ім’я" });
+  assert.equal((await store.getDoctorById(created.id)).showConsultationPriceOnRequest, true);
+  await store.updateDoctor(created.id, { ...legacyUpdate, showConsultationPriceOnRequest: false });
+  assert.equal((await storeFor(DB).getDoctorById(created.id)).showConsultationPriceOnRequest, false);
+  const bootstrapped = temporaryDatabase();
+  context.after(() => bootstrapped.sqlite.close());
+  assert.ok((await storeFor(bootstrapped.DB, true).listDoctors()).every((doctor) => doctor.showConsultationPriceOnRequest === false));
+  const sqlSchema = readFileSync(new URL("../db/schema.postgres.sql", import.meta.url), "utf8")
+    .match(/CREATE TABLE IF NOT EXISTS doctors \([\s\S]+?\);/)[0];
+  const schema = new DatabaseSync(":memory:");
+  context.after(() => schema.close());
+  schema.exec(sqlSchema);
+  schema.prepare("INSERT INTO doctors (id, name, specialty) VALUES (?, ?, ?)").run("fresh", identity.name, identity.specialty);
+  assert.equal(schema.prepare("SELECT show_consultation_price_on_request AS flag FROM doctors").get().flag, 0);
+});
+
+test("concurrent unknown-price flag migration is retry-safe and preserves an already stored opt-in", async (context) => {
+  const database = temporaryDatabase();
+  context.after(() => database.sqlite.close());
+  legacyTable(database.sqlite);
+  database.beforeRun = (sql) => {
+    if (sql === "ALTER TABLE doctors ADD COLUMN show_consultation_price_on_request INTEGER NOT NULL DEFAULT 0") {
+      database.beforeRun = null;
+      database.sqlite.exec(sql);
+      database.sqlite.exec("UPDATE doctors SET show_consultation_price_on_request = 1");
+      throw new Error("duplicate column: another instance already added it");
+    }
+  };
+  for (let run = 0; run < 2; run++) {
+    assert.equal((await storeFor(database.DB).getDoctorById("voloshko-tetiana")).showConsultationPriceOnRequest, true);
+  }
+});
+
+test("doctor API defaults unknown-price opt-in off, preserves omission and stores explicit false with history", async (context) => {
+  const { route, store, revisions, publicRoute } = fixture(context);
+  const defaultResponse = await route.POST(request("POST", identity));
+  assert.equal(defaultResponse.status, 201);
+  assert.equal((await defaultResponse.json()).doctor.showConsultationPriceOnRequest, false);
+  const optedInResponse = await route.POST(request("POST", { ...identity, showConsultationPriceOnRequest: true }));
+  assert.equal(optedInResponse.status, 201);
+  const { doctor } = await optedInResponse.json();
+  assert.equal(doctor.showConsultationPriceOnRequest, true);
+  assert.equal((await route.PUT(request("PUT", { id: doctor.id, ...identity }))).status, 200);
+  assert.equal((await store.getDoctorById(doctor.id)).showConsultationPriceOnRequest, true);
+  assert.equal((await route.PUT(request("PUT", { id: doctor.id, ...identity, showConsultationPriceOnRequest: false }))).status, 200);
+  assert.equal((await store.getDoctorById(doctor.id)).showConsultationPriceOnRequest, false);
+  const publicDoctor = await publicRoute.GET(new Request("http://test.invalid/api/doctors?id=" + doctor.id));
+  assert.equal((await publicDoctor.json()).doctor.showConsultationPriceOnRequest, false);
+  const history = await revisions.listContentRevisions("doctor", doctor.id);
+  const change = history.find((revision) => revision.changedFields.includes("showConsultationPriceOnRequest"));
+  assert.ok(change);
+  assert.equal((await revisions.getContentRevision("doctor", doctor.id, change.id)).snapshot.showConsultationPriceOnRequest, true);
+});
+
+test("unknown-price opt-in strictly rejects malformed booleans before data or revision writes", async (context) => {
+  const { store, route, revisions } = fixture(context);
+  const doctor = await store.createDoctor({ ...identity, showConsultationPriceOnRequest: true });
+  for (const value of [null, 0, 1, "false", "true", "", {}, []]) {
+    assert.equal((await route.POST(request("POST", { ...identity, showConsultationPriceOnRequest: value }))).status, 400);
+    assert.equal((await route.PUT(request("PUT", { ...doctor, showConsultationPriceOnRequest: value }))).status, 400);
+    await assert.rejects(store.createDoctor({ ...identity, showConsultationPriceOnRequest: value }), pricing.DoctorPriceValidationError);
+    await assert.rejects(store.updateDoctor(doctor.id, { ...doctor, showConsultationPriceOnRequest: value }), pricing.DoctorPriceValidationError);
+  }
+  assert.deepEqual(await store.listDoctors(), [doctor]);
+  assert.deepEqual(await revisions.listContentRevisions("doctor", doctor.id), []);
+});
+
+test("revisions restore unknown-price true and false, preserve missing legacy flags, and default deleted legacy records off", async (context) => {
+  const { store, revisions, restore } = fixture(context);
+  let doctor = await store.createDoctor({ ...identity, showConsultationPriceOnRequest: true });
+  const enabled = await saveRevision(revisions, doctor);
+  const disabled = await saveRevision(revisions, { ...doctor, showConsultationPriceOnRequest: false });
+  const legacy = { ...doctor };
+  delete legacy.showConsultationPriceOnRequest;
+  const oldRevision = await saveRevision(revisions, legacy);
+  assert.equal((await restoreRevision(restore, doctor.id, disabled.id)).status, 200);
+  assert.equal((await store.getDoctorById(doctor.id)).showConsultationPriceOnRequest, false);
+  assert.equal((await restoreRevision(restore, doctor.id, enabled.id)).status, 200);
+  assert.equal((await restoreRevision(restore, doctor.id, oldRevision.id)).status, 200);
+  assert.equal((await store.getDoctorById(doctor.id)).showConsultationPriceOnRequest, true);
+  const invalid = await saveRevision(revisions, { ...doctor, showConsultationPriceOnRequest: "true" });
+  const historySize = (await revisions.listContentRevisions("doctor", doctor.id)).length;
+  assert.equal((await restoreRevision(restore, doctor.id, invalid.id)).status, 400);
+  assert.equal((await revisions.listContentRevisions("doctor", doctor.id)).length, historySize);
+  assert.equal((await store.getDoctorById(doctor.id)).showConsultationPriceOnRequest, true);
+  await store.deleteDoctor(doctor.id);
+  assert.equal((await restoreRevision(restore, doctor.id, enabled.id)).status, 200);
+  doctor = await store.getDoctorById(doctor.id);
+  assert.equal(doctor.showConsultationPriceOnRequest, true);
+  await store.deleteDoctor(doctor.id);
+  assert.equal((await restoreRevision(restore, doctor.id, oldRevision.id)).status, 200);
+  assert.equal((await store.getDoctorById(doctor.id)).showConsultationPriceOnRequest, false);
 });

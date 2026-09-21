@@ -38,6 +38,7 @@ const fieldLabels: Record<string, string> = {
   experienceYears: "досвід",
   consultationPrice: "первинна консультація",
   repeatConsultationPrice: "повторна консультація",
+  showConsultationPriceOnRequest: "підказка замість ціни",
   branch: "відділення",
   description: "опис",
   biography: "біографія",

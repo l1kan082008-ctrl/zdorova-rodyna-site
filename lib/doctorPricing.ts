@@ -12,3 +12,11 @@ export function parseDoctorPrice(
   }
   return value;
 }
+
+export function parseDoctorShowConsultationPriceOnRequest(value: unknown, fallback = false): boolean {
+  if (value === undefined) return fallback;
+  if (typeof value !== "boolean") {
+    throw new DoctorPriceValidationError("Показ ціни за запитом має бути увімкнений або вимкнений.");
+  }
+  return value;
+}

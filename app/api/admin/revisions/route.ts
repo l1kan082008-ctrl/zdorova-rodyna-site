@@ -1,5 +1,5 @@
 import { readBoundedJson } from "@/lib/requestBody";
-import { parseDoctorPrice } from "@/lib/doctorPricing";
+import { parseDoctorPrice, parseDoctorShowConsultationPriceOnRequest } from "@/lib/doctorPricing";
 import { parseDoctorIsActive, parseDoctorSortOrder } from "@/lib/doctorPublication";
 import { getDefaultDoctorSortOrder } from "../../../doctors/doctorData";
 import { isAuthorizedAdmin, unauthorizedAdminResponse } from "../adminAuth";
@@ -71,6 +71,9 @@ function doctorValues(snapshot: Record<string, unknown>) {
     repeatConsultationPrice: snapshot.repeatConsultationPrice === undefined
       ? undefined
       : parseDoctorPrice(snapshot.repeatConsultationPrice),
+    showConsultationPriceOnRequest: snapshot.showConsultationPriceOnRequest === undefined
+      ? undefined
+      : parseDoctorShowConsultationPriceOnRequest(snapshot.showConsultationPriceOnRequest),
     isActive: snapshot.isActive === undefined ? undefined : parseDoctorIsActive(snapshot.isActive),
     sortOrder: snapshot.sortOrder === undefined ? undefined : parseDoctorSortOrder(snapshot.sortOrder),
     branch: String(snapshot.branch ?? "").trim(),

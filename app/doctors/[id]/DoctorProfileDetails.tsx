@@ -30,6 +30,7 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
     );
   }
 
+  const consultationSummary = formatDoctorConsultations(doctor);
   const biographyParagraphs = doctor.biography
     .split(/\n+/)
     .map((paragraph) => paragraph.trim())
@@ -79,9 +80,9 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
                 <dt>Місце прийому</dt>
                 <dd>{doctor.branch || "Відділення уточнюйте"}</dd>
               </div>
-              {canBookDoctorConsultation(doctor) && (<div>
+              {canBookDoctorConsultation(doctor) && consultationSummary && (<div>
                 <dt>Вартість консультації</dt>
-                <dd>{formatDoctorConsultations(doctor)}</dd>
+                <dd>{consultationSummary}</dd>
               </div>)}
             </dl>
 
