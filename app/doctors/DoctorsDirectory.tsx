@@ -2,7 +2,8 @@
 
 import { doctorCategories as groupedSpecialties } from "./doctorCategories";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   doctorPatientGroupOptions,
   getDoctorInitials,
@@ -33,9 +34,24 @@ const formatDoctorBranch = (branch: string) => {
 
 type MobileDoctorView = "double" | "quad";
 
+const directoryUrl = (nextSpecialty: string, nextQuery: string) => {
+  const params = new URLSearchParams();
+  if (nextSpecialty !== "all") params.set("specialty", nextSpecialty);
+  if (nextQuery) params.set("search", nextQuery);
+  return `/doctors${params.size ? `?${params}` : ""}`;
+};
 
+// Keep the directory in the initial HTML while URL state hydrates separately.
+function DirectoryUrlSync({ onChange }: { onChange: (params: string) => void }) {
+  const searchParams = useSearchParams();
+  const serializedParams = searchParams.toString();
 
+  useEffect(() => {
+    onChange(serializedParams);
+  }, [serializedParams, onChange]);
 
+  return null;
+}
 
 export function DoctorsDirectory({
   initialDoctors,
@@ -49,16 +65,11 @@ export function DoctorsDirectory({
   const [expandedDoctorId, setExpandedDoctorId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<MobileDoctorView>("quad");
 
-  const directoryUrl = (nextSpecialty: string, nextQuery: string) => {
-    const params = new URLSearchParams();
-    if (nextSpecialty !== "all") params.set("specialty", nextSpecialty);
-    if (nextQuery) params.set("search", nextQuery);
-    return `/doctors${params.size ? `?${params}` : ""}`;
-  };
-
   const changeFilters = (nextSpecialty: string, nextQuery: string) => {
     setSpecialty(nextSpecialty);
     setQuery(nextQuery);
+    setFocusedDoctorId(null);
+    setExpandedDoctorId(null);
     window.history.replaceState(null, "", directoryUrl(nextSpecialty, nextQuery));
   };
 
@@ -110,14 +121,26 @@ const changeMobileView = (nextView: MobileDoctorView) => {
     [doctors],
   );
 
-  useEffect(() => {
-    const requestedSearch = new URLSearchParams(window.location.search).get("search");
-    if (requestedSearch) setQuery(requestedSearch);
-    const requestedSpecialty = new URLSearchParams(window.location.search)
-      .get("specialty")
-      ?.trim();
+  const syncUrlFilters = useCallback((serializedParams: string) => {
+    const params = new URLSearchParams(serializedParams);
+    const requestedSearch = params.get("search") ?? "";
+    const requestedSpecialty = params.get("specialty")?.trim();
+    setQuery(requestedSearch.trim() ? requestedSearch : "");
 
-    if (!requestedSpecialty) return;
+    // A shared or saved name search must not inherit a stale category.
+    if (requestedSearch.trim()) {
+      setSpecialty("all");
+      if (params.has("specialty")) {
+        params.delete("specialty");
+        window.history.replaceState(null, "", `/doctors?${params}${window.location.hash}`);
+      }
+      return;
+    }
+
+    if (!requestedSpecialty) {
+      setSpecialty("all");
+      return;
+    }
 
     const normalizedRequested = requestedSpecialty.toLocaleLowerCase("uk");
     const matchingGroup = groupedSpecialties.find((group) =>
@@ -139,7 +162,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
         ),
     );
 
-    if (matchingSpecialty) setSpecialty(matchingSpecialty);
+    setSpecialty(matchingSpecialty ?? "all");
   }, [specialties]);
 
   const filteredDoctors = useMemo(() => {
@@ -172,6 +195,9 @@ const changeMobileView = (nextView: MobileDoctorView) => {
 
   return (
     <section className="doctors-directory-section" aria-label="Каталог лікарів">
+      <Suspense fallback={null}>
+        <DirectoryUrlSync onChange={syncUrlFilters} />
+      </Suspense>
       <div className="directory-toolbar doctor-directory-toolbar">
         <label htmlFor="doctor-search">
           <span className="sr-only">Пошук лікаря</span>
@@ -179,7 +205,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
             id="doctor-search"
             type="search"
             value={query}
-            onChange={(event) => changeFilters(specialty, event.target.value)}
+            onChange={(event) => changeFilters("all", event.target.value)}
             placeholder="Прізвище або спеціальність"
             autoComplete="off"
           />
@@ -189,7 +215,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
           <select
             id="doctor-specialty"
             value={specialty}
-            onChange={(event) => changeFilters(event.target.value, query)}
+            onChange={(event) => changeFilters(event.target.value, "")}
           >
             <option value="all">Усі категорії лікарів</option>
             {groupedSpecialties.map((group) => (
@@ -380,10 +406,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
           <button
             className="outline-button"
             type="button"
-            onClick={() => {
-              setQuery("");
-              setSpecialty("all");
-            }}
+            onClick={() => changeFilters("all", "")}
           >
             Очистити фільтри
           </button>
