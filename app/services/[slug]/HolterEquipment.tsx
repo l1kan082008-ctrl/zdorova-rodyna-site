@@ -23,7 +23,8 @@ export function HolterEquipment() {
           alt="Портативний монітор ЕКГ BS6930-3 з екраном і кабелем для електродів"
           width={1200}
           height={913}
-          sizes="(max-width: 720px) calc(100vw - 60px), (max-width: 1000px) 42vw, 520px"
+          quality={85}
+          sizes="(max-width: 426px) calc(100vw - 66px), (max-width: 720px) 360px, (max-width: 760px) calc(50vw - 53px), (max-width: 1000px) calc(50vw - 61px), (max-width: 1288px) calc(46vw - 71px), 522px"
         />
       </figure>
 

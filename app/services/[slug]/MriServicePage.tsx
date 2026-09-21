@@ -1,5 +1,6 @@
 import { ServiceBookingCta } from "./ServiceBookingCta";
 import Image from "next/image";
+import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
 import type { CenterLocation } from "../../contacts/locationData";
@@ -44,7 +45,7 @@ export function MriServicePage({ service, doctors, prices, bookingHref }: Props)
       <SiteHeader active="services" />
 
       <section className={`${styles.hero} ${mri.hero} service-banner-shell`} aria-labelledby="mri-title">
-        <Image className={`${styles.heroImage} ${mri.heroImage}`} src="/service-heroes/mri-cinematic-v1.webp" alt="МР-томограф Siemens MAGNETOM Flow Plus" fill priority unoptimized sizes="(max-width: 760px) 100vw, 94vw" />
+        <Image className={`${styles.heroImage} ${mri.heroImage}`} src="/service-heroes/mri-cinematic-v1.webp" alt="МР-томограф Siemens MAGNETOM Flow Plus" fill preload quality={85} sizes="(max-width: 760px) calc(100vw - 32px), (max-width: 1288px) calc(100vw - 48px), 1240px" />
         <div className={`${styles.heroShade} ${mri.heroShade}`} />
         <div className={`mri-cinematic-field ${mri.heroField}`} aria-hidden="true">
           <i /><i /><i />
@@ -71,7 +72,7 @@ export function MriServicePage({ service, doctors, prices, bookingHref }: Props)
               key={area.id}
             >
               <div className={`${styles.areaArtwork} ${mri.areaArtwork}`} aria-hidden="true">
-                <Image src={area.artwork} alt="" fill unoptimized sizes="(max-width: 760px) 48vw, (max-width: 1100px) 34vw, 20vw" />
+                <Image src={area.artwork} alt="" fill quality={85} sizes={['spine', 'upper', 'pelvis', 'additional'].includes(area.id) ? "(max-width: 760px) calc(48vw - 15px), (max-width: 1100px) calc(24vw - 15px), (max-width: 1288px) calc(16vw - 12px), 194px" : "(max-width: 760px) calc(100vw - 28px), (max-width: 1100px) calc(50vw - 27px), (max-width: 1288px) calc(33.33vw - 21.33px), 408px"} />
               </div>
               <div className={`${styles.areaContent} ${mri.areaContent}`}>
                 <span className={styles.areaNumber}>{String(index + 1).padStart(2, "0")}</span>
@@ -90,12 +91,12 @@ export function MriServicePage({ service, doctors, prices, bookingHref }: Props)
 
       <section className={`${styles.section} ${styles.equipmentDoctors}`} id="mri-doctors">
         <article className={`${styles.equipmentCard} ${mri.equipmentCard}`}>
-          <div className={`${styles.equipmentMedia} ${mri.equipmentMedia}`}><div className={`${styles.equipmentImageFrame} ${mri.equipmentImageFrame}`}><Image className={`${styles.equipmentImage} ${mri.equipmentImage}`} src="/service-heroes/mri-flow-plus-dark-v3.webp" alt="МР-томограф Siemens MAGNETOM Flow Plus" fill unoptimized sizes="(max-width: 760px) 100vw, 42vw" /></div></div>
+          <div className={`${styles.equipmentMedia} ${mri.equipmentMedia}`}><div className={`${styles.equipmentImageFrame} ${mri.equipmentImageFrame}`}><Image className={`${styles.equipmentImage} ${mri.equipmentImage}`} src="/service-heroes/mri-flow-plus-dark-v3.webp" alt="МР-томограф Siemens MAGNETOM Flow Plus" fill quality={85} sizes="(max-width: 338px) 230px, (max-width: 426px) 68vw, (max-width: 760px) 290px, (max-width: 1288px) calc(42vw - 20px), 521px" /></div></div>
           <div className={styles.equipmentCopy}><span>Наше обладнання</span><h2>Siemens MAGNETOM Flow Plus</h2><p>МР-томограф 1,5 Тесла · 2026 рік випуску.</p></div>
         </article>
         {SHOW_MRI_DOCTORS && <div className={styles.doctorsPanel}>
           <SectionTitle title="Лікарі, які описують МРТ" />
-          <div className={`${styles.doctorRail} ${mri.doctorRail}`}>{shownDoctors.map((doctor) => <article className={styles.doctorCard} data-doctor-id={doctor.id} key={doctor.id}><div className={styles.doctorPhoto}><Image src={doctor.photoUrl} alt={doctor.name} fill unoptimized sizes="(max-width: 760px) 70vw, (max-width: 1100px) 31vw, 19vw" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></article>)}{[1, 2, 3].map(number => <article className={styles.doctorCard} key={`placeholder-${number}`}><div className={`${styles.doctorPhoto} ${mri.placeholder}`} aria-hidden="true"><svg viewBox="0 0 120 140"><circle cx="60" cy="42" r="22" /><path d="M20 124v-12a40 40 0 0 1 80 0v12" /></svg></div><strong>Лікар-рентгенолог</strong><span>Інформацію додамо незабаром</span></article>)}</div>
+          <div className={`${styles.doctorRail} ${mri.doctorRail}`}>{shownDoctors.map((doctor) => <article className={styles.doctorCard} data-doctor-id={doctor.id} key={doctor.id}><div className={styles.doctorPhoto}><Image src={resolveImageSource(doctor.photoUrl)} unoptimized={!canOptimizeImage(doctor.photoUrl)} alt={doctor.name} fill quality={85} sizes="(max-width: 760px) calc(70vw - 22px), (max-width: 1100px) calc(50vw - 32px), (max-width: 1288px) calc(25vw - 24px), 298px" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></article>)}{[1, 2, 3].map(number => <article className={styles.doctorCard} key={`placeholder-${number}`}><div className={`${styles.doctorPhoto} ${mri.placeholder}`} aria-hidden="true"><svg viewBox="0 0 120 140"><circle cx="60" cy="42" r="22" /><path d="M20 124v-12a40 40 0 0 1 80 0v12" /></svg></div><strong>Лікар-рентгенолог</strong><span>Інформацію додамо незабаром</span></article>)}</div>
         </div>}
       </section>
 
@@ -114,7 +115,7 @@ export function MriServicePage({ service, doctors, prices, bookingHref }: Props)
 
       <section className={styles.section} id="mri-locations">
         <SectionTitle title="Де пройти МРТ" lead="Адміністратор допоможе обрати зручний час для МРТ та підкаже, як підготуватися до обстеження." />
-        <div className={`${styles.locationGrid} ${mri.locations}`}>{locations.map((location: CenterLocation) => <article key={location.id}><div className={styles.locationPhoto}><Image src={location.gallery[0]?.src ?? "/locations/stelmakha-18m.webp"} alt={location.gallery[0]?.alt ?? location.fullAddress} fill unoptimized sizes="(max-width: 760px) 100vw, 32vw" /></div><div><strong><Link className={styles.locationLink} href={`/contacts?location=${encodeURIComponent(location.id)}#locations`} aria-label={`Переглянути відділення: ${location.fullAddress}`}>{location.city}</Link></strong><p>{location.address}</p><span>{location.hours.map((hours, index) => <span key={hours}>{index > 0 && <br />}{hours}</span>)}</span><a href={getDirectionsUrl(location)} target="_blank" rel="noreferrer">Показати на карті <span>→</span></a></div></article>)}</div>
+        <div className={`${styles.locationGrid} ${mri.locations}`}>{locations.map((location: CenterLocation) => <article key={location.id}><div className={styles.locationPhoto}><Image src={resolveImageSource(location.gallery[0]?.src ?? "/locations/stelmakha-18m.webp")} unoptimized={!canOptimizeImage(location.gallery[0]?.src ?? "/locations/stelmakha-18m.webp")} alt={location.gallery[0]?.alt ?? location.fullAddress} fill quality={85} sizes="(max-width: 760px) 112px, (max-width: 888px) calc(50vw - 25px), 419px" /></div><div><strong><Link className={styles.locationLink} href={`/contacts?location=${encodeURIComponent(location.id)}#locations`} aria-label={`Переглянути відділення: ${location.fullAddress}`}>{location.city}</Link></strong><p>{location.address}</p><span>{location.hours.map((hours, index) => <span key={hours}>{index > 0 && <br />}{hours}</span>)}</span><a href={getDirectionsUrl(location)} target="_blank" rel="noreferrer">Показати на карті <span>→</span></a></div></article>)}</div>
       </section>
 
       <section className={styles.section}>

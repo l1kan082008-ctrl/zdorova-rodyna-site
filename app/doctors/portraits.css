@@ -1,0 +1,24 @@
+/* Keep the existing portrait frames, crop and motion while loading responsive images. */
+.doctor-portrait {
+  object-fit: cover;
+  object-position: center top;
+  pointer-events: none;
+}
+
+.doctor-showcase-trigger > .doctor-showcase-portrait {
+  object-position: center 10%;
+}
+
+/* The image paints above the button's inset shadow; keep its focus ring visible. */
+.doctor-showcase-trigger:focus-visible {
+  outline: 3px solid rgba(255, 126, 0, 0.82);
+  outline-offset: -3px;
+}
+
+.doctor-detail-photo > .doctor-detail-portrait-frame {
+  position: relative;
+}
+
+.doctor-detail-portrait-frame > .doctor-detail-portrait {
+  object-position: center 12%;
+}

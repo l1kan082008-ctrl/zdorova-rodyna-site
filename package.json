@@ -11,6 +11,7 @@
     "build": "node scripts/secure-build.mjs",
     "start": "next start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
+    "test:images": "node --experimental-strip-types --test tests/image-optimization.test.mjs tests/image-source.test.mjs",
     "test:security": "node --experimental-strip-types --test tests/*security.test.mjs",
     "typecheck": "tsc --noEmit",
     "security:audit": "npm audit --omit=dev --audit-level=high",
@@ -26,6 +27,7 @@
     "next": "16.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "sharp": "0.35.4",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {

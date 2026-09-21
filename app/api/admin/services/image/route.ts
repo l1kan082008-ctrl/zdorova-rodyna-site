@@ -1,6 +1,7 @@
 import { isAuthorizedAdmin, unauthorizedAdminResponse } from "../../adminAuth";
 import { readBoundedFormData } from "@/lib/requestBody";
 import { readSafeRasterImage } from "@/lib/safeImage";
+import { ImageOptimizationError, optimizeUploadedImage } from "@/lib/optimizedUpload";
 import { uploadPublicImage } from "@/lib/mediaStorage";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -15,10 +16,12 @@ export async function POST(request: Request) {
     const safeImage = await readSafeRasterImage(image, MAX_IMAGE_BYTES);
     if (!safeImage) return Response.json({ error: "Файл має бути справжнім JPG, PNG, WEBP або AVIF до 8 МБ." }, { status: 400 });
     const safeId = serviceId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80) || "draft";
-    const imagePath = `services/${safeId}/${crypto.randomUUID()}.${safeImage.extension}`;
-    const imageKey = await uploadPublicImage(imagePath, safeImage.bytes, safeImage.contentType);
+    const optimizedImage = await optimizeUploadedImage(safeImage, { maximumBytes: MAX_IMAGE_BYTES });
+    const imagePath = `services/${safeId}/${crypto.randomUUID()}.${optimizedImage.extension}`;
+    const imageKey = await uploadPublicImage(imagePath, optimizedImage.bytes, optimizedImage.contentType);
     return Response.json({ imageKey });
   } catch (error) {
+    if (error instanceof ImageOptimizationError) return Response.json({ error: error.message }, { status: 400 });
     return Response.json({ error: error instanceof Error ? error.message : "Не вдалося завантажити зображення." }, { status: 500 });
   }
 }

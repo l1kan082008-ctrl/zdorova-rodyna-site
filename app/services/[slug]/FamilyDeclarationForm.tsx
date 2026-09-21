@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import Link from "next/link";
 import { FormEvent, useMemo, useRef, useState } from "react";
 import { TurnstileField } from "@/app/components/TurnstileField";
@@ -275,20 +277,23 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
                   >
                     <span
                       className="family-doctor-photo"
-                      style={
-                        doctor.photoUrl
-                          ? { backgroundImage: `url("${doctor.photoUrl}")` }
-                          : undefined
-                      }
+                      style={{ position: "relative", overflow: "hidden" }}
                       aria-hidden="true"
                     >
-                      {!doctor.photoUrl
-                        ? doctor.name
-                            .split(/\s+/)
-                            .slice(0, 2)
-                            .map((part) => part[0])
-                            .join("")
-                        : null}
+                      {doctor.photoUrl ? (
+                        <Image
+                          src={resolveImageSource(doctor.photoUrl)} unoptimized={!canOptimizeImage(doctor.photoUrl)}
+                          alt=""
+                          fill
+                          quality={85}
+                          sizes="(max-width: 760px) 64px, 76px"
+                          style={{ objectFit: "cover", objectPosition: "center 18%" }}
+                        />
+                      ) : doctor.name
+                          .split(/\s+/)
+                          .slice(0, 2)
+                          .map((part) => part[0])
+                          .join("")}
                     </span>
                     <span className="family-doctor-copy">
                       <strong>{doctor.name}</strong>

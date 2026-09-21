@@ -1,5 +1,6 @@
 import { ServiceBookingCta } from "./ServiceBookingCta";
 import Image from "next/image";
+import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
 import type { CenterLocation } from "../../contacts/locationData";
@@ -77,7 +78,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
       <SiteHeader active="services" />
 
       <section className={`${styles.hero} service-banner-shell`} aria-labelledby="ct-title">
-        <Image className={styles.heroImage} src="/service-heroes/ct-cinematic-v1.webp" alt="Комп’ютерний томограф Philips Brilliance 64" fill priority unoptimized sizes="(max-width: 760px) 100vw, 94vw" />
+        <Image className={styles.heroImage} src="/service-heroes/ct-cinematic-v1.webp" alt="Комп’ютерний томограф Philips Brilliance 64" fill preload quality={85} sizes="(max-width: 760px) calc(100vw - 32px), (max-width: 1288px) calc(100vw - 48px), 1240px" />
         <div className={styles.heroShade} />
         <div className={styles.scanGraphic} aria-hidden="true">
           <svg viewBox="0 0 260 260" focusable="false">
@@ -112,7 +113,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
               key={area.id}
             >
               <div className={styles.areaArtwork} aria-hidden="true">
-                <Image src={area.artwork} alt="" fill unoptimized sizes="(max-width: 760px) 48vw, (max-width: 1100px) 34vw, 20vw" />
+                <Image src={area.artwork} alt="" fill quality={85} sizes="(max-width: 760px) calc(100vw - 28px), (max-width: 1100px) calc(50vw - 27px), (max-width: 1288px) calc(33.33vw - 21.33px), 408px" />
               </div>
               <div className={styles.areaContent}>
                 <span className={styles.areaNumber}>{String(index + 1).padStart(2, "0")}</span>
@@ -131,12 +132,12 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
 
       <section className={`${styles.section} ${styles.equipmentDoctors}`} id="ct-doctors">
         <article className={styles.equipmentCard}>
-          <div className={styles.equipmentMedia}><div className={styles.equipmentImageFrame}><Image className={styles.equipmentImage} src="/service-heroes/ct-philips-brilliance-64-cutout-v2.webp" alt="Комп’ютерний томограф Philips Brilliance 64" fill unoptimized sizes="(max-width: 760px) 100vw, 42vw" /></div></div>
+          <div className={styles.equipmentMedia}><div className={styles.equipmentImageFrame}><Image className={styles.equipmentImage} src="/service-heroes/ct-philips-brilliance-64-cutout-v2.webp" alt="Комп’ютерний томограф Philips Brilliance 64" fill quality={85} sizes="(max-width: 760px) calc(100vw - 32px), (max-width: 1288px) calc(42vw - 20px), 521px" /></div></div>
           <div className={styles.equipmentCopy}><span>Наше обладнання</span><h2>Philips Brilliance 64</h2><p>64-зрізовий томограф для швидкого пошарового сканування, точних 3D-реконструкцій і контрольованого променевого навантаження.</p></div>
         </article>
         <div className={styles.doctorsPanel}>
           <SectionTitle title="Наші лікарі-рентгенологи" />
-          <div className={styles.doctorRail}>{shownDoctors.map((doctor) => <Link href={`/doctors/${doctor.id}`} aria-label={`Профіль лікаря: ${doctor.name}`} className={styles.doctorCard} data-doctor-id={doctor.id} key={doctor.id}><div className={styles.doctorPhoto}><Image src={doctor.photoUrl} alt={doctor.name} fill unoptimized sizes="(max-width: 760px) 70vw, (max-width: 1100px) 31vw, 19vw" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></Link>)}</div>
+          <div className={styles.doctorRail}>{shownDoctors.map((doctor) => <Link href={`/doctors/${doctor.id}`} aria-label={`Профіль лікаря: ${doctor.name}`} className={styles.doctorCard} data-doctor-id={doctor.id} key={doctor.id}><div className={styles.doctorPhoto}><Image src={resolveImageSource(doctor.photoUrl)} unoptimized={!canOptimizeImage(doctor.photoUrl)} alt={doctor.name} fill quality={85} sizes="(max-width: 760px) calc(70vw - 22px), (max-width: 1100px) calc(33.33vw - 27px), (max-width: 1288px) calc(20vw - 22px), 236px" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></Link>)}</div>
         </div>
       </section>
 
@@ -155,7 +156,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
 
       <section className={styles.section} id="ct-locations">
         <SectionTitle title="Де пройти КТ" lead="Доступність потрібного протоколу у вибраному відділенні підтвердить адміністратор." />
-        <div className={styles.locationGrid}>{locations.map((location: CenterLocation) => <article key={location.id}><div className={styles.locationPhoto}><Image src={location.gallery[0]?.src ?? "/locations/stelmakha-18m.webp"} alt={location.gallery[0]?.alt ?? location.fullAddress} fill unoptimized sizes="(max-width: 760px) 100vw, 32vw" /></div><div><strong><Link className={styles.locationLink} href={`/contacts?location=${encodeURIComponent(location.id)}#locations`} aria-label={`Переглянути відділення: ${location.fullAddress}`}>{location.city}</Link></strong><p>{location.address}</p><span>{location.hours.map((hours, index) => <span key={hours}>{index > 0 && <br />}{hours}</span>)}</span><a href={getDirectionsUrl(location)} target="_blank" rel="noreferrer">Показати на карті <span>→</span></a></div></article>)}</div>
+        <div className={styles.locationGrid}>{locations.map((location: CenterLocation) => <article key={location.id}><div className={styles.locationPhoto}><Image src={resolveImageSource(location.gallery[0]?.src ?? "/locations/stelmakha-18m.webp")} unoptimized={!canOptimizeImage(location.gallery[0]?.src ?? "/locations/stelmakha-18m.webp")} alt={location.gallery[0]?.alt ?? location.fullAddress} fill quality={85} sizes="(max-width: 760px) 112px, 140px" /></div><div><strong><Link className={styles.locationLink} href={`/contacts?location=${encodeURIComponent(location.id)}#locations`} aria-label={`Переглянути відділення: ${location.fullAddress}`}>{location.city}</Link></strong><p>{location.address}</p><span>{location.hours.map((hours, index) => <span key={hours}>{index > 0 && <br />}{hours}</span>)}</span><a href={getDirectionsUrl(location)} target="_blank" rel="noreferrer">Показати на карті <span>→</span></a></div></article>)}</div>
       </section>
 
       <section className={styles.section}>

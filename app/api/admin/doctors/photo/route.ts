@@ -6,6 +6,7 @@ import {
 } from "../../../doctors/doctorStore";
 import { readBoundedFormData } from "@/lib/requestBody";
 import { readSafeRasterImage } from "@/lib/safeImage";
+import { ImageOptimizationError, optimizeUploadedImage } from "@/lib/optimizedUpload";
 import { deleteMediaReference, uploadPublicImage } from "@/lib/mediaStorage";
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
@@ -35,10 +36,11 @@ export async function POST(request: Request) {
     if (!safeDoctorId || safeDoctorId !== doctorId) {
       return Response.json({ error: "Некоректний ідентифікатор лікаря" }, { status: 400 });
     }
-    const photoPath = `doctors/${safeDoctorId}/${crypto.randomUUID()}.${safeImage.extension}`;
+    const optimizedImage = await optimizeUploadedImage(safeImage, { maximumBytes: MAX_PHOTO_BYTES, maxDimension: 1600 });
+    const photoPath = `doctors/${safeDoctorId}/${crypto.randomUUID()}.${optimizedImage.extension}`;
     const previousPhotoKey = await getDoctorPhotoKey(doctorId);
 
-    const photoKey = await uploadPublicImage(photoPath, safeImage.bytes, safeImage.contentType);
+    const photoKey = await uploadPublicImage(photoPath, optimizedImage.bytes, optimizedImage.contentType);
 
     const updated = await updateDoctorPhotoKey(doctorId, photoKey);
     if (!updated) {
@@ -50,6 +52,7 @@ export async function POST(request: Request) {
 
     return Response.json({ doctors: await listDoctors() });
   } catch (error) {
+    if (error instanceof ImageOptimizationError) return Response.json({ error: error.message }, { status: 400 });
     const message =
       error instanceof Error ? error.message : "Не вдалося завантажити фото";
     return Response.json({ error: message }, { status: 500 });

@@ -2,6 +2,7 @@
 import { CloseIcon as SearchCloseIcon } from "./CloseIcon";
 
 import Image from "next/image";
+import { canOptimizeImage, resolveImageSource } from "../../lib/imageSource";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
@@ -437,11 +438,11 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
                             <span className="home-search-result-mark is-doctor">
                               {item.imageUrl ? (
                                 <Image
-                                  src={item.imageUrl}
+                                  src={resolveImageSource(item.imageUrl)} unoptimized={!canOptimizeImage(item.imageUrl)}
                                   alt=""
                                   width={42}
                                   height={42}
-                                  unoptimized
+                                  quality={85}
                                 />
                               ) : (
                                 item.title

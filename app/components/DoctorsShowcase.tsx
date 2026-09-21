@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
+import "../doctors/portraits.css";
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { Doctor } from "../doctors/doctorData";
 import { getDoctorInitials } from "../doctors/doctorData";
@@ -140,17 +143,23 @@ export function DoctorsShowcase({ doctors }: DoctorsShowcaseProps) {
                   aria-controls={detailsId}
                   aria-expanded={isActive}
                   aria-label={`Показати лікаря ${doctor.name}`}
-                  style={
-                    doctor.photoUrl
-                      ? { backgroundImage: `url("${doctor.photoUrl}")` }
-                      : undefined
-                  }
                 >
-                  {!doctor.photoUrl ? (
+                  {doctor.photoUrl ? (
+                    <Image
+                      className="doctor-portrait doctor-showcase-portrait"
+                      src={resolveImageSource(doctor.photoUrl)}
+                      unoptimized={!canOptimizeImage(doctor.photoUrl)}
+                      alt=""
+                      fill
+                      quality={85}
+                      loading="lazy"
+                      sizes="(max-width: 420px) min(78vw, 300px), (max-width: 720px) min(78vw, 340px), (max-width: 1080px) 420px, (max-width: 1368px) 38vw, 520px"
+                    />
+                  ) : (
                     <span className="doctor-showcase-initials" aria-hidden="true">
                       {getDoctorInitials(doctor.name)}
                     </span>
-                  ) : null}
+                  )}
                   <span className="doctor-showcase-scrim" aria-hidden="true" />
                   <span className="doctor-showcase-collapsed-name" aria-hidden="true">
                     {getSurname(doctor.name)}

@@ -1,6 +1,8 @@
 import { ServiceBookingCta } from "./ServiceBookingCta";
 import "./ultrasound-locations.css";
 import Image from "next/image";
+import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
+import { responsiveBackground } from "@/lib/responsiveBackground";
 import { centerLocations, getDirectionsUrl } from "../../contacts/locationData";
 import serviceStyles from "./CtServicePage.module.css";
 import { UltrasoundPriceList } from "./UltrasoundPriceList";
@@ -872,7 +874,7 @@ export default async function ServiceDetailPage({
           </div>
           <div
             className="service-detail-visual service-detail-visual--editorial"
-            style={{ backgroundImage: `url("${editorialImage}")` }}
+            style={{ backgroundImage: responsiveBackground(editorialImage, 1280) }}
             role="img"
             aria-label={`Ілюстрація напрямку «${service.title}»`}
           />
@@ -1230,7 +1232,7 @@ export default async function ServiceDetailPage({
                   ))}
                 </ol>
               </div>
-              <div className="ultrasound-equipment-visual"><Image className="ultrasound-equipment-photo" src={`/equipment/acuson-${device.model.toLowerCase()}.jpg`} alt={`Ультразвуковий апарат Siemens ACUSON ${device.model}`} width={1536} height={2048} sizes="(max-width: 360px) 210px, (max-width: 540px) 246px, (max-width: 760px) 270px, (max-width: 1000px) 50vw, 40vw" /></div>
+              <div className="ultrasound-equipment-visual"><Image className="ultrasound-equipment-photo" src={`/equipment/acuson-${device.model.toLowerCase()}.jpg`} alt={`Ультразвуковий апарат Siemens ACUSON ${device.model}`} width={1536} height={2048} quality={85} sizes="(max-width: 360px) 210px, (max-width: 540px) 246px, (max-width: 760px) calc(57.14vw - 70px), (max-width: 1000px) calc(57.14vw - 79px), (max-width: 1288px) calc(34.31vw - 66px), 377px" /></div>
             </article>
           ))}
         </section>
@@ -1246,7 +1248,7 @@ export default async function ServiceDetailPage({
             {centerLocations.filter((location) => ["stelmakha-18m", "zviahel-shevchenka-41-1"].includes(location.id)).map((location) => (
               <article key={location.id}>
                 <div className={serviceStyles.locationPhoto}>
-                  <Image src={location.gallery[0].src} alt={location.gallery[0].alt} fill unoptimized sizes="(max-width: 760px) 112px, 140px" />
+                  <Image src={resolveImageSource(location.gallery[0].src)} unoptimized={!canOptimizeImage(location.gallery[0].src)} alt={location.gallery[0].alt} fill quality={85} sizes="(max-width: 760px) 112px, 140px" />
                 </div>
                 <div>
                   <strong><Link className={serviceStyles.locationLink} href={`/contacts?location=${encodeURIComponent(location.id)}#locations`} aria-label={`Переглянути відділення: ${location.fullAddress}`}>{location.city}</Link></strong>

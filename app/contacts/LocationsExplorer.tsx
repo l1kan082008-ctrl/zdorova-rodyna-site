@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useModalDialog } from "../components/useModalDialog";
 
 import Image from "next/image";
+import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   branchServiceCatalog,
@@ -417,12 +418,12 @@ export function LocationsExplorer({
                   <>
                     <div className="branch-main-photo">
                       <Image
-                        src={openLocation.gallery[photoIndex].src}
+                        src={resolveImageSource(openLocation.gallery[photoIndex].src)} unoptimized={!canOptimizeImage(openLocation.gallery[photoIndex].src)}
                         alt={openLocation.gallery[photoIndex].alt}
                         fill
-                        unoptimized
-                        priority
-                        sizes="(max-width: 850px) 100vw, 68vw"
+                        quality={85}
+                        loading="eager"
+                        sizes="(max-width: 760px) calc(100vw - 74px), (max-width: 1080px) calc(100vw - 154px), (max-width: 1228px) calc(100vw - 170px), 1058px"
                       />
                       {openLocation.gallery.length > 1 ? (
                         <div className="branch-photo-controls">
@@ -468,11 +469,11 @@ export function LocationsExplorer({
                           aria-label={`Відкрити фото ${index + 1}`}
                         >
                           <Image
-                            src={photo.src}
+                            src={resolveImageSource(photo.src)} unoptimized={!canOptimizeImage(photo.src)}
                             alt=""
                             fill
-                            unoptimized
-                            sizes="84px"
+                            quality={85}
+                            sizes="80px"
                           />
                         </button>
                       ))}

@@ -1,4 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
+import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
+import "../portraits.css";
 import {
   getDoctorInitials,
   formatDoctorConsultations,
@@ -42,11 +45,19 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
         <div className="doctor-detail-hero">
           <div className="doctor-detail-photo">
             {doctor.photoUrl ? (
-              <div
-                role="img"
-                aria-label={`Фотографія лікаря ${doctor.name}`}
-                style={{ backgroundImage: `url("${doctor.photoUrl}")` }}
-              />
+              <div className="doctor-detail-portrait-frame">
+                <Image
+                  className="doctor-portrait doctor-detail-portrait"
+                  src={resolveImageSource(doctor.photoUrl)}
+                  unoptimized={!canOptimizeImage(doctor.photoUrl)}
+                  alt={`Фотографія лікаря ${doctor.name}`}
+                  fill
+                  quality={85}
+                  loading="eager"
+                  fetchPriority="high"
+                  sizes="(max-width: 720px) calc(100vw - 32px), (max-width: 1288px) 43vw, 534px"
+                />
+              </div>
             ) : (
               <span aria-hidden="true">{getDoctorInitials(doctor.name)}</span>
             )}

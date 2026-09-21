@@ -4,6 +4,9 @@ import { doctorCategories as groupedSpecialties } from "./doctorCategories";
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
+import "./portraits.css";
 import {
   doctorPatientGroupOptions,
   getDoctorInitials,
@@ -276,12 +279,20 @@ const changeMobileView = (nextView: MobileDoctorView) => {
               >
                 <div className="doctor-card-photo-link">
                   {doctor.photoUrl ? (
-                    <span
-                      className="doctor-photo-image"
-                      role="img"
-                      aria-label={`Фотографія лікаря ${doctor.name}`}
-                      style={{ backgroundImage: `url("${doctor.photoUrl}")` }}
-                    />
+                    <span className="doctor-photo-image">
+                      <Image
+                        className="doctor-portrait"
+                        src={resolveImageSource(doctor.photoUrl)}
+                        unoptimized={!canOptimizeImage(doctor.photoUrl)}
+                        alt={`Фотографія лікаря ${doctor.name}`}
+                        fill
+                        quality={85}
+                        loading="lazy"
+                        sizes={mobileView === "double" || isFocused || isExpanded
+                          ? "(max-width: 720px) calc(100vw - 32px), (max-width: 1180px) 40vw, (max-width: 1288px) 22vw, 266px"
+                          : "(max-width: 720px) calc((100vw - 42px) / 2), (max-width: 1180px) 40vw, (max-width: 1288px) 22vw, 266px"}
+                      />
+                    </span>
                   ) : (
                     <span className="doctor-photo-placeholder" aria-hidden="true">
                       {getDoctorInitials(doctor.name)}

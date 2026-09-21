@@ -91,7 +91,7 @@
     min-height: 280px;
     background:
       linear-gradient(180deg, transparent 55%, rgb(0 30 35 / 36%) 100%),
-      var(--promo-photo) var(--promo-mobile-position, center) / cover no-repeat;
+      var(--promo-photo-mobile, var(--promo-photo)) var(--promo-mobile-position, center) / cover no-repeat;
     -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgb(0 0 0 / 8%) 8%, rgb(0 0 0 / 30%) 18%, rgb(0 0 0 / 65%) 30%, #000 46%);
     mask-image: linear-gradient(180deg, transparent 0%, rgb(0 0 0 / 8%) 8%, rgb(0 0 0 / 30%) 18%, rgb(0 0 0 / 65%) 30%, #000 46%);
   }

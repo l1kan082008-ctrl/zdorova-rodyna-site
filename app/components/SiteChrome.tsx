@@ -399,8 +399,8 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
           width={1800}
           height={361}
           sizes="(max-width: 720px) 210px, 270px"
-          priority
-          unoptimized
+          preload
+          quality={90}
         />
       </Link>
 
@@ -765,7 +765,7 @@ export function SiteFooter() {
                 width={2500}
                 height={2500}
                 sizes="72px"
-                unoptimized
+                quality={90}
               />
             </Link>
             <div>
