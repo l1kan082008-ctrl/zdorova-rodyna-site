@@ -12,6 +12,9 @@ import { clearPriceCalculatorSelection } from "../prices/calculatorSelection";
 import { type CenterLocation } from "../contacts/locationData";
 import { compatibleLocations, formatBookingPhone, serviceCategory, homeVisitService, isHomeVisitService, normalizeBookingService, homeVisitAddressComment } from "../../lib/bookingRequest";
 import { doctorCategories } from "../doctors/doctorCategories";
+import { BookingStudySelect } from "./BookingStudySelect";
+import type { PriceItem } from "../prices/priceData";
+import { getImagingBookingOptions, imagingBookingLabels, resolveImagingBookingCategory } from "@/lib/imagingBooking";
 
 const services = [
   "МРТ", "КТ", "УЗД", "Лабораторні дослідження", "Консультації лікарів",
@@ -54,21 +57,26 @@ export function BookingLauncher() {
       window.removeEventListener("popstate", openFromUrl);
     };
   }, [pathname]);
-  return request ? <BookingDialog key={request.href} request={request} onClose={() => {
+  return request ? <BookingDialog key={request.href} request={request} sourcePathname={pathname} onClose={() => {
     setRequest(null);
     if (window.location.hash === "#booking") window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
   }} /> : null;
 }
 
-function BookingDialog({ request, onClose }: { request: URL; onClose: () => void }) {
+function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sourcePathname?: string; onClose: () => void }) {
   const settings = useSiteSettings();
   const params = request.searchParams;
   const studies = params.get("services")?.trim() || "";
   const doctor = params.get("doctor")?.trim() || "";
   const total = params.get("total") || "";
   const requestedService = params.get("service")?.trim() || "";
-  const fixedImagingService = !doctor && !studies && ["ct", "mri"].includes(serviceCategory(requestedService) ?? "") ? requestedService : "";
-  const [service, setService] = useState(studies ? "Комплекс досліджень" : normalizeBookingService(requestedService) || (doctor ? "Консультації лікарів" : helpService));
+  const imagingCategory = resolveImagingBookingCategory(params, sourcePathname);
+  const imagingLabel = imagingCategory ? imagingBookingLabels[imagingCategory] : "";
+  const [service, setService] = useState(studies ? "Комплекс досліджень" : normalizeBookingService(requestedService) || (doctor ? "Консультації лікарів" : imagingLabel || helpService));
+  const [studyOptions, setStudyOptions] = useState<string[]>([]);
+  const [studyOptionsLoading, setStudyOptionsLoading] = useState(Boolean(imagingCategory));
+  const [studyOptionsError, setStudyOptionsError] = useState(false);
+  const [studyOptionsAttempt, setStudyOptionsAttempt] = useState(0);
   const [locationId, setLocationId] = useState(params.get("location") || "");
   const [phone, setPhone] = useState("");
   const [locations, setLocations] = useState<CenterLocation[]>([]);
@@ -84,8 +92,9 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
   const successRef = useRef<HTMLHeadingElement>(null);
   const submittingRef = useRef(false);
   const isHomeVisit = !doctor && !studies && isHomeVisitService(service);
-  const category = serviceCategory(doctor ? "Консультації лікарів" : service);
-  const availableLocations = compatibleLocations(locations, doctor ? "Консультації лікарів" : service);
+  const locationService = doctor ? "Консультації лікарів" : imagingLabel || service;
+  const category = serviceCategory(locationService);
+  const availableLocations = compatibleLocations(locations, locationService);
   const selectedLocation = availableLocations.length === 1 ? availableLocations[0] : availableLocations.find(({ id }) => id === locationId);
 
   const closeBooking = () => {
@@ -117,6 +126,23 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
       root.classList.remove("quick-booking-open");
     };
   }, []);
+  useEffect(() => {
+    if (!imagingCategory) return;
+    const controller = new AbortController();
+    fetch("/api/public/prices", { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("prices");
+        const items: unknown = await response.json();
+        if (!Array.isArray(items)) throw new Error("prices");
+        return getImagingBookingOptions(items as PriceItem[], imagingCategory);
+      })
+      .then((options) => {
+        if (!controller.signal.aborted) { setStudyOptions(options); setStudyOptionsError(false); }
+      })
+      .catch(() => { if (!controller.signal.aborted) setStudyOptionsError(true); })
+      .finally(() => { if (!controller.signal.aborted) setStudyOptionsLoading(false); });
+    return () => controller.abort();
+  }, [imagingCategory, studyOptionsAttempt]);
   useEffect(() => { if (reference) successRef.current?.focus(); }, [reference]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -190,15 +216,23 @@ function BookingDialog({ request, onClose }: { request: URL; onClose: () => void
       <p id="quick-booking-description">{isHomeVisit ? "Виїзд доступний тільки у Рівному. Адміністратор уточнить аналізи, адресу та зручний час." : "Залиште контакти — адміністратор погодить з вами час візиту."}</p>
       <form onSubmit={submit} aria-busy={submitting}>
         <fieldset disabled={submitting}>
-          {(doctor || studies || fixedImagingService) && <div className="quick-booking__selection">
-            <span>{doctor ? "Обраний лікар" : studies ? "Обрані дослідження" : "Обране дослідження"}</span><strong>{doctor || studies.replaceAll(" | ", ", ") || fixedImagingService}</strong>
+          {(doctor || studies) && <div className="quick-booking__selection">
+            <span>{doctor ? "Обраний лікар" : studies ? "Обрані дослідження" : "Обране дослідження"}</span><strong>{doctor || studies.replaceAll(" | ", ", ")}</strong>
             {total && Number.isFinite(Number(total)) && <span>Орієнтовно {Number(total).toLocaleString("uk-UA")} ₴</span>}
           </div>}
           <div className="quick-booking__fields">
             <label htmlFor="quick-name">Ваше ім’я<input id="quick-name" name="name" autoComplete="name" minLength={2} maxLength={100} placeholder="Ім’я" required /></label>
             <label htmlFor="quick-phone">Номер телефону<span className="quick-booking__phone"><span aria-hidden="true">+38</span><input id="quick-phone" name="phone" type="tel" inputMode="tel" autoComplete="tel-national" value={phone} onChange={(event) => setPhone(formatBookingPhone(event.target.value))} placeholder="(___) ___-__-__" title="Введіть 10 цифр українського номера, починаючи з 0" required /></span></label>
           </div>
-          {!doctor && !studies && !fixedImagingService && <label htmlFor="quick-service"><span id="quick-service-label">Послуга</span><select id="quick-service" aria-labelledby="quick-service-label" value={service} required onChange={(event) => setService(event.target.value)}>
+          {!doctor && !studies && imagingCategory && <>
+            <BookingStudySelect id="quick-service" label="Послуга" value={service} options={studyOptions}
+              helpValue={imagingLabel} loading={studyOptionsLoading} disabled={submitting} onChange={setService} />
+            {studyOptionsError && <div role="status">
+              <p className="quick-booking__service-detail">Не вдалося завантажити інші дослідження. Обрана послуга збережена.</p>
+              <button type="button" className="outline-button" onClick={() => { setStudyOptionsLoading(true); setStudyOptionsError(false); setStudyOptionsAttempt((value) => value + 1); }}>Спробувати ще раз</button>
+            </div>}
+          </>}
+          {!doctor && !studies && !imagingCategory && <label htmlFor="quick-service"><span id="quick-service-label">Послуга</span><select id="quick-service" aria-labelledby="quick-service-label" value={service} required onChange={(event) => setService(event.target.value)}>
             <option value={helpService}>{helpService}</option>
             {!services.includes(service) && !consultationServices.includes(service) && service !== helpService && <option value={service}>{service}</option>}
             <optgroup label="Послуги центру">{services.map((item) => <option key={item}>{item}</option>)}</optgroup>

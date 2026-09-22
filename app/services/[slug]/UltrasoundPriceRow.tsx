@@ -50,7 +50,7 @@ export function UltrasoundPriceRow({ name, amount }: { name: string; amount: num
   return <div className="ultrasound-price-row">
     <div><h3>{name}</h3></div>
     <strong>{new Intl.NumberFormat("uk-UA").format(amount)} грн</strong>
-    <Link className="book-button" href={"/contacts?service=" + encodeURIComponent(name) + "&location=stelmakha-18m#booking"}>Записатися <span aria-hidden="true">→</span></Link>
+    <Link className="book-button" href={"/contacts?service=" + encodeURIComponent(name) + "&bookingCategory=ultrasound&location=stelmakha-18m#booking"}>Записатися <span aria-hidden="true">→</span></Link>
     <button className="ultrasound-description-toggle" aria-label={(open ? "Згорнути опис: " : "Детальніше: ") + name} aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}>{open ? "Згорнути" : "Детальніше"}<svg aria-hidden="true" viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" /></svg></button>
     <div id={id} className="ultrasound-description" hidden={!open}>
       <dl>

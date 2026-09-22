@@ -476,7 +476,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
               key={item.key}
               onClick={() => setMenuOpen(false)}
             >
-              {item.label}
+              <span className="main-nav-link-label">{item.label}</span>
             </a>
           ),
         )}

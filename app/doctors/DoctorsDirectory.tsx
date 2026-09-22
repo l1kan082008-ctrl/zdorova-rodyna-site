@@ -2,11 +2,12 @@
 
 import { doctorCategories as groupedSpecialties } from "./doctorCategories";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import "./portraits.css";
+import { CloseIcon } from "../components/CloseIcon";
 import {
   doctorPatientGroupOptions,
   getDoctorInitials,
@@ -63,6 +64,7 @@ export function DoctorsDirectory({
   initialDoctors: Doctor[];
 }) {
   const doctors = initialDoctors;
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [specialty, setSpecialty] = useState("all");
   const [focusedDoctorId, setFocusedDoctorId] = useState<string | null>(null);
@@ -203,10 +205,12 @@ const changeMobileView = (nextView: MobileDoctorView) => {
         <DirectoryUrlSync onChange={syncUrlFilters} />
       </Suspense>
       <div className="directory-toolbar doctor-directory-toolbar">
+        <div className="doctor-directory-search">
         <label htmlFor="doctor-search">
           <span className="sr-only">Пошук лікаря</span>
           <input
             id="doctor-search"
+            ref={searchInputRef}
             type="search"
             value={query}
             onChange={(event) => changeFilters("all", event.target.value)}
@@ -214,6 +218,11 @@ const changeMobileView = (nextView: MobileDoctorView) => {
             autoComplete="off"
           />
         </label>
+        {query && <button className="price-search-clear" type="button" aria-label="Очистити пошук"
+          onClick={() => { changeFilters(specialty, ""); searchInputRef.current?.focus(); }}>
+          <CloseIcon />
+        </button>}
+        </div>
         <label htmlFor="doctor-specialty">
           <span className="sr-only">Напрям</span>
           <select

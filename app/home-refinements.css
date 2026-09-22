@@ -320,3 +320,14 @@ body .home-page > #about.about-section { background: var(--surface-neutral); }
   .home-page .hero--family-walking-trial + .advantages { margin-top: 8px; padding: 8px; }
   .home-page .advantage { padding: 8px 6px; }
 }
+
+/* Give the ultrasound monitor a little more breathing room on mobile. */
+@media (max-width: 720px) {
+  .home-page .service-card--ultrasound::before {
+    background-position: right calc(50% + 12px);
+    -webkit-mask-image: linear-gradient(180deg, transparent 12px, #000 28px), linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 15%) 15%, rgb(0 0 0 / 65%) 40%, #000 70%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(180deg, transparent 12px, #000 28px), linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 15%) 15%, rgb(0 0 0 / 65%) 40%, #000 70%);
+    mask-composite: intersect;
+  }
+}

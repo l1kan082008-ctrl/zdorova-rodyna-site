@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import Link from "next/link";
 import type { PriceItem } from "../../prices/priceData";
+import { getOfficialCtPosition, isBookableImagingItem as requiresSeparateBooking } from "@/lib/imagingBooking";
 import { CT_PRICE_GROUPS, type CtPriceGroupId } from "./ctPriceGroups";
 import styles from "./CtServicePage.module.css";
 
@@ -39,21 +40,6 @@ const OFFICIAL_CT_GROUP_RANGES: ReadonlyArray<{
   { from: 60, to: 68, groupId: "additional" },
 ];
 
-function getOfficialCtPosition(item: PriceItem) {
-  const idMatch = /^official-230-(\d{3})$/.exec(item.id);
-  if (idMatch) return Number(idMatch[1]);
-
-  if (
-    typeof item.sortOrder === "number" &&
-    item.sortOrder >= 3000 &&
-    item.sortOrder <= 3067
-  ) {
-    return item.sortOrder - 2999;
-  }
-
-  return null;
-}
-
 function getGroupId(item: PriceItem): CtPriceGroupId {
   const entry = radiologyPriceRegistry[item.id];
   if (entry) return entry.group as CtPriceGroupId;
@@ -73,13 +59,6 @@ function getBaseName(name: string) {
 
 function isExplicitContrast(name: string) {
   return /\(з контрастуванням\)\s*$/i.test(name);
-}
-
-const NON_BOOKABLE_CT_POSITIONS = new Set([60, 61, 62, 63, 64, 65, 68]);
-
-function requiresSeparateBooking(item: PriceItem) {
-  const position = getOfficialCtPosition(item);
-  return position === null || !NON_BOOKABLE_CT_POSITIONS.has(position);
 }
 
 function pairItems(items: PriceItem[], groupId: CtPriceGroupId): PricePair[] {
@@ -125,7 +104,7 @@ function PriceOption({
       {item && requiresSeparateBooking(item) ? (
         <Link
           className={`${styles.priceBooking}${contrast ? ` ${styles.priceBookingContrast}` : ""}`}
-          href={`/contacts?service=${encodeURIComponent(item.name)}#booking`}
+          href={`/contacts?service=${encodeURIComponent(item.name)}&bookingCategory=ct#booking`}
           aria-label={`Записатися на ${item.name}`}
         >
           <strong>{item.amount.toLocaleString("uk-UA")} грн</strong>

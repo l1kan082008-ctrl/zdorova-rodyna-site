@@ -1550,3 +1550,25 @@ body .faq-categories button:focus-visible { outline: 2px solid var(--teal); outl
   .contacts-page--compact .branch-city-nav button { padding-inline: 4px; }
   body .patients-page .patients-benefit-list article { grid-template-columns: 44px minmax(0, 1fr); gap: 12px; }
 }
+
+/* Keep desktop link underlines tied to text, not the minimum hit area. */
+@media (min-width: 1081px) {
+  .main-nav > a::after { display: none; }
+  .main-nav-link-label { position: relative; display: inline-block; }
+  .main-nav-link-label::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    right: 50%;
+    bottom: -7px;
+    height: 1px;
+    background: var(--orange);
+    transition: inset 180ms ease;
+  }
+  .main-nav > a:is(:hover, :focus-visible, .is-active) > .main-nav-link-label::after { left: 0; right: 0; }
+}
+
+/* Doctor search uses the same clear control as the price directory. */
+.doctor-directory-search { position: relative; min-width: 0; }
+body .doctor-directory-search input { padding-right: 72px; }
+.doctor-directory-search input::-webkit-search-cancel-button { display: none; -webkit-appearance: none; }

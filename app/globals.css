@@ -22837,7 +22837,7 @@ body.calculator-is-open .site-header {
   box-shadow: 0 0 0 4px rgb(8 120 122 / 7%);
 }
 
-.faq-search svg {
+.faq-search > svg {
   width: 22px;
   fill: none;
   stroke: var(--teal);
@@ -22860,17 +22860,9 @@ body.calculator-is-open .site-header {
   font-weight: 400;
 }
 
-.faq-search button {
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: #edf5f4;
-  color: var(--teal);
-  cursor: pointer;
-  font-size: 20px;
-  line-height: 1;
+.faq-search .price-search-clear {
+  position: static;
+  transform: none;
 }
 
 .faq-categories {

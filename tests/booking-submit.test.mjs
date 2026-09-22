@@ -2,7 +2,6 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
-import * as bookingRequest from "../lib/bookingRequest.ts";
 
 // Execute the real component handlers and API route with in-memory boundaries.
 // This is not a browser rendering test. No database, credentials or network are used.
@@ -32,15 +31,37 @@ function text(node) {
   return node && typeof node === "object" ? text(node.props?.children) : String(node ?? "");
 }
 
-function harness(responseOverride) {
-  const stored = [], notifications = [], events = [], requests = [];
+const bookingRequest = load("../lib/bookingRequest.ts", {
+  "./locationPolicy": load("../lib/locationPolicy.ts"),
+});
+const siteSettings = load("../lib/siteSettings.ts");
+// The picker is a controlled child boundary, not a mocked native select.
+// These tests exercise the real dialog handlers using its public props.
+const BookingStudySelectBoundary = Symbol("BookingStudySelect");
+const priceItems = [
+  { id: "ct-head", name: "КТ головного мозку", category: "ct", categoryLabel: "КТ", amount: 1200 },
+  { id: "ct-chest", name: "КТ органів грудної клітки", category: "ct", categoryLabel: "КТ", amount: 1400 },
+  { id: "mri-head", name: "МРТ головного мозку", category: "mri", categoryLabel: "МРТ", amount: 1900 },
+  { id: "mri-knee", name: "МРТ колінного суглоба", category: "mri", categoryLabel: "МРТ", amount: 2100 },
+  { id: "ultrasound", name: "УЗД щитоподібної залози", category: "ultrasound", categoryLabel: "УЗД", amount: 500 },
+  { id: "doppler", name: "Доплер судин шиї", category: "doppler", categoryLabel: "Доплер", amount: 700 },
+  { id: "blood", name: "Загальний аналіз крові", category: "general", categoryLabel: "Аналізи", amount: 250 },
+];
+const locations = [
+  { id: "imaging", city: "Рівне", name: "Тестове діагностичне відділення", fullAddress: "Рівне, тестова адреса", services: ["ct", "mri", "ultrasound"] },
+  { id: "doctor", city: "Рівне", name: "Тестове консультаційне відділення", fullAddress: "Рівне, друга тестова адреса", services: ["doctors", "laboratory"] },
+];
+
+function harness(responseOverride, options = {}) {
+  const stored = [], notifications = [], events = [], requests = [], resourceRequests = [];
   const storage = new Map();
   const window = {
-    location: new URL("http://test.local/contacts?services=КТ&total=4100#booking"),
+    location: new URL(options.url ?? "http://test.local/contacts?services=КТ&total=4100#booking"),
     history: { state: null, replaceState: (_state, _title, url) => { window.location = new URL(url, window.location); } },
     localStorage: { getItem: k => storage.get(k) ?? null, setItem: (k, v) => storage.set(k, v), removeItem: k => storage.delete(k) },
     dispatchEvent: e => events.push(e), setTimeout: () => 1, clearTimeout: () => {},
   };
+  const document = { body: {}, documentElement: { classList: { add() {}, remove() {} } } };
   const selection = load("../app/prices/calculatorSelection.ts", {}, { window });
   selection.addPriceCalculatorSelection("test-ct");
   selection.writePriceCalculatorCitoSelection(["test-ct"]);
@@ -55,15 +76,26 @@ function harness(responseOverride) {
     "./bookingStore": { createBooking: async data => { stored.push(data); return "ZR-ISOLATED-TEST"; } },
     "@/lib/bookingNotification": { sendBookingNotification: async data => notifications.push(data) },
   });
-  let release;
+  let release, releasePrices;
   const gate = new Promise(resolve => { release = resolve; });
-  const fetch = async (url, options) => {
-    assert.equal(url, "/api/bookings");
-    requests.push(JSON.parse(options.body));
+  const pricesGate = new Promise(resolve => { releasePrices = resolve; });
+  if (!options.deferPrices) releasePrices();
+  const fetch = async (url, fetchOptions) => {
+    if (url === "/api/locations") {
+      resourceRequests.push(url);
+      return Response.json({ locations });
+    }
+    if (url === "/api/public/prices") {
+      resourceRequests.push(url);
+      await pricesGate;
+      return options.pricesResponse ? options.pricesResponse() : Response.json(options.priceItems ?? priceItems);
+    }
+    assert.equal(url, "/api/bookings", "unexpected network request in isolated component test");
+    requests.push(JSON.parse(fetchOptions.body));
     await gate;
-    return responseOverride ? responseOverride() : route.POST(new Request("http://test.local/api/bookings", options));
+    return responseOverride ? responseOverride() : route.POST(new Request("http://test.local/api/bookings", fetchOptions));
   };
-  const slots = [];
+  const slots = [], effectSlots = [], pendingEffects = [];
   let cursor = 0;
   const react = {
     useState(initial) {
@@ -72,22 +104,44 @@ function harness(responseOverride) {
       return [slots[i], v => { slots[i] = typeof v === "function" ? v(slots[i]) : v; }];
     },
     useRef(initial) { const i = cursor++; return slots[i] ??= { current: initial }; },
-    useEffect() {},
+    useEffect(effect, deps) {
+      const i = cursor++;
+      const previous = effectSlots[i];
+      if (!previous || !deps || deps.some((value, index) => !Object.is(value, previous.deps?.[index]))) {
+        pendingEffects.push(() => {
+          previous?.cleanup?.();
+          effectSlots[i] = { deps, cleanup: effect() };
+        });
+      }
+    },
   };
   const jsx = (type, props) => ({ type, props });
   const component = load("../app/components/BookingLauncher.tsx", {
     react, "react/jsx-runtime": { jsx, jsxs: jsx, Fragment: "fragment" },
+    "react-dom": { createPortal: child => child },
+    "./SiteSettingsProvider": { useSiteSettings: () => siteSettings.defaultSiteSettings },
+    "@/lib/siteSettings": siteSettings,
+    "./useModalDialog": { useModalDialog: () => {} },
+    "./BookingStudySelect": { BookingStudySelect: BookingStudySelectBoundary },
+    "@/lib/imagingBooking": load("../lib/imagingBooking.ts"),
     "../doctors/doctorCategories": load("../app/doctors/doctorCategories.ts"), "next/navigation": {}, "./CloseIcon": {}, "./TurnstileField": {},
     "../prices/calculatorSelection": selection, "../../lib/bookingRequest": bookingRequest,
-  }, { window, fetch, FormData: class { constructor(form) { this.form = form; } get(k) { return this.form[k] ?? null; } } },
+  }, { window, document, fetch, FormData: class { constructor(form) { this.form = form; } get(k) { return this.form[k] ?? null; } } },
   "\nexport { BookingDialog as TestDialog };\n");
   const request = new URL(window.location);
   let closed = false;
-  const render = () => { cursor = 0; return component.TestDialog({ request, onClose: () => { closed = true; } }); };
+  const render = () => {
+    cursor = 0;
+    const tree = component.TestDialog({ request, sourcePathname: options.sourcePathname, onClose: () => { closed = true; } });
+    while (pendingEffects.length) pendingEffects.shift()();
+    return tree;
+  };
   nodes(render()).find(n => n.props?.name === "phone").props.onChange({ target: { value: "0671234567" } });
-  const submit = nodes(render()).find(n => n.type === "form").props.onSubmit;
   const event = { preventDefault() {}, currentTarget: { name: "ІЗОЛЬОВАНИЙ ТЕСТ", consent: "on", website: "", comment: "Не реальна заявка" } };
-  return { render, submit: () => submit(event), release, selection, events, stored, notifications, requests, window, isClosed: () => closed };
+  const submit = () => nodes(render()).find(n => n.type === "form").props.onSubmit(event);
+  const flush = async () => { await new Promise(resolve => setImmediate(resolve)); return render(); };
+  const dispose = () => effectSlots.forEach(effect => effect?.cleanup?.());
+  return { render, submit, release, releasePrices, flush, dispose, selection, events, stored, notifications, requests, resourceRequests, window, isClosed: () => closed };
 }
 
 test("successful booking confirms, clears cart and CITO, and blocks a rapid duplicate submit", async () => {
@@ -134,3 +188,173 @@ for (const [name, response] of [
     assert.equal(h.stored.length, 0);
   });
 }
+
+
+function serviceControl(tree) {
+  return nodes(tree).find(node => (node.type === "select" || node.type === BookingStudySelectBoundary) && node.props.id === "quick-service");
+}
+function optionValues(select) {
+  assert.ok(select, "the native service/location selector must be rendered");
+  assert.equal(select.type, "select", "native option assertions must not emulate the custom study picker");
+  return nodes(select).filter(node => node.type === "option").map(node => node.props.value ?? text(node));
+}
+function studyProps(control) {
+  assert.ok(control, "the controlled study picker must be rendered");
+  assert.equal(control.type, BookingStudySelectBoundary);
+  assert.equal(typeof control.props.label, "string");
+  assert.ok(control.props.label.trim());
+  assert.equal(typeof control.props.onChange, "function");
+  return control.props;
+}
+function bookingUrl(params = {}) {
+  const url = new URL("http://test.local/contacts#booking");
+  for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
+  return url.href;
+}
+
+for (const [category, label, requested, changed, allowed] of [
+  ["ct", "КТ", "КТ головного мозку", "КТ органів грудної клітки", ["КТ головного мозку", "КТ органів грудної клітки"]],
+  ["mri", "МРТ", "МРТ головного мозку", "МРТ колінного суглоба", ["МРТ головного мозку", "МРТ колінного суглоба"]],
+  ["ultrasound", "УЗД", "УЗД щитоподібної залози", "Доплер судин шиї", ["УЗД щитоподібної залози", "Доплер судин шиї"]],
+]) {
+  test(category + " booking lists only its studies and submits the newly chosen name to the real API handler", async context => {
+    const h = harness(undefined, { url: bookingUrl({ service: requested, bookingCategory: category }) });
+    context.after(h.dispose);
+    let tree = await h.flush();
+    let select = serviceControl(tree);
+    assert.equal(select.props.value, requested);
+    assert.deepEqual(studyProps(select).options, allowed);
+    assert.equal(select.props.helpValue, label);
+    select.props.onChange(changed);
+    tree = h.render();
+    select = serviceControl(tree);
+    assert.equal(select.props.value, changed);
+    const locationSelect = nodes(tree).find(node => node.props?.id === "quick-location");
+    assert.deepEqual(optionValues(locationSelect), ["imaging"], "modality-compatible branch remains available for a name without its prefix");
+    const pending = h.submit();
+    assert.equal(studyProps(serviceControl(h.render())).disabled, true, "the picker is disabled while the form submits");
+    assert.equal(h.requests[0].service, changed);
+    h.release();
+    await pending;
+    assert.equal(h.stored[0].service, changed);
+    assert.equal(h.notifications[0].service, changed);
+    assert.doesNotMatch(h.stored[0].comment, new RegExp(requested));
+    assert.deepEqual(h.selection.readPriceCalculatorSelection(), ["test-ct"], "single study booking must not clear the unrelated calculator");
+    assert.deepEqual(h.selection.readPriceCalculatorCitoSelection(), ["test-ct"]);
+  });
+}
+
+test("header booking on each modality page inherits the category while an ordinary page stays broad", async context => {
+  for (const [category, label] of [["ct", "КТ"], ["mri", "МРТ"], ["ultrasound", "УЗД"]]) {
+    const h = harness(undefined, { url: bookingUrl(), sourcePathname: "/services/" + category });
+    context.after(h.dispose);
+    const select = serviceControl(await h.flush());
+    assert.equal(select.props.value, label);
+    assert.equal(studyProps(select).helpValue, label);
+    const allowed = priceItems.filter(item => item.category === category || (category === "ultrasound" && item.category === "doppler")).map(item => item.name);
+    assert.deepEqual(select.props.options, allowed);
+    assert.equal(h.resourceRequests.filter(url => url === "/api/public/prices").length, 1);
+  }
+  const h = harness(undefined, { url: bookingUrl(), sourcePathname: "/about" });
+  context.after(h.dispose);
+  const select = serviceControl(await h.flush());
+  const choices = optionValues(select);
+  for (const value of ["МРТ", "КТ", "УЗД", "Лабораторні дослідження", "Консультації лікарів"]) assert.ok(choices.includes(value));
+  assert.equal(h.resourceRequests.includes("/api/public/prices"), false);
+  select.props.onChange({ target: { value: "Лабораторні дослідження" } });
+  const pending = h.submit(); h.release(); await pending;
+  assert.equal(h.stored[0].service, "Лабораторні дослідження");
+});
+
+test("an explicitly chosen non-imaging service on a modality page keeps general service booking", async context => {
+  const h = harness(undefined, { url: bookingUrl({ service: "Консультації лікарів" }), sourcePathname: "/services/mri" });
+  context.after(h.dispose);
+  const select = serviceControl(await h.flush());
+  assert.equal(select.props.value, "Консультації лікарів");
+  assert.ok(optionValues(select).includes("Лабораторні дослідження"));
+  assert.equal(h.resourceRequests.includes("/api/public/prices"), false);
+});
+
+test("doctor booking preserves the doctor and consultation without fetching or showing a modality selector", async context => {
+  const h = harness(undefined, { url: bookingUrl({ doctor: "Тестовий лікар", bookingCategory: "ct" }), sourcePathname: "/services/ct" });
+  context.after(h.dispose);
+  const tree = await h.flush();
+  assert.equal(serviceControl(tree), undefined);
+  assert.match(text(tree), /Обраний лікар.*Тестовий лікар/);
+  assert.equal(h.resourceRequests.includes("/api/public/prices"), false);
+  const pending = h.submit(); h.release(); await pending;
+  assert.equal(h.stored[0].doctor, "Тестовий лікар");
+  assert.equal(h.stored[0].service, "Консультації лікарів");
+  assert.deepEqual(h.selection.readPriceCalculatorSelection(), ["test-ct"]);
+});
+
+test("calculator booking retains its study bundle even when a modality context is present", async context => {
+  const h = harness(undefined, { url: bookingUrl({ services: "КТ головного мозку | МРТ колінного суглоба", total: "3300", bookingCategory: "ct" }), sourcePathname: "/services/ct" });
+  context.after(h.dispose);
+  assert.equal(serviceControl(await h.flush()), undefined);
+  assert.equal(h.resourceRequests.includes("/api/public/prices"), false);
+  const pending = h.submit(); h.release(); await pending;
+  assert.equal(h.stored[0].service, "Комплекс досліджень");
+  assert.match(h.stored[0].comment, /КТ головного мозку, МРТ колінного суглоба/);
+  assert.match(h.stored[0].comment, /3\s?300/);
+  assert.deepEqual(h.selection.readPriceCalculatorSelection(), []);
+});
+
+test("while modality studies load the requested study is preserved and unrelated services never appear", async context => {
+  const requested = "МРТ головного мозку";
+  const h = harness(undefined, { url: bookingUrl({ service: requested }), deferPrices: true });
+  context.after(h.dispose);
+  const initial = await h.flush();
+  const select = serviceControl(initial);
+  assert.equal(select.props.value, requested);
+  assert.equal(studyProps(select).loading, true);
+  assert.deepEqual(select.props.options, []);
+  assert.equal(select.props.helpValue, "МРТ");
+  h.releasePrices();
+  const loaded = serviceControl(await h.flush());
+  assert.equal(loaded.props.value, requested);
+  assert.equal(studyProps(loaded).loading, false);
+  assert.deepEqual(loaded.props.options, ["МРТ головного мозку", "МРТ колінного суглоба"]);
+});
+
+for (const [name, response] of [
+  ["HTTP error", () => Response.json({ error: "Isolated prices failure" }, { status: 503 })],
+  ["network failure", () => { throw new Error("Isolated prices network failure"); }],
+  ["malformed catalog", () => Response.json({ items: priceItems })],
+  ["empty catalog", () => Response.json([])],
+]) {
+  test(name + " never broadens the scoped study selector or discards the requested study", async context => {
+    const requested = "КТ головного мозку";
+    const h = harness(undefined, { url: bookingUrl({ service: requested }), pricesResponse: response });
+    context.after(h.dispose);
+    const tree = await h.flush();
+    const select = serviceControl(tree);
+    assert.equal(select.props.value, requested);
+    assert.equal(studyProps(select).loading, false);
+    assert.deepEqual(select.props.options, []);
+    assert.equal(select.props.helpValue, "КТ");
+    const pending = h.submit(); h.release(); await pending;
+    assert.equal(h.stored[0].service, requested);
+  });
+}
+
+test("retrying a failed study catalog loads only the original modality and keeps the selected study", async context => {
+  let attempt = 0;
+  const requested = "МРТ головного мозку";
+  const h = harness(undefined, {
+    url: bookingUrl({ service: requested }),
+    pricesResponse: () => ++attempt === 1 ? Response.json({}, { status: 503 }) : Response.json(priceItems),
+  });
+  context.after(h.dispose);
+  const errorTree = await h.flush();
+  const retry = nodes(errorTree).find(node => node.type === "button" && text(node) === "Спробувати ще раз");
+  assert.ok(retry);
+  assert.equal(retry.props.type, "button");
+  retry.props.onClick();
+  h.render();
+  const recovered = await h.flush();
+  assert.equal(serviceControl(recovered).props.value, requested);
+  assert.deepEqual(studyProps(serviceControl(recovered)).options, ["МРТ головного мозку", "МРТ колінного суглоба"]);
+  assert.equal(h.resourceRequests.filter(url => url === "/api/public/prices").length, 2);
+  assert.equal(nodes(recovered).some(node => node.type === "button" && text(node) === "Спробувати ще раз"), false);
+});

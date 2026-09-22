@@ -1,7 +1,7 @@
 "use client";
 import { CloseIcon } from "../../components/CloseIcon";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useSiteSettings } from "../../components/SiteSettingsProvider";
 
 type FaqCategory =
@@ -224,6 +224,7 @@ function normalize(value: string) {
 }
 
 export function FaqDirectory() {
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const settings = useSiteSettings();
   const [activeCategory, setActiveCategory] = useState<(typeof categories)[number]>("Усі");
   const [query, setQuery] = useState("");
@@ -250,6 +251,7 @@ export function FaqDirectory() {
             <path d="m16 16 4 4" />
           </svg>
           <input
+            ref={searchInputRef}
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -257,7 +259,7 @@ export function FaqDirectory() {
             aria-label="Пошук серед частих запитань"
           />
           {query ? (
-            <button type="button" onClick={() => setQuery("")} aria-label="Очистити пошук">
+            <button className="price-search-clear" type="button" onClick={() => { setQuery(""); searchInputRef.current?.focus(); }} aria-label="Очистити пошук">
               <CloseIcon />
             </button>
           ) : null}

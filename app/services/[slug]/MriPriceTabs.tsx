@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import Link from "next/link";
 import type { PriceItem } from "../../prices/priceData";
+import { isBookableImagingItem as requiresSeparateBooking } from "@/lib/imagingBooking";
 import { MRI_PRICE_GROUPS, type MriPriceGroupId } from "./mriPriceGroups";
 import styles from "./CtServicePage.module.css";
 import mri from "./MriServicePage.module.css";
@@ -16,9 +17,6 @@ type PricePair = {
   withContrast?: PriceItem;
 };
 
-function requiresSeparateBooking(item: PriceItem) {
-  return !/^official-258-(11[6-9]|120|123)$/.test(item.id);
-}
 function pairItems(items: PriceItem[], groupId: MriPriceGroupId): PricePair[] {
   const pairs = new Map<string, PricePair>();
   for (const item of items.filter(item => item.isActive !== false)) {
@@ -51,7 +49,7 @@ function PriceOption({
       {item && requiresSeparateBooking(item) ? (
         <Link
           className={`${styles.priceBooking}${contrast ? ` ${styles.priceBookingContrast}` : ""}`}
-          href={`/contacts?service=${encodeURIComponent(item.name)}#booking`}
+          href={`/contacts?service=${encodeURIComponent(item.name)}&bookingCategory=mri#booking`}
           aria-label={`Записатися на ${item.name}`}
         >
           <strong>{item.amount.toLocaleString("uk-UA")} грн</strong>

@@ -91,9 +91,10 @@ export default async function ServiceDetailPage({
   const service = getServiceDetail(slug);
   if (!service) notFound();
 
+  const bookingCategory = ["ultrasound", "ct", "mri"].includes(service.slug) ? service.slug : null;
   const bookingHref = `/contacts?service=${encodeURIComponent(
     service.shortTitle,
-  )}#booking`;
+  )}${bookingCategory ? `&bookingCategory=${bookingCategory}` : ""}#booking`;
   const priceHrefByService: Record<string, string> = {
     ct: "/prices?category=ct#price-calculator",
     mri: "/prices?category=mri#price-calculator",
