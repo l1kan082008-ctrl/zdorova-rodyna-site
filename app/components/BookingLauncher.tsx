@@ -2,9 +2,10 @@
 import { CloseIcon } from "./CloseIcon";
 import { useSiteSettings } from "./SiteSettingsProvider";
 import { sitePhoneHref } from "@/lib/siteSettings";
-import { trackBookingSuccess } from "@/lib/bookingAnalytics";
+import { preventNativeBookingSubmit, submitBookingFromClick } from "@/lib/bookingSubmission";
+import { useBookingConfirmation } from "./useBookingConfirmation";
 
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useModalDialog } from "./useModalDialog";
 import { usePathname } from "next/navigation";
@@ -88,6 +89,7 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [reference, setReference] = useState("");
+  const [savedReference, setSavedReference] = useState("");
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const successRef = useRef<HTMLHeadingElement>(null);
@@ -97,6 +99,7 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
   const category = serviceCategory(locationService);
   const availableLocations = compatibleLocations(locations, locationService);
   const selectedLocation = availableLocations.length === 1 ? availableLocations[0] : availableLocations.find(({ id }) => id === locationId);
+  useBookingConfirmation(reference === savedReference ? reference : "", "appointment");
 
   const closeBooking = () => {
     if (!submittingRef.current) onClose();
@@ -146,20 +149,19 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
   }, [imagingCategory, studyOptionsAttempt]);
   useEffect(() => { if (reference) successRef.current?.focus(); }, [reference]);
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function submit(form: HTMLFormElement) {
     if (submittingRef.current) return;
-    const data = new FormData(event.currentTarget);
+    const data = new FormData(form);
     const phoneDigits = phone.replace(/\D/g, "");
     if (phoneDigits.length !== 10 || !phoneDigits.startsWith("0") || /^(\d)\1+$/u.test(phoneDigits)) {
       setError("Перевірте номер телефону: вкажіть повний номер.");
-      event.currentTarget.querySelector<HTMLInputElement>('input[name="phone"]')?.focus();
+      form.querySelector<HTMLInputElement>('input[name="phone"]')?.focus();
       return;
     }
     const addressComment = isHomeVisit ? homeVisitAddressComment(String(data.get("address") || "")) : "";
     if (isHomeVisit && !addressComment) {
       setError("Вкажіть вулицю та номер будинку в Рівному.");
-      event.currentTarget.querySelector<HTMLInputElement>('input[name="address"]')?.focus();
+      form.querySelector<HTMLInputElement>('input[name="address"]')?.focus();
       return;
     }
     const comment = [
@@ -184,7 +186,7 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
       const payload = await response.json() as { reference?: string; error?: string };
       if (!response.ok || typeof payload.reference !== "string" || !payload.reference.trim()) throw new Error(payload.error || "Не вдалося надіслати заявку. Спробуйте ще раз.");
       // Honeypot submissions get a decoy success response without being saved.
-      if (!String(data.get("website") || "").trim()) trackBookingSuccess(payload.reference, "appointment");
+      if (!String(data.get("website") || "").trim()) setSavedReference(payload.reference);
       setReference(payload.reference);
       if (studies) {
         clearPriceCalculatorSelection();
@@ -217,7 +219,7 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
     </div> : <>
       <h2 id="quick-booking-title">{isHomeVisit ? "Замовити виїзд медсестри" : "Запис на прийом"}</h2>
       <p id="quick-booking-description">{isHomeVisit ? "Виїзд доступний тільки у Рівному. Адміністратор уточнить аналізи, адресу та зручний час." : "Залиште контакти — адміністратор погодить з вами час візиту."}</p>
-      <form onSubmit={submit} aria-busy={submitting}>
+      <form onSubmit={preventNativeBookingSubmit} aria-busy={submitting}>
         <fieldset disabled={submitting}>
           {(doctor || studies) && <div className="quick-booking__selection">
             <span>{doctor ? "Обраний лікар" : studies ? "Обрані дослідження" : "Обране дослідження"}</span><strong>{doctor || studies.replaceAll(" | ", ", ")}</strong>
@@ -262,7 +264,7 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
           <label className="booking-honeypot" aria-hidden="true">Ваш сайт<input name="website" tabIndex={-1} autoComplete="off" /></label>
           <TurnstileField key={captchaAttempt} onToken={setToken} />
           {error && <p className="booking-submit-error" role="alert">{error} Також можна <a href={sitePhoneHref(settings.phone)}>зателефонувати</a>.</p>}
-          <button className="book-button" type="submit" disabled={submitting || (!isHomeVisit && Boolean(locationId) && locationsLoading)}>{submitting ? "Надсилаємо…" : "Надіслати заявку"}<span aria-hidden="true">→</span></button>
+          <button className="book-button" type="submit" onClick={(event) => submitBookingFromClick(event, submit)} disabled={submitting || (!isHomeVisit && Boolean(locationId) && locationsLoading)}>{submitting ? "Надсилаємо…" : "Надіслати заявку"}<span aria-hidden="true">→</span></button>
         </fieldset>
       </form>
     </>}

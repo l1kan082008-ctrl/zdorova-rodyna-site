@@ -3,9 +3,10 @@
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import Link from "next/link";
-import { FormEvent, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { TurnstileField } from "@/app/components/TurnstileField";
-import { trackBookingSuccess } from "@/lib/bookingAnalytics";
+import { preventNativeBookingSubmit, submitBookingFromClick } from "@/lib/bookingSubmission";
+import { useBookingConfirmation } from "@/app/components/useBookingConfirmation";
 
 type FamilyDoctorOption = {
   id: string;
@@ -129,16 +130,16 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
   const [consent, setConsent] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [status, setStatus] = useState<
-    { type: "idle" } | { type: "loading" } | { type: "success"; text: string } | { type: "error"; text: string }
+    { type: "idle" } | { type: "loading" } | { type: "success"; text: string; reference: string } | { type: "error"; text: string }
   >({ type: "idle" });
+  useBookingConfirmation(status.type === "success" ? status.reference : "", "family_declaration");
 
   const selectedDoctor = useMemo(
     () => doctors.find((doctor) => doctor.id === selectedDoctorId),
     [doctors, selectedDoctorId],
   );
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleSubmit() {
     if (submittingRef.current) return;
 
     const nextPhoneError = validatePhoneNumber(phone);
@@ -211,9 +212,9 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
         throw new Error(result.error || "Не вдалося надіслати заявку");
       }
 
-      trackBookingSuccess(result.reference, "family_declaration");
       setStatus({
         type: "success",
+        reference: result.reference,
         text: `Заявку ${result.reference ? `№ ${result.reference} ` : ""}отримано. Адміністратор перевірить можливість оформлення декларації в ЕСОЗ, перелік документів і зв’яжеться з вами.`,
       });
       setName("");
@@ -329,7 +330,7 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
           )}
         </fieldset>
 
-        <form className="family-declaration-form" onSubmit={handleSubmit}>
+        <form className="family-declaration-form" onSubmit={preventNativeBookingSubmit}>
           <div className="family-patient-switch" role="group" aria-label="Для кого декларація">
             <button
               type="button"
@@ -550,6 +551,7 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
               <button
                 className="family-declaration-submit"
                 type="submit"
+                onClick={(event) => submitBookingFromClick(event, handleSubmit)}
                 disabled={status.type === "loading" || !doctors.length}
               >
                 {status.type === "loading" ? "Надсилаємо…" : "Подати заявку"}

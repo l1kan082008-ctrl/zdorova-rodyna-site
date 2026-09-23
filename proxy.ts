@@ -8,13 +8,13 @@ const contentSecurityPolicy = (analyticsEnabled: boolean) => [
   "frame-ancestors 'none'",
   "object-src 'none'",
   "img-src 'self' data: blob: https://*.public.blob.vercel-storage.com" +
-    (analyticsEnabled ? " https://www.googletagmanager.com https://*.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com" : ""),
+    (analyticsEnabled ? " https://www.googletagmanager.com https://*.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com https://www.google.com.ua" : ""),
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline'" +
     (analyticsEnabled ? " https://www.googletagmanager.com https://www.googleadservices.com https://www.google.com" : ""),
   "connect-src 'self' https://api.openai.com https://challenges.cloudflare.com" +
-    (analyticsEnabled ? " https://www.googletagmanager.com https://*.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com https://ad.doubleclick.net" : ""),
+    (analyticsEnabled ? " https://www.googletagmanager.com https://*.google-analytics.com https://analytics.google.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com https://www.google.com.ua https://ad.doubleclick.net" : ""),
   "frame-src https://challenges.cloudflare.com https://www.google.com" +
     (analyticsEnabled ? " https://www.googletagmanager.com" : ""),
   "media-src 'self' blob:",

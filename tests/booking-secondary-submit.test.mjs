@@ -37,9 +37,16 @@ const bookingRequest = load("../lib/bookingRequest.ts", {
 const familyDoctor = { id: "isolated-doctor", name: "Тестовий лікар", specialty: "Сімейна медицина" };
 
 function harness(kind, options = {}) {
-  const requests = [], stored = [], notifications = [];
-  const window = { dataLayer: options.dataLayer ?? [] };
+  const requests = [], stored = [], notifications = [], eventVisibility = [];
+  let committedTree;
+  const window = { dataLayer: options.dataLayer ?? [], matchMedia: () => ({ matches: true }) };
   const document = { body: {} };
+  const successClass = kind === "callback" ? "support-dialog-success" : "family-declaration-success";
+  const originalPush = window.dataLayer.push.bind(window.dataLayer);
+  Object.defineProperty(window.dataLayer, "push", { value: event => {
+    eventVisibility.push(nodes(committedTree).some(node => node.props?.className === successClass));
+    return originalPush(event);
+  } });
   const analytics = load("../lib/bookingAnalytics.ts", {}, { window });
   const route = load("../app/api/bookings/route.ts", {
     "@/lib/requestBody": requestBody,
@@ -65,7 +72,7 @@ function harness(kind, options = {}) {
       ? options.response()
       : route.POST(new Request("http://test.local/api/bookings", fetchOptions));
   };
-  const slots = [];
+  const slots = [], effectSlots = [], pendingEffects = [];
   let cursor = 0;
   const react = {
     Fragment: "fragment",
@@ -79,17 +86,30 @@ function harness(kind, options = {}) {
     // These effects manage layout, focus, menus and calculator subscriptions only.
     useEffect() {},
   };
+  // Run the real confirmation hook after commit; unrelated layout effects remain isolated.
+  const confirmation = load("../app/components/useBookingConfirmation.ts", {
+    "@/lib/bookingAnalytics": analytics,
+    react: { useEffect(effect, deps) {
+      const i = cursor++;
+      const previous = effectSlots[i];
+      if (!previous || deps.some((value, index) => !Object.is(value, previous[index]))) {
+        effectSlots[i] = deps;
+        pendingEffects.push(effect);
+      }
+    } },
+  });
   const jsx = (type, props) => ({ type, props });
   const dependencies = {
     react, "react/jsx-runtime": { jsx, jsxs: jsx, Fragment: "fragment" },
     "next/image": { default: Symbol("Image") },
     "next/link": { default: Symbol("Link") },
-    "@/lib/bookingAnalytics": analytics,
+    "@/lib/bookingSubmission": load("../lib/bookingSubmission.ts"),
   };
   let component;
   if (kind === "callback") {
     const loaded = load("../app/components/SiteChrome.tsx", {
       ...dependencies,
+      "./useBookingConfirmation": confirmation,
       "../doctors/doctorCategories": doctorCategories,
       "./CloseIcon": {},
       "./SiteSettingsProvider": { useSiteSettings: () => siteSettings.defaultSiteSettings },
@@ -104,12 +124,18 @@ function harness(kind, options = {}) {
   } else {
     const loaded = load("../app/services/[slug]/FamilyDeclarationForm.tsx", {
       ...dependencies,
+      "@/app/components/useBookingConfirmation": confirmation,
       "@/lib/imageSource": {},
       "@/app/components/TurnstileField": {},
     }, { window, fetch });
     component = () => loaded.FamilyDeclarationForm({ doctors: [familyDoctor] });
   }
-  const render = () => { cursor = 0; return component(); };
+  const render = () => {
+    cursor = 0;
+    committedTree = component();
+    while (pendingEffects.length) pendingEffects.shift()();
+    return committedTree;
+  };
   const find = predicate => {
     const found = nodes(render()).find(predicate);
     assert.ok(found, `expected ${kind} control to exist`);
@@ -132,15 +158,38 @@ function harness(kind, options = {}) {
       .props.onChange({ target: { checked: options.consent ?? true } });
   }
   change(node => node.type === "input" && node.props.type === "tel", options.phone ?? "0671234567");
-  const formHandler = () => find(node => node.type === "form").props.onSubmit;
-  const submit = () => formHandler()({ preventDefault() {} });
+  const clickHandler = () => find(node => node.props?.type === "submit").props.onClick;
+  let clickPrevented = false;
+  const clickEvent = () => ({
+    preventDefault() { clickPrevented = true; },
+    currentTarget: { form: { reportValidity: () => options.nativeValid ?? true } },
+  });
+  const submit = () => clickHandler()(clickEvent());
+  const nativeSubmit = () => find(node => node.type === "form").props.onSubmit({ preventDefault() {} });
   const success = () => nodes(render()).some(node => node.props?.className ===
     (kind === "callback" ? "support-dialog-success" : "family-declaration-success"));
   const hasError = () => nodes(render()).some(node => node.props?.role === "alert");
-  return { render, find, formHandler, submit, release, success, hasError, requests, stored, notifications, window };
+  return { render, find, clickHandler, clickEvent, submit, nativeSubmit, release, success, hasError, requests, stored, notifications, window, eventVisibility, isClickPrevented: () => clickPrevented };
 }
 
 for (const kind of ["callback", "family_declaration"]) {
+  test(`${kind}: native constraints block click activation before a request and native submit is inert`, async () => {
+    const h = harness(kind, { nativeValid: false });
+    await h.submit();
+    assert.equal(h.isClickPrevented(), true);
+    assert.deepEqual(h.requests, []);
+    await h.nativeSubmit();
+    assert.deepEqual(h.requests, []);
+    assert.deepEqual(h.window.dataLayer, []);
+  });
+
+  test(`${kind}: a synthetic native submit with valid fields cannot start a request`, async () => {
+    const h = harness(kind);
+    await h.nativeSubmit();
+    assert.deepEqual(h.requests, []);
+    assert.deepEqual(h.window.dataLayer, []);
+  });
+
   test(`${kind}: required phone pattern accepts the formatter output and rejects incomplete or zero numbers`, () => {
     // Check the actual input contract; native capture-phase behavior is verified in a browser.
     const cases = [["0987654321", true], ["0671234567", true], ["+380987654321", true], ["", false], ["09876", false], ["1987654321", false], ["0000000000", false]];
@@ -207,9 +256,9 @@ for (const kind of ["callback", "family_declaration"]) {
   test(`${kind}: pending request and rapid duplicate cannot convert before one saved response`, async () => {
     const h = harness(kind);
     // Invoke the same handler twice before a render, as with two immediate submits.
-    const handler = h.formHandler();
-    const pending = handler({ preventDefault() {} });
-    await handler({ preventDefault() {} });
+    const handler = h.clickHandler();
+    const pending = handler(h.clickEvent());
+    await handler(h.clickEvent());
     assert.equal(h.requests.length, 1);
     assert.deepEqual(h.stored, []);
     assert.deepEqual(h.window.dataLayer, []);
@@ -220,9 +269,12 @@ for (const kind of ["callback", "family_declaration"]) {
     assert.equal(h.stored.length, 1);
     assert.equal(h.notifications.length, 1);
     assert.equal(h.stored[0].source, kind === "callback" ? "callback" : "family-declaration");
+    assert.deepEqual(h.window.dataLayer, [], "API confirmation alone cannot emit before the success UI commits");
     assert.equal(h.success(), true);
-    assert.deepEqual(h.window.dataLayer, [{ event: "booking_success", form_type: kind }],
+    assert.deepEqual(h.window.dataLayer, [{ event: "form_submit", form_type: kind }],
       "analytics contains no booking reference, phone, name, doctor, service or comment");
+    assert.deepEqual(h.eventVisibility, [true], "the success UI is already committed when the event is emitted");
+    assert.equal(h.isClickPrevented(), true);
     h.render();
     assert.equal(h.window.dataLayer.length, 1, "rerender does not repeat conversion");
   });
@@ -259,8 +311,8 @@ for (const kind of ["callback", "family_declaration"]) {
     h.release();
     await h.submit();
     assert.equal(h.stored.length, 1);
-    assert.equal(attempts, 1);
     assert.equal(h.success(), true);
+    assert.equal(attempts, 1);
     assert.equal(h.hasError(), false);
   });
 }
@@ -274,3 +326,15 @@ for (const options of [{ consent: false }, { doctor: false }]) {
     assert.equal(h.success(), false);
   });
 }
+
+test("callback: closing before the response cannot emit an event for an unseen confirmation", async () => {
+  const h = harness("callback");
+  const pending = h.submit();
+  h.find(node => node.props?.["aria-label"] === "Закрити вікно").props.onClick();
+  h.render();
+  h.release();
+  await pending;
+  assert.equal(h.stored.length, 1);
+  assert.equal(h.success(), false);
+  assert.deepEqual(h.window.dataLayer, []);
+});

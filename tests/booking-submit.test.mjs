@@ -53,7 +53,8 @@ const locations = [
 ];
 
 function harness(responseOverride, options = {}) {
-  const stored = [], notifications = [], events = [], requests = [], resourceRequests = [];
+  const stored = [], notifications = [], events = [], requests = [], resourceRequests = [], eventVisibility = [];
+  let committedTree;
   const storage = new Map();
   const window = {
     dataLayer: options.dataLayer ?? [],
@@ -63,6 +64,11 @@ function harness(responseOverride, options = {}) {
     dispatchEvent: e => events.push(e), setTimeout: () => 1, clearTimeout: () => {},
   };
   const document = { body: {}, documentElement: { classList: { add() {}, remove() {} } } };
+  const originalPush = window.dataLayer.push.bind(window.dataLayer);
+  Object.defineProperty(window.dataLayer, "push", { value: event => {
+    eventVisibility.push(nodes(committedTree).some(node => node.props?.className === "quick-booking__success"));
+    return originalPush(event);
+  } });
   const selection = load("../app/prices/calculatorSelection.ts", {}, { window });
   selection.addPriceCalculatorSelection("test-ct");
   selection.writePriceCalculatorCitoSelection(["test-ct"]);
@@ -117,12 +123,17 @@ function harness(responseOverride, options = {}) {
     },
   };
   const jsx = (type, props) => ({ type, props });
+  const analytics = load("../lib/bookingAnalytics.ts", {}, { window });
+  const confirmation = load("../app/components/useBookingConfirmation.ts", {
+    react, "@/lib/bookingAnalytics": analytics,
+  });
   const component = load("../app/components/BookingLauncher.tsx", {
     react, "react/jsx-runtime": { jsx, jsxs: jsx, Fragment: "fragment" },
     "react-dom": { createPortal: child => child },
     "./SiteSettingsProvider": { useSiteSettings: () => siteSettings.defaultSiteSettings },
     "@/lib/siteSettings": siteSettings,
-    "@/lib/bookingAnalytics": load("../lib/bookingAnalytics.ts", {}, { window }),
+    "@/lib/bookingSubmission": load("../lib/bookingSubmission.ts"),
+    "./useBookingConfirmation": confirmation,
     "./useModalDialog": { useModalDialog: () => {} },
     "./BookingStudySelect": { BookingStudySelect: BookingStudySelectBoundary },
     "@/lib/imagingBooking": load("../lib/imagingBooking.ts"),
@@ -135,15 +146,19 @@ function harness(responseOverride, options = {}) {
   const render = () => {
     cursor = 0;
     const tree = component.TestDialog({ request, sourcePathname: options.sourcePathname, onClose: () => { closed = true; } });
+    committedTree = tree;
     while (pendingEffects.length) pendingEffects.shift()();
     return tree;
   };
   nodes(render()).find(n => n.props?.name === "phone").props.onChange({ target: { value: options.phone ?? "0671234567" } });
-  const event = { preventDefault() {}, currentTarget: { name: "ІЗОЛЬОВАНИЙ ТЕСТ", consent: options.consent ?? "on", website: options.website ?? "", comment: "Не реальна заявка", querySelector: () => ({ focus() {} }) } };
-  const submit = () => nodes(render()).find(n => n.type === "form").props.onSubmit(event);
+  const form = { name: "ІЗОЛЬОВАНИЙ ТЕСТ", consent: options.consent ?? "on", website: options.website ?? "", comment: "Не реальна заявка", querySelector: () => ({ focus() {} }), reportValidity: () => options.nativeValid ?? true };
+  let clickPrevented = false;
+  const event = { preventDefault() { clickPrevented = true; }, currentTarget: { form } };
+  const submit = () => nodes(render()).find(n => n.props?.type === "submit").props.onClick(event);
+  const nativeSubmit = () => nodes(render()).find(n => n.type === "form").props.onSubmit({ preventDefault() {} });
   const flush = async () => { await new Promise(resolve => setImmediate(resolve)); return render(); };
   const dispose = () => effectSlots.forEach(effect => effect?.cleanup?.());
-  return { render, submit, release, releasePrices, flush, dispose, selection, events, stored, notifications, requests, resourceRequests, window, isClosed: () => closed };
+  return { render, submit, nativeSubmit, release, releasePrices, flush, dispose, selection, events, stored, notifications, requests, resourceRequests, window, eventVisibility, isClickPrevented: () => clickPrevented, isClosed: () => closed };
 }
 
 test("booking phone is invalid before the browser can dispatch submit", context => {
@@ -162,6 +177,23 @@ test("booking phone is invalid before the browser can dispatch submit", context 
   }
 });
 
+test("appointment: native constraints block click activation before a request and native submit is inert", async () => {
+  const h = harness(undefined, { nativeValid: false });
+  await h.submit();
+  assert.equal(h.isClickPrevented(), true);
+  assert.deepEqual(h.requests, []);
+  await h.nativeSubmit();
+  assert.deepEqual(h.requests, [], "a submit event must never be the request entry point");
+  assert.deepEqual(h.window.dataLayer, []);
+});
+
+test("appointment: a synthetic native submit with valid fields cannot start a request", async () => {
+  const h = harness();
+  await h.nativeSubmit();
+  assert.deepEqual(h.requests, []);
+  assert.deepEqual(h.window.dataLayer, []);
+});
+
 test("successful booking confirms, clears cart and CITO, and blocks a rapid duplicate submit", async () => {
   const h = harness();
   const pending = h.submit();
@@ -174,7 +206,7 @@ test("successful booking confirms, clears cart and CITO, and blocks a rapid dupl
   await pending;
   assert.equal(h.stored.length, 1);
   assert.equal(h.notifications.length, 1);
-  assert.deepEqual(h.window.dataLayer, [{ event: "booking_success", form_type: "appointment" }]);
+  assert.deepEqual(h.window.dataLayer, [], "API confirmation alone cannot emit before the confirmation UI commits");
   assert.match(h.stored[0].comment, /Обрані дослідження: КТ/);
   assert.match(h.stored[0].comment, /4\s?100/);
   assert.deepEqual(h.selection.readPriceCalculatorSelection(), []);
@@ -183,6 +215,11 @@ test("successful booking confirms, clears cart and CITO, and blocks a rapid dupl
   assert.equal(h.window.location.searchParams.has("services"), false);
   assert.equal(h.window.location.searchParams.has("total"), false);
   const result = h.render();
+  assert.deepEqual(h.window.dataLayer, [{ event: "form_submit", form_type: "appointment" }]);
+  assert.deepEqual(h.eventVisibility, [true], "the confirmation exists when analytics observes the event");
+  assert.equal(h.isClickPrevented(), true, "the native submit default was cancelled before the request");
+  h.render();
+  assert.equal(h.window.dataLayer.length, 1, "a rerender cannot repeat the conversion");
   assert.match(text(result), /Заявку отримано/);
   assert.equal(nodes(result).some(n => n.type === "form"), false);
   nodes(result).find(n => n.type === "button" && text(n) === "Готово").props.onClick();

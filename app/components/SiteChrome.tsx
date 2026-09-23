@@ -5,9 +5,10 @@ import { CloseIcon } from "./CloseIcon";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useSiteSettings } from "./SiteSettingsProvider";
 import { sitePhoneHref, siteViberHref } from "@/lib/siteSettings";
-import { trackBookingSuccess } from "@/lib/bookingAnalytics";
+import { preventNativeBookingSubmit, submitBookingFromClick } from "@/lib/bookingSubmission";
+import { useBookingConfirmation } from "./useBookingConfirmation";
 import { formatBookingPhone } from "@/lib/bookingRequest";
-import type { CSSProperties, FormEvent } from "react";
+import type { CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
@@ -155,7 +156,8 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
   const [supportPhone, setSupportPhone] = useState("");
   const [supportError, setSupportError] = useState("");
   const [supportSubmitting, setSupportSubmitting] = useState(false);
-  const [supportSubmitted, setSupportSubmitted] = useState(false);
+  const [supportReference, setSupportReference] = useState("");
+  const supportSubmitted = Boolean(supportReference);
   const [supportTurnstileToken, setSupportTurnstileToken] = useState("");
   const [selectedServiceCount, setSelectedServiceCount] = useState(0);
   const supportButtonRef = useRef<HTMLButtonElement>(null);
@@ -166,6 +168,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
   const supportDialogRef = useRef<HTMLDivElement>(null);
   const supportPhoneRef = useRef<HTMLInputElement>(null);
   const supportSubmittingRef = useRef(false);
+  useBookingConfirmation(supportOpen ? supportReference : "", "callback");
 
   useEffect(() => {
     if (!home) return;
@@ -217,8 +220,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
     return () => window.removeEventListener(HOME_SEARCH_OPEN_EVENT, closeForSearch);
   }, []);
 
-  const submitSupportCallback = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const submitSupportCallback = async () => {
     if (supportSubmittingRef.current) return;
     setSupportError("");
 
@@ -258,9 +260,8 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
         throw new Error(payload.error || "Не вдалося надіслати заявку.");
       }
 
-      trackBookingSuccess(payload.reference, "callback");
       setSupportPhone("");
-      setSupportSubmitted(true);
+      setSupportReference(payload.reference);
     } catch (error) {
       setSupportError(
         error instanceof Error
@@ -530,7 +531,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
               setMenuOpen(false);
               setOpenNavigationMenu(null);
               setSupportError("");
-              setSupportSubmitted(false);
+              setSupportReference("");
               setSupportOpen(true);
             }}
           >
@@ -552,7 +553,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
             setMenuOpen(false);
             setOpenNavigationMenu(null);
             setSupportError("");
-            setSupportSubmitted(false);
+            setSupportReference("");
             setSupportOpen(true);
           }}
         >
@@ -645,7 +646,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
               </div>
             ) : (
               <>
-                <form className="support-callback-form" onSubmit={submitSupportCallback}>
+                <form className="support-callback-form" onSubmit={preventNativeBookingSubmit}>
                   <div className="support-dialog-intro">
                     <h2>Зворотний дзвінок</h2>
                     <p>Залиште номер — передзвонимо.</p>
@@ -700,6 +701,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
                   <button
                     className="support-callback-submit"
                     type="submit"
+                    onClick={(event) => submitBookingFromClick(event, submitSupportCallback)}
                     disabled={supportSubmitting}
                   >
                     {supportSubmitting ? "Надсилаємо…" : "Подзвоніть мені"}
