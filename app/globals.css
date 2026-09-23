@@ -3432,7 +3432,7 @@ footer {
   position: relative;
   min-height: 405px;
   border-radius: 25px;
-  background-image: url("/center-reception.webp");
+  background-image: url("/center-building.webp");
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
@@ -5448,7 +5448,7 @@ footer {
 
 .about-route-photo {
   min-height: 460px;
-  background-image: url("/center-reception.webp");
+  background-image: url("/center-building.webp");
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;

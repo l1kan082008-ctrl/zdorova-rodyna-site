@@ -522,7 +522,7 @@ export default async function Home() {
         <div
           className="reception-photo"
           role="img"
-          aria-label="Візуалізація інтер’єру рецепції, не фотографія центру"
+          aria-label="Будівля медичного центру «Здорова Родина»"
         />
       </section>
 
