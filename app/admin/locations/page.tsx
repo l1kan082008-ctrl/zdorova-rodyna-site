@@ -30,7 +30,7 @@ const emptyLocation = (phone: string): CenterLocation => ({
 });
 
 function galleryToText(gallery: CenterLocation["gallery"]) {
-  return gallery.map((item) => [item.src, item.alt, item.caption].join(" | ")).join("\n");
+  return gallery.map((item) => [item.src, item.alt].join(" | ")).join("\n");
 }
 
 function parseGallery(value: string): CenterLocation["gallery"] {
@@ -39,8 +39,8 @@ function parseGallery(value: string): CenterLocation["gallery"] {
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => {
-      const [src = "", alt = "", caption = ""] = line.split("|").map((part) => part.trim());
-      return { src, alt, caption };
+      const [src = "", alt = ""] = line.split("|").map((part) => part.trim());
+      return { src, alt };
     })
     .filter((item) => item.src);
 }
@@ -112,7 +112,7 @@ export default function LocationsAdminPage() {
         const response = await fetch("/api/admin/locations/photo", { method: "POST", body: form });
         const result = await response.json() as { src?: string; error?: string };
         if (!response.ok || !result.src) throw new Error(result.error || "Не вдалося завантажити фото.");
-        const photo = { src: result.src, alt: draft.address, caption: "" };
+        const photo = { src: result.src, alt: draft.address };
         setGalleryText(current => galleryToText([...parseGallery(current), photo]));
       }
     } catch (reason) {
@@ -170,7 +170,7 @@ export default function LocationsAdminPage() {
     onRestore: (restored) => {
       if (selected && restored.location.id === selected.id) {
         setDraft(restored.location);
-        setGalleryText(restored.galleryText);
+        setGalleryText(galleryToText(parseGallery(restored.galleryText)));
         setError("");
       }
     },
@@ -378,11 +378,11 @@ export default function LocationsAdminPage() {
                           {/* Uploaded photos may use the configured public media store. */}
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={photo.src} alt={photo.alt || `Фото відділення ${index + 1}`} loading="lazy" />
-                          <span>{photo.caption || `Фото ${index + 1}`}</span>
+                          <span>Фото {index + 1}</span>
                           <button type="button" className={`${styles.deleteButton} admin-ui-button`} data-variant="danger" disabled={uploading || saving}
                             aria-label={`Видалити фото ${index + 1}`}
                             onClick={() => {
-                              if (!window.confirm(`Видалити фото ${index + 1}${photo.caption ? ` «${photo.caption}»` : ""}? Зміна набуде чинності після збереження відділення.`)) return;
+                              if (!window.confirm(`Видалити фото ${index + 1}? Зміна набуде чинності після збереження відділення.`)) return;
                               setGalleryText(current => galleryToText(parseGallery(current).filter((_, i) => i !== index)));
                             }}>Видалити фото</button>
                         </div>
@@ -390,8 +390,8 @@ export default function LocationsAdminPage() {
                     </div>
                     {!parseGallery(galleryText).length ? <p className={styles.mediaHint}>Фотографій ще немає. Додайте їх із комп’ютера або телефона.</p> : null}
                     <details className={styles.mediaDetails}>
-                      <summary>Редагувати посилання та підписи</summary>
-                      <label>Один рядок: шлях | опис | підпис<textarea value={galleryText} disabled={uploading || saving} onChange={event => setGalleryText(event.target.value)} /></label>
+                      <summary>Редагувати посилання та описи для доступності</summary>
+                      <label>Один рядок: шлях | опис для доступності<textarea value={galleryText} disabled={uploading || saving} onChange={event => setGalleryText(event.target.value)} /></label>
                     </details>
                   </div>
                   <label className={styles.wideField}>Посилання на відео<input value={draft.videoUrl ?? ""} onChange={(event) => update("videoUrl", event.target.value)} placeholder="https://…" /></label>

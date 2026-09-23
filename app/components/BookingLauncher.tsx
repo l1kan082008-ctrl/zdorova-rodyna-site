@@ -2,6 +2,7 @@
 import { CloseIcon } from "./CloseIcon";
 import { useSiteSettings } from "./SiteSettingsProvider";
 import { sitePhoneHref } from "@/lib/siteSettings";
+import { trackBookingSuccess } from "@/lib/bookingAnalytics";
 
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -181,7 +182,9 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
         body: JSON.stringify({ name: data.get("name"), phone: `+38${phoneDigits}`, service, doctor, comment, website: data.get("website"), source: "contacts", consent: data.get("consent") === "on", consentVersion: "contacts-v1", turnstileToken: token }),
       });
       const payload = await response.json() as { reference?: string; error?: string };
-      if (!response.ok || !payload.reference) throw new Error(payload.error || "Не вдалося надіслати заявку. Спробуйте ще раз.");
+      if (!response.ok || typeof payload.reference !== "string" || !payload.reference.trim()) throw new Error(payload.error || "Не вдалося надіслати заявку. Спробуйте ще раз.");
+      // Honeypot submissions get a decoy success response without being saved.
+      if (!String(data.get("website") || "").trim()) trackBookingSuccess(payload.reference, "appointment");
       setReference(payload.reference);
       if (studies) {
         clearPriceCalculatorSelection();

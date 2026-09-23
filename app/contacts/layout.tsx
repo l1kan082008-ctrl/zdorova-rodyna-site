@@ -11,5 +11,8 @@ export default function ContactsLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return children;
+  return <>
+    <link rel="preconnect" href="https://www.google.com" />
+    {children}
+  </>;
 }

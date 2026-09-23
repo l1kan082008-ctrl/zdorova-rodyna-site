@@ -121,6 +121,7 @@ export function BookingStudySelect({ id, label, value, options, helpValue, loadi
           autoComplete="off" placeholder="Знайти дослідження" value={query}
           onChange={event => { setQuery(event.target.value); setActiveIndex(0); }} onKeyDown={navigate} />
       </div>
+      {loading && <p className={styles.status} role="status">Завантажуємо дослідження…</p>}
       <ul ref={listRef} id={listId} role="listbox" tabIndex={-1} aria-label={"Дослідження " + helpValue} aria-busy={loading} className={styles.list}>
         {matches.map((item, index) => <li key={item} id={id + "-option-" + index} role="option"
           aria-selected={item === value} className={styles.option} data-active={index === active}
@@ -129,9 +130,8 @@ export function BookingStudySelect({ id, label, value, options, helpValue, loadi
           {item === value && <svg aria-hidden="true" viewBox="0 0 16 16"><path d="m3 8 3 3 7-7" /></svg>}
         </li>)}
       </ul>
-      {matches.length === 0 && <p className={styles.empty} role="status">Досліджень за цим запитом не знайдено.</p>}
+      {!loading && matches.length === 0 && <p className={styles.empty} role="status">Досліджень за цим запитом не знайдено.</p>}
     </div>}
     {!expanded && value !== helpValue && <span className="quick-booking__service-detail">{value}</span>}
-    {loading && <span className={styles.status} role="status">Завантажуємо дослідження…</span>}
   </div>;
 }

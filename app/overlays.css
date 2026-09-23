@@ -247,7 +247,6 @@ body.home-search-open #top > :not(.home-search-shell) {
 .contacts-page--compact .contacts-intro p,
 .contacts-page--compact .contacts-intro__email,
 .contacts-page--compact .contacts-booking-invite p,
-.branch-modal .branch-photo-caption,
 .branch-modal .branch-modal-hours span { color: #536b70; }
 .contacts-page--compact .contacts-booking-invite,
 .contacts-page--compact .branch-full-hours div,
@@ -275,14 +274,11 @@ body.home-search-open #top > :not(.home-search-shell) {
 .branch-modal .branch-modal-header span,
 .branch-modal .branch-modal-header h2,
 .branch-modal .branch-map-landmark,
-.branch-modal .branch-photo-caption,
 .branch-modal .branch-modal-hours strong,
 .branch-modal .branch-modal-hours span { color: var(--ink); }
 .branch-modal .branch-media-viewer,
 .branch-modal .branch-main-photo,
-.branch-modal .branch-modal-hours,
-.branch-modal .branch-modal-close { background: var(--surface-neutral); }
-.branch-modal .branch-modal-close { color: var(--ink); border-color: #e0e3e6; }
+.branch-modal .branch-modal-hours { background: var(--surface-neutral); }
 .branch-modal .branch-modal-info { background: #fff; }
 .branch-modal .branch-thumbnail-list button { background: var(--surface-neutral); border-color: #e0e3e6; }
 .branch-modal .branch-thumbnail-list button.is-active { border-color: #087f82; }
@@ -307,7 +303,6 @@ body :is(.page-hero h1, .contacts-intro h1) {
 
 /* Contact directory audit: readable details and balanced short lists. */
 .contacts-page--compact .branch-navigation-copy small { font-size: 14px; line-height: 1.5; }
-.branch-modal .branch-photo-caption,
 .branch-modal .branch-modal-hours span { font-size: 13px; line-height: 1.5; }
 .branch-modal .branch-modal-hours strong { font-size: 14px; }
 .contacts-page--compact .branch-city-nav button span { color: #536b70; }
@@ -1355,6 +1350,90 @@ body .branch-modal :is(.branch-media-viewer, .branch-modal-info) { padding: var(
 @media (max-width: 760px) {
   :root { --dialog-radius: 24px; --dialog-padding: 24px 20px; }
   body .branch-modal-header { padding-right: 60px; }
+}
+
+/* Media share the available viewport with the header and thumbnail strip. */
+body .branch-modal--gallery {
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  max-height: calc(100dvh - 48px);
+  overflow: hidden;
+}
+body .branch-modal--gallery .branch-modal-header {
+  flex: 0 0 auto;
+  padding: 16px 76px 16px 24px;
+}
+body .branch-modal--gallery .branch-modal-header h2 {
+  font-size: clamp(18px, 2vw, 24px);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+body .branch-modal--gallery .branch-modal-tabs {
+  flex: 0 0 auto;
+  padding: 8px 24px;
+}
+body .branch-modal--gallery .branch-modal-body--gallery {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+body .branch-modal--gallery .branch-media-viewer {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  gap: 12px;
+  padding: 0 16px 16px;
+  background: #fff;
+}
+body .branch-modal--gallery .branch-main-photo {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 4 / 3;
+  background: #fff;
+}
+body .branch-modal--gallery .branch-main-photo > img {
+  max-height: none;
+  object-fit: contain;
+}
+body .branch-modal--gallery .branch-thumbnail-list {
+  flex: 0 0 auto;
+  margin-top: 0;
+  padding: 2px 2px 6px;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+body .branch-modal--gallery .branch-photo-controls button {
+  width: 44px;
+  height: 44px;
+}
+body .branch-modal--gallery .branch-location-video {
+  flex: 1 1 0;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+}
+@media (max-width: 1080px) {
+  body .branch-modal--gallery {
+    max-height: calc(100dvh - max(16px, env(safe-area-inset-top, 0px)) - max(16px, env(safe-area-inset-bottom, 0px)));
+  }
+}
+@media (max-width: 760px) {
+  body .branch-modal--gallery .branch-modal-header { padding: 12px 60px 12px 16px; }
+  body .branch-modal--gallery .branch-media-viewer { gap: 8px; padding: 0 12px 12px; }
+  body .branch-modal--gallery .branch-modal-tabs { padding: 6px 16px; }
+  body .branch-modal--gallery .branch-thumbnail-list > button { flex-basis: 68px; height: 50px; }
+  body .branch-modal--gallery .branch-photo-controls { right: 8px; bottom: 8px; }
+}
+@media (max-height: 500px) {
+  body .branch-modal--gallery .branch-modal-header { min-height: 60px; padding-block: 8px; }
+  body .branch-modal--gallery .branch-modal-close { top: 8px; }
+  body .branch-modal--gallery .branch-modal-header span { display: none; }
+  body .branch-modal--gallery .branch-modal-header h2 { margin: 0; font-size: 18px; }
+  body .branch-modal--gallery .branch-media-viewer { gap: 6px; padding-bottom: 8px; }
+  body .branch-modal--gallery .branch-thumbnail-list > button { flex-basis: 64px; height: 44px; }
 }
 
 /* Shared input geometry and focus treatment in booking and callback dialogs. */

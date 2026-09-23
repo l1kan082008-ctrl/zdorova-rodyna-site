@@ -142,7 +142,7 @@ function rowToLocation(row: LocationRow): CenterLocation {
     phone: row.phone,
     services: parseJson<BranchServiceId[]>(row.services_json, []),
     coordinates: { lat: Number(row.latitude), lng: Number(row.longitude) },
-    gallery: parseJson<CenterLocation["gallery"]>(row.gallery_json, []),
+    gallery: parseJson<CenterLocation["gallery"]>(row.gallery_json, []).map(({ src, alt }) => ({ src, alt })),
     videoUrl: row.video_url ?? undefined,
   };
 }
@@ -175,7 +175,6 @@ function normalizeLocation(payload: Partial<CenterLocation>, existing?: CenterLo
     .map((item) => ({
       src: normalizeMediaUrl(item.src, "Фото відділення"),
       alt: String(item.alt ?? "").trim(),
-      caption: String(item.caption ?? "").trim(),
     }));
 
   const rawVideoUrl = String(payload.videoUrl ?? existing?.videoUrl ?? "").trim();

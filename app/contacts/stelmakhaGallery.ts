@@ -1,5 +1,5 @@
 // Photos published by the centre owner on Google Maps, imported 2026-09-11.
-const captions = [
+const photoDescriptions = [
   "Фасад і головний вхід медичного центру",
   "Кабінети відділення",
   "Кабінет комп’ютерної томографії",
@@ -28,8 +28,7 @@ const captions = [
   "Зона підготовки до МРТ",
 ];
 
-export const stelmakhaGallery = captions.map((caption, index) => ({
+export const stelmakhaGallery = photoDescriptions.map((description, index) => ({
   src: `/locations/stelmakha-owner/${index + 1}.webp`,
-  alt: `${caption} — «Здорова Родина», Рівне, Стельмаха, 18-М`,
-  caption,
+  alt: `${description} — «Здорова Родина», Рівне, Стельмаха, 18-М`,
 }));

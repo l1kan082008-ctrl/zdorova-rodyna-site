@@ -56,6 +56,7 @@ function harness(responseOverride, options = {}) {
   const stored = [], notifications = [], events = [], requests = [], resourceRequests = [];
   const storage = new Map();
   const window = {
+    dataLayer: options.dataLayer ?? [],
     location: new URL(options.url ?? "http://test.local/contacts?services=КТ&total=4100#booking"),
     history: { state: null, replaceState: (_state, _title, url) => { window.location = new URL(url, window.location); } },
     localStorage: { getItem: k => storage.get(k) ?? null, setItem: (k, v) => storage.set(k, v), removeItem: k => storage.delete(k) },
@@ -121,6 +122,7 @@ function harness(responseOverride, options = {}) {
     "react-dom": { createPortal: child => child },
     "./SiteSettingsProvider": { useSiteSettings: () => siteSettings.defaultSiteSettings },
     "@/lib/siteSettings": siteSettings,
+    "@/lib/bookingAnalytics": load("../lib/bookingAnalytics.ts", {}, { window }),
     "./useModalDialog": { useModalDialog: () => {} },
     "./BookingStudySelect": { BookingStudySelect: BookingStudySelectBoundary },
     "@/lib/imagingBooking": load("../lib/imagingBooking.ts"),
@@ -136,8 +138,8 @@ function harness(responseOverride, options = {}) {
     while (pendingEffects.length) pendingEffects.shift()();
     return tree;
   };
-  nodes(render()).find(n => n.props?.name === "phone").props.onChange({ target: { value: "0671234567" } });
-  const event = { preventDefault() {}, currentTarget: { name: "ІЗОЛЬОВАНИЙ ТЕСТ", consent: "on", website: "", comment: "Не реальна заявка" } };
+  nodes(render()).find(n => n.props?.name === "phone").props.onChange({ target: { value: options.phone ?? "0671234567" } });
+  const event = { preventDefault() {}, currentTarget: { name: "ІЗОЛЬОВАНИЙ ТЕСТ", consent: options.consent ?? "on", website: options.website ?? "", comment: "Не реальна заявка", querySelector: () => ({ focus() {} }) } };
   const submit = () => nodes(render()).find(n => n.type === "form").props.onSubmit(event);
   const flush = async () => { await new Promise(resolve => setImmediate(resolve)); return render(); };
   const dispose = () => effectSlots.forEach(effect => effect?.cleanup?.());
@@ -149,12 +151,14 @@ test("successful booking confirms, clears cart and CITO, and blocks a rapid dupl
   const pending = h.submit();
   await h.submit();
   assert.equal(h.requests.length, 1);
+  assert.deepEqual(h.window.dataLayer, [], "no success event before API confirmation");
   assert.equal(nodes(h.render()).find(n => n.props?.type === "submit").props.disabled, true);
   assert.deepEqual(h.selection.readPriceCalculatorSelection(), ["test-ct"]);
   h.release();
   await pending;
   assert.equal(h.stored.length, 1);
   assert.equal(h.notifications.length, 1);
+  assert.deepEqual(h.window.dataLayer, [{ event: "booking_success", form_type: "appointment" }]);
   assert.match(h.stored[0].comment, /Обрані дослідження: КТ/);
   assert.match(h.stored[0].comment, /4\s?100/);
   assert.deepEqual(h.selection.readPriceCalculatorSelection(), []);
@@ -172,6 +176,9 @@ test("successful booking confirms, clears cart and CITO, and blocks a rapid dupl
 for (const [name, response] of [
   ["server rejection", () => Response.json({ error: "Тестова помилка" }, { status: 500 })],
   ["missing confirmation", () => Response.json({})],
+  ["empty confirmation", () => Response.json({ reference: " " })],
+  ["malformed confirmation", () => Response.json({ reference: 123 })],
+  ["non-JSON response", () => new Response("unavailable")],
   ["network failure", () => { throw new Error("Test network failure"); }],
 ]) {
   test(`${name} preserves selection, shows an error and permits retry`, async () => {
@@ -186,8 +193,45 @@ for (const [name, response] of [
     await h.submit();
     assert.equal(h.requests.length, 2);
     assert.equal(h.stored.length, 0);
+    assert.deepEqual(h.window.dataLayer, []);
   });
 }
+
+for (const phone of ["", "067", "067123456", "0000000000"]) {
+  test(`invalid phone ${JSON.stringify(phone)} neither submits nor reports a booking`, async () => {
+    const h = harness(undefined, { phone });
+    await h.submit();
+    assert.equal(h.requests.length, 0);
+    assert.deepEqual(h.window.dataLayer, []);
+    assert.ok(nodes(h.render()).some(n => n.props?.role === "alert"));
+  });
+}
+
+test("honeypot decoy confirmation never becomes an analytics conversion", async () => {
+  const h = harness(undefined, { website: "https://bot.invalid" });
+  const pending = h.submit(); h.release(); await pending;
+  assert.equal(h.requests.length, 1);
+  assert.equal(h.stored.length, 0);
+  assert.equal(h.notifications.length, 0);
+  assert.deepEqual(h.window.dataLayer, []);
+  assert.match(text(h.render()), /Заявку отримано/, "keep the honeypot response indistinguishable to bots");
+});
+
+test("server validation failure does not report a booking", async () => {
+  const h = harness(undefined, { consent: "" });
+  const pending = h.submit(); h.release(); await pending;
+  assert.equal(h.stored.length, 0);
+  assert.deepEqual(h.window.dataLayer, []);
+  assert.ok(nodes(h.render()).some(n => n.props?.role === "alert"));
+});
+
+test("analytics failure cannot turn a saved booking into a visible failure", async () => {
+  const h = harness(undefined, { dataLayer: { push() { throw new Error("Third-party error"); } } });
+  const pending = h.submit(); h.release(); await pending;
+  assert.equal(h.stored.length, 1);
+  assert.match(text(h.render()), /Заявку отримано/);
+  assert.equal(nodes(h.render()).some(n => n.props?.role === "alert"), false);
+});
 
 
 function serviceControl(tree) {

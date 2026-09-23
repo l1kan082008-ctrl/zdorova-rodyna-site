@@ -5,6 +5,7 @@ import { CloseIcon } from "./CloseIcon";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useSiteSettings } from "./SiteSettingsProvider";
 import { sitePhoneHref, siteViberHref } from "@/lib/siteSettings";
+import { trackBookingSuccess } from "@/lib/bookingAnalytics";
 import type { CSSProperties, FormEvent } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
@@ -176,6 +177,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const supportDialogRef = useRef<HTMLDivElement>(null);
   const supportPhoneRef = useRef<HTMLInputElement>(null);
+  const supportSubmittingRef = useRef(false);
 
   useEffect(() => {
     if (!home) return;
@@ -229,6 +231,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
 
   const submitSupportCallback = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (supportSubmittingRef.current) return;
     setSupportError("");
 
     const phoneDigits = supportPhone.replace(/\D/g, "");
@@ -238,6 +241,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
       return;
     }
 
+    supportSubmittingRef.current = true;
     setSupportSubmitting(true);
 
     try {
@@ -258,13 +262,15 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
         }),
       });
       const payload = (await response.json().catch(() => ({}))) as {
+        reference?: string;
         error?: string;
       };
 
-      if (!response.ok) {
+      if (!response.ok || typeof payload.reference !== "string" || !payload.reference.trim()) {
         throw new Error(payload.error || "Не вдалося надіслати заявку.");
       }
 
+      trackBookingSuccess(payload.reference, "callback");
       setSupportPhone("");
       setSupportSubmitted(true);
     } catch (error) {
@@ -274,6 +280,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
           : "Не вдалося надіслати заявку. Спробуйте ще раз.",
       );
     } finally {
+      supportSubmittingRef.current = false;
       setSupportSubmitting(false);
     }
   };

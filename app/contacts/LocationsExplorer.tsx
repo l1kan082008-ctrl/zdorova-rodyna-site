@@ -106,6 +106,7 @@ export function LocationsExplorer({
   const [photoIndex, setPhotoIndex] = useState(0);
   const [currentDay, setCurrentDay] = useState<number | null>(null);
   const [mobileMapOpen, setMobileMapOpen] = useState(false);
+  const [desktopMapVisible, setDesktopMapVisible] = useState(false);
   const cityNavRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLElement>(null);
   const mediaDialogRef = useRef<HTMLDivElement>(null);
@@ -132,6 +133,14 @@ export function LocationsExplorer({
   const visibleLocations = selectableLocations.filter(
     (location) => location.city === selectedLocation.city,
   );
+
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 821px)");
+    const updateVisibility = () => setDesktopMapVisible(desktop.matches);
+    updateVisibility();
+    desktop.addEventListener("change", updateVisibility);
+    return () => desktop.removeEventListener("change", updateVisibility);
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -295,7 +304,7 @@ export function LocationsExplorer({
                 key={selectedLocation.id}
                 src={getMapEmbedUrl(selectedLocation)}
                 title={`Карта: ${selectedLocation.fullAddress}`}
-                loading="lazy"
+                loading={desktopMapVisible || mobileMapOpen ? "eager" : "lazy"}
                 referrerPolicy="no-referrer-when-downgrade"
               />
             </div>
@@ -365,7 +374,7 @@ export function LocationsExplorer({
         >
           <div className="mobile-overlay-dismiss" aria-hidden="true" onClick={() => setOpenLocationId(null)} />
           <section
-            className="branch-modal"
+            className="branch-modal branch-modal--gallery"
             role="dialog"
             aria-modal="true"
             aria-labelledby="branch-modal-title"
@@ -423,7 +432,7 @@ export function LocationsExplorer({
                         fill
                         quality={85}
                         loading="eager"
-                        sizes="(max-width: 760px) calc(100vw - 74px), (max-width: 1080px) calc(100vw - 154px), (max-width: 1228px) calc(100vw - 170px), 1058px"
+                        sizes="(max-width: 760px) calc(100vw - 58px), (max-width: 1080px) calc(100vw - 66px), (max-width: 1228px) calc(100vw - 82px), 1146px"
                       />
                       {openLocation.gallery.length > 1 ? (
                         <div className="branch-photo-controls">
@@ -456,9 +465,6 @@ export function LocationsExplorer({
                         </div>
                       ) : null}
                     </div>
-                    <p className="branch-photo-caption">
-                      {openLocation.gallery[photoIndex].caption}
-                    </p>
                     <div className="branch-thumbnail-list">
                       {openLocation.gallery.map((photo, index) => (
                         <button

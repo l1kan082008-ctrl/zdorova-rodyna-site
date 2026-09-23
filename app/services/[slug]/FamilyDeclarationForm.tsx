@@ -5,6 +5,7 @@ import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import Link from "next/link";
 import { FormEvent, useMemo, useRef, useState } from "react";
 import { TurnstileField } from "@/app/components/TurnstileField";
+import { trackBookingSuccess } from "@/lib/bookingAnalytics";
 
 type FamilyDoctorOption = {
   id: string;
@@ -112,6 +113,7 @@ function formatBranch(branch?: string) {
 }
 
 export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
+  const submittingRef = useRef(false);
   const firstDoctorInputRef = useRef<HTMLInputElement>(null);
   const phoneInputRef = useRef<HTMLInputElement>(null);
   const birthDateInputRef = useRef<HTMLInputElement>(null);
@@ -137,6 +139,7 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submittingRef.current) return;
 
     const nextPhoneError = validatePhoneNumber(phone);
     const nextBirthDateError = validateBirthDate(birthDate);
@@ -173,6 +176,7 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
       return;
     }
 
+    submittingRef.current = true;
     setStatus({ type: "loading" });
 
     try {
@@ -203,10 +207,11 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
         error?: string;
       };
 
-      if (!response.ok) {
+      if (!response.ok || typeof result.reference !== "string" || !result.reference.trim()) {
         throw new Error(result.error || "Не вдалося надіслати заявку");
       }
 
+      trackBookingSuccess(result.reference, "family_declaration");
       setStatus({
         type: "success",
         text: `Заявку ${result.reference ? `№ ${result.reference} ` : ""}отримано. Адміністратор перевірить можливість оформлення декларації в ЕСОЗ, перелік документів і зв’яжеться з вами.`,
@@ -223,6 +228,8 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
         type: "error",
         text: error instanceof Error ? error.message : "Не вдалося надіслати заявку",
       });
+    } finally {
+      submittingRef.current = false;
     }
   }
 

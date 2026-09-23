@@ -293,12 +293,12 @@ test("smart medical search understands ZAK as a complete blood count", async () 
   }
 });
 
-test("homepage reception uses the dedicated center photo", async () => {
+test("homepage center section uses the approved building photo", async () => {
   const css = await readSource("app/globals.css");
 
   assert.match(
     css,
-    /\.reception-photo\s*\{[\s\S]*?background-image:\s*url\("\/center-reception\.webp"\)/,
+    /\.reception-photo\s*\{[\s\S]*?background-image:\s*url\("\/center-building\.webp"\)/,
   );
   assert.doesNotMatch(
     css,

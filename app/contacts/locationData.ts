@@ -29,7 +29,6 @@ export type CenterLocation = {
   gallery: {
     src: string;
     alt: string;
-    caption: string;
   }[];
   videoUrl?: string;
 };
@@ -76,7 +75,6 @@ export const centerLocations: CenterLocation[] = [
       {
         src: "/locations/chornovola-79.jpg",
         alt: "Пункт медичного центру «Здорова Родина» на вулиці Чорновола",
-        caption: "Вхід до пункту на вул. Чорновола, 79",
       },
     ],
   },
@@ -101,7 +99,6 @@ export const centerLocations: CenterLocation[] = [
       {
         src: "/locations/kulyka-hudacheka-3.jpg",
         alt: "Пункт медичного центру «Здорова Родина» на вулиці Кулика і Гудачека",
-        caption: "Орієнтир для входу до пункту, кабінет 219",
       },
     ],
   },
@@ -125,7 +122,6 @@ export const centerLocations: CenterLocation[] = [
       {
         src: "/locations/olesia-13.jpg",
         alt: "Відділення медичного центру «Здорова Родина» на вулиці Олександра Олеся",
-        caption: "Вхід до відділення на вул. Олександра Олеся, 13",
       },
     ],
   },
@@ -146,7 +142,6 @@ export const centerLocations: CenterLocation[] = [
       {
         src: "/locations/zviahel-shevchenka-41-1.jpg",
         alt: "Пункт медичного центру «Здорова Родина» у Звягелі",
-        caption: "Пункт на вул. Тараса Шевченка, 41/1 у Звягелі",
       },
     ],
   },
@@ -167,7 +162,6 @@ export const centerLocations: CenterLocation[] = [
       {
         src: "/locations/kostopil-hrushevskoho-4.jpg",
         alt: "Пункт медичного центру «Здорова Родина» у Костополі",
-        caption: "Пункт на вул. Грушевського, 4 у Костополі",
       },
     ],
   },
