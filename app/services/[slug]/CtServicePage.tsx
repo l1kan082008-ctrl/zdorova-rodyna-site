@@ -34,6 +34,11 @@ const areaDetails: Record<CtPriceGroupId, { title?: string; text: string; artwor
 };
 
 const areas = CT_PRICE_GROUPS.map((group) => ({ ...group, ...areaDetails[group.id] }));
+const ctDoctorOrder = new Map([
+  ["rohalskyi-vitalii", 0],
+  ["pysarchuk-taras", 1],
+  ["zhyber-kostiantyn", 2],
+]);
 
 const important = [
   "Для більшості досліджень без контрасту спеціальна підготовка не потрібна.",
@@ -62,7 +67,9 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
     "kostopil-hrushevskoho-4",
   ]);
   const locations = centerLocations.filter((location) => ctLocationIds.has(location.id));
-  const shownDoctors = getPublicDoctors(doctors).slice(0, 5);
+  const shownDoctors = getPublicDoctors(doctors)
+    .sort((first, second) => (ctDoctorOrder.get(first.id) ?? ctDoctorOrder.size) - (ctDoctorOrder.get(second.id) ?? ctDoctorOrder.size))
+    .slice(0, 5);
 
   return (
     <main className={styles.page}>

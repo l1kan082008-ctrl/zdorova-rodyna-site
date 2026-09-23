@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AdminNavigation from "../AdminNavigation";
+import { formatBookingDateTime } from "./bookingDateTime";
 import type {
   Booking,
   BookingStatus,
@@ -165,6 +166,7 @@ export default function BookingsAdminPage() {
           <div className="admin-booking-list">
             {filteredBookings.map((booking) => {
               const kind = getBookingKind(booking);
+              const createdAt = formatBookingDateTime(booking.createdAt);
               const showService =
                 booking.service.trim().toLocaleLowerCase("uk") !==
                 bookingKindLabels[kind].toLocaleLowerCase("uk");
@@ -173,8 +175,8 @@ export default function BookingsAdminPage() {
                 <article className="admin-booking-card" key={booking.id}>
                 <div className="admin-booking-heading">
                   <span>{booking.reference}</span>
-                  <time dateTime={booking.createdAt}>
-                    {new Date(`${booking.createdAt}Z`).toLocaleString("uk-UA")}
+                  <time dateTime={createdAt.dateTime} title="Дата й час створення заявки (за Києвом)">
+                    {createdAt.label}
                   </time>
                 </div>
                 <div className={`admin-booking-type admin-booking-type--${kind}`}>
