@@ -31,6 +31,9 @@ function nodes(node) {
 const siteSettings = load("../lib/siteSettings.ts");
 const doctorCategories = load("../app/doctors/doctorCategories.ts");
 const requestBody = load("../lib/requestBody.ts");
+const bookingRequest = load("../lib/bookingRequest.ts", {
+  "./locationPolicy": load("../lib/locationPolicy.ts"),
+});
 const familyDoctor = { id: "isolated-doctor", name: "Тестовий лікар", specialty: "Сімейна медицина" };
 
 function harness(kind, options = {}) {
@@ -91,6 +94,7 @@ function harness(kind, options = {}) {
       "./CloseIcon": {},
       "./SiteSettingsProvider": { useSiteSettings: () => siteSettings.defaultSiteSettings },
       "@/lib/siteSettings": siteSettings,
+      "@/lib/bookingRequest": bookingRequest,
       "react-dom": { createPortal: child => child },
       "../prices/calculatorSelection": {},
       "./useModalDialog": { useModalDialog() {} },
@@ -137,6 +141,60 @@ function harness(kind, options = {}) {
 }
 
 for (const kind of ["callback", "family_declaration"]) {
+  test(`${kind}: required phone pattern accepts the formatter output and rejects incomplete or zero numbers`, () => {
+    // Check the actual input contract; native capture-phase behavior is verified in a browser.
+    const cases = [["0987654321", true], ["0671234567", true], ["+380987654321", true], ["", false], ["09876", false], ["1987654321", false], ["0000000000", false]];
+    if (kind === "callback") cases.push(["00380987654321", true]);
+    for (const [phone, valid] of cases) {
+      const h = harness(kind, { phone });
+      const input = h.find(node => node.type === "input" && node.props.type === "tel").props;
+      assert.equal(input.required, true);
+      assert.equal(typeof input.pattern, "string");
+      const pattern = new RegExp(`^(?:${input.pattern})$`, "v");
+      assert.equal(Boolean(input.value) && pattern.test(input.value), valid, `formatted ${phone || "empty"} has expected validity`);
+      assert.deepEqual(h.requests, []);
+      assert.deepEqual(h.window.dataLayer, []);
+    }
+  });
+
+  test(`${kind}: first invalid event displays its existing error and correction clears stale validity`, () => {
+    const h = harness(kind, { phone: "09876" });
+    let prevented = false, focused = false, customError = "";
+    const field = {
+      setCustomValidity(value) { customError = value; },
+      focus() { focused = true; },
+    };
+    h.find(node => node.type === "input" && node.props.type === "tel").props.onInvalid({
+      preventDefault() { prevented = true; }, currentTarget: field,
+    });
+    assert.equal(h.find(node => node.type === "input" && node.props.type === "tel").props["aria-invalid"], true);
+    if (kind === "callback") {
+      assert.equal(prevented, true, "callback retains its existing inline error");
+      assert.equal(focused, true);
+      assert.equal(h.hasError(), true);
+    } else {
+      assert.equal(prevented, false, "declaration retains its existing browser validation tooltip");
+      assert.match(customError, /\+38/);
+    }
+    assert.deepEqual(h.requests, []);
+    assert.deepEqual(h.window.dataLayer, []);
+    h.find(node => node.type === "input" && node.props.type === "tel").props.onChange({
+      target: { value: "0987654321" }, currentTarget: field,
+    });
+    const corrected = h.find(node => node.type === "input" && node.props.type === "tel").props;
+    assert.equal(corrected["aria-invalid"], false);
+    assert.equal(customError, "", "correction cannot leave custom validity blocking a valid phone");
+    assert.equal(new RegExp(`^(?:${corrected.pattern})$`, "v").test(corrected.value), true);
+  });
+
+  test(`${kind}: direct handler also rejects an all-zero phone`, async () => {
+    const h = harness(kind, { phone: "0000000000" });
+    await h.submit();
+    assert.deepEqual(h.requests, []);
+    assert.deepEqual(h.window.dataLayer, []);
+    assert.equal(h.success(), false);
+  });
+
   test(`${kind}: invalid phone makes no request and emits no conversion`, async () => {
     const h = harness(kind, { phone: "06712" });
     await h.submit();

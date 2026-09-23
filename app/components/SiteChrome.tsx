@@ -6,6 +6,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { useSiteSettings } from "./SiteSettingsProvider";
 import { sitePhoneHref, siteViberHref } from "@/lib/siteSettings";
 import { trackBookingSuccess } from "@/lib/bookingAnalytics";
+import { formatBookingPhone } from "@/lib/bookingRequest";
 import type { CSSProperties, FormEvent } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
@@ -143,19 +144,6 @@ function SupportIcon() {
   );
 }
 
-function formatSupportPhone(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 10);
-
-  return [
-    digits.slice(0, 3),
-    digits.slice(3, 6),
-    digits.slice(6, 8),
-    digits.slice(8, 10),
-  ]
-    .filter(Boolean)
-    .join(" ");
-}
-
 export function SiteHeader({ active, home = false, bookingHref = "/contacts#booking" }: { active?: string; home?: boolean; bookingHref?: string }) {
   const settings = useSiteSettings();
   const [heroPassed, setHeroPassed] = useState(false);
@@ -236,7 +224,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
 
     const phoneDigits = supportPhone.replace(/\D/g, "");
 
-    if (phoneDigits.length !== 10 || !phoneDigits.startsWith("0")) {
+    if (phoneDigits.length !== 10 || !phoneDigits.startsWith("0") || /^0+$/.test(phoneDigits)) {
       setSupportError("Введіть 10 цифр номера, починаючи з 0.");
       return;
     }
@@ -684,14 +672,21 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
                         type="tel"
                         inputMode="numeric"
                         autoComplete="tel-national"
+                        required
+                        pattern="(?!000 000 00 00)0[0-9]{2} [0-9]{3} [0-9]{2} [0-9]{2}"
                         aria-label="Ваш номер телефону"
                         placeholder="(___) ___-__-__"
                         value={supportPhone}
                         aria-invalid={Boolean(supportError)}
                         aria-describedby={supportError ? "support-phone-error" : undefined}
                         onChange={(event) => {
-                          setSupportPhone(formatSupportPhone(event.target.value));
+                          setSupportPhone(formatBookingPhone(event.target.value));
                           if (supportError) setSupportError("");
+                        }}
+                        onInvalid={(event) => {
+                          event.preventDefault();
+                          setSupportError("Введіть 10 цифр номера, починаючи з 0.");
+                          event.currentTarget.focus();
                         }}
                       />
                     </div>

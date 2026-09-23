@@ -57,7 +57,7 @@ function formatPhoneNumber(value: string) {
 
 function validatePhoneNumber(value: string) {
   const digits = getUkrainianPhoneDigits(value);
-  if (/^0\d{9}$/.test(digits)) return "";
+  if (/^0\d{9}$/.test(digits) && !/^0+$/.test(digits)) return "";
   return "Будь ласка, вкажіть номер у форматі +38 0XX XXX-XX-XX.";
 }
 
@@ -429,12 +429,14 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
                 }}
                 onInvalid={(event) => {
                   const error = validatePhoneNumber(phone);
+                  setPhoneError(error);
                   event.currentTarget.setCustomValidity(error);
                 }}
                 autoComplete="tel"
                 inputMode="tel"
                 maxLength={17}
                 required
+                pattern={"\\+38 (?!000 000-00-00)0[0-9]{2} [0-9]{3}-[0-9]{2}-[0-9]{2}"}
                 aria-invalid={Boolean(phoneError)}
               />
             </label>

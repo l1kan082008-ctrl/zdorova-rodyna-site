@@ -146,6 +146,22 @@ function harness(responseOverride, options = {}) {
   return { render, submit, release, releasePrices, flush, dispose, selection, events, stored, notifications, requests, resourceRequests, window, isClosed: () => closed };
 }
 
+test("booking phone is invalid before the browser can dispatch submit", context => {
+  for (const [phone, expectedValid] of [
+    ["", false], ["09877", false], ["098765432", false],
+    ["1987654321", false], ["0000000000", false],
+    ["0987654321", true], ["+380987654321", true],
+  ]) {
+    const h = harness(undefined, { phone });
+    context.after(h.dispose);
+    const input = nodes(h.render()).find(node => node.props?.id === "quick-phone").props;
+    assert.equal(input.required, true);
+    assert.ok(input.pattern, "tel inputs need a native constraint, not only an onSubmit guard");
+    const valid = Boolean(input.value) && new RegExp(`^(?:${input.pattern})$`, "v").test(input.value);
+    assert.equal(valid, expectedValid, `browser constraint for ${phone || "empty phone"}`);
+  }
+});
+
 test("successful booking confirms, clears cart and CITO, and blocks a rapid duplicate submit", async () => {
   const h = harness();
   const pending = h.submit();

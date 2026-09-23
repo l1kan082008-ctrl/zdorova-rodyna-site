@@ -225,7 +225,15 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
           </div>}
           <div className="quick-booking__fields">
             <label htmlFor="quick-name">Ваше ім’я<input id="quick-name" name="name" autoComplete="name" minLength={2} maxLength={100} placeholder="Ім’я" required /></label>
-            <label htmlFor="quick-phone">Номер телефону<span className="quick-booking__phone"><span aria-hidden="true">+38</span><input id="quick-phone" name="phone" type="tel" inputMode="tel" autoComplete="tel-national" value={phone} onChange={(event) => setPhone(formatBookingPhone(event.target.value))} placeholder="(___) ___-__-__" title="Введіть 10 цифр українського номера, починаючи з 0" required /></span></label>
+            <label htmlFor="quick-phone">Номер телефону<span className="quick-booking__phone"><span aria-hidden="true">+38</span><input id="quick-phone" name="phone" type="tel" inputMode="tel" autoComplete="tel-national" value={phone} onChange={(event) => setPhone(formatBookingPhone(event.target.value))}
+              pattern="(?!000 000 00 00)0[0-9]{2} [0-9]{3} [0-9]{2} [0-9]{2}"
+              onInvalid={(event) => {
+                // Native constraints run before submit listeners, including analytics.
+                event.preventDefault();
+                setError("Перевірте номер телефону: вкажіть повний номер.");
+                event.currentTarget.focus();
+              }}
+              placeholder="(___) ___-__-__" title="Введіть 10 цифр українського номера, починаючи з 0" required /></span></label>
           </div>
           {!doctor && !studies && imagingCategory && <>
             <BookingStudySelect id="quick-service" label="Послуга" value={service} options={studyOptions}
