@@ -124,7 +124,9 @@ export default function AdminShell({ children }: { children: ReactNode }) {
             })}
           </nav>
           <div className={styles.sidebarFooter}>
-            <Link className="admin-ui-button" data-variant="secondary" href="/" onClick={() => setMenuPath(null)}><NavigationIcon name="external" />На сайт</Link>
+            {/* Reload the document when leaving the admin's analytics-free layout and CSP. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+            <a className="admin-ui-button" data-variant="secondary" href="/"><NavigationIcon name="external" />На сайт</a>
             <button className="admin-ui-button" data-variant="ghost" onClick={logout} type="button"><NavigationIcon name="logout" />Вийти</button>
           </div>
         </aside>

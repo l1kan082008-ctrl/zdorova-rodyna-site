@@ -76,10 +76,44 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = await getSiteSettings();
+  const [settings, requestHeaders] = await Promise.all([getSiteSettings(), headers()]);
+  const analyticsEnabled = requestHeaders.get("x-public-analytics") === "1";
+
   return (
     <html lang="uk">
-      <body><SiteSettingsProvider settings={settings}>{children}<Suspense fallback={null}><BookingLauncher /><GlobalCalculator /></Suspense></SiteSettingsProvider></body>
+      <head>
+        {analyticsEnabled && (
+          // Keep the supplied bootstrap in the initial head, before hydration.
+          // eslint-disable-next-line @next/next/next-script-for-ga
+          <script
+            id="google-tag-manager"
+            dangerouslySetInnerHTML={{
+              __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KB6VQTKM');`,
+            }}
+          />
+        )}
+      </head>
+      <body>
+        {analyticsEnabled && (
+          <noscript>
+            <iframe
+              src="https://www.googletagmanager.com/ns.html?id=GTM-KB6VQTKM"
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+              title="Google Tag Manager"
+            />
+          </noscript>
+        )}
+        <SiteSettingsProvider settings={settings}>
+          {children}
+          <Suspense fallback={null}><BookingLauncher /><GlobalCalculator /></Suspense>
+        </SiteSettingsProvider>
+      </body>
     </html>
   );
 }

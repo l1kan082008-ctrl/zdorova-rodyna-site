@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import styles from "./login.module.css";
@@ -66,7 +65,9 @@ export default function LoginForm() {
             {pending ? "Перевіряємо…" : "Увійти"}
           </button>
         </form>
-        <Link className={`${styles.back} admin-ui-button`} data-variant="ghost" href="/">← Повернутися на сайт</Link>
+        {/* Reload the document when leaving the admin's analytics-free layout and CSP. */}
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <a className={`${styles.back} admin-ui-button`} data-variant="ghost" href="/">← Повернутися на сайт</a>
       </section>
     </main>
   );
