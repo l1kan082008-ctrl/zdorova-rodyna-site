@@ -241,7 +241,6 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
             <optgroup label="Послуги центру">{services.map((item) => <option key={item}>{item}</option>)}</optgroup>
             <optgroup label="Консультації за напрямами">{consultationServices.map((item) => <option key={item}>{item}</option>)}</optgroup>
           </select>
-          {service !== helpService && !isHomeVisit && <span className="quick-booking__service-detail">{service}</span>}
           </label>}
           {isHomeVisit ? <label htmlFor="quick-address">Адреса виїзду в Рівному
             <input id="quick-address" name="address" autoComplete="street-address" minLength={5} maxLength={200} placeholder="Вулиця, будинок, квартира" required />
@@ -249,7 +248,6 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
             {availableLocations.length !== 1 && <option value="">{locationsLoading ? "Завантажуємо відділення…" : locationStatus || (category === null && service !== helpService) ? "Адміністратор допоможе обрати" : "Допоможіть обрати"}</option>}
             {availableLocations.map((location) => <option key={location.id} value={location.id}>{location.city} · {location.name}</option>)}
           </select>
-          {!locationsLoading && (selectedLocation || availableLocations.length === 0) && <span className="quick-booking__service-detail quick-booking__location-detail">{selectedLocation?.fullAddress || "Адміністратор допоможе обрати відділення."}</span>}
           </label>}
           <details className="quick-booking__comment"><summary>Додати коментар <span>необов’язково</span></summary><label>Ваш коментар<textarea name="comment" maxLength={700} rows={3} placeholder="Наприклад, коли вам зручно зателефонувати" /></label></details>
           <label className="quick-booking__consent"><input type="checkbox" name="consent" required /><span>Погоджуюся на обробку контактних даних для організації запису.</span></label>

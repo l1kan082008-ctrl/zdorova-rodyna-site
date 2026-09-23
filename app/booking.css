@@ -84,7 +84,6 @@ html.quick-booking-open, html.quick-booking-open body { overflow: hidden !import
   white-space: normal;
   overflow-wrap: anywhere;
 }
-.quick-booking .quick-booking__location-detail { display: block; }
 @media (max-width: 720px) {
   .quick-booking .quick-booking__service-detail { display: block; }
 }

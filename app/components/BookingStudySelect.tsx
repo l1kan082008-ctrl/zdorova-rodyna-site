@@ -132,6 +132,5 @@ export function BookingStudySelect({ id, label, value, options, helpValue, loadi
       </ul>
       {!loading && matches.length === 0 && <p className={styles.empty} role="status">Досліджень за цим запитом не знайдено.</p>}
     </div>}
-    {!expanded && value !== helpValue && <span className="quick-booking__service-detail">{value}</span>}
   </div>;
 }
