@@ -14,6 +14,7 @@ import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import { centerLocations, type CenterLocation } from "../../contacts/locationData";
 import { isInformationOnlyLocation } from "@/lib/locationPolicy";
 import DoctorSpecialtyPicker from "./DoctorSpecialtyPicker";
+import DoctorBranchPicker from "./DoctorBranchPicker";
 import { doctorProfileDraft, getSpecialtyOptions, upgradeLegacyDoctorDraft, type DoctorProfileDraft } from "./doctorFormState";
 import styles from "./doctors.module.css";
 import AdminNavigation from "../AdminNavigation";
@@ -45,21 +46,6 @@ function formatSaveTime(timestamp: number) {
 }
 
 type BranchChoices = { locations: CenterLocation[]; loading: boolean; error: string };
-
-function BranchSelect({ value, onChange, branches }: { value: string; onChange: (value: string) => void; branches: BranchChoices }) {
-  const addresses = [...new Set(branches.locations.map((location) => location.fullAddress).filter(Boolean))];
-  return (
-    <label>
-      Відділення
-      <select value={value} onChange={(event) => onChange(event.target.value)} disabled={branches.loading} aria-busy={branches.loading}>
-        <option value="">Не вказано</option>
-        {value && !addresses.includes(value) && <option value={value}>{value} — поточне значення</option>}
-        {addresses.map((address) => <option key={address} value={address}>{address}</option>)}
-      </select>
-      {branches.loading ? <small>Завантажуємо відділення…</small> : branches.error ? <small>{branches.error}</small> : null}
-    </label>
-  );
-}
 
 function DoctorAvatar({ doctor, sizes }: { doctor: Pick<Doctor, "photoUrl" | "name">; sizes: string }) {
   const [failedSource, setFailedSource] = useState("");
@@ -187,7 +173,7 @@ function CreateDoctorForm({ specialtyOptions, branches, onCreated, onCancel, onR
               <input autoFocus value={draft.name} onChange={(event) => update("name", event.target.value)} required pattern=".*\S.*" autoComplete="name" placeholder="Наприклад, Іваненко Олена Петрівна" />
             </label>
             <DoctorSpecialtyPicker value={draft.specialty} options={specialtyOptions} onChange={(value) => update("specialty", value)} disabled={creating} />
-            <BranchSelect value={draft.branch} onChange={(value) => update("branch", value)} branches={branches} />
+            <DoctorBranchPicker value={draft.branch} onChange={(value) => update("branch", value)} addresses={branches.locations.map((location) => location.fullAddress)} loading={branches.loading} error={branches.error} disabled={creating} />
             <label>
               Первинна консультація, ₴
               <input type="number" min="0" max="100000" step="1" value={draft.consultationPrice} onChange={(event) => update("consultationPrice", event.target.value)} placeholder="Не вказано" />
@@ -557,7 +543,7 @@ function DoctorEditor({
             Стаж роботи, років
             <input type="number" min="0" max="80" step="1" value={experienceYears} onChange={(event) => setExperienceYears(event.target.value)} placeholder="Не вказано" />
           </label>
-          <BranchSelect value={branch} onChange={setBranch} branches={branches} />
+          <DoctorBranchPicker value={branch} onChange={setBranch} addresses={branches.locations.map((location) => location.fullAddress)} loading={branches.loading} error={branches.error} disabled={saving} />
           <label>
             Первинна консультація, ₴
             <input type="number" min="0" max="100000" step="1" value={consultationPrice} onChange={(event) => setConsultationPrice(event.target.value)} placeholder="Не вказано" />

@@ -47,6 +47,14 @@ const surfaces = [
   ['profile', doctor => renderToStaticMarkup(React.createElement(DoctorProfileDetails, { doctor }))],
 ];
 for (const [name, render] of surfaces) {
+  test(name + ': all doctor branches are visible with a stable doctor booking ID', () => {
+    const first = 'м. Рівне, вул. Володимира Стельмаха, 18-М';
+    const second = 'м. Рівне, вул. Олександра Олеся, 13';
+    const html = render({ ...baseline, branch: `${first}\n${second}` });
+    assert.ok(html.includes(`class="doctor-branch-addresses">${first}\n${second}<`));
+    assert.ok(html.includes(`doctorId=${encodeURIComponent(baseline.id)}`));
+    assert.ok(!html.includes('Відділення уточнюйте'));
+  });
   test(name + ': missing prices hide the full price block and retain booking', () => {
     const doctor = { ...baseline };
     delete doctor.showConsultationPriceOnRequest;

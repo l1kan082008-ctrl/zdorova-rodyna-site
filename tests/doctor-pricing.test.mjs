@@ -214,6 +214,66 @@ test("legacy POST creates a doctor with nullable prices and no placeholder branc
   assert.equal(doctor.branch, "");
 });
 
+test("multiple doctor branches retain full addresses and order through create, reload and public/admin reads", async (context) => {
+  const { DB, route, publicRoute } = fixture(context);
+  const secondBranch = "м. Рівне, вул. Соборна, 1, кабінет 2";
+  const branches = `${branch}\n${secondBranch}`;
+  const response = await route.POST(request("POST", { ...identity, branch: branches }));
+  assert.equal(response.status, 201);
+  const { doctor, doctors } = await response.json();
+  assert.equal(doctor.branch, branches);
+  assert.equal(doctors[0].branch, branches);
+  assert.equal((await storeFor(DB).getDoctorById(doctor.id)).branch, branches);
+
+  const admin = await route.GET(new Request("http://test.invalid/api/admin/doctors"));
+  assert.equal((await admin.json()).doctors[0].branch, branches);
+  const publicList = await publicRoute.GET(new Request("http://test.invalid/api/doctors"));
+  assert.equal((await publicList.json()).doctors[0].branch, branches);
+  const publicProfile = await publicRoute.GET(new Request(`http://test.invalid/api/doctors?id=${doctor.id}`));
+  assert.equal((await publicProfile.json()).doctor.branch, branches);
+});
+
+test("doctor branch updates support legacy addresses, multiple choices, omission and clearing every choice", async (context) => {
+  const { DB, route, store } = fixture(context);
+  const original = await store.createDoctor({ ...identity, branch });
+  assert.equal((await storeFor(DB).getDoctorById(original.id)).branch, branch);
+  const branches = `${branch}\nм. Рівне, вул. Київська, 21`;
+  const changed = await route.PUT(request("PUT", { id: original.id, ...identity, branch: branches }));
+  assert.equal(changed.status, 200);
+  assert.equal((await changed.json()).doctors[0].branch, branches);
+
+  const nameOnly = await route.PUT(request("PUT", { id: original.id, ...identity, name: "Змінене ім’я" }));
+  assert.equal(nameOnly.status, 200);
+  assert.equal((await storeFor(DB).getDoctorById(original.id)).branch, branches);
+
+  const cleared = await route.PUT(request("PUT", { id: original.id, ...identity, branch: "" }));
+  assert.equal(cleared.status, 200);
+  assert.equal((await cleared.json()).doctors[0].branch, "");
+  assert.equal((await storeFor(DB, true).getDoctorById(original.id)).branch, "");
+});
+
+test("doctor branch revisions restore every selected address, including after deletion", async (context) => {
+  const { route, store, revisions, restore } = fixture(context);
+  const branches = `${branch}\nм. Рівне, вул. Соборна, 1, кабінет 2`;
+  const doctor = await store.createDoctor({ ...identity, branch: branches });
+  const response = await route.PUT(request("PUT", { id: doctor.id, ...identity, branch }));
+  assert.equal(response.status, 200);
+  assert.equal((await store.getDoctorById(doctor.id)).branch, branch);
+  const history = await revisions.listContentRevisions("doctor", doctor.id);
+  const previous = history.find((revision) => revision.changedFields.includes("branch"));
+  assert.ok(previous);
+  assert.equal((await revisions.getContentRevision("doctor", doctor.id, previous.id)).snapshot.branch, branches);
+
+  let restored = await restoreRevision(restore, doctor.id, previous.id);
+  assert.equal(restored.status, 200);
+  assert.equal((await restored.json()).restored.branch, branches);
+  await store.deleteDoctor(doctor.id);
+  restored = await restoreRevision(restore, doctor.id, previous.id);
+  assert.equal(restored.status, 200);
+  assert.equal((await restored.json()).restored.branch, branches);
+  assert.equal((await store.getDoctorById(doctor.id)).branch, branches);
+});
+
 test("PUT omission preserves both prices and other stored fields; explicit null clears and revisions retain prior prices", async (context) => {
   const { store, route, revisions } = fixture(context);
   const original = await store.createDoctor({ ...identity, branch, consultationPrice: 700, repeatConsultationPrice: 500 });

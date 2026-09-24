@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+.doctor-branch-addresses {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
 @font-face {
   font-family: "Manrope";
   font-style: normal;

@@ -6,6 +6,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
+import { doctorBookingHref, splitDoctorBranches } from "@/lib/doctorBranches";
 import "./portraits.css";
 import { CloseIcon } from "../components/CloseIcon";
 import {
@@ -272,7 +273,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
             const profileLinkLabel = doctor.biography.trim() ? "Біографія" : "Профіль";
             const returnTo = `${directoryUrl(specialty, query)}#doctor-card-${doctor.id}`;
             const profileHref = `/doctors/${doctor.id}?returnTo=${encodeURIComponent(returnTo)}`;
-            const bookingHref = `/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`;
+            const bookingHref = doctorBookingHref(doctor);
             const consultationPrices = getDoctorConsultationPrices(doctor);
             const consultationSummary = formatDoctorConsultations(doctor);
             const isFocused = focusedDoctorId === doctor.id;
@@ -368,7 +369,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
                     {canBookDoctorConsultation(doctor) && (<div><span>Приймає</span><strong>{patientGroups || "Вік уточнюйте"}</strong></div>)}
                     <div>
                       <span>Відділення</span>
-                      <strong>{formatDoctorBranch(doctor.branch)}</strong>
+                      <strong className="doctor-branch-addresses">{splitDoctorBranches(doctor.branch).map(formatDoctorBranch).join("\n") || "Відділення уточнюйте"}</strong>
                     </div>
                     {canBookDoctorConsultation(doctor) && consultationSummary && (<div>
                       <span>Консультація</span>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
+import { splitDoctorBranches } from "@/lib/doctorBranches";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { TurnstileField } from "@/app/components/TurnstileField";
@@ -104,13 +105,7 @@ function validateBirthDate(value: string) {
 }
 
 function formatBranch(branch?: string) {
-  if (!branch) return "Відділення уточнить адміністратор";
-
-  if (/стельмаха/i.test(branch)) {
-    return "Відділення: вул. Стельмаха, 18-М";
-  }
-
-  return branch.replace(/\s+18\s*м\.?$/i, ", 18-М");
+  return splitDoctorBranches(branch ?? "").join("\n") || "Відділення уточнить адміністратор";
 }
 
 export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
@@ -306,7 +301,7 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
                     <span className="family-doctor-copy">
                       <strong>{doctor.name}</strong>
                       <small>{doctor.specialty}</small>
-                      <em>{formatBranch(doctor.branch)}</em>
+                      <em className="doctor-branch-addresses">{formatBranch(doctor.branch)}</em>
                     </span>
                     <span className="family-doctor-check" aria-hidden="true">
                       {isSelected ? "✓" : ""}

@@ -2,6 +2,7 @@ import { ServiceBookingCta } from "./ServiceBookingCta";
 import "./ultrasound-locations.css";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
+import { doctorBookingHref } from "@/lib/doctorBranches";
 import { responsiveBackground } from "@/lib/responsiveBackground";
 import { centerLocations, getDirectionsUrl } from "../../contacts/locationData";
 import serviceStyles from "./CtServicePage.module.css";
@@ -1064,9 +1065,7 @@ export default async function ServiceDetailPage({
                           availableCardiologists.map((doctor) => (
                             <Link
                               key={doctor.id}
-                              href={`/contacts?service=${encodeURIComponent(
-                                option.title,
-                              )}&doctor=${encodeURIComponent(doctor.name)}#booking`}
+                              href={doctorBookingHref(doctor, option.title)}
                             >
                               <span
                                 className={`cardiology-doctor-avatar${

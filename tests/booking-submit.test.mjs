@@ -35,6 +35,10 @@ const bookingRequest = load("../lib/bookingRequest.ts", {
   "./locationPolicy": load("../lib/locationPolicy.ts"),
 });
 const siteSettings = load("../lib/siteSettings.ts");
+const doctorBookingLocations = load("../lib/doctorBookingLocations.ts", {
+  "./doctorBranches": load("../lib/doctorBranches.ts"),
+  "./locationPolicy": load("../lib/locationPolicy.ts"),
+});
 // The picker is a controlled child boundary, not a mocked native select.
 // These tests exercise the real dialog handlers using its public props.
 const BookingStudySelectBoundary = Symbol("BookingStudySelect");
@@ -83,14 +87,27 @@ function harness(responseOverride, options = {}) {
     "./bookingStore": { createBooking: async data => { stored.push(data); return "ZR-ISOLATED-TEST"; } },
     "@/lib/bookingNotification": { sendBookingNotification: async data => notifications.push(data) },
   });
-  let release, releasePrices;
+  let release, releasePrices, releaseDoctors, releaseLocations;
   const gate = new Promise(resolve => { release = resolve; });
   const pricesGate = new Promise(resolve => { releasePrices = resolve; });
+  const doctorsGate = new Promise(resolve => { releaseDoctors = resolve; });
+  const locationsGate = new Promise(resolve => { releaseLocations = resolve; });
   if (!options.deferPrices) releasePrices();
+  if (!options.deferDoctors) releaseDoctors();
+  if (!options.deferLocations) releaseLocations();
   const fetch = async (url, fetchOptions) => {
     if (url === "/api/locations") {
       resourceRequests.push(url);
-      return Response.json({ locations });
+      await locationsGate;
+      return options.locationsResponse ? options.locationsResponse() : Response.json({ locations: options.locations ?? locations });
+    }
+    if (url === "/api/doctors" || url.startsWith("/api/doctors?id=")) {
+      resourceRequests.push(url);
+      await doctorsGate;
+      if (options.doctorsResponse) return options.doctorsResponse();
+      const doctors = options.doctors ?? [];
+      const id = new URL(url, "http://test.local").searchParams.get("id");
+      return id ? Response.json({ doctor: doctors.find(doctor => doctor.id === id) ?? null }) : Response.json({ doctors });
     }
     if (url === "/api/public/prices") {
       resourceRequests.push(url);
@@ -135,6 +152,7 @@ function harness(responseOverride, options = {}) {
     "@/lib/bookingSubmission": load("../lib/bookingSubmission.ts"),
     "./useBookingConfirmation": confirmation,
     "@/lib/bookingDetails": load("../lib/bookingDetails.ts"),
+    "@/lib/doctorBookingLocations": doctorBookingLocations,
     "./useModalDialog": { useModalDialog: () => {} },
     "./BookingStudySelect": { BookingStudySelect: BookingStudySelectBoundary },
     "@/lib/imagingBooking": load("../lib/imagingBooking.ts"),
@@ -159,7 +177,7 @@ function harness(responseOverride, options = {}) {
   const nativeSubmit = () => nodes(render()).find(n => n.type === "form").props.onSubmit({ preventDefault() {} });
   const flush = async () => { await new Promise(resolve => setImmediate(resolve)); return render(); };
   const dispose = () => effectSlots.forEach(effect => effect?.cleanup?.());
-  return { render, submit, nativeSubmit, release, releasePrices, flush, dispose, selection, events, stored, notifications, requests, resourceRequests, window, eventVisibility, isClickPrevented: () => clickPrevented, isClosed: () => closed };
+  return { render, submit, nativeSubmit, release, releasePrices, releaseDoctors, releaseLocations, flush, dispose, selection, events, stored, notifications, requests, resourceRequests, window, eventVisibility, isClickPrevented: () => clickPrevented, isClosed: () => closed };
 }
 
 test("booking phone is invalid before the browser can dispatch submit", context => {
@@ -384,6 +402,173 @@ test("doctor booking preserves the doctor and consultation without fetching or s
   assert.equal(h.stored[0].doctor, "Тестовий лікар");
   assert.equal(h.stored[0].service, "Консультації лікарів");
   assert.deepEqual(h.selection.readPriceCalculatorSelection(), ["test-ct"]);
+});
+
+function locationControl(tree) {
+  return nodes(tree).find(node => node.props?.id === "quick-location");
+}
+
+test("a doctor's two assigned branches are the only choices and the chosen address reaches the saved booking", async context => {
+  const doctor = { id: "doctor-two", name: "Тестовий лікар", branch: locations.map(location => location.fullAddress).join("\n") };
+  const unrelated = { id: "unrelated", city: "Рівне", name: "Інше відділення", fullAddress: "Рівне, стороння адреса", services: ["doctors"] };
+  const h = harness(undefined, {
+    url: bookingUrl({ doctorId: doctor.id, doctor: doctor.name, location: unrelated.id }),
+    doctors: [doctor], locations: [...locations, unrelated],
+  });
+  context.after(h.dispose);
+  let tree = await h.flush();
+  assert.deepEqual(optionValues(locationControl(tree)), ["", "imaging", "doctor"]);
+  assert.equal(locationControl(tree).props.value, "", "a stale URL cannot select an unrelated branch");
+  locationControl(tree).props.onChange({ target: { value: "imaging" } });
+  tree = h.render();
+  assert.equal(locationControl(tree).props.value, "imaging", "doctor assignment permits a real branch regardless of broad service flags");
+  const pending = h.submit(); h.release(); await pending;
+  assert.match(h.stored[0].comment, /Бажане відділення:\nРівне, тестова адреса/);
+  assert.doesNotMatch(h.stored[0].comment, /стороння адреса|друга тестова адреса/);
+  assert.equal(h.stored[0].doctor, doctor.name);
+  assert.deepEqual(h.window.dataLayer, []);
+  h.render();
+  assert.deepEqual(h.window.dataLayer, [{ event: "form_submit", form_type: "appointment" }]);
+});
+
+test("doctorId uses the current doctor's name and branches even when the old link name differs", async context => {
+  const doctor = { id: "stable-id", name: "Оновлене прізвище лікаря", branch: locations[0].fullAddress };
+  const h = harness(undefined, { url: bookingUrl({ doctorId: doctor.id, doctor: "Старе прізвище", bookingCategory: "ct" }), doctors: [doctor], sourcePathname: "/services/ct" });
+  context.after(h.dispose);
+  const tree = await h.flush();
+  assert.match(text(tree), /Оновлене прізвище лікаря/);
+  assert.doesNotMatch(text(tree), /Старе прізвище/);
+  assert.deepEqual(optionValues(locationControl(tree)), ["imaging"]);
+  assert.equal(locationControl(tree).props.value, "imaging");
+  assert.equal(h.resourceRequests.includes("/api/public/prices"), false);
+  const pending = h.submit(); h.release(); await pending;
+  assert.equal(h.stored[0].doctor, doctor.name);
+});
+
+test("legacy doctor-name links resolve unique names to the same assigned branches", async context => {
+  const doctor = { id: "legacy-name", name: "Тестовий Лікар", branch: locations[0].fullAddress };
+  const h = harness(undefined, { url: bookingUrl({ doctor: "  тестовий   лікар  " }), doctors: [doctor] });
+  context.after(h.dispose);
+  const tree = await h.flush();
+  assert.deepEqual(optionValues(locationControl(tree)), ["imaging"]);
+  assert.ok(h.resourceRequests.includes("/api/doctors"));
+});
+
+for (const resource of ["Doctors", "Locations"]) {
+  test(`while ${resource.toLowerCase()} load, no unrelated branch can be selected or sent`, async context => {
+    const doctor = { id: "slow-doctor", name: "Тестовий лікар", branch: locations[0].fullAddress };
+    const h = harness(undefined, { url: bookingUrl({ doctor: doctor.name, doctorId: doctor.id, location: "doctor" }), doctors: [doctor], [`defer${resource}`]: true });
+    context.after(h.dispose);
+    const waiting = locationControl(await h.flush());
+    assert.equal(waiting.props.disabled, true);
+    assert.equal(waiting.props.value, "");
+    assert.equal(optionValues(waiting).includes("doctor"), false);
+    const pending = h.submit(); h.release(); await pending;
+    assert.match(h.stored[0].comment, /Допоможіть обрати відділення/);
+    assert.doesNotMatch(h.stored[0].comment, /друга тестова адреса/);
+    h[`release${resource}`]();
+  });
+}
+
+test("finishing a delayed doctor lookup selects only that doctor's single verified branch", async context => {
+  const doctor = { id: "slow-doctor", name: "Тестовий лікар", branch: locations[0].fullAddress };
+  const h = harness(undefined, { url: bookingUrl({ doctor: doctor.name, doctorId: doctor.id, location: "doctor" }), doctors: [doctor], deferDoctors: true });
+  context.after(h.dispose);
+  assert.deepEqual(optionValues(locationControl(await h.flush())), [""]);
+  h.releaseDoctors();
+  const loaded = locationControl(await h.flush());
+  assert.equal(loaded.props.disabled, false);
+  assert.deepEqual(optionValues(loaded), ["imaging"]);
+  assert.equal(loaded.props.value, "imaging");
+});
+
+for (const [failure, doctorsResponse] of [
+  ["server error", () => Response.json({}, { status: 503 })],
+  ["network failure", () => { throw new Error("isolated doctor failure"); }],
+  ["missing doctor", () => Response.json({}, { status: 404 })],
+  ["malformed response", () => Response.json({ doctors: [] })],
+  ["wrong doctor ID", () => Response.json({ doctor: { id: "another-id", name: "Інший лікар", branch: locations[1].fullAddress } })],
+  ["inactive doctor", () => Response.json({ doctor: { id: "requested", name: "Тестовий лікар", branch: locations[1].fullAddress, isActive: false } })],
+]) {
+  test(`doctor lookup ${failure} offers administrator help without unrelated branch choices`, async context => {
+    const h = harness(undefined, { url: bookingUrl({ doctor: "Тестовий лікар", doctorId: "requested", location: "doctor" }), doctorsResponse });
+    context.after(h.dispose);
+    const selector = locationControl(await h.flush());
+    assert.deepEqual(optionValues(selector), [""]);
+    assert.match(text(selector), /Адміністратор допоможе обрати/);
+    const pending = h.submit(); h.release(); await pending;
+    assert.match(h.stored[0].comment, /Допоможіть обрати відділення/);
+    assert.doesNotMatch(h.stored[0].comment, /тестова адреса/);
+  });
+}
+
+test("unassigned doctors and unknown legacy names keep consultation choices without falsely preselecting one", async context => {
+  for (const doctors of [[], [{ id: "unassigned", name: "Тестовий лікар", branch: "" }]]) {
+    const h = harness(undefined, { url: bookingUrl({ doctor: "Тестовий лікар" }), doctors });
+    context.after(h.dispose);
+    const selector = locationControl(await h.flush());
+    assert.deepEqual(optionValues(selector), ["", "doctor"]);
+    assert.equal(selector.props.value, "");
+    const pending = h.submit(); h.release(); await pending;
+    assert.match(h.stored[0].comment, /Допоможіть обрати відділення/);
+  }
+});
+
+test("an unmatched saved doctor address remains verbatim, requires an explicit choice, and is never guessed", async context => {
+  const address = "м. Рівне, вул. Давня, 99, каб. 4";
+  const doctor = { id: "legacy-address", name: "Тестовий лікар", branch: address };
+  const h = harness(undefined, { url: bookingUrl({ doctorId: doctor.id, doctor: doctor.name }), doctors: [doctor] });
+  context.after(h.dispose);
+  const selector = locationControl(await h.flush());
+  assert.deepEqual(optionValues(selector), ["", `doctor-address:${address}`]);
+  assert.match(text(selector), /вул\. Давня, 99, каб\. 4 · уточнити адресу/);
+  assert.equal(selector.props.value, "");
+  selector.props.onChange({ target: { value: `doctor-address:${address}` } });
+  const pending = h.submit(); h.release(); await pending;
+  assert.ok(h.stored[0].comment.includes(`Бажане відділення:\n${address}.`));
+});
+
+test("known information-only branches stay excluded instead of becoming unknown-address options", async context => {
+  const informationOnly = { ...locations[1], id: "brody-zaliznychna-37b", city: "Броди", fullAddress: "м. Броди, вул. Залізнична, 37-Б" };
+  const doctor = { id: "info-doctor", name: "Тестовий лікар", branch: `${informationOnly.fullAddress}\n${locations[0].fullAddress}` };
+  const h = harness(undefined, { url: bookingUrl({ doctorId: doctor.id, doctor: doctor.name }), doctors: [doctor], locations: [...locations, informationOnly] });
+  context.after(h.dispose);
+  assert.deepEqual(optionValues(locationControl(await h.flush())), ["imaging"]);
+});
+
+test("information-only town addresses remain excluded when the public API intentionally omits that branch", () => {
+  assert.deepEqual(doctorBookingLocations.assignedDoctorBookingLocations("м. Броди, вул. Залізнична, 37-Б", locations), []);
+});
+
+test("an explicit historical Стельмаха address resolves only to its known, unique current branch", () => {
+  const location = { ...locations[1], id: "stelmakha-18m", city: "Рівне", address: "вул. Володимира Стельмаха, 18-М", fullAddress: "м. Рівне, вул. Володимира Стельмаха (Курчатова), 18-М" };
+  for (const address of ["вул. Стельмаха, 18-М", "м. Рівне, вул. Стельмаха, 18-М", location.address, location.fullAddress]) {
+    const resolved = doctorBookingLocations.assignedDoctorBookingLocations(address, [...locations, location]);
+    assert.equal(resolved.length, 1);
+    assert.equal(resolved[0].id, location.id);
+    assert.equal(resolved[0].fullAddress, location.fullAddress);
+    assert.equal(resolved[0].requiresConfirmation, false);
+  }
+  const foreignBranch = { ...location, id: "other-town", city: "Костопіль" };
+  const unresolved = doctorBookingLocations.assignedDoctorBookingLocations("вул. Стельмаха, 18-М", [foreignBranch]);
+  assert.equal(unresolved[0].fullAddress, "вул. Стельмаха, 18-М");
+  assert.equal(unresolved[0].requiresConfirmation, true);
+});
+
+test("two locations sharing an address cannot cause an arbitrary branch match", () => {
+  const address = "вул. Спільна, 1";
+  const ambiguous = locations.map(location => ({ ...location, address }));
+  const resolved = doctorBookingLocations.assignedDoctorBookingLocations(address, ambiguous);
+  assert.equal(resolved.length, 1);
+  assert.equal(resolved[0].fullAddress, address);
+  assert.equal(resolved[0].requiresConfirmation, true);
+});
+
+test("duplicate legacy doctor names do not combine different doctors' branches", async context => {
+  const doctors = locations.map((location, index) => ({ id: `duplicate-${index}`, name: "Тестовий лікар", branch: location.fullAddress }));
+  const h = harness(undefined, { url: bookingUrl({ doctor: "Тестовий лікар" }), doctors });
+  context.after(h.dispose);
+  assert.deepEqual(optionValues(locationControl(await h.flush())), [""]);
 });
 
 test("calculator booking retains its study bundle even when a modality context is present", async context => {

@@ -137,6 +137,8 @@ The admin shell and history portals use the scoped `admin-ui` design language: M
 
 Doctor management includes 44px list portraits with initials fallback, separate primary/repeat consultation prices, a location selector using published branch addresses, and one searchable multi-specialty picker for create/edit. Academic titles and age qualifiers are not suggested as specialties; existing profile labels remain intact. New doctors are only created after submitting the form. Safe drafts, navigation guards, Ctrl+S and revision restore remain supported. Price fields normalize to the saved server values; empty prices mean unspecified, not zero.
 
+Doctor branches use one labelled checkbox group in both create and edit, with full wrapping addresses, 44px rows, a selected count and clear action. Preserve saved legacy addresses, including when the location list fails to load. Public profiles show each assigned address on a separate line; appointment forms offer the selected doctor's assigned locations.
+
 QA: production build; browser checks at 360, 390, 768 and 1440px; create/edit/clear prices and specialty validation with isolated in-memory UI fixtures. Persistent doctor CRUD, legacy schema migration and revision restore are covered with isolated SQLite tests; PostgreSQL adapter translation is checked without a live connection. No production records, live migrations or deployment were performed.
 
 

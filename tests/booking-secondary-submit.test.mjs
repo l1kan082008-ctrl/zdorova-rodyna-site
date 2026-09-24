@@ -125,6 +125,7 @@ function harness(kind, options = {}) {
     const loaded = load("../app/services/[slug]/FamilyDeclarationForm.tsx", {
       ...dependencies,
       "@/app/components/useBookingConfirmation": confirmation,
+      "@/lib/doctorBranches": load("../lib/doctorBranches.ts"),
       "@/lib/imageSource": {},
       "@/app/components/TurnstileField": {},
     }, { window, fetch });

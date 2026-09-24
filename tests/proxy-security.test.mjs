@@ -24,6 +24,14 @@ const siteOrigin = "https://example.test";
 const analyticsUrl = "https://analytics.google.com/g/collect";
 const adsUrl = "https://www.google.com.ua/ads/ga-audiences";
 const linkedAnalyticsUrl = "https://stats.g.doubleclick.net/g/collect";
+const regionalAnalyticsUrls = [
+  "https://region1.analytics.google.com/g/collect",
+  "https://region1.analytics.google.com/measurement/conversion",
+  "https://region2.analytics.google.com/g/collect",
+];
+const polishAdsUrl = "https://www.google.pl/ads/ga-audiences";
+const analyticsTransports = [analyticsUrl, linkedAnalyticsUrl, ...regionalAnalyticsUrls];
+const adsTransports = [adsUrl, polishAdsUrl];
 
 function responseFor(path, headers = {}) {
   return proxy(new NextRequest(new URL(path, siteOrigin), { headers }));
@@ -55,16 +63,19 @@ function allowsUrl(policy, directive, value) {
   });
 }
 
-test("public page responses allow the observed GA4 and Ukrainian Ads transports", () => {
+test("public page responses allow GA4 regional collection and Ukrainian and Polish Ads transports", () => {
   for (const path of ["/", "/services/family", "/contacts"]) {
     const response = responseFor(path, { "x-public-analytics": "0" });
     const policy = readPolicy(response);
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("x-middleware-request-x-public-analytics"), "1");
-    assert.equal(allowsUrl(policy, "connect-src", analyticsUrl), true, path);
-    assert.equal(allowsUrl(policy, "img-src", adsUrl), true, path);
-    assert.equal(allowsUrl(policy, "connect-src", adsUrl), true, path);
-    assert.equal(allowsUrl(policy, "connect-src", linkedAnalyticsUrl), true, path);
+    for (const url of analyticsTransports) {
+      assert.equal(allowsUrl(policy, "connect-src", url), true, `${path} ${url}`);
+    }
+    for (const url of adsTransports) {
+      assert.equal(allowsUrl(policy, "img-src", url), true, `${path} ${url}`);
+      assert.equal(allowsUrl(policy, "connect-src", url), true, `${path} ${url}`);
+    }
   }
 });
 
@@ -77,10 +88,10 @@ test("admin, login and API responses cannot enable analytics with a spoofed head
     });
     const policy = readPolicy(response);
     assert.equal(response.headers.get("x-middleware-request-x-public-analytics"), "0", path);
-    for (const directive of ["img-src", "connect-src", "script-src", "frame-src"]) {
-      assert.equal(allowsUrl(policy, directive, analyticsUrl), false, `${path} ${directive}`);
-      assert.equal(allowsUrl(policy, directive, adsUrl), false, `${path} ${directive}`);
-      assert.equal(allowsUrl(policy, directive, linkedAnalyticsUrl), false, `${path} ${directive}`);
+    for (const directive of ["img-src", "connect-src", "script-src", "frame-src", "form-action"]) {
+      for (const url of [...analyticsTransports, ...adsTransports]) {
+        assert.equal(allowsUrl(policy, directive, url), false, `${path} ${directive} ${url}`);
+      }
       assert.equal(allowsUrl(policy, directive, "https://www.googletagmanager.com/gtm.js"), false, `${path} ${directive}`);
     }
   }
@@ -93,20 +104,23 @@ test("unauthenticated admin redirects retain the restricted CSP and no-store hea
   assert.equal(response.headers.get("location"), `${siteOrigin}/admin/login?next=%2Fadmin%2Fdoctors%3Ftab%3Dall`);
   assert.equal(response.headers.get("cache-control"), "no-store, max-age=0");
   assert.equal(response.headers.get("pragma"), "no-cache");
-  assert.equal(allowsUrl(policy, "connect-src", analyticsUrl), false);
-  assert.equal(allowsUrl(policy, "img-src", adsUrl), false);
-  assert.equal(allowsUrl(policy, "connect-src", linkedAnalyticsUrl), false);
+  for (const directive of ["img-src", "connect-src", "script-src", "frame-src", "form-action"]) {
+    for (const url of [...analyticsTransports, ...adsTransports]) {
+      assert.equal(allowsUrl(policy, directive, url), false, `${directive} ${url}`);
+    }
+  }
 });
 
 test("new transport origins do not gain script, frame or form permissions", () => {
   const policy = readPolicy(responseFor("/"));
   for (const directive of ["script-src", "frame-src", "form-action"]) {
-    assert.equal(allowsUrl(policy, directive, analyticsUrl), false, directive);
-    assert.equal(allowsUrl(policy, directive, adsUrl), false, directive);
-    assert.equal(allowsUrl(policy, directive, linkedAnalyticsUrl), false, directive);
+    for (const url of [...analyticsTransports, ...adsTransports]) {
+      assert.equal(allowsUrl(policy, directive, url), false, `${directive} ${url}`);
+    }
   }
-  assert.equal(allowsUrl(policy, "img-src", analyticsUrl), false);
-  assert.equal(allowsUrl(policy, "img-src", linkedAnalyticsUrl), false);
+  for (const url of analyticsTransports) {
+    assert.equal(allowsUrl(policy, "img-src", url), false, url);
+  }
   assert.deepEqual(policy.get("form-action"), ["'self'"]);
   assert.deepEqual(policy.get("frame-ancestors"), ["'none'"]);
   assert.deepEqual(policy.get("object-src"), ["'none'"]);
@@ -117,11 +131,19 @@ test("transport exceptions do not allow unrelated, deceptive or unexpected-port 
   const denied = [
     "https://unrelated.example/collect",
     "https://analytics.google.com.evil.test/g/collect",
+    "https://region1.analytics.google.com.evil.test/g/collect",
     "https://www.google.com.ua.evil.test/ads/ga-audiences",
+    "https://www.google.pl.evil.test/ads/ga-audiences",
     "https://stats.g.doubleclick.net.evil.test/g/collect",
     "https://other.google.com/g/collect",
     "https://other.google.com.ua/ads/ga-audiences",
+    "https://other.google.pl/ads/ga-audiences",
+    "https://google.pl/ads/ga-audiences",
+    "http://region1.analytics.google.com/g/collect",
+    "http://www.google.pl/ads/ga-audiences",
     "https://analytics.google.com:8443/g/collect",
+    "https://region1.analytics.google.com:8443/g/collect",
+    "https://www.google.pl:8443/ads/ga-audiences",
   ];
   for (const url of denied) {
     assert.equal(allowsUrl(policy, "connect-src", url), false, url);

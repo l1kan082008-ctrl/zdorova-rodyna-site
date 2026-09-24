@@ -18,6 +18,7 @@ import { doctorCategories } from "../doctors/doctorCategories";
 import { BookingStudySelect } from "./BookingStudySelect";
 import type { PriceItem } from "../prices/priceData";
 import { getImagingBookingOptions, imagingBookingLabels, resolveImagingBookingCategory } from "@/lib/imagingBooking";
+import { assignedDoctorBookingLocations, doctorNameKey, isBookingDoctor, toDoctorBookingLocation, type BookingDoctor } from "@/lib/doctorBookingLocations";
 
 const services = [
   "МРТ", "КТ", "УЗД", "Лабораторні дослідження", "Консультації лікарів",
@@ -70,12 +71,17 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
   const settings = useSiteSettings();
   const params = request.searchParams;
   const studies = params.get("services")?.trim() || "";
-  const doctor = params.get("doctor")?.trim() || "";
+  const requestedDoctor = params.get("doctor")?.trim() || "";
+  const doctorId = params.get("doctorId")?.trim() || "";
+  const isDoctorBooking = Boolean(doctorId || requestedDoctor);
+  const [bookingDoctor, setBookingDoctor] = useState<BookingDoctor | null>(null);
+  const [doctorLookupStatus, setDoctorLookupStatus] = useState<"loading" | "ready" | "unavailable">(isDoctorBooking ? "loading" : "ready");
+  const doctor = bookingDoctor?.name || requestedDoctor;
   const total = params.get("total") || "";
   const requestedService = params.get("service")?.trim() || "";
-  const imagingCategory = resolveImagingBookingCategory(params, sourcePathname);
+  const imagingCategory = isDoctorBooking ? null : resolveImagingBookingCategory(params, sourcePathname);
   const imagingLabel = imagingCategory ? imagingBookingLabels[imagingCategory] : "";
-  const [service, setService] = useState(studies ? "Комплекс досліджень" : normalizeBookingService(requestedService) || (doctor ? "Консультації лікарів" : imagingLabel || helpService));
+  const [service, setService] = useState(studies ? "Комплекс досліджень" : normalizeBookingService(requestedService) || (isDoctorBooking ? "Консультації лікарів" : imagingLabel || helpService));
   const [studyOptions, setStudyOptions] = useState<string[]>([]);
   const [studyOptionsLoading, setStudyOptionsLoading] = useState(Boolean(imagingCategory));
   const [studyOptionsError, setStudyOptionsError] = useState(false);
@@ -95,11 +101,18 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const successRef = useRef<HTMLHeadingElement>(null);
   const submittingRef = useRef(false);
-  const isHomeVisit = !doctor && !studies && isHomeVisitService(service);
-  const locationService = doctor ? "Консультації лікарів" : imagingLabel || service;
+  const isHomeVisit = !isDoctorBooking && !studies && isHomeVisitService(service);
+  const locationService = isDoctorBooking ? "Консультації лікарів" : imagingLabel || service;
   const category = serviceCategory(locationService);
-  const availableLocations = compatibleLocations(locations, locationService);
-  const selectedLocation = availableLocations.length === 1 ? availableLocations[0] : availableLocations.find(({ id }) => id === locationId);
+  const assignedBranches = Boolean(bookingDoctor?.branch.trim());
+  const availableLocations = isDoctorBooking && doctorLookupStatus !== "ready"
+    ? []
+    : assignedBranches && bookingDoctor
+      ? assignedDoctorBookingLocations(bookingDoctor.branch, locations)
+      : compatibleLocations(locations, locationService).map(toDoctorBookingLocation);
+  const branchLoading = locationsLoading || (isDoctorBooking && doctorLookupStatus === "loading");
+  const canAutoSelect = !branchLoading && availableLocations.length === 1 && !availableLocations[0].requiresConfirmation && (!isDoctorBooking || assignedBranches);
+  const selectedLocation = branchLoading ? undefined : canAutoSelect ? availableLocations[0] : availableLocations.find(({ id }) => id === locationId);
   useBookingConfirmation(reference === savedReference ? reference : "", "appointment");
 
   const closeBooking = () => {
@@ -131,6 +144,29 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
       root.classList.remove("quick-booking-open");
     };
   }, []);
+  useEffect(() => {
+    if (!isDoctorBooking) return;
+    const controller = new AbortController();
+    fetch(doctorId ? `/api/doctors?id=${encodeURIComponent(doctorId)}` : "/api/doctors", { signal: controller.signal })
+      .then(async response => {
+        if (!response.ok) throw new Error("doctor");
+        const payload: unknown = await response.json();
+        if (!payload || typeof payload !== "object") throw new Error("doctor");
+        const record = payload as { doctor?: unknown; doctors?: unknown };
+        if (doctorId) {
+          if (!isBookingDoctor(record.doctor) || record.doctor.id !== doctorId) throw new Error("doctor");
+          return record.doctor;
+        }
+        if (!Array.isArray(record.doctors) || !record.doctors.every(isBookingDoctor)) throw new Error("doctors");
+        const matches = record.doctors.filter(item => doctorNameKey(item.name) === doctorNameKey(requestedDoctor));
+        // Duplicate names cannot safely determine which branches belong to this booking.
+        if (matches.length > 1) throw new Error("ambiguous doctor");
+        return matches[0] || null;
+      })
+      .then(record => { if (!controller.signal.aborted) { setBookingDoctor(record); setDoctorLookupStatus("ready"); } })
+      .catch(() => { if (!controller.signal.aborted) setDoctorLookupStatus("unavailable"); });
+    return () => controller.abort();
+  }, [doctorId, isDoctorBooking, requestedDoctor]);
   useEffect(() => {
     if (!imagingCategory) return;
     const controller = new AbortController();
@@ -238,7 +274,7 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
               }}
               placeholder="(___) ___-__-__" title="Введіть 10 цифр українського номера, починаючи з 0" required /></span></label>
           </div>
-          {!doctor && !studies && imagingCategory && <>
+          {!isDoctorBooking && !studies && imagingCategory && <>
             <BookingStudySelect id="quick-service" label="Послуга" value={service} options={studyOptions}
               helpValue={imagingLabel} loading={studyOptionsLoading} disabled={submitting} onChange={setService} />
             {studyOptionsError && <div role="status">
@@ -246,7 +282,7 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
               <button type="button" className="outline-button" onClick={() => { setStudyOptionsLoading(true); setStudyOptionsError(false); setStudyOptionsAttempt((value) => value + 1); }}>Спробувати ще раз</button>
             </div>}
           </>}
-          {!doctor && !studies && !imagingCategory && <label htmlFor="quick-service"><span id="quick-service-label">Послуга</span><select id="quick-service" aria-labelledby="quick-service-label" value={service} required onChange={(event) => setService(event.target.value)}>
+          {!isDoctorBooking && !studies && !imagingCategory && <label htmlFor="quick-service"><span id="quick-service-label">Послуга</span><select id="quick-service" aria-labelledby="quick-service-label" value={service} required onChange={(event) => setService(event.target.value)}>
             <option value={helpService}>{helpService}</option>
             {!services.includes(service) && !consultationServices.includes(service) && service !== helpService && <option value={service}>{service}</option>}
             <optgroup label="Послуги центру">{services.map((item) => <option key={item}>{item}</option>)}</optgroup>
@@ -255,9 +291,9 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
           </label>}
           {isHomeVisit ? <label htmlFor="quick-address">Адреса виїзду в Рівному
             <input id="quick-address" name="address" autoComplete="street-address" minLength={5} maxLength={200} placeholder="Вулиця, будинок, квартира" required />
-          </label> : <label htmlFor="quick-location"><span id="quick-location-label">Відділення</span><select id="quick-location" aria-labelledby="quick-location-label" aria-busy={locationsLoading} disabled={locationsLoading} value={selectedLocation?.id || ""} onChange={(event) => setLocationId(event.target.value)}>
-            {availableLocations.length !== 1 && <option value="">{locationsLoading ? "Завантажуємо відділення…" : locationStatus || (category === null && service !== helpService) ? "Адміністратор допоможе обрати" : "Допоможіть обрати"}</option>}
-            {availableLocations.map((location) => <option key={location.id} value={location.id}>{location.city} · {location.name}</option>)}
+          </label> : <label htmlFor="quick-location"><span id="quick-location-label">Відділення</span><select id="quick-location" aria-labelledby="quick-location-label" aria-busy={branchLoading} disabled={branchLoading} value={selectedLocation?.id || ""} onChange={(event) => setLocationId(event.target.value)}>
+            {!canAutoSelect && <option value="">{branchLoading ? "Завантажуємо відділення…" : locationStatus || (isDoctorBooking && doctorLookupStatus === "unavailable") || !availableLocations.length || (category === null && service !== helpService) ? "Адміністратор допоможе обрати" : "Допоможіть обрати"}</option>}
+            {availableLocations.map((location) => <option key={location.id} value={location.id}>{location.label}</option>)}
           </select>
           </label>}
           <details className="quick-booking__comment"><summary>Додати коментар <span>необов’язково</span></summary><label>Ваш коментар<textarea name="comment" maxLength={700} rows={3} placeholder="Наприклад, коли вам зручно зателефонувати" /></label></details>

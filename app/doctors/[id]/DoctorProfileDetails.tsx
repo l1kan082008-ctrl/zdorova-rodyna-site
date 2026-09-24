@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
+import { doctorBookingHref, splitDoctorBranches } from "@/lib/doctorBranches";
 import "../portraits.css";
 import {
   getDoctorInitials,
@@ -33,6 +34,7 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
   }
 
   const consultationSummary = formatDoctorConsultations(doctor);
+  const branches = splitDoctorBranches(doctor.branch);
   const activeDays = getDoctorScheduleDays(doctor.schedule);
   const biographyParagraphs = doctor.biography
     .split(/\n+/)
@@ -80,8 +82,8 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
               </div>
               {canBookDoctorConsultation(doctor) && (<div><dt>Приймає</dt><dd>{getDoctorPatientGroups(doctor.patientGroups ?? [])}</dd></div>)}
               <div>
-                <dt>Місце прийому</dt>
-                <dd>{doctor.branch || "Відділення уточнюйте"}</dd>
+                <dt>{branches.length > 1 ? "Місця прийому" : "Місце прийому"}</dt>
+                <dd className="doctor-branch-addresses">{branches.join("\n") || "Відділення уточнюйте"}</dd>
               </div>
               {canBookDoctorConsultation(doctor) && consultationSummary && (<div>
                 <dt>Вартість консультації</dt>
@@ -115,7 +117,7 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
             {canBookDoctorConsultation(doctor) && (<div className="doctor-detail-actions">
               <a
                 className="book-button"
-                href={`/contacts?doctor=${encodeURIComponent(doctor.name)}#booking`}
+                href={doctorBookingHref(doctor)}
               >
                 Записатися на прийом <span>→</span>
               </a>
