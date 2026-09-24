@@ -1,5 +1,6 @@
 import "server-only";
 
+import { parseBookingDetails } from "./bookingDetails";
 import { env } from "./runtimeEnv";
 
 type BookingNotification = {
@@ -25,16 +26,23 @@ export async function sendBookingNotification(booking: BookingNotification) {
     return { sent: false, configured: false } as const;
   }
 
-  const lines = [
-    `Нова заявка ${cleanLine(booking.reference)}`,
-    "",
+  const details = parseBookingDetails(booking.comment);
+  const contactLines = [
     `Пацієнт: ${cleanLine(booking.patientName)}`,
     `Телефон: ${cleanLine(booking.phone)}`,
     `Послуга: ${cleanLine(booking.service)}`,
     booking.doctor ? `Лікар: ${cleanLine(booking.doctor)}` : "",
-    booking.comment ? `Коментар: ${cleanLine(booking.comment)}` : "",
+  ].filter(Boolean);
+  const sections = [
+    `Нова заявка ${cleanLine(booking.reference)}`,
+    contactLines.join("\n"),
+    details.location ? `Відділення: ${details.location}` : "",
+    details.studies.length
+      ? `Обрані дослідження:\n${details.studies.map((study, index) => `${index + 1}. ${study}`).join("\n")}`
+      : "",
+    details.total ? `Орієнтовна сума: ${details.total}` : "",
+    details.comment ? `Коментар:\n${details.comment}` : "",
     `Джерело: ${cleanLine(booking.source)}`,
-    "",
     "Заявка також збережена в захищеній адмінпанелі сайту.",
   ].filter(Boolean);
 
@@ -50,7 +58,7 @@ export async function sendBookingNotification(booking: BookingNotification) {
       from: sender,
       to: [recipient],
       subject: `Нова заявка ${cleanLine(booking.reference)}`,
-      text: lines.join("\n"),
+      text: sections.join("\n\n"),
     }),
     signal: AbortSignal.timeout(8_000),
   });

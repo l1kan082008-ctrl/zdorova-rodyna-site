@@ -15,6 +15,7 @@ function loadModule(path, env) {
   const require = (name) => {
     if (name === "server-only") return {};
     if (name.endsWith("runtimeEnv")) return { env };
+    if (name.endsWith("bookingDetails")) return loadModule("../lib/bookingDetails.ts", env);
     throw new Error(`Unexpected test dependency: ${name}`);
   };
   new Function("require", "module", "exports", outputText)(require, loadedModule, loadedModule.exports);
@@ -87,4 +88,67 @@ test("notification payload preserves booking reference without sending mail", as
   assert.match(payload.text, /ZR-TEST/);
   assert.match(payload.text, /МРТ/);
   assert.deepEqual(payload.to, ["admin@example.invalid"]);
+});
+
+test("notification separates structured studies, branch, total and multiline patient comment", async (context) => {
+  let payload;
+  context.mock.method(globalThis, "fetch", async (_url, options) => {
+    payload = JSON.parse(options.body);
+    return new Response("{}", { status: 200 });
+  });
+  const { sendBookingNotification } = loadModule("../lib/bookingNotification.ts", {
+    RESEND_API_KEY: "test-only-not-a-key",
+    BOOKING_NOTIFICATION_TO: "admin@example.invalid",
+    BOOKING_NOTIFICATION_FROM: "test@example.invalid",
+  });
+  const studies = [
+    "Загальний аналіз крові (ШОЕ, лейкоцитарна формула) — СІТО",
+    "Білірубіновий комплекс (білірубін загальний + білірубін прямий) — СІТО",
+    "Доплата СІТО (2 досл., до 2 годин) — 400 ₴",
+  ];
+  await sendBookingNotification({
+    reference: "ZR-FORMAT", patientName: "ТЕСТ — не пацієнт", phone: "+380000000001",
+    service: "Комплекс досліджень", doctor: "", source: "contacts",
+    comment: [
+      "Бажане відділення: м. Рівне, вул. Тестова, 1.",
+      `Обрані дослідження:\n${studies.map((study) => `• ${study}`).join("\n")}`,
+      "Орієнтовна сума: 1 570 ₴.",
+      "Коментар:\nТехнічна перевірка.\nЗателефонуйте після 15:00.",
+    ].join("\n\n"),
+  });
+  assert.equal(payload.text, [
+    "Нова заявка ZR-FORMAT",
+    "Пацієнт: ТЕСТ — не пацієнт\nТелефон: +380000000001\nПослуга: Комплекс досліджень",
+    "Відділення: м. Рівне, вул. Тестова, 1",
+    `Обрані дослідження:\n${studies.map((study, index) => `${index + 1}. ${study}`).join("\n")}`,
+    "Орієнтовна сума: 1 570 ₴",
+    "Коментар:\nТехнічна перевірка.\nЗателефонуйте після 15:00.",
+    "Джерело: contacts",
+    "Заявка також збережена в захищеній адмінпанелі сайту.",
+  ].join("\n\n"));
+});
+
+test("notification makes legacy laboratory selection readable without splitting commas inside names", async (context) => {
+  let payload;
+  context.mock.method(globalThis, "fetch", async (_url, options) => {
+    payload = JSON.parse(options.body);
+    return new Response("{}", { status: 200 });
+  });
+  const { sendBookingNotification } = loadModule("../lib/bookingNotification.ts", {
+    RESEND_API_KEY: "test-only-not-a-key",
+    BOOKING_NOTIFICATION_TO: "admin@example.invalid",
+    BOOKING_NOTIFICATION_FROM: "test@example.invalid",
+  });
+  const studies = [
+    "Загальний аналіз крові (ШОЕ, лейкоцитарна формула) — СІТО",
+    "Білірубін загальний — СІТО",
+    "Доплата СІТО (2 досл., до 2 годин) — 400 ₴",
+  ];
+  await sendBookingNotification({
+    reference: "ZR-LEGACY", patientName: "ТЕСТ — не пацієнт", phone: "+380000000001",
+    service: "Комплекс досліджень", doctor: "", source: "contacts",
+    comment: `Допоможіть обрати відділення. Обрані дослідження: ${studies.join(", ")}. Орієнтовна сума: 1 570 ₴. Технічна перевірка.`,
+  });
+  assert.ok(payload.text.includes(`Відділення: Допоможіть обрати відділення.\n\nОбрані дослідження:\n${studies.map((study, index) => `${index + 1}. ${study}`).join("\n")}`));
+  assert.ok(payload.text.includes("\n\nОрієнтовна сума: 1 570 ₴\n\nКоментар:\nТехнічна перевірка."));
 });

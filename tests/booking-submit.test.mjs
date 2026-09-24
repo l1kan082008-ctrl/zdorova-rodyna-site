@@ -134,6 +134,7 @@ function harness(responseOverride, options = {}) {
     "@/lib/siteSettings": siteSettings,
     "@/lib/bookingSubmission": load("../lib/bookingSubmission.ts"),
     "./useBookingConfirmation": confirmation,
+    "@/lib/bookingDetails": load("../lib/bookingDetails.ts"),
     "./useModalDialog": { useModalDialog: () => {} },
     "./BookingStudySelect": { BookingStudySelect: BookingStudySelectBoundary },
     "@/lib/imagingBooking": load("../lib/imagingBooking.ts"),
@@ -207,7 +208,7 @@ test("successful booking confirms, clears cart and CITO, and blocks a rapid dupl
   assert.equal(h.stored.length, 1);
   assert.equal(h.notifications.length, 1);
   assert.deepEqual(h.window.dataLayer, [], "API confirmation alone cannot emit before the confirmation UI commits");
-  assert.match(h.stored[0].comment, /Обрані дослідження: КТ/);
+  assert.match(h.stored[0].comment, /Обрані дослідження:\n• КТ/);
   assert.match(h.stored[0].comment, /4\s?100/);
   assert.deepEqual(h.selection.readPriceCalculatorSelection(), []);
   assert.deepEqual(h.selection.readPriceCalculatorCitoSelection(), []);
@@ -392,7 +393,7 @@ test("calculator booking retains its study bundle even when a modality context i
   assert.equal(h.resourceRequests.includes("/api/public/prices"), false);
   const pending = h.submit(); h.release(); await pending;
   assert.equal(h.stored[0].service, "Комплекс досліджень");
-  assert.match(h.stored[0].comment, /КТ головного мозку, МРТ колінного суглоба/);
+  assert.match(h.stored[0].comment, /• КТ головного мозку\n• МРТ колінного суглоба/);
   assert.match(h.stored[0].comment, /3\s?300/);
   assert.deepEqual(h.selection.readPriceCalculatorSelection(), []);
 });

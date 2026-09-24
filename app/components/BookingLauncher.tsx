@@ -4,6 +4,7 @@ import { useSiteSettings } from "./SiteSettingsProvider";
 import { sitePhoneHref } from "@/lib/siteSettings";
 import { preventNativeBookingSubmit, submitBookingFromClick } from "@/lib/bookingSubmission";
 import { useBookingConfirmation } from "./useBookingConfirmation";
+import { formatBookingComment } from "@/lib/bookingDetails";
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -164,12 +165,12 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
       form.querySelector<HTMLInputElement>('input[name="address"]')?.focus();
       return;
     }
-    const comment = [
-      isHomeVisit ? addressComment : selectedLocation ? `Бажане відділення: ${selectedLocation.fullAddress}.` : "Допоможіть обрати відділення.",
-      studies ? `Обрані дослідження: ${studies.replaceAll(" | ", ", ")}.` : "",
-      total && Number.isFinite(Number(total)) ? `Орієнтовна сума: ${Number(total).toLocaleString("uk-UA")} ₴.` : "",
-      String(data.get("comment") || "").trim(),
-    ].filter(Boolean).join(" ");
+    const comment = formatBookingComment({
+      locationComment: isHomeVisit ? addressComment : selectedLocation ? `Бажане відділення: ${selectedLocation.fullAddress}.` : "Допоможіть обрати відділення.",
+      studies,
+      total,
+      comment: String(data.get("comment") || ""),
+    });
     if (comment.length > 1200) { setError("Забагато тексту для однієї заявки. Скоротіть коментар або набір досліджень."); return; }
     submittingRef.current = true;
     setSubmitting(true);

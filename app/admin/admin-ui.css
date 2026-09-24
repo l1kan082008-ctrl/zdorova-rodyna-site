@@ -159,5 +159,17 @@
 
 .admin-ui[data-admin-ui] .admin-price-import-heading h2 { font-size: 24px; font-weight: 650; line-height: 1.3; }
 .admin-ui[data-admin-ui] .admin-booking-search { border-color: var(--admin-border); border-radius: var(--admin-panel-radius); }
+.admin-ui[data-admin-ui] .admin-booking-list { align-items: start; }
+.admin-ui[data-admin-ui] .admin-booking-details { gap: 20px; }
+.admin-ui[data-admin-ui] .admin-booking-details > div { min-width: 0; gap: 6px; }
+.admin-ui[data-admin-ui] .admin-booking-details dt { color: var(--admin-muted); font-size: 11px; font-weight: 750; letter-spacing: .04em; }
+.admin-ui[data-admin-ui] .admin-booking-details dd { color: var(--admin-ink); font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+.admin-ui[data-admin-ui] .admin-booking-studies { display: grid; gap: 12px; margin: 0; padding-left: 24px; list-style: decimal outside; }
+.admin-ui[data-admin-ui] .admin-booking-studies li { padding-left: 4px; }
+.admin-ui[data-admin-ui] .admin-booking-studies li::marker { color: var(--admin-muted); font-weight: 650; }
+.admin-ui[data-admin-ui] .admin-booking-studies li + li { padding-top: 12px; border-top: 1px solid var(--admin-border); }
+.admin-ui[data-admin-ui] .admin-booking-details .admin-booking-total { padding-top: 16px; border-top: 1px solid var(--admin-border); }
+.admin-ui[data-admin-ui] .admin-booking-total dd { font-size: 20px; font-weight: 750; line-height: 1.4; }
+.admin-ui[data-admin-ui] .admin-booking-comment { white-space: pre-wrap; }
 .admin-ui[data-admin-ui] .admin-history-dialog { border-color: var(--admin-border); box-shadow: -12px 0 36px rgb(25 32 45 / 12%); }
 .admin-ui[data-admin-ui] :is(.admin-history-heading, .admin-history-note) { border-color: var(--admin-border); }

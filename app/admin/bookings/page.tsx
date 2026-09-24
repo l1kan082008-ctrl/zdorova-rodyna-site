@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AdminNavigation from "../AdminNavigation";
 import { formatBookingDateTime } from "./bookingDateTime";
+import { parseBookingDetails } from "@/lib/bookingDetails";
 import type {
   Booking,
   BookingStatus,
@@ -167,6 +168,7 @@ export default function BookingsAdminPage() {
             {filteredBookings.map((booking) => {
               const kind = getBookingKind(booking);
               const createdAt = formatBookingDateTime(booking.createdAt);
+              const details = parseBookingDetails(booking.comment);
               const showService =
                 booking.service.trim().toLocaleLowerCase("uk") !==
                 bookingKindLabels[kind].toLocaleLowerCase("uk");
@@ -185,17 +187,41 @@ export default function BookingsAdminPage() {
                 </div>
                 <h2>{booking.patientName}</h2>
                 <a href={`tel:${booking.phone}`}>{booking.phone}</a>
-                <dl>
+                <dl className="admin-booking-details">
                   {booking.doctor ? (
                     <div>
                       <dt>Лікар</dt>
                       <dd>{booking.doctor}</dd>
                     </div>
                   ) : null}
-                  {booking.comment ? (
+                  {details.location ? (
+                    <div>
+                      <dt>Відділення</dt>
+                      <dd>{details.location}</dd>
+                    </div>
+                  ) : null}
+                  {details.studies.length ? (
+                    <div>
+                      <dt>Обрані дослідження</dt>
+                      <dd>
+                        <ol className="admin-booking-studies">
+                          {details.studies.map((study, index) => (
+                            <li key={`${index}-${study}`}>{study}</li>
+                          ))}
+                        </ol>
+                      </dd>
+                    </div>
+                  ) : null}
+                  {details.total ? (
+                    <div className="admin-booking-total">
+                      <dt>Орієнтовна сума</dt>
+                      <dd>{details.total}</dd>
+                    </div>
+                  ) : null}
+                  {details.comment ? (
                     <div>
                       <dt>Коментар</dt>
-                      <dd>{booking.comment}</dd>
+                      <dd className="admin-booking-comment">{details.comment}</dd>
                     </div>
                   ) : null}
                 </dl>
