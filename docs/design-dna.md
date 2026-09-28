@@ -72,6 +72,8 @@ All service heroes share app/service-banners.css: 640px desktop, 700px tablet, 7
 
 Service information sections use one editorial treatment at every viewport: white canvas, orange markers, unboxed preparation and process rows, and fine teal-grey separators. Desktop keeps paired information columns and three process columns; mobile uses one column. Important notes keep their semantic label/icon without a separate coloured card.
 
+Laboratory directions use a centered section heading and three equal, unboxed topic groups across the shared content width. At tablet sizes, groups stack with two-column lists; mobile lists use one column. Preparation follows in its own centered section with two columns and an odd final item spanning both, keeping the same editorial markers and dividers.
+
 Public directory framing uses neutral #dedfe1 borders and black-alpha shadows, without teal tint. Contact action buttons use the shared pill radius; call actions are labelled Зателефонувати. Preserve approved mint selection surfaces and location-hover gradients.
 
 Public editorial section headings share 36px desktop / 28px mobile, 1.15 line height, weight 450. Section rhythm is 64px desktop / 48px mobile, with a 24px heading-to-content gap. These tokens exclude hero titles, card titles, footer navigation, and bespoke CT/MRI/cardiology/family sections.

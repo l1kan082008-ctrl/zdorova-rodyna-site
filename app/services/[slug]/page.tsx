@@ -26,6 +26,7 @@ import { ConsultationExperience } from "./ConsultationExperience";
 import { CtServicePage } from "./CtServicePage";
 import { MriServicePage } from "./MriServicePage";
 import { HolterEquipment } from "./HolterEquipment";
+import { LabInformation } from "./LabInformation";
 
 export const dynamic = "force-dynamic";
 
@@ -186,6 +187,8 @@ export default async function ServiceDetailPage({
   const availableCardiologists = isCardiology
     ? relevantDoctors.filter(
         (doctor) =>
+          // Stoliarska performs heart ultrasound and interprets Holter studies, not consultations.
+          doctor.id !== "stoliarska-nataliia" &&
           doctor.specialty.toLocaleLowerCase("uk-UA").includes("кардіолог"),
       )
     : [];
@@ -484,9 +487,6 @@ export default async function ServiceDetailPage({
             </div>
             <p>{service.lead}</p>
             <div className="service-detail-actions">
-              <Link className="book-button" href={bookingHref}>
-                Записатися <span>→</span>
-              </Link>
               <Link className="outline-button" href={priceHref}>
                 Переглянути вартість <span>→</span>
               </Link>
@@ -1257,7 +1257,8 @@ export default async function ServiceDetailPage({
           </div>
         </section>
       )}
-      {!isCardiology && !isFamilyMedicine && !isConsultation ? (
+      {service.slug === "lab" && <LabInformation service={service} />}
+      {!isCardiology && !isFamilyMedicine && !isConsultation && service.slug !== "lab" ? (
       <section className="service-information-grid">
         {!isCinematicUltrasound && <article>
           <span className="section-kicker">Показання</span>
@@ -1283,7 +1284,7 @@ export default async function ServiceDetailPage({
       </section>
       ) : null}
 
-      {!isCardiology && !isFamilyMedicine && !isConsultation && !isCinematicUltrasound && !isHomeNurse ? (
+      {!isCardiology && !isFamilyMedicine && !isConsultation && !isCinematicUltrasound && !isHomeNurse && service.slug !== "lab" ? (
       <section className="service-process" aria-labelledby="service-process-title">
         <div>
           <span className="section-kicker">Послідовно і зрозуміло</span>
