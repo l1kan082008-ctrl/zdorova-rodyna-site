@@ -10,7 +10,6 @@ import {
   getDoctorPatientGroups,
   getDoctorScheduleDays,
   getDoctorScheduleNotice,
-  weekDays,
   type Doctor,
 } from "../doctorData";
 
@@ -99,10 +98,10 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
               <aside className="doctor-detail-schedule doctor-detail-schedule--inline">
                 <h2>{canBookDoctorConsultation(doctor) ? "Години прийому" : "Години роботи"}</h2>
                 <div>
-                  {weekDays.map((day) => (
+                  {activeDays.map((day) => (
                     <p key={day.key}>
                       <span>{day.label}</span>
-                      <strong>{doctor.schedule[day.key]?.trim() || "Не приймає"}</strong>
+                      <strong>{doctor.schedule[day.key]?.trim()}</strong>
                     </p>
                   ))}
                 </div>
