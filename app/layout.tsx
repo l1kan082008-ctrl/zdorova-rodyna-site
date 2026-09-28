@@ -41,13 +41,16 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     icons: {
       icon: [
+        { url: "/favicon.ico", type: "image/x-icon", sizes: "16x16 32x32 48x48" },
+        { url: "/favicon-96x96.png", type: "image/png", sizes: "96x96" },
         {
-          url: "/favicon.svg?v=2",
+          url: "/favicon.svg",
           type: "image/svg+xml",
           sizes: "any",
         },
       ],
-      shortcut: "/favicon.svg?v=2",
+      shortcut: "/favicon.ico",
+      apple: { url: "/apple-touch-icon.png", type: "image/png", sizes: "180x180" },
     },
     openGraph: {
       title,

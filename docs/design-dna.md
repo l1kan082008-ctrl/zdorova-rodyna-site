@@ -33,6 +33,7 @@ Warm, trustworthy and precise medical care. The public site feels calm and human
 - One form system: label above control, consistent height, border, focus ring and error placement.
 - One card system: white surface, fine teal-grey border, restrained shadow.
 - Icons are simple, single-colour and aligned to the same optical box.
+- Browser and search favicons use the supplied orange/teal emblem on a tightly framed square canvas. Preserve transparent backgrounds and internal gaps, including on dark browser tabs (owner preference, 2026-09-28). Keep stable SVG, ICO and 96px PNG URLs plus a 180px Apple home-screen icon with a white background; preserve the full header logo separately.
 - Lists expose state and hierarchy without decorative noise.
 
 ## Responsive behavior
