@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { doctorProfileDraft, getSpecialtyOptions, splitSpecialties, upgradeLegacyDoctorDraft } from "../app/admin/doctors/doctorFormState.ts";
+import { doctorAcademicStatusOptions, doctorProfileDraft, getDoctorAcademicStatus, getDoctorSpecialties, getSpecialtyOptions, splitSpecialties, upgradeLegacyDoctorDraft, withDoctorAcademicStatus, withDoctorSpecialties } from "../app/admin/doctors/doctorFormState.ts";
 
 const doctor = {
   id: "test-doctor", name: "Тестова Лікарка", specialty: "Кардіолог, терапевт",
@@ -53,14 +53,66 @@ test("current and invalid stored drafts are left to the existing safe-save polic
   assert.equal(upgradeLegacyDoctorDraft("invalid-json", baseline), "invalid-json");
 });
 
-test("qualifications are not offered as specialties but existing selections survive", () => {
+test("academic statuses stay out of specialty options while legacy age qualifiers survive", () => {
   const values = ["Кардіолог, Д.м.н., К.мед.н., Доцент, Професор, Дитячий і дорослий", "Дитячий кардіолог"];
   assert.deepEqual(getSpecialtyOptions(values), ["Дитячий кардіолог", "Кардіолог"]);
-  const selected = getSpecialtyOptions(values, "Кардіолог, К.мед.н., доцент");
-  assert.ok(selected.includes("К.мед.н."));
-  assert.ok(selected.some((value) => value.toLowerCase() === "доцент"));
-  assert.ok(!selected.includes("Д.м.н."));
-  assert.ok(!selected.includes("Дитячий і дорослий"));
+  const selected = getSpecialtyOptions(values, "Кардіолог, К.мед.н., доцент, Дитячий і дорослий");
+  assert.deepEqual(selected, ["Дитячий і дорослий", "Дитячий кардіолог", "Кардіолог"]);
+});
+
+test("academic status recognizes legacy aliases without treating a whole profile as one status", () => {
+  const aliases = new Map([
+    ["д.м.н.", ["д.м.н.", "Д. М. Н.", "д.мед.н.", "Доктор медичних наук"]],
+    ["к.мед.н.", ["к.м.н.", "К. МЕД. Н.", "к.мед.н.", "Кандидат медичних наук"]],
+    ["професор", ["професор", " Професор ", "ПРОФЕСОР"]],
+    ["доцент", ["доцент", "Доцент", "ДОЦЕНТ"]],
+  ]);
+  for (const { value } of doctorAcademicStatusOptions) {
+    for (const alias of aliases.get(value)) assert.equal(getDoctorAcademicStatus(alias), value);
+  }
+  for (const value of ["", "Кардіолог", "Дитячий і дорослий", "Ортопед-травматолог, д.м.н., професор", "д.м.н., професор"]) {
+    assert.equal(getDoctorAcademicStatus(value), undefined);
+  }
+});
+
+test("Meretskyi academic titles round trip and survive a changed medical specialty", () => {
+  const original = "Ортопед-травматолог, д.м.н., професор";
+  assert.deepEqual(getDoctorSpecialties(original), ["Ортопед-травматолог"]);
+  assert.equal(withDoctorSpecialties(original, getDoctorSpecialties(original)), original);
+  const changed = withDoctorSpecialties(original, ["Ортопед-травматолог", "Хірург"]);
+  assert.equal(changed, "Ортопед-травматолог, Хірург, д.м.н., професор");
+  assert.equal(withDoctorAcademicStatus(changed, "професор", false), "Ортопед-травматолог, Хірург, д.м.н.");
+  assert.equal(withDoctorAcademicStatus(original, "д.мед.н.", true), original);
+});
+
+test("Afonin statuses retain original spelling across specialty edits and independent toggles", () => {
+  const original = "Лікар УЗД, хірург, К.мед.н., доцент";
+  assert.deepEqual(getDoctorSpecialties(original), ["Лікар УЗД", "хірург"]);
+  assert.equal(withDoctorSpecialties(original, getDoctorSpecialties(original)), original);
+  const changed = withDoctorSpecialties(original, ["Лікар УЗД"]);
+  assert.equal(changed, "Лікар УЗД, К.мед.н., доцент");
+  const withoutDegree = withDoctorAcademicStatus(changed, "к.м.н.", false);
+  assert.equal(withoutDegree, "Лікар УЗД, доцент");
+  assert.equal(withDoctorAcademicStatus(withoutDegree, "Кандидат медичних наук", true), "Лікар УЗД, доцент, к.мед.н.");
+});
+
+test("academic toggles remove all aliases and do not duplicate an existing status", () => {
+  const original = "Терапевт, к.м.н., дитячий і дорослий, Кандидат медичних наук, доцент";
+  assert.equal(withDoctorAcademicStatus(original, "к.мед.н.", true), "Терапевт, к.м.н., дитячий і дорослий, доцент");
+  assert.equal(withDoctorAcademicStatus(original, "к.мед.н.", false), "Терапевт, дитячий і дорослий, доцент");
+  assert.equal(withDoctorAcademicStatus(original, "Невідомий статус", true), original);
+  const added = withDoctorAcademicStatus("Терапевт, дитячий і дорослий", "ПРОФЕСОР", true);
+  assert.equal(added, "Терапевт, дитячий і дорослий, професор");
+  assert.deepEqual(getDoctorSpecialties(added), ["Терапевт", "дитячий і дорослий"]);
+});
+
+test("statuses alone cannot satisfy a medical-specialty selection", () => {
+  const statusesOnly = withDoctorSpecialties("Ортопед-травматолог, д.м.н., професор", []);
+  assert.equal(statusesOnly, "д.м.н., професор");
+  assert.deepEqual(getDoctorSpecialties(statusesOnly), []);
+  assert.deepEqual(getSpecialtyOptions([statusesOnly], statusesOnly), []);
+  assert.equal(withDoctorSpecialties(statusesOnly, ["Терапевт", "Доцент"]), "Терапевт, д.м.н., професор");
+  assert.equal(withDoctorAcademicStatus("", "К. М. Н.", true), "к.мед.н.");
 });
 
 test("visibility and order drafts keep explicit false and zero and inherit legacy ranks", () => {

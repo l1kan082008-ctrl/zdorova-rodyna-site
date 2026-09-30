@@ -30,6 +30,13 @@
 .emptyEditor p { margin: 0; color: #587276; font-size: 14px; line-height: 1.6; }
 .specialtyPicker { min-width: 0; margin: 0; padding: 0; border: 0; }
 .specialtyPicker legend { margin-bottom: 7px; padding: 0; color: #073f45; }
+.academicPicker { min-width: 0; margin: 0; padding: 0; border: 0; }
+.page .academicPicker legend { margin-bottom: 7px; padding: 0; color: #073f45; font-size: 13px; font-weight: 650; line-height: 1.45; }
+.academicOptions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; margin-top: 8px; }
+.academicPicker:disabled .specialtyOption { cursor: not-allowed; }
+@media (max-width: 760px) {
+  .academicOptions { grid-template-columns: minmax(0, 1fr); }
+}
 .branchPicker { min-width: 0; margin: 0; padding: 0; border: 0; }
 .page .branchPicker legend { margin-bottom: 7px; padding: 0; color: var(--admin-ink, #153b40); font-size: 13px; line-height: 1.45; font-weight: 650; }
 .branchOptions { display: grid; max-height: 264px; margin-top: 8px; padding: 4px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; border: 1px solid var(--admin-border, #d7dde2); border-radius: var(--admin-control-radius, 12px); background: var(--admin-panel, #fff); }

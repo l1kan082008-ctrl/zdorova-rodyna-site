@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { getSpecialtyOptions, isSpecialtyQualifier, specialtyKey, splitSpecialties } from "./doctorFormState";
+import { getDoctorSpecialties, getSpecialtyOptions, isSpecialtyQualifier, specialtyKey, splitSpecialties, withDoctorSpecialties } from "./doctorFormState";
 import styles from "./doctors.module.css";
 
 export default function DoctorSpecialtyPicker({ value, options, onChange, disabled = false }: {
@@ -16,19 +16,20 @@ export default function DoctorSpecialtyPicker({ value, options, onChange, disabl
   const [invalid, setInvalid] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const selected = useMemo(() => splitSpecialties(value), [value]);
+  const selected = useMemo(() => getDoctorSpecialties(value), [value]);
+  const hasSpecialty = selected.some((option) => !isSpecialtyQualifier(option));
   const allOptions = useMemo(() => getSpecialtyOptions(options, value), [options, value]);
   const normalized = specialtyKey(query);
   const filtered = allOptions.filter((option) => specialtyKey(option).includes(normalized));
   const customOptions = splitSpecialties(query).filter((option) => !isSpecialtyQualifier(option) && !allOptions.some((known) => specialtyKey(known) === specialtyKey(option)));
 
   useEffect(() => {
-    searchRef.current?.setCustomValidity(selected.length ? "" : "Оберіть принаймні одну спеціальність.");
-  }, [selected.length]);
+    searchRef.current?.setCustomValidity(hasSpecialty ? "" : "Оберіть принаймні одну спеціальність.");
+  }, [hasSpecialty]);
 
   const updateSelection = (next: string[]) => {
     setInvalid(false);
-    onChange(next.join(", "));
+    onChange(withDoctorSpecialties(value, next));
   };
   const remove = (option: string) => updateSelection(selected.filter((item) => specialtyKey(item) !== specialtyKey(option)));
   const label = (option: string) => option.charAt(0).toLocaleUpperCase("uk-UA") + option.slice(1);

@@ -1,3 +1,6 @@
+// Available in the editor before the first profile for these specialties is created.
+export const additionalDoctorSpecialtyOptions = ["Пульмонолог", "Фтизіатр"] as const;
+
 // Shared public navigation and directory categories.
 export const doctorCategories = [
   {
@@ -206,6 +209,18 @@ export const doctorCategories = [
     "urlAliases": [
       "гастроентерологія",
       "гастроентеролог"
+    ]
+  },
+  {
+    "value": "group:pulmonology",
+    "label": "Пульмонолог і фтизіатр",
+    "keywords": ["пульмонолог", "фтизіатр"],
+    "urlAliases": [
+      "пульмонолог і фтизіатр",
+      "пульмонологія",
+      "пульмонолог",
+      "фтизіатрія",
+      "фтизіатр"
     ]
   },
   {

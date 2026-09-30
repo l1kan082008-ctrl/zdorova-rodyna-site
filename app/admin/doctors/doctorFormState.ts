@@ -47,15 +47,55 @@ export function splitSpecialties(value: string): string[] {
   return [...unique.values()];
 }
 
+export const doctorAcademicStatusOptions = [
+  { value: "д.м.н.", label: "Доктор медичних наук" },
+  { value: "к.мед.н.", label: "Кандидат медичних наук" },
+  { value: "професор", label: "Професор" },
+  { value: "доцент", label: "Доцент" },
+] as const;
+
+type DoctorAcademicStatus = (typeof doctorAcademicStatusOptions)[number]["value"];
+
+export function getDoctorAcademicStatus(value: string): DoctorAcademicStatus | undefined {
+  const key = specialtyKey(value).replace(/[.\s]+/g, "");
+  if (/^(?:дмн|дмедн|доктормедичнихнаук)$/u.test(key)) return "д.м.н.";
+  if (/^(?:кмн|кмедн|кандидатмедичнихнаук)$/u.test(key)) return "к.мед.н.";
+  if (key === "професор" || key === "доцент") return key;
+  return undefined;
+}
+
+export function getDoctorSpecialties(value: string): string[] {
+  return splitSpecialties(value).filter((token) => !getDoctorAcademicStatus(token));
+}
+
+export function withDoctorSpecialties(currentValue: string, nextSpecialties: string[]): string {
+  const academicTokens = splitSpecialties(currentValue).filter((token) => getDoctorAcademicStatus(token));
+  return [...getDoctorSpecialties(nextSpecialties.join(", ")), ...academicTokens].join(", ");
+}
+
+export function withDoctorAcademicStatus(currentValue: string, statusValue: string, checked: boolean): string {
+  const status = getDoctorAcademicStatus(statusValue);
+  if (!status) return currentValue;
+  let retained = false;
+  const tokens = splitSpecialties(currentValue).filter((token) => {
+    if (getDoctorAcademicStatus(token) !== status) return true;
+    if (!checked || retained) return false;
+    retained = true;
+    return true;
+  });
+  if (checked && !retained) tokens.push(status);
+  return tokens.join(", ");
+}
+
 export function isSpecialtyQualifier(value: string): boolean {
   const key = specialtyKey(value).replace(/[.\s]+/g, "");
-  return /^(?:дмн|дмедн|кмн|кмедн|доцент|професор|доктормедичнихнаук|кандидатмедичнихнаук|дитячийідорослий|дитячийтадорослий)$/u.test(key);
+  return Boolean(getDoctorAcademicStatus(value)) || /^(?:дитячийідорослий|дитячийтадорослий)$/u.test(key);
 }
 
 export function getSpecialtyOptions(values: readonly string[], preservedValue = ""): string[] {
   const preserved = new Set(splitSpecialties(preservedValue).map(specialtyKey));
   return splitSpecialties([...values, preservedValue].join(", "))
-    .filter((value) => !isSpecialtyQualifier(value) || preserved.has(specialtyKey(value)))
+    .filter((value) => !getDoctorAcademicStatus(value) && (!isSpecialtyQualifier(value) || preserved.has(specialtyKey(value))))
     .sort((a, b) => a.localeCompare(b, "uk-UA"));
 }
 

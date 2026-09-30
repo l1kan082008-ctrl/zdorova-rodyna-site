@@ -13,7 +13,9 @@ import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import { centerLocations, type CenterLocation } from "../../contacts/locationData";
 import { isInformationOnlyLocation } from "@/lib/locationPolicy";
+import { additionalDoctorSpecialtyOptions } from "../../doctors/doctorCategories";
 import DoctorSpecialtyPicker from "./DoctorSpecialtyPicker";
+import DoctorAcademicStatusPicker from "./DoctorAcademicStatusPicker";
 import DoctorBranchPicker from "./DoctorBranchPicker";
 import { doctorProfileDraft, getSpecialtyOptions, upgradeLegacyDoctorDraft, type DoctorProfileDraft } from "./doctorFormState";
 import styles from "./doctors.module.css";
@@ -183,6 +185,7 @@ function CreateDoctorForm({ specialtyOptions, branches, onCreated, onCancel, onR
               <input type="number" min="0" max="100000" step="1" value={draft.repeatConsultationPrice} onChange={(event) => update("repeatConsultationPrice", event.target.value)} placeholder="Не вказано" />
             </label>
           </div>
+          <DoctorAcademicStatusPicker value={draft.specialty} onChange={(value) => update("specialty", value)} disabled={creating} />
           <DoctorPriceVisibilityField checked={draft.showConsultationPriceOnRequest} onChange={(value) => update("showConsultationPriceOnRequest", value)} />
           <DoctorPublicationFields isActive={draft.isActive} sortOrder={draft.sortOrder} onActiveChange={(value) => update("isActive", value)} onOrderChange={(value) => update("sortOrder", value)} />
         </fieldset>
@@ -556,6 +559,7 @@ function DoctorEditor({
           </label>
         </div>
 
+        <DoctorAcademicStatusPicker value={specialty} onChange={setSpecialty} disabled={saving} />
         <DoctorPriceVisibilityField checked={showConsultationPriceOnRequest} onChange={setShowConsultationPriceOnRequest} />
 
         <DoctorPublicationFields isActive={isActive} sortOrder={sortOrder} onActiveChange={setIsActive} onOrderChange={setSortOrder} />
@@ -679,7 +683,10 @@ export default function DoctorsAdminPage() {
     return () => controller.abort();
   }, []);
 
-  const specialtyOptions = useMemo(() => getSpecialtyOptions([...defaultDoctors, ...doctors].map((doctor) => doctor.specialty)), [doctors]);
+  const specialtyOptions = useMemo(() => getSpecialtyOptions([
+    ...additionalDoctorSpecialtyOptions,
+    ...[...defaultDoctors, ...doctors].map((doctor) => doctor.specialty),
+  ]), [doctors]);
   const filteredDoctors = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("uk");
     return doctors.filter((doctor) => {

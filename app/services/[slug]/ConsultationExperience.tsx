@@ -21,6 +21,7 @@ const directionDescriptions: Record<string, string> = {
   "group:oncology": "Онкологи — профілі спеціалістів і графік прийому.",
   "group:traumatology": "Ортопеди-травматологи — профілі та запис.",
   "group:gastroenterology": "Гастроентерологи — інформація про лікарів та запис.",
+  "group:pulmonology": "Пульмонологи та фтизіатри — профілі лікарів і графік прийому.",
   "group:allergy": "Алергологи — профілі спеціалістів і графік прийому.",
 };
 
