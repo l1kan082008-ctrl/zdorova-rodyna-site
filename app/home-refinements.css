@@ -20,6 +20,23 @@
 .home-page .service-card:focus-visible { box-shadow: inset 0 1px 0 #fff, 0 8px 18px rgb(29 72 73 / 8%); }
 .home-page .promo-slider { box-shadow: 0 8px 24px rgb(29 72 73 / 8%); }
 .home-page :is(.service-card--ct, .service-card--mri)::before { opacity: .9; filter: saturate(.94) contrast(1.08); }
+/* Keep the full artwork inside wide cards, including keyboard focus and hover. */
+@media (min-width: 721px) {
+  .home-page .service-card::before {
+    left: auto;
+    width: auto;
+    max-width: 100%;
+    height: 100%;
+    aspect-ratio: 16 / 9;
+    background-size: contain;
+    background-position: right top;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%);
+    mask-image: linear-gradient(90deg, transparent, #000 30%);
+    transform: none;
+  }
+  .home-page .service-card:hover::before,
+  .home-page .service-card:focus-visible::before { transform: none; }
+}
 .home-page :is(.advantage p, .service-description, .about-copy > p) { color: #587276; }
 .home-page .quick-strip article { display: block; padding: 0; border: 0; }
 .home-page .home-quick-action {
