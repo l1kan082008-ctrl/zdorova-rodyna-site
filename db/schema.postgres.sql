@@ -23,6 +23,12 @@ ALTER TABLE doctors ADD COLUMN IF NOT EXISTS show_consultation_price_on_request 
 ALTER TABLE doctors ADD COLUMN IF NOT EXISTS is_active INTEGER NOT NULL DEFAULT 1;
 ALTER TABLE doctors ADD COLUMN IF NOT EXISTS sort_order INTEGER;
 
+CREATE TABLE IF NOT EXISTS doctor_specialties (
+  specialty_key TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS home_banners (
   id TEXT PRIMARY KEY,
   eyebrow TEXT NOT NULL,

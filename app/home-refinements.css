@@ -3,6 +3,9 @@
   .home-page .hero-art { right: 0; width: auto; }
 }
 .home-page .services-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+@media (min-width: 1081px) {
+  .home-page .services-grid--six { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 .home-page :is(.about-section, .quick-strip) { box-shadow: none; }
 /* Full-width surface with content aligned to the shared page frame. */
 .home-page .about-section {

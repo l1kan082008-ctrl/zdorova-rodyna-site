@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ServiceBookingCta } from "./ServiceBookingCta";
 
-import { doctorCategories } from "../../doctors/doctorCategories";
+import { listPublicDoctors } from "../../api/doctors/publicDoctors";
+import { getPublicDoctorCategories } from "@/lib/publicDoctorSpecialties";
 
 const directionDescriptions: Record<string, string> = {
   "group:family": "Сімейні лікарі та терапевти — профілі, графік і запис.",
@@ -25,14 +26,14 @@ const directionDescriptions: Record<string, string> = {
   "group:allergy": "Алергологи — профілі спеціалістів і графік прийому.",
 };
 
-const consultationDirections = doctorCategories.map((category, index) => ({
-  number: String(index + 1).padStart(2, "0"),
-  title: category.label,
-  description: directionDescriptions[category.value],
-  href: `/doctors?specialty=${encodeURIComponent(category.value)}`,
-}));
-
-export function ConsultationExperience() {
+export async function ConsultationExperience() {
+  const categories = getPublicDoctorCategories(await listPublicDoctors());
+  const consultationDirections = categories.map((category, index) => ({
+    number: String(index + 1).padStart(2, "0"),
+    title: category.label,
+    description: directionDescriptions[category.value] ?? "Профілі лікарів, графік прийому та запис.",
+    href: `/doctors?specialty=${encodeURIComponent(category.value)}`,
+  }));
   return (
     <>
     <section className="consultation-experience" aria-labelledby="consultation-directions-title">

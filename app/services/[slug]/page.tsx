@@ -26,6 +26,8 @@ import { ConsultationExperience } from "./ConsultationExperience";
 import { CtServicePage } from "./CtServicePage";
 import { MriServicePage } from "./MriServicePage";
 import { HolterEquipment } from "./HolterEquipment";
+import { HolterFaq, HolterOverview } from "./HolterInformation";
+import { holterSeoDescription, holterSeoTitle, holterStructuredData, holterUrl } from "../holterContent";
 import { LabInformation } from "./LabInformation";
 
 export const dynamic = "force-dynamic";
@@ -78,6 +80,29 @@ export async function generateMetadata({
     };
   }
 
+  if (slug === "holter") {
+    const image = "https://zdorovarodynaplus.com.ua/service-heroes/holter-cinematic-v1.webp";
+    return {
+      title: holterSeoTitle,
+      description: holterSeoDescription,
+      alternates: { canonical: holterUrl },
+      openGraph: {
+        title: holterSeoTitle,
+        description: holterSeoDescription,
+        url: holterUrl,
+        locale: "uk_UA",
+        type: "website",
+        images: [{ url: image, alt: "Холтерівське моніторування ЕКГ у «Здоровій Родині»" }],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: holterSeoTitle,
+        description: holterSeoDescription,
+        images: [image],
+      },
+    };
+  }
+
   return {
     title: `${service.title} — Здорова Родина`,
     description: service.lead,
@@ -95,7 +120,7 @@ export default async function ServiceDetailPage({
 
   const bookingCategory = ["ultrasound", "ct", "mri"].includes(service.slug) ? service.slug : null;
   const bookingHref = `/contacts?service=${encodeURIComponent(
-    service.shortTitle,
+    service.slug === "holter" ? service.title : service.shortTitle,
   )}${bookingCategory ? `&bookingCategory=${bookingCategory}` : ""}#booking`;
   const priceHrefByService: Record<string, string> = {
     ct: "/prices?category=ct#price-calculator",
@@ -223,6 +248,12 @@ export default async function ServiceDetailPage({
   return (
     <main className={`inner-page service-detail-page${isHomeNurse ? " home-nurse-page" : ""}${isCardiology ? " cardiology-page" : ""}${isCinematicUltrasound ? " ultrasound-page" : ""}${isCinematicAudiometry ? " audiometry-page" : ""}`}>
       <SiteHeader active="services" />
+
+      {isCinematicHolter && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{
+          __html: JSON.stringify(holterStructuredData).replace(/</g, "\\u003c"),
+        }} />
+      )}
 
       {isCinematicHolter ? (
         <section
@@ -1163,7 +1194,10 @@ export default async function ServiceDetailPage({
           </article>
         </section>
       ) : isCinematicHolter ? (
-        <HolterEquipment />
+        <>
+          <HolterOverview />
+          <HolterEquipment />
+        </>
       ) : isCinematicLaboratory || isCinematicUltrasound || isCinematicEarPiercing || isCinematicWartRemoval || isCinematicDermoscopy ? null : (
           <section
             className={`service-overview${
@@ -1301,6 +1335,8 @@ export default async function ServiceDetailPage({
         </div>
       </section>
       ) : null}
+
+      {isCinematicHolter && <HolterFaq />}
 
       {!isFamilyMedicine && !isConsultation ? (
       <>

@@ -4,19 +4,6 @@ import { primaryServiceDetails } from "../../services/serviceData";
 import { normalizeInternalHref, normalizeMediaUrl } from "@/lib/publicUrl";
 import { deleteMediaReference, normalizeMediaReference } from "@/lib/mediaStorage";
 
-type D1DatabaseLike = {
-  prepare(query: string): {
-    bind(...values: unknown[]): {
-      all<T>(): Promise<{ results?: T[] }>;
-      first<T>(): Promise<T | null>;
-      run(): Promise<unknown>;
-    };
-    all<T>(): Promise<{ results?: T[] }>;
-    first<T>(): Promise<T | null>;
-    run(): Promise<unknown>;
-  };
-};
-
 export type ManagedService = {
   id: string;
   slug: string;
@@ -45,8 +32,8 @@ type ServiceRow = {
   active: number;
 };
 
-const db = () => (env as unknown as { DB: D1DatabaseLike }).DB;
-const homeSlugs = new Set(["lab", "ct", "mri", "consultation"]);
+const db = () => env.DB;
+const homeSlugs = new Set(["lab", "ct", "mri", "consultation", "holter"]);
 
 const cardImageBySlug: Record<string, string> = {
   ct: "/service-cards/ct-glass-v3.jpg",
@@ -55,6 +42,7 @@ const cardImageBySlug: Record<string, string> = {
   lab: "/service-cards/lab-glass-v3.jpg",
   consultation: "/service-cards/consultation-glass-v3.jpg",
   cardiology: "/service-cards/cardiology-glass-v3.jpg",
+  holter: "/service-cards/holter-glass-v3.webp",
   "home-nurse": "/service-cards/home-nurse-glass-v3.jpg",
   family: "/service-cards/family-glass-v3.jpg",
   "wart-removal": "/service-cards/wart-removal-glass-v3.jpg",
@@ -105,11 +93,51 @@ async function initializeSchemaTables() {
   `).run();
 
   const count = await db().prepare("SELECT COUNT(*) AS count FROM managed_services").first<{ count: number }>();
-  if (Number(count?.count ?? 0) > 0 || process.env.BOOTSTRAP_DEFAULT_CONTENT !== "true") return;
-
-  for (const service of getDefaultManagedServices()) {
-    await insertService(service);
+  if (Number(count?.count ?? 0) === 0) {
+    if (process.env.BOOTSTRAP_DEFAULT_CONTENT !== "true") return;
+    for (const service of getDefaultManagedServices()) {
+      await insertService(service);
+    }
   }
+  await migrateHolterCard();
+}
+
+// Add the requested card once; subsequent admin edits, hiding and deletion remain authoritative.
+async function migrateHolterCard() {
+  const migration = "holter-service-card-v1";
+  await db().prepare("CREATE TABLE IF NOT EXISTS service_migrations (id TEXT PRIMARY KEY)").run();
+  if (await db().prepare("SELECT id FROM service_migrations WHERE id = ?").bind(migration).first()) return;
+
+  const service = getDefaultManagedServices().find((item) => item.slug === "holter");
+  if (!service) throw new Error("Missing Holter service default.");
+
+  await db().batch([
+    db().prepare(`
+      INSERT INTO managed_services (
+        id, slug, short_title, card_description, href, image_key, image_path,
+        sort_order, show_on_services_page, show_on_home, active, updated_at
+      )
+      SELECT ?, ?, ?, ?, ?, ?, ?,
+        (SELECT COALESCE(MAX(sort_order), -1) + 1 FROM managed_services),
+        ?, ?, ?, CURRENT_TIMESTAMP
+      WHERE NOT EXISTS (SELECT 1 FROM service_migrations WHERE id = ?)
+        AND NOT EXISTS (
+          SELECT 1 FROM managed_services
+          WHERE slug = 'holter' OR href = '/services/holter'
+            OR href = '/services/holter/' OR href LIKE ?
+            OR href LIKE ? OR href LIKE ? OR href LIKE ?
+        )
+      ON CONFLICT DO NOTHING
+    `).bind(
+      service.id, service.slug, service.shortTitle, service.cardDescription,
+      service.href, service.imageKey, service.imagePath,
+      service.showOnServicesPage ? 1 : 0, service.showOnHome ? 1 : 0,
+      service.active ? 1 : 0, migration,
+      "/services/holter?%", "/services/holter#%", "/services/holter/?%", "/services/holter/#%",
+    ),
+    db().prepare("INSERT INTO service_migrations (id) VALUES (?) ON CONFLICT(id) DO NOTHING")
+      .bind(migration),
+  ]);
 }
 
 function rowToService(row: ServiceRow): ManagedService {

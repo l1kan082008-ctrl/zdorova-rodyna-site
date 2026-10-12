@@ -32,6 +32,24 @@ const regionalAnalyticsUrls = [
 const polishAdsUrl = "https://www.google.pl/ads/ga-audiences";
 const analyticsTransports = [analyticsUrl, linkedAnalyticsUrl, ...regionalAnalyticsUrls];
 const adsTransports = [adsUrl, polishAdsUrl];
+const adsScriptUrl = "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/123456789/";
+const clarityScripts = [
+  "https://www.clarity.ms/tag/test-project",
+  "https://scripts.clarity.ms/0.8.0/clarity.js",
+];
+const clarityCollectors = [
+  "https://a.clarity.ms/collect",
+  "https://b.clarity.ms/collect",
+  "https://f.clarity.ms/collect",
+  "https://h.clarity.ms/collect",
+  "https://z.clarity.ms/collect",
+  "https://report.clarity.ms/sln",
+];
+const clarityPixels = [
+  "https://c.clarity.ms/c.gif",
+  "https://c.bing.com/c.gif",
+];
+const clarityResources = [...clarityScripts, ...clarityCollectors, ...clarityPixels];
 
 function responseFor(path, headers = {}) {
   return proxy(new NextRequest(new URL(path, siteOrigin), { headers }));
@@ -50,7 +68,12 @@ function readPolicy(response) {
 // proxy and NextResponse; they do not load analytics or make network requests.
 function allowsUrl(policy, directive, value) {
   const target = new URL(value);
-  return (policy.get(directive) ?? policy.get("default-src") ?? []).some((source) => {
+  // Script elements inherit script-src when script-src-elem is not specified.
+  const sources = policy.get(directive)
+    ?? (directive === "script-src-elem" ? policy.get("script-src") : undefined)
+    ?? policy.get("default-src")
+    ?? [];
+  return sources.some((source) => {
     if (source === "*") return true;
     if (source === "'self'") return target.origin === siteOrigin;
     if (source.startsWith("'")) return false;
@@ -79,6 +102,33 @@ test("public page responses allow GA4 regional collection and Ukrainian and Poli
   }
 });
 
+test("public responses allow the Google Ads script blocked in Tag Assistant", () => {
+  for (const path of ["/", "/services/holter", "/doctors"]) {
+    const policy = readPolicy(responseFor(path));
+    for (const directive of ["script-src", "script-src-elem"]) {
+      assert.equal(allowsUrl(policy, directive, adsScriptUrl), true, `${path} ${directive}`);
+    }
+  }
+});
+
+test("public page responses allow Clarity scripts, regional collectors and cookie pixels", () => {
+  for (const path of ["/", "/doctors", "/services/lab"]) {
+    const response = responseFor(path, { "x-public-analytics": "0" });
+    const policy = readPolicy(response);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("x-middleware-request-x-public-analytics"), "1", path);
+    for (const [directive, urls] of [
+      ["script-src", clarityScripts],
+      ["connect-src", clarityCollectors],
+      ["img-src", clarityPixels],
+    ]) {
+      for (const url of urls) {
+        assert.equal(allowsUrl(policy, directive, url), true, `${path} ${directive} ${url}`);
+      }
+    }
+  }
+});
+
 test("admin, login and API responses cannot enable analytics with a spoofed header", () => {
   for (const path of ["/admin", "/admin/doctors", "/admin/login", "/api", "/api/bookings", "/api/admin/doctors", "/_next/data/test"]) {
     const response = responseFor(path, {
@@ -88,8 +138,8 @@ test("admin, login and API responses cannot enable analytics with a spoofed head
     });
     const policy = readPolicy(response);
     assert.equal(response.headers.get("x-middleware-request-x-public-analytics"), "0", path);
-    for (const directive of ["img-src", "connect-src", "script-src", "frame-src", "form-action"]) {
-      for (const url of [...analyticsTransports, ...adsTransports]) {
+    for (const directive of ["default-src", "img-src", "connect-src", "script-src", "script-src-elem", "frame-src", "form-action", "font-src", "style-src", "worker-src", "media-src"]) {
+      for (const url of [...analyticsTransports, ...adsTransports, adsScriptUrl, ...clarityResources]) {
         assert.equal(allowsUrl(policy, directive, url), false, `${path} ${directive} ${url}`);
       }
       assert.equal(allowsUrl(policy, directive, "https://www.googletagmanager.com/gtm.js"), false, `${path} ${directive}`);
@@ -104,8 +154,8 @@ test("unauthenticated admin redirects retain the restricted CSP and no-store hea
   assert.equal(response.headers.get("location"), `${siteOrigin}/admin/login?next=%2Fadmin%2Fdoctors%3Ftab%3Dall`);
   assert.equal(response.headers.get("cache-control"), "no-store, max-age=0");
   assert.equal(response.headers.get("pragma"), "no-cache");
-  for (const directive of ["img-src", "connect-src", "script-src", "frame-src", "form-action"]) {
-    for (const url of [...analyticsTransports, ...adsTransports]) {
+  for (const directive of ["default-src", "img-src", "connect-src", "script-src", "script-src-elem", "frame-src", "form-action", "font-src", "style-src", "worker-src", "media-src"]) {
+    for (const url of [...analyticsTransports, ...adsTransports, adsScriptUrl, ...clarityResources]) {
       assert.equal(allowsUrl(policy, directive, url), false, `${directive} ${url}`);
     }
   }
@@ -124,6 +174,69 @@ test("new transport origins do not gain script, frame or form permissions", () =
   assert.deepEqual(policy.get("form-action"), ["'self'"]);
   assert.deepEqual(policy.get("frame-ancestors"), ["'none'"]);
   assert.deepEqual(policy.get("object-src"), ["'none'"]);
+});
+
+test("Google Ads script exception remains limited to its exact HTTPS origin", () => {
+  const policy = readPolicy(responseFor("/"));
+  for (const directive of ["script-src", "script-src-elem"]) {
+    for (const url of [
+      "https://googleads.g.doubleclick.net.evil.test/script.js",
+      "https://other.g.doubleclick.net/script.js",
+      "https://stats.g.doubleclick.net/script.js",
+      "https://doubleclick.net/script.js",
+      "http://googleads.g.doubleclick.net/script.js",
+      "https://googleads.g.doubleclick.net:8443/script.js",
+    ]) {
+      assert.equal(allowsUrl(policy, directive, url), false, `${directive} ${url}`);
+    }
+  }
+  for (const directive of ["default-src", "frame-src", "form-action", "font-src", "style-src", "worker-src", "media-src"]) {
+    assert.equal(allowsUrl(policy, directive, adsScriptUrl), false, directive);
+  }
+  assert.equal(policy.get("script-src").includes("'unsafe-eval'"), false);
+  assert.equal(policy.get("script-src").includes("*"), false);
+});
+
+test("Clarity permissions do not expand defaults, frames, forms or Bing script execution", () => {
+  const policy = readPolicy(responseFor("/"));
+  for (const directive of ["default-src", "frame-src", "form-action", "font-src", "style-src", "worker-src", "media-src"]) {
+    for (const url of clarityResources) {
+      assert.equal(allowsUrl(policy, directive, url), false, `${directive} ${url}`);
+    }
+  }
+  for (const directive of ["script-src", "connect-src"]) {
+    assert.equal(allowsUrl(policy, directive, "https://c.bing.com/c.gif"), false, directive);
+  }
+  assert.equal(policy.get("script-src").includes("'unsafe-eval'"), false);
+  assert.deepEqual(policy.get("default-src"), ["'self'"]);
+  assert.deepEqual(policy.get("form-action"), ["'self'"]);
+  assert.deepEqual(policy.get("frame-ancestors"), ["'none'"]);
+  assert.deepEqual(policy.get("object-src"), ["'none'"]);
+});
+
+test("Clarity exceptions reject deceptive hosts, insecure schemes and unexpected ports", () => {
+  const policy = readPolicy(responseFor("/"));
+  const denied = [
+    "https://unrelated.example/collect",
+    "https://www.clarity.ms.evil.test/tag/test-project",
+    "https://scripts.clarity.ms.evil.test/clarity.js",
+    "https://a.clarity.ms.evil.test/collect",
+    "https://wwwclarity.ms/tag/test-project",
+    "https://c.bing.com.evil.test/c.gif",
+    "https://other.bing.com/c.gif",
+    "https://evilbing.com/c.gif",
+    "http://www.clarity.ms/tag/test-project",
+    "http://a.clarity.ms/collect",
+    "http://c.bing.com/c.gif",
+    "https://www.clarity.ms:8443/tag/test-project",
+    "https://a.clarity.ms:8443/collect",
+    "https://c.bing.com:8443/c.gif",
+  ];
+  for (const directive of ["script-src", "connect-src", "img-src"]) {
+    for (const url of denied) {
+      assert.equal(allowsUrl(policy, directive, url), false, `${directive} ${url}`);
+    }
+  }
 });
 
 test("transport exceptions do not allow unrelated, deceptive or unexpected-port origins", () => {

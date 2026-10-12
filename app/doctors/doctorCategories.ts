@@ -1,5 +1,5 @@
 // Available in the editor before the first profile for these specialties is created.
-export const additionalDoctorSpecialtyOptions = ["Пульмонолог", "Фтизіатр"] as const;
+export const additionalDoctorSpecialtyOptions = ["Пульмонолог", "Фтизіатр", "Проктолог-хірург"] as const;
 
 // Shared public navigation and directory categories.
 export const doctorCategories = [

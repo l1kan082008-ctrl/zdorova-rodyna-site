@@ -5,6 +5,29 @@ type ConfirmedBookingSubmitEvent = {
   form_type: BookingFormType;
 };
 
+type BookingFormOpenEvent = {
+  event: "booking_form_open";
+  form_type: "appointment";
+};
+
+// The object identifies one visible dialog session only and is never transmitted.
+const reportedOpenings = new WeakSet<object>();
+
+/** Call only after the appointment dialog has committed to the page. */
+export function trackBookingFormOpen(opening: object) {
+  if (typeof window === "undefined" || reportedOpenings.has(opening)) return;
+
+  try {
+    const analyticsWindow = window as Window & { dataLayer?: { push: (event: BookingFormOpenEvent) => unknown } };
+    const dataLayer = analyticsWindow.dataLayer ??= [] as BookingFormOpenEvent[];
+    // Also protects against StrictMode effect replay and synchronous GTM re-entry.
+    reportedOpenings.add(opening);
+    dataLayer.push({ event: "booking_form_open", form_type: "appointment" });
+  } catch {
+    // Analytics must never prevent opening or using the booking form.
+  }
+}
+
 // References are used only for in-memory deduplication, never sent to analytics.
 const reportedReferences = new Set<string>();
 

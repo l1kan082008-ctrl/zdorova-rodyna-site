@@ -14,6 +14,9 @@ import { BookingLauncher } from "./components/BookingLauncher";
 import { GlobalCalculator } from "./components/GlobalCalculator";
 import { SiteSettingsProvider } from "./components/SiteSettingsProvider";
 import { getSiteSettings } from "./api/settings/settingsStore";
+import { listPublicDoctors } from "./api/doctors/publicDoctors";
+import { getPublicDoctorCategories } from "@/lib/publicDoctorSpecialties";
+import { PublicDoctorSpecialtiesProvider } from "./components/PublicDoctorSpecialtiesProvider";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -79,7 +82,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [settings, requestHeaders] = await Promise.all([getSiteSettings(), headers()]);
+  const [settings, requestHeaders, doctors] = await Promise.all([getSiteSettings(), headers(), listPublicDoctors()]);
+  const doctorCategories = getPublicDoctorCategories(doctors);
   const analyticsEnabled = requestHeaders.get("x-public-analytics") === "1";
 
   return (
@@ -113,8 +117,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </noscript>
         )}
         <SiteSettingsProvider settings={settings}>
-          {children}
-          <Suspense fallback={null}><BookingLauncher /><GlobalCalculator /></Suspense>
+          <PublicDoctorSpecialtiesProvider categories={doctorCategories}>
+            {children}
+            <Suspense fallback={null}><BookingLauncher /><GlobalCalculator /></Suspense>
+          </PublicDoctorSpecialtiesProvider>
         </SiteSettingsProvider>
       </body>
     </html>

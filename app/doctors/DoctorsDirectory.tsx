@@ -1,6 +1,6 @@
 "use client";
 
-import { doctorCategories as groupedSpecialties } from "./doctorCategories";
+import { findPublicDoctorCategory, getPublicDoctorCategories, matchesPublicDoctorCategory, publicDoctorSpecialtyKey } from "@/lib/publicDoctorSpecialties";
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -65,6 +65,7 @@ export function DoctorsDirectory({
   initialDoctors: Doctor[];
 }) {
   const doctors = initialDoctors;
+  const groupedSpecialties = useMemo(() => getPublicDoctorCategories(doctors), [doctors]);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [specialty, setSpecialty] = useState("all");
@@ -149,10 +150,8 @@ const changeMobileView = (nextView: MobileDoctorView) => {
       return;
     }
 
-    const normalizedRequested = requestedSpecialty.toLocaleLowerCase("uk");
-    const matchingGroup = groupedSpecialties.find((group) =>
-      group.value === normalizedRequested || group.urlAliases.some((alias) => alias === normalizedRequested),
-    );
+    const normalizedRequested = publicDoctorSpecialtyKey(requestedSpecialty);
+    const matchingGroup = findPublicDoctorCategory(requestedSpecialty, groupedSpecialties);
 
     if (matchingGroup) {
       setSpecialty(matchingGroup.value);
@@ -170,7 +169,7 @@ const changeMobileView = (nextView: MobileDoctorView) => {
     );
 
     setSpecialty(matchingSpecialty ?? "all");
-  }, [specialties]);
+  }, [specialties, groupedSpecialties]);
 
   const filteredDoctors = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("uk");
@@ -184,19 +183,16 @@ const changeMobileView = (nextView: MobileDoctorView) => {
       const selectedGroup = groupedSpecialties.find(
         (group) => group.value === specialty,
       );
-      const normalizedSpecialty = doctor.specialty.toLocaleLowerCase("uk");
       const matchesSpecialty =
         specialty === "all" ||
         doctor.specialty === specialty ||
         Boolean(
-          selectedGroup?.keywords.some((keyword) =>
-            normalizedSpecialty.includes(keyword),
-          ),
+          selectedGroup && matchesPublicDoctorCategory(doctor.specialty, selectedGroup),
         );
 
       return matchesQuery && matchesSpecialty;
     });
-  }, [doctors, query, specialty]);
+  }, [doctors, query, specialty, groupedSpecialties]);
 
   const visibleDoctors = filteredDoctors;
 

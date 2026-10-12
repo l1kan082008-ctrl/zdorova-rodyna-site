@@ -1,5 +1,6 @@
 "use client";
-import { doctorCategories } from "../doctors/doctorCategories";
+import { usePublicDoctorSpecialties } from "./PublicDoctorSpecialtiesProvider";
+import type { PublicDoctorCategory } from "@/lib/publicDoctorSpecialties";
 import { CloseIcon } from "./CloseIcon";
 
 import { Fragment, useEffect, useRef, useState } from "react";
@@ -59,7 +60,7 @@ type NavigationItem = {
   children?: Array<{ href: string; label: string }>;
 };
 
-const navigation: NavigationItem[] = [
+const navigationForSpecialties = (doctorCategories: PublicDoctorCategory[]): NavigationItem[] => [
   {
     href: "/services",
     label: "Послуги",
@@ -146,6 +147,8 @@ function SupportIcon() {
 }
 
 export function SiteHeader({ active, home = false, bookingHref = "/contacts#booking" }: { active?: string; home?: boolean; bookingHref?: string }) {
+  const doctorCategories = usePublicDoctorSpecialties();
+  const navigation = navigationForSpecialties(doctorCategories);
   const settings = useSiteSettings();
   const [heroPassed, setHeroPassed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);

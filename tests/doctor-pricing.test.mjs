@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import ts from "typescript";
+import { cache } from "react";
 
 // Run actual stores and route handlers against disposable SQLite only.
 // No environment files, production credentials, network, or external database are used.
@@ -95,6 +96,7 @@ function fixture(context) {
     "../../services/serviceStore": {},
   });
   const publicDoctors = loadModule("../app/api/doctors/publicDoctors.ts", {
+    react: { cache },
     "server-only": {}, "@/lib/runtimeEnv": { env: { DB: database.DB } },
     "../../doctors/doctorData": doctorData, "./doctorStore": store,
   }, { process: { env: { NODE_ENV: "production" } } });
@@ -535,6 +537,7 @@ test("configured database failures never republish bundled doctors, while local 
     getDoctorById: async () => { reads++; throw new Error("isolated simulated database outage"); },
   };
   const loadPublic = (mode, DB) => loadModule("../app/api/doctors/publicDoctors.ts", {
+    react: { cache },
     "server-only": {}, "@/lib/runtimeEnv": { env: { DB } },
     "../../doctors/doctorData": doctorData, "./doctorStore": failingStore,
   }, { process: { env: { NODE_ENV: mode, DATABASE_URL: DB ? "postgresql://test.invalid/not-used" : undefined } } });

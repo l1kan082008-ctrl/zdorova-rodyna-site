@@ -10,11 +10,14 @@ import {
 } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import { centerLocations, type CenterLocation } from "../../contacts/locationData";
 import { isInformationOnlyLocation } from "@/lib/locationPolicy";
 import { additionalDoctorSpecialtyOptions } from "../../doctors/doctorCategories";
 import DoctorSpecialtyPicker from "./DoctorSpecialtyPicker";
+import DoctorSpecialtyCatalog from "./DoctorSpecialtyCatalog";
+import { useDoctorSpecialtyCatalog, type SaveDoctorSpecialty } from "./useDoctorSpecialtyCatalog";
 import DoctorAcademicStatusPicker from "./DoctorAcademicStatusPicker";
 import DoctorBranchPicker from "./DoctorBranchPicker";
 import { doctorProfileDraft, getSpecialtyOptions, upgradeLegacyDoctorDraft, type DoctorProfileDraft } from "./doctorFormState";
@@ -48,6 +51,46 @@ function formatSaveTime(timestamp: number) {
 }
 
 type BranchChoices = { locations: CenterLocation[]; loading: boolean; error: string };
+
+function useSpecialtySaving() {
+  const [specialtySaving, setSpecialtySaving] = useState(false);
+  const specialtySavingRef = useRef(false);
+  const onSpecialtySavingChange = useCallback((saving: boolean) => {
+    specialtySavingRef.current = saving;
+    setSpecialtySaving(saving);
+  }, []);
+
+  useEffect(() => {
+    if (!specialtySaving) return;
+    const preventUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    const preventNavigation = (event: MouseEvent) => {
+      if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      const anchor = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
+      if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download") || anchor.href === window.location.href) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    };
+    const preventSaveShortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLocaleLowerCase() === "s") {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    };
+    window.addEventListener("beforeunload", preventUnload);
+    window.addEventListener("click", preventNavigation, true);
+    window.addEventListener("keydown", preventSaveShortcut, true);
+    return () => {
+      window.removeEventListener("beforeunload", preventUnload);
+      window.removeEventListener("click", preventNavigation, true);
+      window.removeEventListener("keydown", preventSaveShortcut, true);
+    };
+  }, [specialtySaving]);
+
+  return { specialtySaving, specialtySavingRef, onSpecialtySavingChange };
+}
 
 function DoctorAvatar({ doctor, sizes }: { doctor: Pick<Doctor, "photoUrl" | "name">; sizes: string }) {
   const [failedSource, setFailedSource] = useState("");
@@ -91,8 +134,9 @@ function DoctorPriceVisibilityField({ checked, onChange }: { checked: boolean; o
 type NewDoctorDraft = Pick<DoctorProfileDraft, "name" | "specialty" | "branch" | "consultationPrice" | "repeatConsultationPrice" | "isActive" | "sortOrder" | "showConsultationPriceOnRequest">;
 const emptyNewDoctorDraft: NewDoctorDraft = { name: "", specialty: "", branch: "", consultationPrice: "", repeatConsultationPrice: "", isActive: true, sortOrder: String(DEFAULT_DOCTOR_SORT_ORDER), showConsultationPriceOnRequest: false };
 
-function CreateDoctorForm({ specialtyOptions, branches, onCreated, onCancel, onRegisterGuard }: {
+function CreateDoctorForm({ specialtyOptions, onCreateSpecialty, branches, onCreated, onCancel, onRegisterGuard }: {
   specialtyOptions: string[];
+  onCreateSpecialty: SaveDoctorSpecialty;
   branches: BranchChoices;
   onCreated: (doctor: Doctor, doctors: Doctor[]) => void;
   onCancel: () => void;
@@ -100,6 +144,8 @@ function CreateDoctorForm({ specialtyOptions, branches, onCreated, onCancel, onR
 }) {
   const [draft, setDraft] = useState<NewDoctorDraft>(emptyNewDoctorDraft);
   const [creating, setCreating] = useState(false);
+  const { specialtySaving, specialtySavingRef, onSpecialtySavingChange } = useSpecialtySaving();
+  const busy = creating || specialtySaving;
   const [error, setError] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
   function update<K extends keyof NewDoctorDraft>(key: K, value: NewDoctorDraft[K]) {
@@ -107,7 +153,7 @@ function CreateDoctorForm({ specialtyOptions, branches, onCreated, onCancel, onR
   }
 
   const create = async () => {
-    if (creating) return;
+    if (creating || specialtySavingRef.current) return;
     setCreating(true);
     setError("");
     try {
@@ -153,13 +199,13 @@ function CreateDoctorForm({ specialtyOptions, branches, onCreated, onCancel, onR
     baseline: emptyNewDoctorDraft,
     onRestore: setDraft,
     onSave: () => { if (formRef.current?.reportValidity()) return create(); },
-    busy: creating,
+    busy,
   });
   const { confirmDiscard } = safeSave;
   useEffect(() => {
-    onRegisterGuard(() => !creating && confirmDiscard());
+    onRegisterGuard(() => !creating && !specialtySavingRef.current && confirmDiscard());
     return () => onRegisterGuard(null);
-  }, [creating, onRegisterGuard, confirmDiscard]);
+  }, [creating, onRegisterGuard, confirmDiscard, specialtySavingRef]);
 
   return (
     <section className={`admin-doctor-editor ${styles.editor}`} aria-labelledby="new-doctor-title">
@@ -168,14 +214,14 @@ function CreateDoctorForm({ specialtyOptions, branches, onCreated, onCancel, onR
         <p>Спочатку заповніть основні дані. Після створення можна додати фото, біографію та графік прийому.</p>
       </header>
       <form ref={formRef} className="admin-doctor-form" onSubmit={(event) => { event.preventDefault(); void create(); }}>
-        <fieldset className={styles.formFields} disabled={creating}>
+        <fieldset className={styles.formFields} disabled={busy}>
           <div className={`admin-form-grid ${styles.formGrid}`}>
             <label className={styles.fullWidth}>
               Ім’я та прізвище лікаря
               <input autoFocus value={draft.name} onChange={(event) => update("name", event.target.value)} required pattern=".*\S.*" autoComplete="name" placeholder="Наприклад, Іваненко Олена Петрівна" />
             </label>
-            <DoctorSpecialtyPicker value={draft.specialty} options={specialtyOptions} onChange={(value) => update("specialty", value)} disabled={creating} />
-            <DoctorBranchPicker value={draft.branch} onChange={(value) => update("branch", value)} addresses={branches.locations.map((location) => location.fullAddress)} loading={branches.loading} error={branches.error} disabled={creating} />
+            <DoctorSpecialtyPicker value={draft.specialty} options={specialtyOptions} onChange={(value) => update("specialty", value)} onCreate={onCreateSpecialty} onSavingChange={onSpecialtySavingChange} disabled={busy} />
+            <DoctorBranchPicker value={draft.branch} onChange={(value) => update("branch", value)} addresses={branches.locations.map((location) => location.fullAddress)} loading={branches.loading} error={branches.error} disabled={busy} />
             <label>
               Первинна консультація, ₴
               <input type="number" min="0" max="100000" step="1" value={draft.consultationPrice} onChange={(event) => update("consultationPrice", event.target.value)} placeholder="Не вказано" />
@@ -185,17 +231,17 @@ function CreateDoctorForm({ specialtyOptions, branches, onCreated, onCancel, onR
               <input type="number" min="0" max="100000" step="1" value={draft.repeatConsultationPrice} onChange={(event) => update("repeatConsultationPrice", event.target.value)} placeholder="Не вказано" />
             </label>
           </div>
-          <DoctorAcademicStatusPicker value={draft.specialty} onChange={(value) => update("specialty", value)} disabled={creating} />
+          <DoctorAcademicStatusPicker value={draft.specialty} onChange={(value) => update("specialty", value)} disabled={busy} />
           <DoctorPriceVisibilityField checked={draft.showConsultationPriceOnRequest} onChange={(value) => update("showConsultationPriceOnRequest", value)} />
           <DoctorPublicationFields isActive={draft.isActive} sortOrder={draft.sortOrder} onActiveChange={(value) => update("isActive", value)} onOrderChange={(value) => update("sortOrder", value)} />
         </fieldset>
         {error && <p className={styles.fieldError} role="alert">{error}</p>}
         <p className={styles.createStatus} role="status" aria-live="polite">
-          {creating ? "Створюємо профіль…" : safeSave.recoveredAt ? "Відновлено незбережену чернетку нового лікаря." : safeSave.dirty ? "Чернетка зберігається у цьому браузері · Ctrl+S" : draft.isActive ? "Профіль з’явиться у каталозі після створення." : "Профіль буде створено прихованим — без публікації на сайті."}
+          {specialtySaving ? "Зберігаємо спеціальність… Зачекайте перед збереженням профілю." : creating ? "Створюємо профіль…" : safeSave.recoveredAt ? "Відновлено незбережену чернетку нового лікаря." : safeSave.dirty ? "Чернетка зберігається у цьому браузері · Ctrl+S" : draft.isActive ? "Профіль з’явиться у каталозі після створення." : "Профіль буде створено прихованим — без публікації на сайті."}
         </p>
         <div className={styles.createActions}>
-          <button className="admin-ui-button" data-variant="primary" type="submit" disabled={creating} aria-busy={creating}>{creating ? "Створюємо…" : "Створити профіль"}</button>
-          <button className="admin-ui-button" data-variant="secondary" type="button" disabled={creating} onClick={onCancel}>Скасувати</button>
+          <button className="admin-ui-button" data-variant="primary" type="submit" disabled={busy} aria-busy={busy}>{specialtySaving ? "Зберігаємо спеціальність…" : creating ? "Створюємо…" : "Створити профіль"}</button>
+          <button className="admin-ui-button" data-variant="secondary" type="button" disabled={busy} onClick={onCancel}>Скасувати</button>
         </div>
       </form>
     </section>
@@ -208,6 +254,7 @@ function DoctorEditor({
   onDeleted,
   onRegisterGuard,
   specialtyOptions,
+  onCreateSpecialty,
   branches,
 }: {
   doctor: Doctor;
@@ -215,6 +262,7 @@ function DoctorEditor({
   onDeleted: (doctors: Doctor[]) => void;
   onRegisterGuard: (guard: (() => boolean) | null) => void;
   specialtyOptions: string[];
+  onCreateSpecialty: SaveDoctorSpecialty;
   branches: BranchChoices;
 }) {
   const [name, setName] = useState(doctor.name);
@@ -243,6 +291,8 @@ function DoctorEditor({
   const [hasError, setHasError] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const { specialtySaving, specialtySavingRef, onSpecialtySavingChange } = useSpecialtySaving();
+  const busy = saving || specialtySaving;
   const formRef = useRef<HTMLFormElement>(null);
 
   const baseline = useMemo(() => doctorProfileDraft(doctor), [doctor]);
@@ -295,6 +345,7 @@ function DoctorEditor({
   }, []);
 
   const saveProfile = useCallback(async () => {
+    if (saving || specialtySavingRef.current) return;
     setSaving(true);
     setStatus("");
     setHasError(false);
@@ -333,12 +384,13 @@ function DoctorEditor({
     } finally {
       setSaving(false);
     }
-  }, [applyProfileDraft, draft, onUpdated]);
+  }, [applyProfileDraft, draft, onUpdated, saving, specialtySavingRef]);
 
   const requestProfileSave = useCallback(() => {
+    if (specialtySavingRef.current) return;
     if (formRef.current?.reportValidity() === false) return;
     return saveProfile();
-  }, [saveProfile]);
+  }, [saveProfile, specialtySavingRef]);
 
   useEffect(() => {
     const key = `admin-safe-draft:doctor:${doctor.id}`;
@@ -363,17 +415,17 @@ function DoctorEditor({
       setHasError(false);
     },
     onSave: requestProfileSave,
-    busy: saving,
+    busy,
   });
 
   const { confirmDiscard } = safeSave;
   useEffect(() => {
-    onRegisterGuard(() => !saving && confirmDiscard());
+    onRegisterGuard(() => !saving && !specialtySavingRef.current && confirmDiscard());
     return () => onRegisterGuard(null);
-  }, [onRegisterGuard, confirmDiscard, saving]);
+  }, [onRegisterGuard, confirmDiscard, saving, specialtySavingRef]);
 
   const uploadPhoto = async () => {
-    if (!photo) return;
+    if (!photo || busy || specialtySavingRef.current) return;
     setSaving(true);
     setStatus("");
     setHasError(false);
@@ -402,6 +454,7 @@ function DoctorEditor({
   };
 
   const deleteProfile = async () => {
+    if (busy || specialtySavingRef.current) return;
     if (!window.confirm(`Видалити профіль «${doctor.name}»?`)) return;
     setSaving(true);
     setStatus("");
@@ -425,7 +478,9 @@ function DoctorEditor({
     }
   };
 
-  const saveStateLabel = saving
+  const saveStateLabel = specialtySaving
+    ? "Зберігаємо спеціальність…"
+    : saving
     ? "Зберігаємо зміни…"
     : hasError
       ? "Збереження потребує уваги"
@@ -434,7 +489,9 @@ function DoctorEditor({
         : lastSavedAt
           ? `Збережено о ${formatSaveTime(lastSavedAt)}`
           : "Усі зміни збережено";
-  const saveStateDetail = hasError
+  const saveStateDetail = specialtySaving
+    ? "Зачекайте перед збереженням профілю або переходом до іншого лікаря."
+    : hasError
     ? status
     : safeSave.recoveredAt
       ? `Відновлено чернетку о ${formatSaveTime(safeSave.recoveredAt)} · Ctrl+S`
@@ -474,14 +531,14 @@ function DoctorEditor({
             entityId={doctor.id}
             entityLabel={doctor.name}
             draftStorageKey={`admin-safe-draft:doctor:${doctor.id}`}
-            disabled={saving}
+            disabled={busy}
             hasUnsavedChanges={safeSave.dirty}
           />
           <button
             className="admin-ui-button"
             data-variant="danger"
             type="button"
-            disabled={saving}
+            disabled={busy}
             onClick={deleteProfile}
           >
             Видалити профіль
@@ -491,12 +548,12 @@ function DoctorEditor({
             data-variant="primary"
             type="submit"
             form="admin-doctor-profile-form"
-            disabled={!safeSave.dirty || saving}
-            aria-busy={saving}
+            disabled={!safeSave.dirty || busy}
+            aria-busy={busy}
             aria-keyshortcuts="Control+S Meta+S"
           >
-            {saving ? <span className="admin-button-loader" aria-hidden="true" /> : null}
-            {saving ? "Збереження..." : "Зберегти профіль"}
+            {busy ? <span className="admin-button-loader" aria-hidden="true" /> : null}
+            {specialtySaving ? "Зберігаємо спеціальність…" : saving ? "Збереження..." : "Зберегти профіль"}
           </button>
         </div>
       </div>
@@ -511,7 +568,7 @@ function DoctorEditor({
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            disabled={saving}
+            disabled={busy}
             onChange={(event) => setPhoto(event.target.files?.[0] ?? null)}
           />
         </label>
@@ -519,7 +576,7 @@ function DoctorEditor({
           className="admin-ui-button"
           data-variant="secondary"
           type="button"
-          disabled={!photo || saving}
+          disabled={!photo || busy}
           onClick={uploadPhoto}
         >
           Завантажити фото
@@ -535,18 +592,18 @@ function DoctorEditor({
           void saveProfile();
         }}
       >
-        <fieldset className={styles.formFields} disabled={saving}>
+        <fieldset className={styles.formFields} disabled={busy}>
         <div className={`admin-form-grid ${styles.formGrid}`}>
           <label>
             Ім’я та прізвище лікаря
             <input value={name} onChange={(event) => setName(event.target.value)} required pattern=".*\S.*" />
           </label>
-          <DoctorSpecialtyPicker value={specialty} options={specialtyOptions} onChange={setSpecialty} disabled={saving} />
+          <DoctorSpecialtyPicker value={specialty} options={specialtyOptions} onChange={setSpecialty} onCreate={onCreateSpecialty} onSavingChange={onSpecialtySavingChange} disabled={busy} />
           <label>
             Стаж роботи, років
             <input type="number" min="0" max="80" step="1" value={experienceYears} onChange={(event) => setExperienceYears(event.target.value)} placeholder="Не вказано" />
           </label>
-          <DoctorBranchPicker value={branch} onChange={setBranch} addresses={branches.locations.map((location) => location.fullAddress)} loading={branches.loading} error={branches.error} disabled={saving} />
+          <DoctorBranchPicker value={branch} onChange={setBranch} addresses={branches.locations.map((location) => location.fullAddress)} loading={branches.loading} error={branches.error} disabled={busy} />
           <label>
             Первинна консультація, ₴
             <input type="number" min="0" max="100000" step="1" value={consultationPrice} onChange={(event) => setConsultationPrice(event.target.value)} placeholder="Не вказано" />
@@ -559,7 +616,7 @@ function DoctorEditor({
           </label>
         </div>
 
-        <DoctorAcademicStatusPicker value={specialty} onChange={setSpecialty} disabled={saving} />
+        <DoctorAcademicStatusPicker value={specialty} onChange={setSpecialty} disabled={busy} />
         <DoctorPriceVisibilityField checked={showConsultationPriceOnRequest} onChange={setShowConsultationPriceOnRequest} />
 
         <DoctorPublicationFields isActive={isActive} sortOrder={sortOrder} onActiveChange={setIsActive} onOrderChange={setSortOrder} />
@@ -640,6 +697,8 @@ function DoctorEditor({
 }
 
 export default function DoctorsAdminPage() {
+  const router = useRouter();
+  const specialtyCatalog = useDoctorSpecialtyCatalog();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [query, setQuery] = useState("");
@@ -685,8 +744,9 @@ export default function DoctorsAdminPage() {
 
   const specialtyOptions = useMemo(() => getSpecialtyOptions([
     ...additionalDoctorSpecialtyOptions,
+    ...specialtyCatalog.specialties,
     ...[...defaultDoctors, ...doctors].map((doctor) => doctor.specialty),
-  ]), [doctors]);
+  ]), [doctors, specialtyCatalog.specialties]);
   const filteredDoctors = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("uk");
     return doctors.filter((doctor) => {
@@ -695,7 +755,10 @@ export default function DoctorsAdminPage() {
     }).sort(compareDoctors);
   }, [doctors, query, visibilityFilter]);
   const selectedDoctor = doctors.find((doctor) => doctor.id === selectedId);
-  const updateDoctors = useCallback((updatedDoctors: Doctor[]) => setDoctors(updatedDoctors), []);
+  const updateDoctors = useCallback((updatedDoctors: Doctor[]) => {
+    setDoctors(updatedDoctors);
+    router.refresh();
+  }, [router]);
   const registerEditorGuard = useCallback((guard: (() => boolean) | null) => { editorGuardRef.current = guard; }, []);
   const openCreateForm = () => {
     if (showCreateForm || editorGuardRef.current?.() === false) return;
@@ -713,6 +776,7 @@ export default function DoctorsAdminPage() {
         <h1>Профілі та графік лікарів</h1>
         <p>Оберіть профіль для редагування або додайте нового лікаря. Збережені зміни з’являються у каталозі.</p>
       </section>
+      <DoctorSpecialtyCatalog options={specialtyOptions} loading={specialtyCatalog.loading} error={specialtyCatalog.error} onRetry={specialtyCatalog.reload} onSave={specialtyCatalog.save} />
       {loading ? (
         <div className="admin-state" role="status">Завантажуємо лікарів…</div>
       ) : error ? (
@@ -764,11 +828,13 @@ export default function DoctorsAdminPage() {
           {showCreateForm ? (
             <CreateDoctorForm
               specialtyOptions={specialtyOptions}
+              onCreateSpecialty={specialtyCatalog.save}
               branches={branches}
               onRegisterGuard={registerEditorGuard}
               onCancel={() => { if (editorGuardRef.current?.() !== false) setShowCreateForm(false); }}
               onCreated={(doctor, updatedDoctors) => {
                 setDoctors(updatedDoctors);
+                router.refresh();
                 setSelectedId(doctor.id);
                 setQuery("");
                 setVisibilityFilter("all");
@@ -780,10 +846,11 @@ export default function DoctorsAdminPage() {
               key={selectedDoctor.id}
               doctor={selectedDoctor}
               specialtyOptions={specialtyOptions}
+              onCreateSpecialty={specialtyCatalog.save}
               branches={branches}
               onUpdated={updateDoctors}
               onRegisterGuard={registerEditorGuard}
-              onDeleted={(updatedDoctors) => { setDoctors(updatedDoctors); setSelectedId(updatedDoctors[0]?.id ?? ""); }}
+              onDeleted={(updatedDoctors) => { setDoctors(updatedDoctors); setSelectedId(updatedDoctors[0]?.id ?? ""); router.refresh(); }}
             />
           ) : (
             <div className={styles.emptyEditor}><h2>Додайте першого лікаря</h2><p>Новий профіль починається з імені, спеціальностей та вартості прийому.</p></div>

@@ -430,7 +430,10 @@ export default async function Home() {
             Усі послуги <span>⟶</span>
           </Link>
         </div>
-        <div className="services-grid" id="services-grid">
+        <div
+          className={homeServiceDetails.length === 6 ? "services-grid services-grid--six" : "services-grid"}
+          id="services-grid"
+        >
           {homeServiceDetails.map((service) => {
             const art = service.imageKey
               ? `/api/services/image?key=${encodeURIComponent(service.imageKey)}`

@@ -8,14 +8,17 @@ const contentSecurityPolicy = (analyticsEnabled: boolean) => [
   "frame-ancestors 'none'",
   "object-src 'none'",
   "img-src 'self' data: blob: https://*.public.blob.vercel-storage.com" +
-    (analyticsEnabled ? " https://www.googletagmanager.com https://*.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com https://www.google.com.ua https://www.google.pl" : ""),
+    (analyticsEnabled ? " https://www.googletagmanager.com https://*.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com https://www.google.com.ua https://www.google.pl https://*.clarity.ms https://c.bing.com" : ""),
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline'" +
-    (analyticsEnabled ? " https://www.googletagmanager.com https://www.googleadservices.com https://www.google.com" : ""),
+    // Google Ads also loads script elements from this exact DoubleClick host.
+    // script-src-elem inherits this directive; img/connect permissions are insufficient.
+    (analyticsEnabled ? " https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://*.clarity.ms" : ""),
   "connect-src 'self' https://api.openai.com https://challenges.cloudflare.com" +
     // The bare Analytics host does not cover its regional collection subdomains.
-    (analyticsEnabled ? " https://www.googletagmanager.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://stats.g.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com https://www.google.com.ua https://www.google.pl https://ad.doubleclick.net" : ""),
+    // Clarity rotates collection hosts; keep it public-only alongside GTM.
+    (analyticsEnabled ? " https://www.googletagmanager.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://stats.g.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com https://www.google.com.ua https://www.google.pl https://ad.doubleclick.net https://*.clarity.ms" : ""),
   "frame-src https://challenges.cloudflare.com https://www.google.com" +
     (analyticsEnabled ? " https://www.googletagmanager.com" : ""),
   "media-src 'self' blob:",

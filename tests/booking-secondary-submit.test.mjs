@@ -110,7 +110,7 @@ function harness(kind, options = {}) {
     const loaded = load("../app/components/SiteChrome.tsx", {
       ...dependencies,
       "./useBookingConfirmation": confirmation,
-      "../doctors/doctorCategories": doctorCategories,
+      "./PublicDoctorSpecialtiesProvider": { usePublicDoctorSpecialties: () => doctorCategories.doctorCategories },
       "./CloseIcon": {},
       "./SiteSettingsProvider": { useSiteSettings: () => siteSettings.defaultSiteSettings },
       "@/lib/siteSettings": siteSettings,

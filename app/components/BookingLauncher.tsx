@@ -5,6 +5,7 @@ import { sitePhoneHref } from "@/lib/siteSettings";
 import { preventNativeBookingSubmit, submitBookingFromClick } from "@/lib/bookingSubmission";
 import { useBookingConfirmation } from "./useBookingConfirmation";
 import { formatBookingComment } from "@/lib/bookingDetails";
+import { trackBookingFormOpen } from "@/lib/bookingAnalytics";
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -14,7 +15,7 @@ import { TurnstileField } from "./TurnstileField";
 import { clearPriceCalculatorSelection } from "../prices/calculatorSelection";
 import { type CenterLocation } from "../contacts/locationData";
 import { compatibleLocations, formatBookingPhone, serviceCategory, homeVisitService, isHomeVisitService, normalizeBookingService, homeVisitAddressComment } from "../../lib/bookingRequest";
-import { doctorCategories } from "../doctors/doctorCategories";
+import { usePublicDoctorSpecialties } from "./PublicDoctorSpecialtiesProvider";
 import { BookingStudySelect } from "./BookingStudySelect";
 import type { PriceItem } from "../prices/priceData";
 import { getImagingBookingOptions, imagingBookingLabels, resolveImagingBookingCategory } from "@/lib/imagingBooking";
@@ -27,19 +28,22 @@ const services = [
   "Проколювання вух", "Дерматоскопія родимок", "Перевірка слуху",
   "Сімейна медицина", "Скринінг здоров’я 40+", "Комплекс досліджень",
 ];
-const consultationServices = doctorCategories
-  .filter(({ value }) => !["group:radiology", "group:ultrasound"].includes(value))
-  .map(({ label }) => `Консультація: ${label}`);
 const helpService = "Допоможіть обрати послугу";
+type BookingOpening = { url: URL; session: object };
 
 // Keep real booking URLs as a fallback and preserve modified/new-tab clicks.
 export function BookingLauncher() {
   const pathname = usePathname();
-  const [request, setRequest] = useState<URL | null>(null);
+  const [request, setRequest] = useState<BookingOpening | null>(null);
   useEffect(() => {
+    const openBooking = (url: URL) => {
+      // Changing the selection while the dialog stays open is not another opening.
+      setRequest(current => ({ url, session: current?.session ?? {} }));
+    };
     const openFromUrl = () => {
       const url = new URL(window.location.href);
-      setRequest(url.pathname === "/contacts" && url.hash === "#booking" ? url : null);
+      if (url.pathname === "/contacts" && url.hash === "#booking") openBooking(url);
+      else setRequest(null);
     };
     const timer = window.setTimeout(openFromUrl, 0);
     const onClick = (event: MouseEvent) => {
@@ -49,7 +53,7 @@ export function BookingLauncher() {
       const url = new URL(anchor.href, window.location.href);
       if (url.origin !== window.location.origin || url.pathname !== "/contacts" || url.hash !== "#booking") return;
       event.preventDefault();
-      setRequest(url);
+      openBooking(url);
     };
     document.addEventListener("click", onClick, true);
     window.addEventListener("hashchange", openFromUrl);
@@ -61,14 +65,18 @@ export function BookingLauncher() {
       window.removeEventListener("popstate", openFromUrl);
     };
   }, [pathname]);
-  return request ? <BookingDialog key={request.href} request={request} sourcePathname={pathname} onClose={() => {
+  return request ? <BookingDialog key={request.url.href} request={request.url} opening={request.session} sourcePathname={pathname} onClose={() => {
     setRequest(null);
     if (window.location.hash === "#booking") window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
   }} /> : null;
 }
 
-function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sourcePathname?: string; onClose: () => void }) {
+function BookingDialog({ request, opening, sourcePathname, onClose }: { request: URL; opening: object; sourcePathname?: string; onClose: () => void }) {
   const settings = useSiteSettings();
+  const doctorCategories = usePublicDoctorSpecialties();
+  const consultationServices = doctorCategories
+    .filter(({ value }) => !["group:radiology", "group:ultrasound"].includes(value))
+    .map(({ label }) => `Консультація: ${label}`);
   const params = request.searchParams;
   const studies = params.get("services")?.trim() || "";
   const requestedDoctor = params.get("doctor")?.trim() || "";
@@ -114,6 +122,7 @@ function BookingDialog({ request, sourcePathname, onClose }: { request: URL; sou
   const canAutoSelect = !branchLoading && availableLocations.length === 1 && !availableLocations[0].requiresConfirmation && (!isDoctorBooking || assignedBranches);
   const selectedLocation = branchLoading ? undefined : canAutoSelect ? availableLocations[0] : availableLocations.find(({ id }) => id === locationId);
   useBookingConfirmation(reference === savedReference ? reference : "", "appointment");
+  useEffect(() => { trackBookingFormOpen(opening); }, [opening]);
 
   const closeBooking = () => {
     if (!submittingRef.current) onClose();

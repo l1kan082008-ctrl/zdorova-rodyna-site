@@ -35,6 +35,9 @@ const bookingRequest = load("../lib/bookingRequest.ts", {
   "./locationPolicy": load("../lib/locationPolicy.ts"),
 });
 const siteSettings = load("../lib/siteSettings.ts");
+const publicDoctorSpecialties = load("../lib/publicDoctorSpecialties.ts", {
+  "../app/doctors/doctorCategories.ts": load("../app/doctors/doctorCategories.ts"),
+});
 const doctorBookingLocations = load("../lib/doctorBookingLocations.ts", {
   "./doctorBranches": load("../lib/doctorBranches.ts"),
   "./locationPolicy": load("../lib/locationPolicy.ts"),
@@ -70,7 +73,8 @@ function harness(responseOverride, options = {}) {
   const document = { body: {}, documentElement: { classList: { add() {}, remove() {} } } };
   const originalPush = window.dataLayer.push.bind(window.dataLayer);
   Object.defineProperty(window.dataLayer, "push", { value: event => {
-    eventVisibility.push(nodes(committedTree).some(node => node.props?.className === "quick-booking__success"));
+    if (event.event === "form_submit") eventVisibility.push(nodes(committedTree).some(node => node.props?.className === "quick-booking__success"));
+    if (event.event === "booking_form_open") assert.ok(nodes(committedTree).some(node => node.props?.role === "dialog"), "opening is emitted only after the dialog commits");
     return originalPush(event);
   } });
   const selection = load("../app/prices/calculatorSelection.ts", {}, { window });
@@ -134,7 +138,7 @@ function harness(responseOverride, options = {}) {
       if (!previous || !deps || deps.some((value, index) => !Object.is(value, previous.deps?.[index]))) {
         pendingEffects.push(() => {
           previous?.cleanup?.();
-          effectSlots[i] = { deps, cleanup: effect() };
+          effectSlots[i] = { deps, effect, cleanup: effect() };
         });
       }
     },
@@ -148,23 +152,26 @@ function harness(responseOverride, options = {}) {
     react, "react/jsx-runtime": { jsx, jsxs: jsx, Fragment: "fragment" },
     "react-dom": { createPortal: child => child },
     "./SiteSettingsProvider": { useSiteSettings: () => siteSettings.defaultSiteSettings },
+    "./PublicDoctorSpecialtiesProvider": { usePublicDoctorSpecialties: () => publicDoctorSpecialties.getPublicDoctorCategories(options.publicDoctors ?? []) },
     "@/lib/siteSettings": siteSettings,
     "@/lib/bookingSubmission": load("../lib/bookingSubmission.ts"),
+    "@/lib/bookingAnalytics": analytics,
     "./useBookingConfirmation": confirmation,
     "@/lib/bookingDetails": load("../lib/bookingDetails.ts"),
     "@/lib/doctorBookingLocations": doctorBookingLocations,
     "./useModalDialog": { useModalDialog: () => {} },
     "./BookingStudySelect": { BookingStudySelect: BookingStudySelectBoundary },
     "@/lib/imagingBooking": load("../lib/imagingBooking.ts"),
-    "../doctors/doctorCategories": load("../app/doctors/doctorCategories.ts"), "next/navigation": {}, "./CloseIcon": {}, "./TurnstileField": {},
+    "next/navigation": {}, "./CloseIcon": {}, "./TurnstileField": {},
     "../prices/calculatorSelection": selection, "../../lib/bookingRequest": bookingRequest,
   }, { window, document, fetch, FormData: class { constructor(form) { this.form = form; } get(k) { return this.form[k] ?? null; } } },
   "\nexport { BookingDialog as TestDialog };\n");
   const request = new URL(window.location);
+  const opening = {};
   let closed = false;
   const render = () => {
     cursor = 0;
-    const tree = component.TestDialog({ request, sourcePathname: options.sourcePathname, onClose: () => { closed = true; } });
+    const tree = component.TestDialog({ request, opening, sourcePathname: options.sourcePathname, onClose: () => { closed = true; } });
     committedTree = tree;
     while (pendingEffects.length) pendingEffects.shift()();
     return tree;
@@ -177,8 +184,117 @@ function harness(responseOverride, options = {}) {
   const nativeSubmit = () => nodes(render()).find(n => n.type === "form").props.onSubmit({ preventDefault() {} });
   const flush = async () => { await new Promise(resolve => setImmediate(resolve)); return render(); };
   const dispose = () => effectSlots.forEach(effect => effect?.cleanup?.());
-  return { render, submit, nativeSubmit, release, releasePrices, releaseDoctors, releaseLocations, flush, dispose, selection, events, stored, notifications, requests, resourceRequests, window, eventVisibility, isClickPrevented: () => clickPrevented, isClosed: () => closed };
+  const replayEffects = () => effectSlots.forEach(slot => { if (slot) { slot.cleanup?.(); slot.cleanup = slot.effect(); } });
+  return { render, submit, nativeSubmit, release, releasePrices, releaseDoctors, releaseLocations, flush, dispose, replayEffects, selection, events, stored, notifications, requests, resourceRequests, window, eventVisibility, get conversions() { return window.dataLayer.filter(event => event.event === "form_submit"); }, isClickPrevented: () => clickPrevented, isClosed: () => closed };
 }
+
+test("a visible booking dialog emits one opening across rerenders and StrictMode effect replay", context => {
+  const h = harness();
+  context.after(h.dispose);
+  h.render();
+  h.replayEffects();
+  h.render();
+  assert.deepEqual(h.window.dataLayer, [{ event: "booking_form_open", form_type: "appointment" }]);
+  assert.deepEqual(h.conversions, []);
+  assert.deepEqual(h.requests, []);
+});
+
+function launcherHarness(url = "http://test.local/") {
+  const listeners = new Map(), timers = new Map();
+  let request = null, mounted = false, cleanup, nextTimer = 0;
+  const analyticsEvents = [];
+  const window = {
+    location: new URL(url),
+    history: { state: null, replaceState: (_state, _title, next) => { window.location = new URL(next, window.location); } },
+    setTimeout: callback => { timers.set(++nextTimer, callback); return nextTimer; },
+    clearTimeout: id => timers.delete(id),
+    addEventListener: (type, handler) => listeners.set(type, handler),
+    removeEventListener: type => listeners.delete(type),
+    dataLayer: analyticsEvents,
+  };
+  const document = { addEventListener: window.addEventListener, removeEventListener: window.removeEventListener };
+  class Element {
+    constructor(href, target = "") { this.href = href; this.target = target; }
+    closest() { return this; }
+    hasAttribute() { return false; }
+  }
+  const jsx = (type, props, key) => ({ type, props, key });
+  const component = load("../app/components/BookingLauncher.tsx", {
+    react: {
+      useState: () => [request, next => { request = typeof next === "function" ? next(request) : next; }],
+      useEffect: effect => { if (!mounted) { mounted = true; cleanup = effect(); } },
+    },
+    "react/jsx-runtime": { jsx, jsxs: jsx },
+    "react-dom": {}, "next/navigation": { usePathname: () => window.location.pathname },
+    "./SiteSettingsProvider": {}, "./PublicDoctorSpecialtiesProvider": {},
+    "@/lib/siteSettings": {}, "@/lib/bookingSubmission": {}, "./useBookingConfirmation": {},
+    "@/lib/bookingAnalytics": load("../lib/bookingAnalytics.ts", {}, { window }),
+    "@/lib/bookingDetails": {}, "@/lib/doctorBookingLocations": {}, "@/lib/imagingBooking": {},
+    "./useModalDialog": {}, "./BookingStudySelect": {}, "./CloseIcon": {}, "./TurnstileField": {},
+    "../prices/calculatorSelection": {}, "../../lib/bookingRequest": bookingRequest,
+  }, { window, document, Element });
+  return {
+    render: () => component.BookingLauncher(),
+    flushUrl: () => { for (const [id, callback] of timers) { timers.delete(id); callback(); } },
+    click: (href, modifiers = {}) => {
+      const event = { target: new Element(href, modifiers.target), button: 0, defaultPrevented: false, preventDefault() { this.defaultPrevented = true; }, ...modifiers };
+      listeners.get("click")(event);
+      return event;
+    },
+    navigate: href => { window.location = new URL(href); listeners.get("hashchange")(); },
+    dispose: () => cleanup?.(), window,
+  };
+}
+
+test("mounting the launcher or activating non-booking/modified links never reports a form opening", context => {
+  const h = launcherHarness();
+  context.after(h.dispose);
+  assert.equal(h.render(), null);
+  h.flushUrl();
+  for (const [url, modifiers] of [
+    ["http://test.local/contacts", {}],
+    ["https://other.invalid/contacts#booking", {}],
+    ["http://test.local/contacts#booking", { ctrlKey: true }],
+    ["http://test.local/contacts#booking", { target: "_blank" }],
+  ]) {
+    assert.equal(h.click(url, modifiers).defaultPrevented, false);
+    assert.equal(h.render(), null);
+  }
+  assert.deepEqual(h.window.dataLayer, []);
+});
+
+test("booking links keep one opening session until the dialog actually closes", context => {
+  const h = launcherHarness();
+  context.after(h.dispose);
+  h.render(); h.flushUrl();
+  const firstUrl = "http://test.local/contacts?service=КТ#booking";
+  assert.equal(h.click(firstUrl).defaultPrevented, true);
+  const first = h.render();
+  assert.equal(first.props.request.href, new URL(firstUrl).href);
+  h.click("http://test.local/contacts?service=МРТ#booking");
+  const changed = h.render();
+  assert.equal(changed.props.opening, first.props.opening, "selection changes in an open dialog cannot double count it");
+  assert.deepEqual(h.window.dataLayer, [], "a click alone cannot emit before BookingDialog commits");
+  changed.props.onClose();
+  assert.equal(h.render(), null);
+  h.click(firstUrl);
+  assert.notEqual(h.render().props.opening, first.props.opening, "reopening is a new session");
+});
+
+test("direct booking URLs and hash navigation create sessions only while the dialog is open", context => {
+  const h = launcherHarness("http://test.local/contacts?service=КТ#booking");
+  context.after(h.dispose);
+  assert.equal(h.render(), null);
+  h.flushUrl();
+  const first = h.render();
+  assert.ok(first.props.opening);
+  h.navigate("http://test.local/contacts?service=МРТ#booking");
+  assert.equal(h.render().props.opening, first.props.opening);
+  h.navigate("http://test.local/contacts");
+  assert.equal(h.render(), null);
+  h.navigate("http://test.local/contacts#booking");
+  assert.notEqual(h.render().props.opening, first.props.opening);
+});
 
 test("booking phone is invalid before the browser can dispatch submit", context => {
   for (const [phone, expectedValid] of [
@@ -203,14 +319,15 @@ test("appointment: native constraints block click activation before a request an
   assert.deepEqual(h.requests, []);
   await h.nativeSubmit();
   assert.deepEqual(h.requests, [], "a submit event must never be the request entry point");
-  assert.deepEqual(h.window.dataLayer, []);
+  assert.deepEqual(h.conversions, []);
+  assert.deepEqual(h.window.dataLayer, [{ event: "booking_form_open", form_type: "appointment" }]);
 });
 
 test("appointment: a synthetic native submit with valid fields cannot start a request", async () => {
   const h = harness();
   await h.nativeSubmit();
   assert.deepEqual(h.requests, []);
-  assert.deepEqual(h.window.dataLayer, []);
+  assert.deepEqual(h.conversions, []);
 });
 
 test("successful booking confirms, clears cart and CITO, and blocks a rapid duplicate submit", async () => {
@@ -218,14 +335,14 @@ test("successful booking confirms, clears cart and CITO, and blocks a rapid dupl
   const pending = h.submit();
   await h.submit();
   assert.equal(h.requests.length, 1);
-  assert.deepEqual(h.window.dataLayer, [], "no success event before API confirmation");
+  assert.deepEqual(h.conversions, [], "no success event before API confirmation");
   assert.equal(nodes(h.render()).find(n => n.props?.type === "submit").props.disabled, true);
   assert.deepEqual(h.selection.readPriceCalculatorSelection(), ["test-ct"]);
   h.release();
   await pending;
   assert.equal(h.stored.length, 1);
   assert.equal(h.notifications.length, 1);
-  assert.deepEqual(h.window.dataLayer, [], "API confirmation alone cannot emit before the confirmation UI commits");
+  assert.deepEqual(h.conversions, [], "API confirmation alone cannot emit before the confirmation UI commits");
   assert.match(h.stored[0].comment, /Обрані дослідження:\n• КТ/);
   assert.match(h.stored[0].comment, /4\s?100/);
   assert.deepEqual(h.selection.readPriceCalculatorSelection(), []);
@@ -234,11 +351,15 @@ test("successful booking confirms, clears cart and CITO, and blocks a rapid dupl
   assert.equal(h.window.location.searchParams.has("services"), false);
   assert.equal(h.window.location.searchParams.has("total"), false);
   const result = h.render();
-  assert.deepEqual(h.window.dataLayer, [{ event: "form_submit", form_type: "appointment" }]);
+  assert.deepEqual(h.conversions, [{ event: "form_submit", form_type: "appointment" }]);
+  assert.deepEqual(h.window.dataLayer, [
+    { event: "booking_form_open", form_type: "appointment" },
+    { event: "form_submit", form_type: "appointment" },
+  ]);
   assert.deepEqual(h.eventVisibility, [true], "the confirmation exists when analytics observes the event");
   assert.equal(h.isClickPrevented(), true, "the native submit default was cancelled before the request");
   h.render();
-  assert.equal(h.window.dataLayer.length, 1, "a rerender cannot repeat the conversion");
+  assert.equal(h.conversions.length, 1, "a rerender cannot repeat the conversion");
   assert.match(text(result), /Заявку отримано/);
   assert.equal(nodes(result).some(n => n.type === "form"), false);
   nodes(result).find(n => n.type === "button" && text(n) === "Готово").props.onClick();
@@ -265,7 +386,7 @@ for (const [name, response] of [
     await h.submit();
     assert.equal(h.requests.length, 2);
     assert.equal(h.stored.length, 0);
-    assert.deepEqual(h.window.dataLayer, []);
+    assert.deepEqual(h.conversions, []);
   });
 }
 
@@ -274,7 +395,8 @@ for (const phone of ["", "067", "067123456", "0000000000"]) {
     const h = harness(undefined, { phone });
     await h.submit();
     assert.equal(h.requests.length, 0);
-    assert.deepEqual(h.window.dataLayer, []);
+    assert.deepEqual(h.conversions, []);
+    assert.deepEqual(h.window.dataLayer, [{ event: "booking_form_open", form_type: "appointment" }]);
     assert.ok(nodes(h.render()).some(n => n.props?.role === "alert"));
   });
 }
@@ -285,7 +407,7 @@ test("honeypot decoy confirmation never becomes an analytics conversion", async 
   assert.equal(h.requests.length, 1);
   assert.equal(h.stored.length, 0);
   assert.equal(h.notifications.length, 0);
-  assert.deepEqual(h.window.dataLayer, []);
+  assert.deepEqual(h.conversions, []);
   assert.match(text(h.render()), /Заявку отримано/, "keep the honeypot response indistinguishable to bots");
 });
 
@@ -293,7 +415,7 @@ test("server validation failure does not report a booking", async () => {
   const h = harness(undefined, { consent: "" });
   const pending = h.submit(); h.release(); await pending;
   assert.equal(h.stored.length, 0);
-  assert.deepEqual(h.window.dataLayer, []);
+  assert.deepEqual(h.conversions, []);
   assert.ok(nodes(h.render()).some(n => n.props?.role === "alert"));
 });
 
@@ -391,6 +513,27 @@ test("an explicitly chosen non-imaging service on a modality page keeps general 
   assert.equal(h.resourceRequests.includes("/api/public/prices"), false);
 });
 
+test("a new public doctor specialty can be booked with compatible branches and reaches the saved request", async context => {
+  const h = harness(undefined, {
+    url: bookingUrl(),
+    publicDoctors: [
+      { specialty: "Проктолог-хірург, професор" },
+      { specialty: "Нейрохірург", isActive: false },
+    ],
+  });
+  context.after(h.dispose);
+  const control = serviceControl(await h.flush());
+  const service = "Консультація: Проктолог-хірург";
+  assert.ok(optionValues(control).includes(service));
+  assert.equal(optionValues(control).includes("Консультація: Нейрохірург"), false);
+  control.props.onChange({ target: { value: service } });
+  assert.deepEqual(optionValues(locationControl(h.render())), ["doctor"]);
+  const pending = h.submit(); h.release(); await pending;
+  assert.equal(h.stored[0].service, service);
+  assert.equal(h.notifications[0].service, service);
+  assert.equal(h.resourceRequests.includes("/api/doctors"), false);
+});
+
 test("doctor booking preserves the doctor and consultation without fetching or showing a modality selector", async context => {
   const h = harness(undefined, { url: bookingUrl({ doctor: "Тестовий лікар", bookingCategory: "ct" }), sourcePathname: "/services/ct" });
   context.after(h.dispose);
@@ -426,9 +569,9 @@ test("a doctor's two assigned branches are the only choices and the chosen addre
   assert.match(h.stored[0].comment, /Бажане відділення:\nРівне, тестова адреса/);
   assert.doesNotMatch(h.stored[0].comment, /стороння адреса|друга тестова адреса/);
   assert.equal(h.stored[0].doctor, doctor.name);
-  assert.deepEqual(h.window.dataLayer, []);
+  assert.deepEqual(h.conversions, []);
   h.render();
-  assert.deepEqual(h.window.dataLayer, [{ event: "form_submit", form_type: "appointment" }]);
+  assert.deepEqual(h.conversions, [{ event: "form_submit", form_type: "appointment" }]);
 });
 
 test("doctorId uses the current doctor's name and branches even when the old link name differs", async context => {
