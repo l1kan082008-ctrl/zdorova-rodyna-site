@@ -77,6 +77,7 @@
   grid-row: span 4;
   grid-template-rows: subgrid;
 }
+.home-page .pricing-carousel-track > .price-card > p { margin-bottom: 12px; }
 .home-page .doctor-hint-mobile { display: none; }
 @media (max-width: 720px) {
   .home-page .pricing-heading { gap: 8px; margin-bottom: 16px; }
