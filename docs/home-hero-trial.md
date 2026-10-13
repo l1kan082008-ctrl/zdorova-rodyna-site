@@ -2,7 +2,7 @@
 
 ## Current right-side trial (Firefly)
 
-Source: `C:/Users/L1kan/Downloads/Firefly .png`. Asset: `public/hero-family-walking-trial.webp` (1376×768, WebP encoding only). The exact supplied illustration is horizontally reflected with CSS `scaleX(-1)`. The copy occupies a separate pure-white column aligned to the shared content frame. On desktop the artwork extends to the right viewport edge with the original curved silhouette, and the advantages panel overlaps its lower edge, matching the supplied placement reference. The right slot clips unused source whitespace while keeping all three figures visible; below 980px the illustration follows the copy.
+Source: `C:/Users/L1kan/Downloads/Firefly-retouched.png` (owner revision, 2026-10-14). Asset: `public/hero-family-walking-retouched-v2.webp` (1376×768, WebP quality 90 encoding only). The supplied illustration is horizontally reflected with the existing CSS `scaleX(-1)` at every breakpoint; the asset itself is not flipped, cropped or regenerated. The previous `public/hero-family-walking-trial.webp` remains available. The copy occupies a separate pure-white column aligned to the shared content frame. On desktop the artwork extends to the right viewport edge with the original curved silhouette, and the advantages panel overlaps its lower edge, matching the supplied placement reference. The right slot clips unused source whitespace while keeping all three figures visible; below 980px the illustration follows the copy.
 
 Remove `hero--family-walking-trial` to restore the original banner. Replace it with `hero--family-trial hero--family-wide-trial` to restore the preceding full-width trial. All previous assets remain unchanged.
 

@@ -291,7 +291,7 @@ body .home-page > #about.about-section { background: var(--surface-neutral); }
   margin: 0;
   aspect-ratio: auto;
   border-radius: 0 52% 52% 0;
-  background: #fff url("/hero-family-walking-trial.webp") left center / auto min(580px, 44vw) no-repeat;
+  background: #fff url("/hero-family-walking-retouched-v2.webp") left center / auto min(580px, 44vw) no-repeat;
   filter: none;
   transform: scaleX(-1);
   -webkit-mask-image: linear-gradient(90deg, #000 82%, transparent 100%);
