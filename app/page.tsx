@@ -165,7 +165,7 @@ async function getPopularPriceDirections() {
       category: item.category,
       title: item.name,
       text: formatPrice(item.amount),
-      note: `${item.categoryLabel} · популярне за заявками за 30 днів`,
+      note: item.categoryLabel,
     }));
 
     const fallbackItems = buildFallbackPriceDirections(priceItems).filter(
