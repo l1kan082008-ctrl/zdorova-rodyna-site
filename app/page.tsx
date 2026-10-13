@@ -3,6 +3,7 @@ import { getSiteSettings } from "./api/settings/settingsStore";
 import { sitePhoneHref } from "@/lib/siteSettings";
 import { doctorBookingHref, splitDoctorBranches } from "@/lib/doctorBranches";
 import { priceSearchIdentity } from "./prices/deduplicateSearch";
+import { rankPopularPriceItems } from "@/lib/popularServices";
 import Link from "next/link";
 import "./home-refinements.css";
 import type { CSSProperties } from "react";
@@ -148,62 +149,24 @@ function buildFallbackPriceDirections(items: PriceItem[]): PopularPriceDirection
   });
 }
 
-const popularServiceAliases: Record<string, string[]> = {
-  "ехокг": ["ехо", "серця"],
-  "узд серця": ["ехо", "серця"],
-  "узд щитоподібної залози": ["щитоподібної", "залози"],
-  "щитоподібна залоза": ["щитоподібної", "залози"],
-  "холтер": ["холтер"],
-  "холтер екг": ["холтер"],
-};
-
-const normalizeServiceName = (value: string) =>
-  value.trim().toLocaleLowerCase("uk-UA");
-
-function findCatalogItem(
-  serviceName: string,
-  items: PriceItem[] = catalogItems,
-): PriceItem | undefined {
-  const normalized = normalizeServiceName(serviceName);
-  const exactItem = items.find(
-    (item) => normalizeServiceName(item.name) === normalized,
-  );
-  if (exactItem) return exactItem;
-
-  const searchTerms = popularServiceAliases[normalized] ?? [normalized];
-  return items.find((item) => {
-    const searchable = normalizeServiceName(
-      `${item.name} ${(item.aliases ?? []).join(" ")}`,
-    );
-    return searchTerms.every((term) => searchable.includes(term));
-  });
-}
-
 async function getPopularPriceDirections() {
   try {
     const [statistics, priceItems] = await Promise.all([
-      listPopularBookingServices().catch(() => []),
+      listPopularBookingServices().catch(() => {
+        console.error(JSON.stringify({ event: "popular_booking_services_load_failed" }));
+        return [];
+      }),
       listPublicPriceItems().catch(() => catalogItems),
     ]);
-    const seen = new Set<string>();
-    const dynamicItems = statistics.flatMap(({ service }) => {
-      const item = findCatalogItem(service, priceItems);
-
-      if (!item || seen.has(item.id)) {
-        return [];
-      }
-
-      seen.add(item.id);
-      return [
-        {
-          priceItemId: item.id,
-          category: item.category,
-          title: item.name,
-          text: formatPrice(item.amount),
-          note: `${item.categoryLabel} · популярне за підтвердженими записами`,
-        },
-      ];
-    });
+    const ranked = rankPopularPriceItems(statistics, priceItems);
+    const seen = new Set(ranked.map(({ item }) => item.id));
+    const dynamicItems = ranked.map(({ item }) => ({
+      priceItemId: item.id,
+      category: item.category,
+      title: item.name,
+      text: formatPrice(item.amount),
+      note: `${item.categoryLabel} · популярне за заявками за 30 днів`,
+    }));
 
     const fallbackItems = buildFallbackPriceDirections(priceItems).filter(
       (item) => !seen.has(item.priceItemId),

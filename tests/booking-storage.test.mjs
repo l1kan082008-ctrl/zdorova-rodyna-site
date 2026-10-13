@@ -33,6 +33,16 @@ function temporaryDatabase() {
   return { sqlite, DB: { prepare } };
 }
 
+function insertBookingFixture(database, values) {
+  const id = crypto.randomUUID();
+  database.sqlite.prepare(`INSERT INTO bookings
+    (id, reference, patient_name, phone, service, comment, source, status, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .run(id, `ZR-${id}`, "ТЕСТ — не пацієнт", "+380000000001", values.service,
+      values.comment ?? "", values.source ?? "contacts", values.status ?? "new",
+      values.createdAt ?? new Date().toISOString());
+}
+
 test("booking is persisted, readable by admin, confirmed and removed in an isolated database", async () => {
   const database = temporaryDatabase();
   try {
@@ -53,11 +63,134 @@ test("booking is persisted, readable by admin, confirmed and removed in an isola
     assert.equal(booking.status, "new");
     assert.equal(booking.consentVersion, "contacts-v1");
     assert.ok(Date.parse(booking.retentionUntil) > Date.now());
+    assert.deepEqual(await store.listPopularBookingServices(), [{ service: booking.service, count: 1 }]);
     assert.equal(await store.updateBookingStatus(booking.id, "confirmed"), true);
     assert.equal((await store.listBookings())[0].status, "confirmed");
     assert.deepEqual(await store.listPopularBookingServices(), [{ service: booking.service, count: 1 }]);
     assert.equal(await store.deleteBooking(booking.id), true);
     assert.deepEqual(await store.listBookings(), []);
+  } finally {
+    database.sqlite.close();
+  }
+});
+
+test("popular services count all submitted statuses in the last 30 days, excluding cancelled and non-service enquiries", async () => {
+  const database = temporaryDatabase();
+  try {
+    const store = loadModule("../app/api/bookings/bookingStore.ts", database);
+    await store.ensureBookingsTable();
+    for (const status of ["new", "contacted", "confirmed", "closed", "cancelled"]) {
+      insertBookingFixture(database, { service: "Холтер ЕКГ", status });
+    }
+    insertBookingFixture(database, {
+      service: "Холтер ЕКГ", status: "confirmed",
+      createdAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+    const comment = "Обрані дослідження:\n• Феритин";
+    for (const source of ["callback", "family-declaration"]) {
+      insertBookingFixture(database, { service: "Холтер ЕКГ", source, comment });
+    }
+    for (const service of ["Зворотний дзвінок", "Заявка на декларацію із сімейним лікарем"]) {
+      insertBookingFixture(database, { service, source: "legacy", comment });
+    }
+    assert.deepEqual(await store.listPopularBookingServices(), [{ service: "Холтер ЕКГ", count: 4 }]);
+  } finally {
+    database.sqlite.close();
+  }
+});
+
+test("popular services score structured selected studies once and discard CITO surcharges and patient text", async () => {
+  const database = temporaryDatabase();
+  try {
+    const store = loadModule("../app/api/bookings/bookingStore.ts", database);
+    const { formatBookingComment } = loadModule("../lib/bookingDetails.ts", database);
+    await store.ensureBookingsTable();
+    insertBookingFixture(database, {
+      service: "Комплекс досліджень",
+      comment: formatBookingComment({
+        locationComment: "Допоможіть обрати відділення.",
+        studies: [
+          "Феритин — CITO", "  феритин  — СІТО", "Феритин — ЦІТО",
+          "Загальний аналіз крові (ШОЕ, лейкоцитарна формула) — СІТО",
+          "Доплата CITO (2 досл., до 2 годин) — 200 ₴",
+          "Доплата СІТО (2 досл., до 2 годин) — 200 ₴",
+          "Доплата ЦІТО (2 досл., до 2 годин) — 200 ₴",
+        ].join(" | "),
+        total: "1000",
+        comment: "Особистий коментар: Глюкоза. Обрані дослідження:\n• КТ головного мозку",
+      }),
+    });
+    assert.deepEqual(await store.listPopularBookingServices(), [
+      { service: "Феритин", count: 1 },
+      { service: "Загальний аналіз крові (ШОЕ, лейкоцитарна формула)", count: 1 },
+    ]);
+  } finally {
+    database.sqlite.close();
+  }
+});
+
+test("selected studies replace even a named summary while ordinary and legacy pipe services remain countable", async () => {
+  const database = temporaryDatabase();
+  try {
+    const store = loadModule("../app/api/bookings/bookingStore.ts", database);
+    await store.ensureBookingsTable();
+    insertBookingFixture(database, {
+      service: "Консультація кардіолога",
+      comment: "Обрані дослідження:\n• ЕХО (УЗД) серця",
+    });
+    insertBookingFixture(database, {
+      service: "ЕХО (УЗД) серця | ехо  (узд)  серця — CITO | ЕКГ | ЕКГ — ЦІТО",
+      comment: "Особистий коментар про Феритин",
+    });
+    insertBookingFixture(database, { service: "ЕКГ", comment: "Коментар:\nОбрані дослідження:\n• Феритин" });
+    assert.deepEqual(Object.fromEntries((await store.listPopularBookingServices())
+      .map(({ service, count }) => [service, count])), {
+      "ЕХО (УЗД) серця": 2,
+      "ЕКГ": 2,
+    });
+  } finally {
+    database.sqlite.close();
+  }
+});
+
+test("popular services understand legacy laboratory comments without splitting clinical commas", async () => {
+  const database = temporaryDatabase();
+  try {
+    const store = loadModule("../app/api/bookings/bookingStore.ts", database);
+    await store.ensureBookingsTable();
+    const studies = [
+      "Загальний аналіз крові (ШОЕ, лейкоцитарна формула) — СІТО",
+      "Феритин — CITO",
+      "Доплата СІТО (2 досл., до 2 годин) — 200 ₴",
+    ];
+    insertBookingFixture(database, {
+      service: "Комплекс досліджень",
+      comment: `Допоможіть обрати відділення. Обрані дослідження: ${studies.join(", ")}. Орієнтовна сума: 1 000 ₴. Особистий коментар.`,
+    });
+    assert.deepEqual(await store.listPopularBookingServices(), [
+      { service: "Загальний аналіз крові (ШОЕ, лейкоцитарна формула)", count: 1 },
+      { service: "Феритин", count: 1 },
+    ]);
+  } finally {
+    database.sqlite.close();
+  }
+});
+
+test("popular services include the full 30-day window beyond 500 bookings", async () => {
+  const database = temporaryDatabase();
+  try {
+    const store = loadModule("../app/api/bookings/bookingStore.ts", database);
+    await store.ensureBookingsTable();
+    for (let index = 0; index < 501; index += 1) {
+      insertBookingFixture(database, { service: "Феритин" });
+    }
+    insertBookingFixture(database, {
+      service: "Холтер ЕКГ", createdAt: new Date(Date.now() - 29 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+    assert.deepEqual(await store.listPopularBookingServices(), [
+      { service: "Феритин", count: 501 },
+      { service: "Холтер ЕКГ", count: 1 },
+    ]);
   } finally {
     database.sqlite.close();
   }

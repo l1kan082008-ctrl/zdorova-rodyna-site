@@ -1,4 +1,5 @@
 import { env } from "@/lib/runtimeEnv";
+import { parseBookingDetails } from "@/lib/bookingDetails";
 
 export type BookingStatus =
   | "new"
@@ -175,28 +176,36 @@ export async function listBookings() {
 export async function listPopularBookingServices() {
   await ensureBookingsTable();
   const result = await env.DB.prepare(
-    `SELECT service
+    `SELECT service, comment
      FROM bookings
-     WHERE status IN ('confirmed', 'closed')
+     WHERE status IN ('new', 'contacted', 'confirmed', 'closed')
        AND datetime(created_at) >= datetime('now', '-30 days')
-     ORDER BY created_at DESC
-     LIMIT 500`,
-  ).all<{ service: string }>();
+       AND source NOT IN ('callback', 'family-declaration')
+       AND TRIM(service) NOT IN ('Зворотний дзвінок', 'Заявка на декларацію із сімейним лікарем')
+     ORDER BY created_at DESC`,
+  ).all<{ service: string; comment: string }>();
 
-  const counts = new Map<string, number>();
+  const counts = new Map<string, { service: string; count: number }>();
 
   result.results.forEach((booking) => {
-    booking.service
-      .split("|")
-      .map((service) => service.trim())
-      .filter(Boolean)
-      .forEach((service) => {
-        counts.set(service, (counts.get(service) ?? 0) + 1);
-      });
+    // The selected studies replace a package/summary label. Never score free text.
+    const studies = parseBookingDetails(booking.comment).studies;
+    const services = studies.length ? studies : booking.service.split("|");
+    const seen = new Set<string>();
+    services.forEach((value) => {
+      const service = value.replace(/\s+/gu, " ").trim()
+        .replace(/\s+[—–-]\s*(?:CITO|СІТО|ЦІТО)$/iu, "").trim();
+      if (!service || /^Доплата\s+(?:CITO|СІТО|ЦІТО)(?=\s|\(|$)/iu.test(service)) return;
+      const key = service.toLocaleLowerCase("uk-UA");
+      if (seen.has(key)) return;
+      seen.add(key);
+      const item = counts.get(key) ?? { service, count: 0 };
+      item.count += 1;
+      counts.set(key, item);
+    });
   });
 
-  return [...counts.entries()]
-    .map(([service, count]) => ({ service, count }))
+  return [...counts.values()]
     .sort((left, right) => right.count - left.count);
 }
 
