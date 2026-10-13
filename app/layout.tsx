@@ -61,10 +61,11 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       images: [
         {
-          url: `${origin}/og.png`,
+          url: `${origin}/og-center-v2.jpg`,
+          type: "image/jpeg",
           width: 1200,
           height: 630,
-          alt: "Здорова Родина — здорове майбутнє",
+          alt: "Медичний центр «Здорова Родина» — фасад і головний вхід",
         },
       ],
     },
@@ -72,7 +73,10 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title,
       description,
-      images: [`${origin}/og.png`],
+      images: [{
+        url: `${origin}/og-center-v2.jpg`,
+        alt: "Медичний центр «Здорова Родина» — фасад і головний вхід",
+      }],
     },
   };
 }
