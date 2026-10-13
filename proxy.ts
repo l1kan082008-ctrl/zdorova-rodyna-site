@@ -14,7 +14,8 @@ const contentSecurityPolicy = (analyticsEnabled: boolean) => [
   "script-src 'self' 'unsafe-inline'" +
     // Google Ads also loads script elements from this exact DoubleClick host.
     // script-src-elem inherits this directive; img/connect permissions are insufficient.
-    (analyticsEnabled ? " https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://*.clarity.ms" : ""),
+    // Allow only the team's Clarity project: the legacy GTM tag must not win startup.
+    (analyticsEnabled ? " https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://www.clarity.ms/tag/xh4cq19oo9 https://scripts.clarity.ms" : ""),
   "connect-src 'self' https://api.openai.com https://challenges.cloudflare.com" +
     // The bare Analytics host does not cover its regional collection subdomains.
     // Clarity rotates collection hosts; keep it public-only alongside GTM.

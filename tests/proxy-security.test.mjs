@@ -34,7 +34,8 @@ const analyticsTransports = [analyticsUrl, linkedAnalyticsUrl, ...regionalAnalyt
 const adsTransports = [adsUrl, polishAdsUrl];
 const adsScriptUrl = "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/123456789/";
 const clarityScripts = [
-  "https://www.clarity.ms/tag/test-project",
+  "https://www.clarity.ms/tag/xh4cq19oo9",
+  "https://www.clarity.ms/tag/xh4cq19oo9?ref=gtm",
   "https://scripts.clarity.ms/0.8.0/clarity.js",
 ];
 const clarityCollectors = [
@@ -82,7 +83,10 @@ function allowsUrl(policy, directive, value) {
     const matchesHost = allowed.hostname.startsWith("*.")
       ? target.hostname.endsWith(allowed.hostname.slice(1))
       : target.hostname === allowed.hostname;
-    return allowed.protocol === target.protocol && allowed.port === target.port && matchesHost;
+    const matchesPath = allowed.pathname.endsWith("/")
+      ? target.pathname.startsWith(allowed.pathname)
+      : target.pathname === allowed.pathname;
+    return allowed.protocol === target.protocol && allowed.port === target.port && matchesHost && matchesPath;
   });
 }
 
@@ -124,6 +128,27 @@ test("public page responses allow Clarity scripts, regional collectors and cooki
     ]) {
       for (const url of urls) {
         assert.equal(allowsUrl(policy, directive, url), true, `${path} ${directive} ${url}`);
+      }
+    }
+  }
+});
+
+test("only the chosen Clarity project can start, regardless of the legacy GTM tag", () => {
+  for (const path of ["/", "/doctors", "/services/holter"]) {
+    const policy = readPolicy(responseFor(path));
+    for (const directive of ["script-src", "script-src-elem"]) {
+      for (const url of clarityScripts) {
+        assert.equal(allowsUrl(policy, directive, url), true, `${path} ${directive} ${url}`);
+      }
+      for (const url of [
+        "https://www.clarity.ms/tag/yt2f9sy2qc",
+        "https://www.clarity.ms/tag/yt2f9sy2qc?ref=gtm",
+        "https://www.clarity.ms/tag/another-project",
+        "https://www.clarity.ms/tag/xh4cq19oo9-extra",
+        "https://www.clarity.ms/tag/xh4cq19oo9/extra",
+        "https://a.clarity.ms/tag/xh4cq19oo9",
+      ]) {
+        assert.equal(allowsUrl(policy, directive, url), false, `${path} ${directive} ${url}`);
       }
     }
   }
