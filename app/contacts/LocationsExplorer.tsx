@@ -6,7 +6,7 @@ import { useModalDialog } from "../components/useModalDialog";
 
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   branchServiceCatalog,
   getDirectionsUrl,
@@ -111,6 +111,11 @@ export function LocationsExplorer({
   const mapRef = useRef<HTMLElement>(null);
   const mediaDialogRef = useRef<HTMLDivElement>(null);
   const mediaCloseRef = useRef<HTMLButtonElement>(null);
+  const thumbnailListRef = useRef<HTMLDivElement>(null);
+  const photoTrackRef = useRef<HTMLDivElement>(null);
+  const photoTrackWidthRef = useRef(0);
+  const photoIndexRef = useRef(0);
+  const photoTargetRef = useRef<number | null>(null);
   useModalDialog({ open: openLocationId !== null, dialogRef: mediaDialogRef,
     initialFocusRef: mediaCloseRef, onClose: () => setOpenLocationId(null) });
 
@@ -133,6 +138,60 @@ export function LocationsExplorer({
   const visibleLocations = selectableLocations.filter(
     (location) => location.city === selectedLocation.city,
   );
+  const photoCount = openLocation?.gallery.length ?? 0;
+
+  const selectPhoto = useCallback((index: number) => {
+    const track = photoTrackRef.current;
+    if (!track || !photoCount) return;
+    const next = (index + photoCount) % photoCount;
+    photoTargetRef.current = next;
+    const slide = track.children[next] as HTMLElement;
+    track.scrollTo({
+      left: slide.offsetLeft,
+      behavior: Math.abs(next - photoIndexRef.current) > 1 || window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
+  }, [photoCount]);
+
+  const movePhoto = useCallback((direction: -1 | 1) => {
+    selectPhoto((photoTargetRef.current ?? photoIndexRef.current) + direction);
+  }, [selectPhoto]);
+
+  const updatePhotoPosition = () => {
+    const track = photoTrackRef.current;
+    if (!track?.clientWidth || !photoCount || track.clientWidth !== photoTrackWidthRef.current) return;
+    const index = Math.max(0, Math.min(photoCount - 1, Math.round(track.scrollLeft / track.clientWidth)));
+    photoIndexRef.current = index;
+    setPhotoIndex(index);
+    const target = photoTargetRef.current === null ? null : track.children[photoTargetRef.current] as HTMLElement;
+    if (target && Math.abs(track.scrollLeft - target.offsetLeft) < 1) {
+      photoTargetRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    const track = photoTrackRef.current;
+    if (!track) return;
+    // Re-align after a rotation or returning from video, never during a swipe.
+    const resize = new ResizeObserver(() => {
+      photoTrackWidthRef.current = track.clientWidth;
+      photoTargetRef.current = null;
+      const slide = track.children[photoIndexRef.current] as HTMLElement | undefined;
+      track.scrollTo({ left: slide?.offsetLeft ?? 0, behavior: "auto" });
+    });
+    resize.observe(track);
+    return () => {
+      resize.disconnect();
+      photoTrackWidthRef.current = 0;
+    };
+  }, [openLocationId, mediaMode]);
+
+  useEffect(() => {
+    const list = thumbnailListRef.current;
+    const active = list?.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
+    if (!list || !active) return;
+    const offset = active.getBoundingClientRect().left - list.getBoundingClientRect().left;
+    list.scrollTo({ left: list.scrollLeft + offset - (list.clientWidth - active.clientWidth) / 2 });
+  }, [openLocationId, photoIndex, mediaMode]);
 
   useEffect(() => {
     const desktop = window.matchMedia("(min-width: 821px)");
@@ -181,14 +240,12 @@ export function LocationsExplorer({
       }
       if (mediaMode === "photos" && openLocation.gallery.length > 1) {
         if (event.key === "ArrowLeft") {
-          setPhotoIndex((current) =>
-            current === 0 ? openLocation.gallery.length - 1 : current - 1,
-          );
+          event.preventDefault();
+          movePhoto(-1);
         }
         if (event.key === "ArrowRight") {
-          setPhotoIndex((current) =>
-            current === openLocation.gallery.length - 1 ? 0 : current + 1,
-          );
+          event.preventDefault();
+          movePhoto(1);
         }
       }
     };
@@ -198,13 +255,15 @@ export function LocationsExplorer({
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", closeOnKeyboard);
     };
-  }, [mediaMode, openLocation]);
+  }, [mediaMode, openLocation, movePhoto]);
 
   const showLocation = (location: CenterLocation) => {
     onSelectLocation(location.id);
     setOpenLocationId(location.id);
     setMediaMode("photos");
     setPhotoIndex(0);
+    photoIndexRef.current = 0;
+    photoTargetRef.current = null;
   };
 
   const selectLocation = (location: CenterLocation, showMapOnMobile = false) => {
@@ -426,53 +485,58 @@ export function LocationsExplorer({
                 {mediaMode === "photos" && openLocation.gallery[photoIndex] ? (
                   <>
                     <div className="branch-main-photo">
-                      <Image
-                        src={resolveImageSource(openLocation.gallery[photoIndex].src)} unoptimized={!canOptimizeImage(openLocation.gallery[photoIndex].src)}
-                        alt={openLocation.gallery[photoIndex].alt}
-                        fill
-                        quality={85}
-                        loading="eager"
-                        sizes="(max-width: 760px) calc(100vw - 58px), (max-width: 1080px) calc(100vw - 66px), (max-width: 1228px) calc(100vw - 82px), 1146px"
-                      />
+                      <div
+                        className="branch-photo-image"
+                        ref={photoTrackRef}
+                        role="group"
+                        aria-label="Фотографії відділення"
+                        onScroll={updatePhotoPosition}
+                        onPointerDown={() => { photoTargetRef.current = null; }}
+                        onTouchStart={() => { photoTargetRef.current = null; }}
+                        onWheel={() => { photoTargetRef.current = null; }}
+                      >
+                        {openLocation.gallery.map((photo, index) => (
+                          <div className="branch-photo-slide" key={photo.src} aria-hidden={index !== photoIndex}>
+                            <Image
+                              src={resolveImageSource(photo.src)} unoptimized={!canOptimizeImage(photo.src)}
+                              alt={photo.alt}
+                              fill
+                              quality={85}
+                              loading={Math.abs(index - photoIndex) <= 1 ? "eager" : "lazy"}
+                              draggable={false}
+                              sizes="(max-width: 760px) 100vw, (max-width: 1080px) and (max-height: 500px) 100vw, (max-width: 1080px) calc(100vw - 66px), (max-width: 1228px) calc(100vw - 82px), 1146px"
+                            />
+                          </div>
+                        ))}
+                      </div>
                       {openLocation.gallery.length > 1 ? (
                         <div className="branch-photo-controls">
                           <button
                             type="button"
                             aria-label="Попереднє фото"
-                            onClick={() =>
-                              setPhotoIndex((current) =>
-                                current === 0
-                                  ? openLocation.gallery.length - 1
-                                  : current - 1,
-                              )
-                            }
+                            onClick={() => movePhoto(-1)}
                           >
                             ←
                           </button>
                           <button
                             type="button"
                             aria-label="Наступне фото"
-                            onClick={() =>
-                              setPhotoIndex((current) =>
-                                current === openLocation.gallery.length - 1
-                                  ? 0
-                                  : current + 1,
-                              )
-                            }
+                            onClick={() => movePhoto(1)}
                           >
                             →
                           </button>
                         </div>
                       ) : null}
                     </div>
-                    <div className="branch-thumbnail-list">
+                    <div className="branch-thumbnail-list" ref={thumbnailListRef}>
                       {openLocation.gallery.map((photo, index) => (
                         <button
                           className={index === photoIndex ? "is-active" : ""}
                           type="button"
                           key={photo.src}
-                          onClick={() => setPhotoIndex(index)}
+                          onClick={() => selectPhoto(index)}
                           aria-label={`Відкрити фото ${index + 1}`}
+                          aria-pressed={index === photoIndex}
                         >
                           <Image
                             src={resolveImageSource(photo.src)} unoptimized={!canOptimizeImage(photo.src)}

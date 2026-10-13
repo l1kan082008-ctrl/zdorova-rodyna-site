@@ -1394,9 +1394,33 @@ body .branch-modal--gallery .branch-main-photo {
   aspect-ratio: 4 / 3;
   background: #fff;
 }
-body .branch-modal--gallery .branch-main-photo > img {
+body .branch-modal--gallery .branch-photo-image {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pinch-zoom;
+  scrollbar-width: none;
+}
+body .branch-modal--gallery .branch-photo-image::-webkit-scrollbar { display: none; }
+body .branch-modal--gallery .branch-photo-slide {
+  position: relative;
+  flex: 0 0 100%;
+  min-width: 0;
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+body .branch-modal--gallery .branch-photo-slide > img {
   max-height: none;
   object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 body .branch-modal--gallery .branch-thumbnail-list {
   flex: 0 0 auto;
@@ -1434,6 +1458,87 @@ body .branch-modal--gallery .branch-location-video {
   body .branch-modal--gallery .branch-modal-header h2 { margin: 0; font-size: 18px; }
   body .branch-modal--gallery .branch-media-viewer { gap: 6px; padding-bottom: 8px; }
   body .branch-modal--gallery .branch-thumbnail-list > button { flex-basis: 64px; height: 44px; }
+}
+
+/* On phones the photographs use the viewport, without a surrounding card. */
+@media (max-width: 760px), (max-width: 1080px) and (max-height: 500px) {
+  body .branch-modal--gallery {
+    inset: max(8px, env(safe-area-inset-top, 0px)) env(safe-area-inset-right, 0px) max(8px, env(safe-area-inset-bottom, 0px)) env(safe-area-inset-left, 0px);
+    height: calc(100dvh - max(8px, env(safe-area-inset-top, 0px)) - max(8px, env(safe-area-inset-bottom, 0px)));
+    max-height: none;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  body .branch-modal--gallery .branch-modal-header {
+    min-height: 48px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+  body .branch-modal--gallery .branch-modal-header > div {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  body .branch-modal--gallery .branch-modal-close { top: 0; right: 8px; }
+  body .branch-modal--gallery .branch-modal-tabs {
+    justify-content: center;
+    padding: 0 16px 8px;
+    border: 0;
+  }
+  body .branch-modal--gallery .branch-media-viewer {
+    gap: 8px;
+    padding: 0;
+    background: transparent;
+  }
+  body .branch-modal--gallery .branch-main-photo {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: 8px;
+    aspect-ratio: auto;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+  body .branch-modal--gallery .branch-photo-image {
+    position: relative;
+    inset: auto;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  body .branch-modal--gallery .branch-photo-controls {
+    display: none;
+  }
+  body .branch-modal--gallery .branch-thumbnail-list {
+    gap: 6px;
+    padding: 4px 8px;
+    scrollbar-width: none;
+  }
+  body .branch-modal--gallery .branch-thumbnail-list::-webkit-scrollbar { display: none; }
+  body .branch-modal--gallery .branch-thumbnail-list > button {
+    flex-basis: 64px;
+    height: 48px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    opacity: .55;
+  }
+  body .branch-modal--gallery .branch-thumbnail-list > button.is-active { opacity: 1; }
+  body .branch-modal--gallery .branch-thumbnail-list > button:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+    opacity: 1;
+  }
+  body .branch-modal--gallery .branch-location-video { border-radius: 0; }
 }
 
 /* Shared input geometry and focus treatment in booking and callback dialogs. */

@@ -82,6 +82,8 @@ The preparation guide reuses FAQ disclosure cards, including their radius, surfa
 
 Public floating dialogs share white surfaces, neutral #e5e7eb borders, a grey 0 24px 70px rgba(25,32,45,.16) shadow, 28px corners and 60px padding. At <=760px use 24px corners and 24px/20px vertical/horizontal padding. Branch dialogs apply the padding to their header and content panels.
 
+The branch photo gallery is an exception on phones (<=760px, also landscape <=1080px when height <=500px): a transparent, borderless viewport viewer with no card shadow or rounded image frames. Keep the location heading available to assistive technology, a safe-area-aware close button, uncropped photographs and an unframed thumbnail strip. Photos move with native horizontal swipe and scroll snapping; hide arrow buttons on phones while retaining desktop arrows and keyboard navigation. Synchronize thumbnail selection with scrolling without interrupting the gesture, preserve pinch zoom and respect reduced motion for programmatic navigation. Selection uses opacity plus an accessible pressed state; keyboard focus remains visible. Preserve the shared mobile blur/portal behavior and the desktop gallery layout.
+
 Public overlay scrollbars use one neutral treatment: 4px in WebKit/Blink, thin in Firefox, transparent track, #d5d8dd thumb and #b8bec6 on hover, without decorative gradients or arrow buttons.
 
 Booking and callback fields share 48px height, 12px corners, 16px text, neutral #c9ced5 borders and a #087f82 focus border with a restrained 3px teal-alpha ring. Composite phone fields render focus only around their outer wrapper. Textareas retain natural multiline height and error states retain semantic red.
