@@ -5,6 +5,13 @@ export const holterUrl = "https://zdorovarodynaplus.com.ua/services/holter";
 export const holterSeoTitle = "Холтер ЕКГ у Рівному — добове моніторування | Здорова Родина";
 export const holterSeoDescription =
   "Добове моніторування ЕКГ (Холтер) у Рівному: запис ритму серця 24 години, розшифрування лікарем, підготовка, актуальна вартість і запис у «Здоровій Родині».";
+export const holterSeoImage = {
+  url: "https://zdorovarodynaplus.com.ua/equipment/ecgpro-holter-bs6930-3.webp",
+  width: 1200,
+  height: 913,
+  type: "image/webp",
+  alt: "Монітор ЕКГ BS6930-3 для добового Холтер-моніторування у «Здоровій Родині»",
+} as const;
 
 export const holterFaq = [
   {
@@ -39,8 +46,20 @@ export const holterStructuredData = {
       name: holterSeoTitle,
       description: holterSeoDescription,
       inLanguage: "uk-UA",
+      image: { "@id": `${holterUrl}#primaryimage` },
+      primaryImageOfPage: { "@id": `${holterUrl}#primaryimage` },
       about: { "@type": "MedicalTest", name: "Холтерівське моніторування ЕКГ" },
       breadcrumb: { "@id": `${holterUrl}#breadcrumbs` },
+    },
+    {
+      "@type": "ImageObject",
+      "@id": `${holterUrl}#primaryimage`,
+      url: holterSeoImage.url,
+      contentUrl: holterSeoImage.url,
+      width: holterSeoImage.width,
+      height: holterSeoImage.height,
+      encodingFormat: holterSeoImage.type,
+      caption: holterSeoImage.alt,
     },
     {
       "@type": "BreadcrumbList",

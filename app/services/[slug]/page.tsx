@@ -27,7 +27,7 @@ import { CtServicePage } from "./CtServicePage";
 import { MriServicePage } from "./MriServicePage";
 import { HolterEquipment } from "./HolterEquipment";
 import { HolterFaq, HolterOverview } from "./HolterInformation";
-import { holterSeoDescription, holterSeoTitle, holterStructuredData, holterUrl } from "../holterContent";
+import { holterSeoDescription, holterSeoImage, holterSeoTitle, holterStructuredData, holterUrl } from "../holterContent";
 import { LabInformation } from "./LabInformation";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +81,6 @@ export async function generateMetadata({
   }
 
   if (slug === "holter") {
-    const image = "https://zdorovarodynaplus.com.ua/service-heroes/holter-cinematic-v1.webp";
     return {
       title: holterSeoTitle,
       description: holterSeoDescription,
@@ -92,13 +91,13 @@ export async function generateMetadata({
         url: holterUrl,
         locale: "uk_UA",
         type: "website",
-        images: [{ url: image, alt: "Холтерівське моніторування ЕКГ у «Здоровій Родині»" }],
+        images: [holterSeoImage],
       },
       twitter: {
         card: "summary_large_image",
         title: holterSeoTitle,
         description: holterSeoDescription,
-        images: [image],
+        images: [holterSeoImage],
       },
     };
   }

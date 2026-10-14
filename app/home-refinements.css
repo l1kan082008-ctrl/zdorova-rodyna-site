@@ -78,6 +78,8 @@
   grid-template-rows: subgrid;
 }
 .home-page .pricing-carousel-track > .price-card > p { margin-bottom: 12px; }
+.home-page .reception-photo { background-image: none; }
+.home-page .reception-photo > img { object-fit: cover; border-radius: inherit; }
 .home-page .doctor-hint-mobile { display: none; }
 @media (max-width: 720px) {
   .home-page .pricing-heading { gap: 8px; margin-bottom: 16px; }

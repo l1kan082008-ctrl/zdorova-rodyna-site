@@ -5,6 +5,8 @@ import { doctorBookingHref, splitDoctorBranches } from "@/lib/doctorBranches";
 import { priceSearchIdentity } from "./prices/deduplicateSearch";
 import { rankPopularPriceItems } from "@/lib/popularServices";
 import Link from "next/link";
+import Image from "next/image";
+import { homeMetadata, homeStructuredData } from "./homeMetadata";
 import "./home-refinements.css";
 import type { CSSProperties } from "react";
 import { listPopularBookingServices } from "./api/bookings/bookingStore";
@@ -34,6 +36,7 @@ import {
 import { serviceDetails } from "./services/serviceData";
 
 export const dynamic = "force-dynamic";
+export const metadata = homeMetadata;
 
 const advantages = [
   {
@@ -343,6 +346,9 @@ export default async function Home() {
 
   return (
     <main id="top" className="home-page">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{
+        __html: JSON.stringify(homeStructuredData).replace(/</g, "\\u003c"),
+      }} />
       <SiteHeader home />
       <HomeSearch items={searchItems} />
       <HomeHeroViewport />
@@ -486,11 +492,14 @@ export default async function Home() {
             Дізнатися більше про центр <span>→</span>
           </a>
         </div>
-        <div
-          className="reception-photo"
-          role="img"
-          aria-label="Будівля медичного центру «Здорова Родина»"
-        />
+        <div className="reception-photo">
+          <Image
+            src="/center-building.webp"
+            alt="Будівля медичного центру «Здорова Родина» у Рівному"
+            fill
+            sizes="(max-width: 720px) calc(100vw - 32px), (max-width: 1288px) 65vw, 820px"
+          />
+        </div>
       </section>
 
       <section className="quick-strip" aria-label="Зручності для пацієнтів">
