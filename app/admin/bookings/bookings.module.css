@@ -1,4 +1,13 @@
-.page { --booking-columns: 108px minmax(144px, 1.15fr) minmax(104px, .8fr) minmax(144px, 1.5fr) 144px 44px; }
+.page { --booking-columns: 108px minmax(144px, 1.15fr) minmax(104px, .8fr) minmax(144px, 1.5fr) 144px 44px; --booking-accent: #657383; }
+.page [data-category="doctor"] { --booking-accent: #356fa0; }
+.page [data-category="mri"] { --booking-accent: #7952ab; }
+.page [data-category="ct"] { --booking-accent: #af5c2e; }
+.page [data-category="ultrasound"] { --booking-accent: #117e9b; }
+.page [data-category="laboratory"] { --booking-accent: #087f72; }
+.page [data-category="holter"] { --booking-accent: #af476b; }
+.page [data-category="declaration"] { --booking-accent: #5d7c33; }
+.page [data-category="callback"] { --booking-accent: #9a710b; }
+.page [data-category="other"] { --booking-accent: #657383; }
 .heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
 .heading :global(.admin-intro) { margin-bottom: 0 !important; }
 .heading > button { flex-shrink: 0; }
@@ -11,6 +20,7 @@
 .page label { display: grid; min-width: 0; gap: 6px; color: var(--admin-ink); font-size: 12px; font-weight: 650; }
 .page .period { grid-template-columns: auto 190px; align-items: center; gap: 12px; }
 .page .period select, .page .filters select, .page .dateForm input { font-size: 14px; }
+.page :is(.period, .filters, .rowStatus) select:not([multiple]):not([size]) { padding-right: 40px; }
 .dateForm { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--admin-border); }
 .dateForm label { width: 180px; }
 .dateForm .error { flex-basis: 100%; margin: 0; }
@@ -34,16 +44,18 @@
 .categories { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; row-gap: 4px; }
 .category { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 5px 12px; min-width: 0; min-height: 48px; padding: 8px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--admin-ink); text-align: left; cursor: pointer; font: inherit; font-size: 12px; }
 .categoryLabel { min-width: 0; }
+.categoryLabel::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: var(--booking-accent); }
 .category strong { font-size: 14px; font-variant-numeric: tabular-nums; }
 .category:hover { background: var(--admin-canvas); }
-.category[aria-pressed="true"] { border-color: var(--admin-selection-border); background: var(--admin-selection); }
+.category[aria-pressed="true"] { border-color: color-mix(in srgb, var(--booking-accent) 40%, white); background: color-mix(in srgb, var(--booking-accent) 7%, white); }
 .categoryTrack { grid-column: 1 / -1; height: 3px; border-radius: 3px; background: var(--admin-canvas); overflow: hidden; }
-.categoryTrack > span { display: block; height: 100%; background: var(--admin-primary); border-radius: inherit; }
+.categoryTrack > span { display: block; height: 100%; background: var(--booking-accent); border-radius: inherit; }
 .note { margin: 12px 0 0; font-size: 11px; line-height: 1.6; color: var(--admin-muted); }
 .workspace { overflow: clip; }
 .listHeading { padding: 20px 24px 0; min-height: 48px; scroll-margin-top: 88px; }
-.listHeading h2 { display: flex; align-items: center; gap: 10px; }
-.listHeading h2 > span { padding: 2px 8px; border-radius: 6px; background: var(--admin-canvas); color: var(--admin-muted); font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.listActions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.page .listActions .pulseToggle[data-variant] { font-size: 12px; }
+.page .listActions .pulseToggle[data-variant][aria-pressed="true"] { --admin-button-bg: var(--admin-selection); --admin-button-ink: var(--admin-primary); }
 .filters { display: grid; grid-template-columns: minmax(200px, 1fr) 210px 170px; gap: 12px; padding: 16px 24px 24px; }
 .columnHeadings, .row { display: grid; grid-template-columns: var(--booking-columns); gap: 12px; padding-inline: 24px; }
 .columnHeadings { padding-block: 10px; background: var(--admin-canvas); border-block: 1px solid var(--admin-border); color: var(--admin-muted); font-size: 11px; font-weight: 650; }
@@ -51,8 +63,14 @@
 .list[data-loading="true"] { opacity: .6; }
 .item { margin: 0; padding: 0; }
 .item + .item { border-top: 1px solid var(--admin-border); }
-.row { min-height: 80px; align-items: center; padding-block: 12px; border-left: 3px solid transparent; padding-left: 21px; }
-.item[data-status="new"] > .row { border-left-color: var(--admin-primary); }
+.row { position: relative; isolation: isolate; min-height: 80px; align-items: center; padding-block: 12px; border-left: 4px solid var(--booking-accent); padding-left: 20px; }
+.row::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--booking-accent); opacity: 0; }
+.item[data-status="new"] > .row::before { opacity: .065; }
+.page[data-pulse="true"] .item[data-status="new"] > .row::before { animation: bookingNewPulse 3.6s ease-in-out infinite; }
+.page .item[data-status="new"] > .row:is(:hover, :focus-within)::before,
+.page .item[data-status="new"][data-expanded="true"] > .row::before { animation: none; opacity: .07; }
+.page[data-pulse="true"] .list[data-loading="true"] .item[data-status="new"] > .row::before { animation-play-state: paused; }
+@keyframes bookingNewPulse { 0%, 100% { opacity: .045; } 50% { opacity: .13; } }
 .row:hover, .item[data-expanded="true"] > .row { background: #f7f9fa; }
 .row > * { min-width: 0; }
 .date { display: grid; gap: 4px; color: var(--admin-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
@@ -61,10 +79,10 @@
 .patient strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 700; }
 .patient a { color: var(--admin-primary); font-size: 12px; font-weight: 600; width: fit-content; }
 .patient a:hover { text-decoration: underline; }
-.kind { font-size: 11px; color: var(--admin-muted); }
-.kind > span { display: inline-block; padding: 4px 7px; border: 1px solid var(--admin-border); border-radius: 6px; line-height: 1.4; }
+.kind { font-size: 11px; color: color-mix(in srgb, var(--booking-accent) 82%, black); }
+.kind > span { display: inline-block; padding: 4px 7px; border: 1px solid color-mix(in srgb, var(--booking-accent) 25%, white); background: color-mix(in srgb, var(--booking-accent) 8%, white); border-radius: 6px; line-height: 1.4; font-weight: 650; }
 .service { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; font-size: 12px; line-height: 1.5; }
-.page .rowStatus select { font-size: 12px; min-height: 44px; padding-left: 10px; padding-right: 26px; }
+.page .rowStatus select { font-size: 12px; min-height: 44px; padding-left: 10px; }
 .page .rowStatus select[data-status="new"] { color: #835200; border-color: #dfca9d; background-color: #fff9eb; }
 .page .rowStatus select[data-status="confirmed"] { color: #076465; border-color: #b7d7d2; background-color: var(--admin-selection); }
 .page .rowStatus select[data-status="cancelled"] { color: var(--admin-danger); border-color: var(--admin-danger-border); background-color: var(--admin-danger-surface); }
@@ -93,9 +111,9 @@
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 @media (max-width: 1279px) {
-  .page { --booking-columns: 88px minmax(128px, 1.1fr) minmax(84px, .8fr) minmax(100px, 1fr) 126px 44px; }
+  .page { --booking-columns: 88px minmax(128px, 1.1fr) minmax(84px, .8fr) minmax(100px, 1fr) 144px 44px; }
   .columnHeadings, .row { column-gap: 8px; padding-right: 16px; padding-left: 16px; }
-  .row { padding-left: 13px; }
+  .row { padding-left: 12px; }
   .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 16px; }
   .metric:nth-child(3) { border-right: 0; }
   .metric:nth-child(4) { padding-left: 0; }
@@ -103,7 +121,7 @@
 }
 @media (max-width: 1100px) {
   .columnHeadings { display: none; }
-  .row { grid-template-columns: 88px minmax(140px, 1fr) minmax(120px, .8fr) 44px; column-gap: 12px; row-gap: 6px; padding: 16px; padding-left: 13px; }
+  .row { grid-template-columns: 88px minmax(140px, 1fr) minmax(144px, .8fr) 44px; column-gap: 12px; row-gap: 6px; padding: 16px; padding-left: 12px; }
   .date { grid-column: 1; grid-row: 1; }
   .patient { grid-column: 2; grid-row: 1; }
   .rowStatus { grid-column: 3; grid-row: 1; }
@@ -140,8 +158,8 @@
   .dateForm button, .dateForm .error { grid-column: 1 / -1; }
   .listHeading { padding: 16px 16px 0; flex-wrap: wrap; gap: 4px; }
   .filters { padding: 16px; gap: 12px 8px; }
-  .page .filters select { font-size: 12px; padding-left: 10px; padding-right: 28px; }
-  .row { grid-template-columns: minmax(0, 1fr) 120px 44px; gap: 8px; padding: 12px; padding-left: 9px; }
+  .page .filters select { font-size: 12px; padding-left: 10px; }
+  .row { grid-template-columns: minmax(0, 1fr) 120px 44px; gap: 8px; padding: 12px; padding-left: 8px; }
   .patient { grid-column: 1 / 3; grid-row: 1; }
   .patient strong { font-size: 14px; }
   .patient a { font-size: 13px; }
@@ -157,4 +175,9 @@
   .studies, .comment { grid-column: auto; }
   .pagination { flex-wrap: wrap; justify-content: center; padding: 16px; }
   .pagination > span { width: 100%; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page[data-pulse="true"] .item[data-status="new"] > .row::before { animation: none; opacity: .065; }
+  .page .listActions .pulseToggle[data-variant] { display: none; }
 }

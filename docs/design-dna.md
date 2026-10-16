@@ -35,6 +35,7 @@ Warm, trustworthy and precise medical care. The public site feels calm and human
 - Icons are simple, single-colour and aligned to the same optical box.
 - Browser and search favicons use the supplied orange/teal emblem on a tightly framed square canvas. Preserve transparent backgrounds and internal gaps, including on dark browser tabs (owner preference, 2026-09-28). Keep stable SVG, ICO and 96px PNG URLs plus a 180px Apple home-screen icon with a white background; preserve the full header logo separately.
 - Lists expose state and hierarchy without decorative noise.
+- Admin booking categories have stable semantic colours shared by statistics, row rails and labelled category badges. New requests use a subtle full-row opacity pulse (3.6 seconds) beneath stationary text. Pause the pulse while a row is hovered, focused or expanded; provide a remembered pause control and static highlighting for reduced motion. Processed requests keep their category colour without pulsing.
 
 ## Responsive behavior
 

@@ -15,6 +15,7 @@ const statusCountLabels: Record<BookingStatus, string> = { new: "Нові", cont
 const countFormat = new Intl.NumberFormat("uk-UA");
 const shortDate = new Intl.DateTimeFormat("uk-UA", { timeZone: "Europe/Kyiv", day: "2-digit", month: "2-digit", year: "numeric" });
 const shortTime = new Intl.DateTimeFormat("uk-UA", { timeZone: "Europe/Kyiv", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+const pulsePreferenceKey = "zr-admin-booking-pulse";
 
 function presetRange(period: Exclude<Period, "custom">): DateRange {
   if (period === "all") return { from: "", to: "" };
@@ -48,7 +49,20 @@ export default function BookingsAdminPage() {
   const [pendingId, setPendingId] = useState("");
   const [expandedId, setExpandedId] = useState("");
   const [statsOpen, setStatsOpen] = useState(true);
+  const [pulseEnabled, setPulseEnabled] = useState(true);
   const listHeadingRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try { setPulseEnabled(window.localStorage.getItem(pulsePreferenceKey) !== "off"); }
+    catch { /* Keep the default when browser storage is unavailable. */ }
+  }, []);
+
+  const togglePulse = () => {
+    const enabled = !pulseEnabled;
+    setPulseEnabled(enabled);
+    try { window.localStorage.setItem(pulsePreferenceKey, enabled ? "on" : "off"); }
+    catch { /* The toggle still works for the current visit. */ }
+  };
 
   useEffect(() => {
     const timer = window.setTimeout(() => { setSearch(query.trim()); setPage(1); }, 300);
@@ -126,7 +140,7 @@ export default function BookingsAdminPage() {
   const rangeLabel = range.from ? `${range.from.split("-").reverse().join(".")} — ${range.to.split("-").reverse().join(".")}` : "Усі збережені заявки";
 
   return (
-    <div className={`admin-bookings-page ${styles.page}`}>
+    <div className={`admin-bookings-page ${styles.page}`} data-pulse={pulseEnabled}>
       <header className={styles.heading}>
         <div className="admin-intro"><span className="section-kicker">Адмін-панель</span><h1>Заявки пацієнтів</h1><p>Кількість звернень, напрямки та робота із заявками.</p></div>
         <button type="button" className="admin-ui-button" data-variant="secondary" disabled={loading || Boolean(pendingId)} onClick={() => setRevision((value) => value + 1)}>
@@ -151,13 +165,22 @@ export default function BookingsAdminPage() {
         <div className={styles.categoriesHeading}><h3>За категоріями</h3><span>Натисніть, щоб переглянути заявки</span></div>
         <div className={styles.categories}>{categoryEntries.map(([key, label]) => {
           const count = stats?.categories.find((item) => item.id === key)?.count ?? 0;
-          return <button type="button" key={key} className={styles.category} aria-pressed={category === key} onClick={() => { setCategory(category === key ? "" : key); setPage(1); }}><span className={styles.categoryLabel}>{label}</span><strong>{stats ? countFormat.format(count) : "—"}</strong><span className={styles.categoryTrack} aria-hidden="true"><span style={{ width: `${stats?.total ? count / stats.total * 100 : 0}%` }} /></span></button>;
+          return <button type="button" key={key} className={styles.category} data-category={key} aria-pressed={category === key} onClick={() => { setCategory(category === key ? "" : key); setPage(1); }}><span className={styles.categoryLabel}>{label}</span><strong>{stats ? countFormat.format(count) : "—"}</strong><span className={styles.categoryTrack} aria-hidden="true"><span style={{ width: `${stats?.total ? count / stats.total * 100 : 0}%` }} /></span></button>;
         })}</div>
         <p className={styles.note}>За датою створення, час за Києвом. Усього — разом зі скасованими. Видалені заявки не враховуються.</p>
         </div>
       </section>
       <section className={styles.workspace} aria-labelledby="booking-list-heading" aria-busy={loading}>
-        <div className={styles.listHeading} ref={listHeadingRef}><h2 id="booking-list-heading">Список заявок {current ? <span>{countFormat.format(current.total)}</span> : null}</h2>{hasFilters ? <button className="admin-ui-button" data-variant="ghost" type="button" onClick={resetFilters}>Скинути фільтри</button> : null}</div>
+        <div className={styles.listHeading} ref={listHeadingRef}>
+          <h2 id="booking-list-heading">Список заявок</h2>
+          <div className={styles.listActions}>
+            {hasFilters ? <button className="admin-ui-button" data-variant="ghost" type="button" onClick={resetFilters}>Скинути фільтри</button> : null}
+            <button type="button" className={`admin-ui-button ${styles.pulseToggle}`} data-variant="ghost" aria-pressed={pulseEnabled} title={pulseEnabled ? "Призупинити пульсацію нових заявок" : "Увімкнути пульсацію нових заявок"} onClick={togglePulse}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{pulseEnabled ? <path d="M9 5v14M15 5v14" /> : <path d="m8 5 11 7-11 7Z" />}</svg>
+              Пульсація нових
+            </button>
+          </div>
+        </div>
         <div className={styles.filters}>
           <label className={styles.search}><span>Знайти заявку</span><input type="search" value={query} maxLength={200} onChange={(event) => setQuery(event.target.value)} placeholder="Ім’я, телефон, лікар або номер" /></label>
           <label><span>Категорія</span><select value={category} onChange={(event) => { setCategory(event.target.value as BookingCategory | ""); setPage(1); }}><option value="">Усі категорії</option>{categoryEntries.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
@@ -174,7 +197,7 @@ export default function BookingsAdminPage() {
             const details = parseBookingDetails(booking.comment);
             const open = expandedId === booking.id;
             const service = booking.doctor || (details.studies.length ? details.studies.join("; ") : booking.service);
-            return <li className={styles.item} key={booking.id} data-expanded={open} data-status={booking.status}>
+            return <li className={styles.item} key={booking.id} data-expanded={open} data-status={booking.status} data-category={booking.category}>
               <div className={styles.row}>
                 <time className={styles.date} dateTime={createdAt.dateTime} title={createdAt.label}>{date ? <><span>{shortDate.format(date)}</span><small>{shortTime.format(date)}</small></> : <span>Дата недоступна</span>}</time>
                 <div className={styles.patient}><strong title={booking.patientName}>{booking.patientName}</strong><a href={`tel:${booking.phone}`}>{booking.phone}</a></div>
