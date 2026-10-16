@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import ts from "typescript";
+import { types } from "@neondatabase/serverless";
 
 function load(path, overrides = {}) {
   const source = readFileSync(new URL(path, import.meta.url), "utf8");
@@ -129,6 +130,24 @@ test("stable newest ordering normalizes UTC, ISO and offset timestamps", () => {
     booking({ id: "b", createdAt: "2026-10-16T12:00:00.000000Z" }),
   ], query());
   assert.deepEqual(result.bookings.map(({ id }) => id), ["b", "a", "old"]);
+});
+
+test("production Neon timestamps retain bookings in the period and sort newest first", () => {
+  const parseTimestamp = types.getTypeParser(1184);
+  const records = [
+    booking({ id: "z-older", createdAt: parseTimestamp("2026-10-14 14:48:52.251+00") }),
+    booking({ id: "a-newest", createdAt: parseTimestamp("2026-10-16 16:59:40+00") }),
+    booking({ id: "outside", createdAt: parseTimestamp("2026-09-16 20:59:59+00") }),
+  ];
+  assert.ok(records.every(({ createdAt }) => createdAt instanceof Date));
+  const result = selectAdminBookings(records, query("from=2026-09-17&to=2026-10-16"));
+  assert.equal(result.stats.total, 2);
+  assert.equal(result.stats.statuses.new, 2);
+  assert.deepEqual(result.bookings.map(({ id }) => id), ["a-newest", "z-older"]);
+  assert.deepEqual(selectAdminBookings(records, query()).bookings.map(({ id }) => id),
+    ["a-newest", "z-older", "outside"]);
+  assert.equal(getBookingKyivDate(parseTimestamp("2026-10-15 21:00:00+00")), "2026-10-16");
+  assert.equal(getBookingKyivDate(new Date(NaN)), undefined);
 });
 
 test("invalid dates, categories and excessive page sizes fail before querying storage", () => {

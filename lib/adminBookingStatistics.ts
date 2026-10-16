@@ -23,7 +23,8 @@ export const bookingStatusLabels: Record<BookingStatus, string> = {
 };
 
 export type BookingCategory = keyof typeof bookingCategoryLabels;
-export type BookingSummary = Pick<Booking, "id" | "service" | "doctor" | "comment" | "source" | "status" | "createdAt"> &
+export type BookingSummary = Pick<Booking, "id" | "service" | "doctor" | "comment" | "source" | "status"> &
+  { createdAt: string | Date } &
   Partial<Pick<Booking, "patientName" | "phone" | "reference">>;
 export type BookingCategoryPrice = { name: string; category: string; aliases?: string[] };
 export type BookingStatistics = {
@@ -131,7 +132,7 @@ export function getBookingCategory(booking: BookingSummary, catalog: BookingCate
 }
 
 /** All dates are Kyiv calendar dates, including old UTC SQLite timestamps. */
-export function getBookingKyivDate(value: string): string | undefined {
+export function getBookingKyivDate(value: string | Date): string | undefined {
   const normalized = formatBookingDateTime(value).dateTime;
   if (!normalized) return undefined;
   const parts = kyivDay.formatToParts(new Date(normalized));

@@ -9,11 +9,16 @@ const kyivDateTime = new Intl.DateTimeFormat("uk-UA", {
   hourCycle: "h23",
 });
 
-export function formatBookingDateTime(value: string | null | undefined): {
+export function formatBookingDateTime(value: string | Date | null | undefined): {
   dateTime?: string;
   label: string;
 } {
   const unavailable = { label: "Дата недоступна" };
+  // Neon returns TIMESTAMPTZ as Date before the API serializes it to JSON.
+  if (value instanceof Date) {
+    if (!Number.isFinite(value.getTime())) return unavailable;
+    return { dateTime: value.toISOString(), label: kyivDateTime.format(value) };
+  }
   if (typeof value !== "string") return unavailable;
 
   // Legacy SQLite dates are UTC without a suffix. PostgreSQL dates include

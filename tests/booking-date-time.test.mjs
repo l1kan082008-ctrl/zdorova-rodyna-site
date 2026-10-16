@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { types } from "@neondatabase/serverless";
 import { formatBookingDateTime } from "../app/admin/bookings/bookingDateTime.ts";
 
 test("SQLite, PostgreSQL and ISO booking timestamps preserve the same instant", () => {
@@ -19,6 +20,16 @@ test("PostgreSQL microseconds normalize without appending a second timezone", ()
   assert.deepEqual(formatBookingDateTime("2026-09-23 20:53:30.123456+00"), {
     dateTime: "2026-09-23T20:53:30.123Z", label: "23.09.2026, 23:53:30",
   });
+});
+
+test("Neon TIMESTAMPTZ Date values match their JSON-serialized timestamps", () => {
+  const value = types.getTypeParser(1184)("2026-10-16 16:59:40.123456+00");
+  assert.ok(value instanceof Date);
+  assert.deepEqual(formatBookingDateTime(value), {
+    dateTime: "2026-10-16T16:59:40.123Z", label: "16.10.2026, 19:59:40",
+  });
+  assert.deepEqual(formatBookingDateTime(value), formatBookingDateTime(value.toJSON()));
+  assert.deepEqual(formatBookingDateTime(new Date(NaN)), { label: "Дата недоступна" });
 });
 
 test("Kyiv timezone handles winter, summer and date rollover", () => {
