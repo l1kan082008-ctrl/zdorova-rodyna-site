@@ -1,5 +1,12 @@
 import { env } from "@/lib/runtimeEnv";
 import { parseBookingDetails } from "@/lib/bookingDetails";
+import {
+  selectAdminBookings,
+  type AdminBookingQuery,
+  type AdminBookingsResponse,
+  type BookingCategoryPrice,
+  type BookingSummary,
+} from "@/lib/adminBookingStatistics";
 
 export type BookingStatus =
   | "new"
@@ -171,6 +178,51 @@ export async function listBookings() {
   ).all<BookingRow>();
 
   return result.results.map(toBooking);
+}
+
+export async function listAdminBookings(
+  query: AdminBookingQuery,
+  catalog: BookingCategoryPrice[],
+): Promise<AdminBookingsResponse> {
+  await ensureBookingsTable();
+  // Counts must cover every retained request, not the old 250-card limit.
+  // Keep contact and consent fields out of the statistics dataset.
+  const summary = await env.DB.prepare(
+    `SELECT id, service, doctor, comment, source, status, created_at
+     FROM bookings`,
+  ).all<Pick<BookingRow, "id" | "service" | "doctor" | "comment" | "source" | "status" | "created_at">>();
+  const records: BookingSummary[] = summary.results.map(({ created_at, ...row }) => ({
+    ...row, createdAt: created_at,
+  }));
+
+  let searchMatches: Set<string> | undefined;
+  if (query.q) {
+    // LIKE metacharacters are literal search text, never extra wildcards.
+    const needle = `%${query.q.toLocaleLowerCase("uk-UA").replace(/[!%_]/gu, "!$&")}%`;
+    const matches = await env.DB.prepare(
+      `SELECT id FROM bookings
+       WHERE LOWER(reference || ' ' || patient_name || ' ' || phone) LIKE ? ESCAPE '!'`,
+    ).bind(needle).all<{ id: string }>();
+    searchMatches = new Set(matches.results.map(({ id }) => id));
+  }
+  const selection = selectAdminBookings(records, query, catalog, searchMatches);
+  if (!selection.bookings.length) return { ...selection, bookings: [] };
+
+  // Fetch personal data only for the requested page (at most 100 records).
+  const ids = selection.bookings.map(({ id }) => id);
+  const page = await env.DB.prepare(
+    `SELECT id, reference, patient_name, phone, service, doctor, comment,
+            source, consent_version, consent_at, retention_until, status, created_at
+     FROM bookings WHERE id IN (${ids.map(() => "?").join(", ")})`,
+  ).bind(...ids).all<BookingRow>();
+  const rows = new Map(page.results.map((row) => [row.id, row]));
+  return {
+    ...selection,
+    bookings: selection.bookings.flatMap(({ id, category }) => {
+      const row = rows.get(id);
+      return row ? [{ ...toBooking(row), category }] : [];
+    }),
+  };
 }
 
 export async function listPopularBookingServices() {

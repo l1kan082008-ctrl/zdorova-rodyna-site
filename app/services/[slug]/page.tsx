@@ -58,7 +58,7 @@ const cardiologyBookingDefinitions: Array<{
     key: "holter",
     reference: priceReferences.holter,
     description:
-      "Добове моніторування серцевого ритму у звичному ритмі життя.",
+      "24 години спостереження. Опис і розшифрування результатів лікарем входять у вартість.",
   },
 ];
 

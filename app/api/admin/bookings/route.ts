@@ -1,11 +1,15 @@
 import { isAuthorizedAdmin, unauthorizedAdminResponse } from "../adminAuth";
 import {
   deleteBooking,
-  listBookings,
+  listAdminBookings,
   updateBookingStatus,
   type BookingStatus,
 } from "../../bookings/bookingStore";
 import { readBoundedJson } from "@/lib/requestBody";
+import { listManagedPriceItems } from "../../prices/priceStore";
+import { AdminBookingQueryError, parseAdminBookingQuery } from "@/lib/adminBookingStatistics";
+
+const privateHeaders = { "Cache-Control": "private, no-store" };
 
 const statuses = new Set<BookingStatus>([
   "new",
@@ -19,11 +23,16 @@ export async function GET(request: Request) {
   if (!(await isAuthorizedAdmin(request))) return unauthorizedAdminResponse();
 
   try {
-    return Response.json({ bookings: await listBookings() });
+    const query = parseAdminBookingQuery(new URL(request.url).searchParams);
+    const catalog = await listManagedPriceItems();
+    return Response.json(await listAdminBookings(query, catalog), { headers: privateHeaders });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Не вдалося завантажити заявки";
-    return Response.json({ error: message }, { status: 500 });
+    return Response.json({ error: message }, {
+      status: error instanceof AdminBookingQueryError ? 400 : 500,
+      headers: privateHeaders,
+    });
   }
 }
 
@@ -43,7 +52,7 @@ export async function DELETE(request: Request) {
       return Response.json({ error: "Заявку не знайдено" }, { status: 404 });
     }
 
-    return Response.json({ bookings: await listBookings() });
+    return Response.json({ success: true }, { headers: privateHeaders });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Не вдалося видалити заявку";
@@ -71,7 +80,7 @@ export async function PATCH(request: Request) {
       return Response.json({ error: "Заявку не знайдено" }, { status: 404 });
     }
 
-    return Response.json({ bookings: await listBookings() });
+    return Response.json({ success: true }, { headers: privateHeaders });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Не вдалося оновити заявку";

@@ -16,6 +16,8 @@ function loadModule(path, env) {
     if (name === "server-only") return {};
     if (name.endsWith("runtimeEnv")) return { env };
     if (name.endsWith("bookingDetails")) return loadModule("../lib/bookingDetails.ts", env);
+    if (name.endsWith("adminBookingStatistics")) return loadModule("../lib/adminBookingStatistics.ts", env);
+    if (name.endsWith("bookingDateTime")) return loadModule("../app/admin/bookings/bookingDateTime.ts", env);
     throw new Error(`Unexpected test dependency: ${name}`);
   };
   new Function("require", "module", "exports", outputText)(require, loadedModule, loadedModule.exports);

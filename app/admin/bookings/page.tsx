@@ -1,267 +1,204 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import AdminNavigation from "../AdminNavigation";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { formatBookingDateTime } from "./bookingDateTime";
 import { parseBookingDetails } from "@/lib/bookingDetails";
-import type {
-  Booking,
-  BookingStatus,
-} from "../../api/bookings/bookingStore";
+import { bookingCategoryLabels, bookingStatusLabels, type BookingCategory, type AdminBooking, type AdminBookingsResponse } from "@/lib/adminBookingStatistics";
+import type { BookingStatus } from "../../api/bookings/bookingStore";
+import styles from "./bookings.module.css";
 
-const statusOptions: Array<{ value: BookingStatus; label: string }> = [
-  { value: "new", label: "Нова" },
-  { value: "contacted", label: "Зв’язалися" },
-  { value: "confirmed", label: "Підтверджено" },
-  { value: "closed", label: "Закрито" },
-  { value: "cancelled", label: "Скасовано" },
-];
+type DateRange = { from: string; to: string };
+type Period = "today" | "7" | "30" | "all" | "custom";
+const statusEntries = Object.entries(bookingStatusLabels) as [BookingStatus, string][];
+const categoryEntries = Object.entries(bookingCategoryLabels) as [BookingCategory, string][];
+const statusCountLabels: Record<BookingStatus, string> = { new: "Нові", contacted: "Зв’язалися", confirmed: "Підтверджені", closed: "Закриті", cancelled: "Скасовані" };
+const countFormat = new Intl.NumberFormat("uk-UA");
+const shortDate = new Intl.DateTimeFormat("uk-UA", { timeZone: "Europe/Kyiv", day: "2-digit", month: "2-digit", year: "numeric" });
+const shortTime = new Intl.DateTimeFormat("uk-UA", { timeZone: "Europe/Kyiv", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 
-type ApiPayload = {
-  bookings?: Booking[];
-  error?: string;
-};
+function presetRange(period: Exclude<Period, "custom">): DateRange {
+  if (period === "all") return { from: "", to: "" };
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Kyiv", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+  const part = (type: string) => parts.find((item) => item.type === type)!.value;
+  const to = `${part("year")}-${part("month")}-${part("day")}`;
+  const start = new Date(`${to}T12:00:00Z`);
+  start.setUTCDate(start.getUTCDate() - (period === "today" ? 0 : Number(period) - 1));
+  return { from: start.toISOString().slice(0, 10), to };
+}
 
-type BookingKind =
-  | "callback"
-  | "declaration"
-  | "doctor"
-  | "mri"
-  | "ct"
-  | "ultrasound"
-  | "laboratory"
-  | "other";
-
-const bookingKindLabels: Record<BookingKind, string> = {
-  callback: "Зворотний дзвінок",
-  declaration: "Декларація із сімейним лікарем",
-  doctor: "Запис до лікаря",
-  mri: "Запис на МРТ",
-  ct: "Запис на КТ",
-  ultrasound: "Запис на УЗД",
-  laboratory: "Лабораторні дослідження",
-  other: "Інша заявка",
-};
-
-function getBookingKind(booking: Booking): BookingKind {
-  const value = `${booking.service} ${booking.doctor ?? ""} ${booking.comment ?? ""}`
-    .toLocaleLowerCase("uk")
-    .replace(/ґ/g, "г");
-
-  if (/зворотн|передзвон|дзвінок/.test(value)) return "callback";
-  if (/декларац/.test(value)) return "declaration";
-  if (/(^|[^а-яіїєґ])мрт([^а-яіїєґ]|$)|магнітно-резонанс/.test(value)) return "mri";
-  if (/(^|[^а-яіїєґ])кт([^а-яіїєґ]|$)|комп['’`]?ютерн|коронарограф/.test(value)) return "ct";
-  if (/(^|[^а-яіїєґ])узд([^а-яіїєґ]|$)|ультразвук/.test(value)) return "ultrasound";
-  if (/аналіз|лаборатор|забір/.test(value)) return "laboratory";
-  if (booking.doctor || /лікар|консультац|прийом/.test(value)) return "doctor";
-  return "other";
+function Chevron({ open = false }: { open?: boolean }) {
+  return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={open ? "m6 15 6-6 6 6" : "m6 9 6 6 6-6"} /></svg>;
 }
 
 export default function BookingsAdminPage() {
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [period, setPeriod] = useState<Period>("30");
+  const [range, setRange] = useState<DateRange>(() => presetRange("30"));
+  const [draftRange, setDraftRange] = useState<DateRange>(() => presetRange("30"));
+  const [dateError, setDateError] = useState("");
   const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [savingId, setSavingId] = useState("");
-  const [deletingId, setDeletingId] = useState("");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState<BookingCategory | "">("");
+  const [status, setStatus] = useState<BookingStatus | "">("");
+  const [page, setPage] = useState(1);
+  const [revision, setRevision] = useState(0);
+  const [result, setResult] = useState<{ key: string; rangeKey: string; payload: AdminBookingsResponse } | null>(null);
+  const [loadError, setLoadError] = useState<{ key: string; message: string } | null>(null);
+  const [mutationError, setMutationError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [pendingId, setPendingId] = useState("");
+  const [expandedId, setExpandedId] = useState("");
+  const [statsOpen, setStatsOpen] = useState(true);
+  const listHeadingRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("/api/admin/bookings")
+    const timer = window.setTimeout(() => { setSearch(query.trim()); setPage(1); }, 300);
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
+  const requestQuery = useMemo(() => {
+    const params = new URLSearchParams({ page: String(page), pageSize: "25" });
+    if (range.from) params.set("from", range.from);
+    if (range.to) params.set("to", range.to);
+    if (category) params.set("category", category);
+    if (status) params.set("status", status);
+    if (search) params.set("q", search);
+    return params.toString();
+  }, [range, category, status, search, page]);
+  const requestKey = `${requestQuery}:${revision}`;
+  const rangeKey = `${range.from}:${range.to}`;
+  const current = result?.payload ?? null;
+  const error = loadError?.key === requestKey && result?.key !== requestKey ? loadError.message : "";
+  const loading = result?.key !== requestKey && !error;
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`/api/admin/bookings?${requestQuery}`, { signal: controller.signal, cache: "no-store" })
       .then(async (response) => {
-        const payload = (await response.json()) as ApiPayload;
-        if (!response.ok || !payload.bookings) {
-          throw new Error(payload.error || "Не вдалося відкрити заявки");
+        const payload = await response.json();
+        if (!response.ok || !Array.isArray(payload.bookings) || !payload.stats) throw new Error(payload.error || "Не вдалося завантажити заявки");
+        if (!controller.signal.aborted) {
+          setResult({ key: requestKey, rangeKey, payload });
+          setLoadError(null);
         }
-        setBookings(payload.bookings);
       })
-      .catch((reason) =>
-        setError(reason instanceof Error ? reason.message : "Сталася помилка"),
-      )
-      .finally(() => setLoading(false));
-  }, []);
-
-  const filteredBookings = useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase("uk");
-    if (!normalized) return bookings;
-    return bookings.filter((booking) =>
-      `${booking.reference} ${booking.patientName} ${booking.phone} ${booking.service} ${booking.doctor}`
-        .toLocaleLowerCase("uk")
-        .includes(normalized),
-    );
-  }, [bookings, query]);
-
-  const changeStatus = async (id: string, status: BookingStatus) => {
-    setSavingId(id);
-    setError("");
-    try {
-      const response = await fetch("/api/admin/bookings", {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ id, status }),
+      .catch((reason: unknown) => {
+        if (!controller.signal.aborted) setLoadError({ key: requestKey, message: reason instanceof Error ? reason.message : "Не вдалося завантажити заявки" });
       });
-      const payload = (await response.json()) as ApiPayload;
-      if (!response.ok || !payload.bookings) {
-        throw new Error(payload.error || "Не вдалося оновити статус");
-      }
-      setBookings(payload.bookings);
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Сталася помилка");
-    } finally {
-      setSavingId("");
-    }
+    return () => controller.abort();
+  }, [requestQuery, requestKey, rangeKey]);
+
+  const selectPeriod = (value: Period) => {
+    setPeriod(value); setDateError("");
+    if (value === "custom") { setDraftRange(range.from ? range : presetRange("30")); return; }
+    setRange(presetRange(value)); setPage(1);
+  };
+  const applyDates = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!draftRange.from || !draftRange.to || draftRange.from > draftRange.to) { setDateError("Оберіть дати: початок періоду не може бути пізніше за кінець."); return; }
+    setDateError(""); setRange(draftRange); setPage(1);
+  };
+  const resetFilters = () => { setQuery(""); setSearch(""); setCategory(""); setStatus(""); setPage(1); };
+  const goToPage = (next: number) => {
+    setPage(next); setExpandedId("");
+    listHeadingRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
   };
 
-  const removeBooking = async (booking: Booking) => {
-    const confirmed = window.confirm(
-      `Видалити заявку ${booking.reference}? Цю дію неможливо скасувати.`,
-    );
-    if (!confirmed) return;
-
-    setDeletingId(booking.id);
-    setError("");
+  const mutateBooking = async (booking: AdminBooking, nextStatus?: BookingStatus) => {
+    if (pendingId) return;
+    if (!nextStatus && !window.confirm(`Видалити заявку ${booking.reference}? Цю дію неможливо скасувати.`)) return;
+    setPendingId(booking.id); setMutationError(""); setNotice("");
     try {
       const response = await fetch("/api/admin/bookings", {
-        method: "DELETE",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ id: booking.id }),
+        method: nextStatus ? "PATCH" : "DELETE", headers: { "content-type": "application/json" },
+        body: JSON.stringify(nextStatus ? { id: booking.id, status: nextStatus } : { id: booking.id }),
       });
-      const payload = (await response.json()) as ApiPayload;
-      if (!response.ok || !payload.bookings) {
-        throw new Error(payload.error || "Не вдалося видалити заявку");
-      }
-      setBookings(payload.bookings);
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Сталася помилка");
-    } finally {
-      setDeletingId("");
-    }
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Не вдалося зберегти зміни");
+      setNotice(nextStatus ? `Статус заявки ${booking.reference} оновлено.` : `Заявку ${booking.reference} видалено.`);
+      if (!nextStatus) setExpandedId("");
+      setRevision((value) => value + 1);
+    } catch (reason) { setMutationError(reason instanceof Error ? reason.message : "Не вдалося зберегти зміни"); }
+    finally { setPendingId(""); }
   };
+
+  const stats = result?.rangeKey === rangeKey && !error ? result.payload.stats : undefined;
+  const hasFilters = Boolean(category || status || query);
+  const rangeLabel = range.from ? `${range.from.split("-").reverse().join(".")} — ${range.to.split("-").reverse().join(".")}` : "Усі збережені заявки";
 
   return (
-    <main className="admin-bookings-page">
-      <header className="admin-topbar">
-        <Link href="/services">← До сайту</Link>
-        <AdminNavigation current="bookings" />
+    <div className={`admin-bookings-page ${styles.page}`}>
+      <header className={styles.heading}>
+        <div className="admin-intro"><span className="section-kicker">Адмін-панель</span><h1>Заявки пацієнтів</h1><p>Кількість звернень, напрямки та робота із заявками.</p></div>
+        <button type="button" className="admin-ui-button" data-variant="secondary" disabled={loading || Boolean(pendingId)} onClick={() => setRevision((value) => value + 1)}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5" /><path d="M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1" /></svg>Оновити
+        </button>
       </header>
-      <section className="admin-intro">
-        <span className="section-kicker">Адмін-панель</span>
-        <h1>Заявки пацієнтів</h1>
-        <p>Нові заявки з форми запису з’являються тут одразу після відправлення.</p>
+      <section className={styles.overview} aria-labelledby="booking-statistics-heading" aria-busy={loading}>
+        <div className={styles.overviewHeading}>
+          <div><h2 id="booking-statistics-heading">Статистика заявок</h2><p>{rangeLabel}</p></div>
+          <div className={styles.overviewControls}><label className={styles.period}><span>Період</span><select value={period} onChange={(event) => selectPeriod(event.target.value as Period)}><option value="today">Сьогодні</option><option value="7">Останні 7 днів</option><option value="30">Останні 30 днів</option><option value="all">Усі збережені</option><option value="custom">Обрати дати</option></select></label><button type="button" className="admin-ui-icon-button" data-variant="ghost" aria-label={statsOpen ? "Згорнути статистику" : "Розгорнути статистику"} aria-expanded={statsOpen} aria-controls="booking-statistics-content" onClick={() => setStatsOpen(!statsOpen)}><Chevron open={statsOpen} /></button></div>
+        </div>
+        {period === "custom" ? <form className={styles.dateForm} onSubmit={applyDates}>
+          <label><span>Від</span><input type="date" required value={draftRange.from} max={draftRange.to || undefined} onChange={(event) => setDraftRange({ ...draftRange, from: event.target.value })} /></label>
+          <label><span>До</span><input type="date" required value={draftRange.to} min={draftRange.from || undefined} onChange={(event) => setDraftRange({ ...draftRange, to: event.target.value })} /></label>
+          <button type="submit" className="admin-ui-button" data-variant="primary">Застосувати</button>
+          {dateError ? <p className={styles.error} role="alert">{dateError}</p> : null}
+        </form> : null}
+        <div id="booking-statistics-content" hidden={!statsOpen}><div className={styles.metrics}>
+          <button type="button" className={`${styles.metric} ${styles.metricTotal}`} aria-pressed={!hasFilters} onClick={resetFilters}><span>Усього заявок</span><strong>{stats ? countFormat.format(stats.total) : "—"}</strong></button>
+          {statusEntries.map(([key]) => <button key={key} type="button" className={styles.metric} data-status={key} aria-pressed={status === key} onClick={() => { setStatus(status === key ? "" : key); setPage(1); }}><span><i aria-hidden="true" />{statusCountLabels[key]}</span><strong>{stats ? countFormat.format(stats.statuses[key]) : "—"}</strong></button>)}
+        </div>
+        <div className={styles.categoriesHeading}><h3>За категоріями</h3><span>Натисніть, щоб переглянути заявки</span></div>
+        <div className={styles.categories}>{categoryEntries.map(([key, label]) => {
+          const count = stats?.categories.find((item) => item.id === key)?.count ?? 0;
+          return <button type="button" key={key} className={styles.category} aria-pressed={category === key} onClick={() => { setCategory(category === key ? "" : key); setPage(1); }}><span className={styles.categoryLabel}>{label}</span><strong>{stats ? countFormat.format(count) : "—"}</strong><span className={styles.categoryTrack} aria-hidden="true"><span style={{ width: `${stats?.total ? count / stats.total * 100 : 0}%` }} /></span></button>;
+        })}</div>
+        <p className={styles.note}>За датою створення, час за Києвом. Усього — разом зі скасованими. Видалені заявки не враховуються.</p>
+        </div>
       </section>
-      <section className="admin-bookings-shell">
-        <label className="admin-booking-search">
-          <span>Знайти заявку</span>
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Ім’я, телефон, послуга або номер"
-          />
-        </label>
-        {error ? <p className="admin-booking-error" role="alert">{error}</p> : null}
-        {loading ? (
-          <div className="admin-state">Завантажуємо заявки…</div>
-        ) : filteredBookings.length ? (
-          <div className="admin-booking-list">
-            {filteredBookings.map((booking) => {
-              const kind = getBookingKind(booking);
-              const createdAt = formatBookingDateTime(booking.createdAt);
-              const details = parseBookingDetails(booking.comment);
-              const showService =
-                booking.service.trim().toLocaleLowerCase("uk") !==
-                bookingKindLabels[kind].toLocaleLowerCase("uk");
-
-              return (
-                <article className="admin-booking-card" key={booking.id}>
-                <div className="admin-booking-heading">
-                  <span>{booking.reference}</span>
-                  <time dateTime={createdAt.dateTime} title="Дата й час створення заявки (за Києвом)">
-                    {createdAt.label}
-                  </time>
-                </div>
-                <div className={`admin-booking-type admin-booking-type--${kind}`}>
-                  <span>{bookingKindLabels[kind]}</span>
-                  {showService ? <strong>{booking.service}</strong> : null}
-                </div>
-                <h2>{booking.patientName}</h2>
-                <a href={`tel:${booking.phone}`}>{booking.phone}</a>
-                <dl className="admin-booking-details">
-                  {booking.doctor ? (
-                    <div>
-                      <dt>Лікар</dt>
-                      <dd>{booking.doctor}</dd>
-                    </div>
-                  ) : null}
-                  {details.location ? (
-                    <div>
-                      <dt>Відділення</dt>
-                      <dd>{details.location}</dd>
-                    </div>
-                  ) : null}
-                  {details.studies.length ? (
-                    <div>
-                      <dt>Обрані дослідження</dt>
-                      <dd>
-                        <ol className="admin-booking-studies">
-                          {details.studies.map((study, index) => (
-                            <li key={`${index}-${study}`}>{study}</li>
-                          ))}
-                        </ol>
-                      </dd>
-                    </div>
-                  ) : null}
-                  {details.total ? (
-                    <div className="admin-booking-total">
-                      <dt>Орієнтовна сума</dt>
-                      <dd>{details.total}</dd>
-                    </div>
-                  ) : null}
-                  {details.comment ? (
-                    <div>
-                      <dt>Коментар</dt>
-                      <dd className="admin-booking-comment">{details.comment}</dd>
-                    </div>
-                  ) : null}
+      <section className={styles.workspace} aria-labelledby="booking-list-heading" aria-busy={loading}>
+        <div className={styles.listHeading} ref={listHeadingRef}><h2 id="booking-list-heading">Список заявок {current ? <span>{countFormat.format(current.total)}</span> : null}</h2>{hasFilters ? <button className="admin-ui-button" data-variant="ghost" type="button" onClick={resetFilters}>Скинути фільтри</button> : null}</div>
+        <div className={styles.filters}>
+          <label className={styles.search}><span>Знайти заявку</span><input type="search" value={query} maxLength={200} onChange={(event) => setQuery(event.target.value)} placeholder="Ім’я, телефон, лікар або номер" /></label>
+          <label><span>Категорія</span><select value={category} onChange={(event) => { setCategory(event.target.value as BookingCategory | ""); setPage(1); }}><option value="">Усі категорії</option>{categoryEntries.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+          <label><span>Статус</span><select value={status} onChange={(event) => { setStatus(event.target.value as BookingStatus | ""); setPage(1); }}><option value="">Усі статуси</option>{statusEntries.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+        </div>
+        <p className={styles.srOnly} role="status">{loading ? "Завантажуємо заявки…" : current ? `Знайдено заявок: ${current.total}.` : ""} {notice}</p>
+        {mutationError ? <p className={styles.error} role="alert">{mutationError}</p> : null}
+        {error ? <div className={styles.empty} role="alert"><strong>Не вдалося завантажити заявки</strong><p>{error}</p><button type="button" className="admin-ui-button" data-variant="secondary" onClick={() => setRevision((value) => value + 1)}>Спробувати ще раз</button></div> : null}
+        {loading && !current ? <div className={styles.empty}>Завантажуємо заявки та статистику…</div> : !error && current && current.bookings.length ? <>
+          <div className={styles.columnHeadings} aria-hidden="true"><span>Дата / час</span><span>Пацієнт / телефон</span><span>Категорія</span><span>Лікар / послуга</span><span>Статус</span><span /></div>
+          <ol className={styles.list} aria-label="Заявки пацієнтів" data-loading={loading}>{current.bookings.map((booking) => {
+            const createdAt = formatBookingDateTime(booking.createdAt);
+            const date = createdAt.dateTime ? new Date(createdAt.dateTime) : null;
+            const details = parseBookingDetails(booking.comment);
+            const open = expandedId === booking.id;
+            const service = booking.doctor || (details.studies.length ? details.studies.join("; ") : booking.service);
+            return <li className={styles.item} key={booking.id} data-expanded={open} data-status={booking.status}>
+              <div className={styles.row}>
+                <time className={styles.date} dateTime={createdAt.dateTime} title={createdAt.label}>{date ? <><span>{shortDate.format(date)}</span><small>{shortTime.format(date)}</small></> : <span>Дата недоступна</span>}</time>
+                <div className={styles.patient}><strong title={booking.patientName}>{booking.patientName}</strong><a href={`tel:${booking.phone}`}>{booking.phone}</a></div>
+                <div className={styles.kind}><span>{bookingCategoryLabels[booking.category]}</span></div>
+                <div className={styles.service} title={service}>{service || "Без уточнення"}</div>
+                <label className={styles.rowStatus}><span className={styles.srOnly}>Статус заявки {booking.reference}</span><select value={booking.status} data-status={booking.status} disabled={loading || Boolean(pendingId)} onChange={(event) => mutateBooking(booking, event.target.value as BookingStatus)}>{statusEntries.map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></label>
+                <button type="button" className={`admin-ui-icon-button ${styles.expand}`} data-variant="ghost" aria-label={`${open ? "Згорнути" : "Деталі заявки"} ${booking.reference}`} aria-expanded={open} aria-controls={`booking-${booking.id}`} onClick={() => setExpandedId(open ? "" : booking.id)}><Chevron open={open} /></button>
+              </div>
+              {open ? <div className={styles.expanded} id={`booking-${booking.id}`}>
+                <div className={styles.detailHeading}><div><strong>{booking.patientName}</strong><span>{booking.reference} · {createdAt.label}</span></div><button type="button" className="admin-ui-button" data-variant="danger" disabled={loading || Boolean(pendingId)} onClick={() => mutateBooking(booking)}>{pendingId === booking.id ? "Зберігаємо…" : "Видалити заявку"}</button></div>
+                <dl className={styles.details}>
+                  <div><dt>Послуга</dt><dd>{booking.service || "Не вказано"}</dd></div>
+                  {booking.doctor ? <div><dt>Лікар</dt><dd>{booking.doctor}</dd></div> : null}
+                  {details.location ? <div><dt>Відділення</dt><dd>{details.location}</dd></div> : null}
+                  {details.studies.length ? <div className={styles.studies}><dt>Обрані дослідження</dt><dd><ol>{details.studies.map((study, index) => <li key={`${index}-${study}`}>{study}</li>)}</ol></dd></div> : null}
+                  {details.total ? <div><dt>Орієнтовна сума</dt><dd className={styles.total}>{details.total}</dd></div> : null}
+                  {details.comment ? <div className={styles.comment}><dt>Коментар</dt><dd>{details.comment}</dd></div> : null}
                 </dl>
-                <div className="admin-booking-actions">
-                  <label className="admin-booking-status">
-                    Статус
-                    <select
-                      value={booking.status}
-                      disabled={savingId === booking.id || deletingId === booking.id}
-                      onChange={(event) =>
-                        changeStatus(
-                          booking.id,
-                          event.target.value as BookingStatus,
-                        )
-                      }
-                    >
-                      {statusOptions.map((option) => (
-                        <option value={option.value} key={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <button
-                    className="admin-booking-delete admin-ui-button" data-variant="danger"
-                    type="button"
-                    disabled={deletingId === booking.id || savingId === booking.id}
-                    onClick={() => removeBooking(booking)}
-                  >
-                    {deletingId === booking.id ? "Видаляємо…" : "Видалити"}
-                  </button>
-                </div>
-                </article>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="admin-state">Заявок поки немає.</div>
-        )}
+              </div> : null}
+            </li>;
+          })}</ol>
+          <div className={styles.pagination}><span>{loading ? "Оновлюємо список…" : `${(current.page - 1) * current.pageSize + 1}–${Math.min(current.page * current.pageSize, current.total)} із ${countFormat.format(current.total)}`}</span><div><button type="button" className="admin-ui-button" data-variant="secondary" disabled={loading || current.page <= 1} onClick={() => goToPage(current.page - 1)}>Назад</button><span>{current.page} / {current.totalPages}</span><button type="button" className="admin-ui-button" data-variant="secondary" disabled={loading || current.page >= current.totalPages} onClick={() => goToPage(current.page + 1)}>Далі</button></div></div>
+        </> : !error && current ? <div className={styles.empty}><strong>{loading ? "Оновлюємо список…" : hasFilters ? "За цими фільтрами заявок немає" : "За цей період заявок немає"}</strong><p>{hasFilters ? "Змініть пошук, категорію чи статус або скиньте фільтри." : "Оберіть інший період або оновіть список пізніше."}</p>{hasFilters ? <button type="button" className="admin-ui-button" data-variant="secondary" onClick={resetFilters}>Скинути фільтри</button> : null}</div> : null}
       </section>
-    </main>
+    </div>
   );
 }
