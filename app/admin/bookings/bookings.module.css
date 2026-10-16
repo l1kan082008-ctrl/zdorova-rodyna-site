@@ -77,8 +77,11 @@
 .date small { color: var(--admin-muted); font-size: 12px; }
 .patient { display: grid; gap: 4px; }
 .patient strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 700; }
-.patient a { color: var(--admin-primary); font-size: 12px; font-weight: 600; width: fit-content; }
-.patient a:hover { text-decoration: underline; }
+.page .patient .phoneCopy[data-variant] { --admin-button-ink: var(--admin-primary); justify-content: flex-start; gap: 6px; width: fit-content; max-width: 100%; min-height: 28px; padding: 2px 4px; margin-left: -4px; border: 0; font-size: 12px; font-weight: 600; }
+.phoneCopy > span { user-select: text; overflow-wrap: anywhere; text-align: left; }
+.page .patient .phoneCopy[data-variant] > svg { width: 14px; height: 14px; flex: 0 0 14px; }
+.copyFeedback { position: fixed; z-index: 110; right: 24px; bottom: max(24px, env(safe-area-inset-bottom)); width: max-content; max-width: min(400px, calc(100vw - 32px)); margin: 0; padding: 12px 16px; border: 1px solid var(--admin-selection-border); border-radius: var(--admin-control-radius); background: var(--admin-panel); color: var(--admin-ink); box-shadow: var(--admin-panel-shadow); font-size: 14px; line-height: 1.5; pointer-events: none; }
+.copyFeedback[data-error="true"] { color: var(--admin-danger); border-color: var(--admin-danger-border); }
 .kind { font-size: 11px; color: color-mix(in srgb, var(--booking-accent) 82%, black); }
 .kind > span { display: inline-block; padding: 4px 7px; border: 1px solid color-mix(in srgb, var(--booking-accent) 25%, white); background: color-mix(in srgb, var(--booking-accent) 8%, white); border-radius: 6px; line-height: 1.4; font-weight: 650; }
 .service { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; font-size: 12px; line-height: 1.5; }
@@ -162,7 +165,8 @@
   .row { grid-template-columns: minmax(0, 1fr) 120px 44px; gap: 8px; padding: 12px; padding-left: 8px; }
   .patient { grid-column: 1 / 3; grid-row: 1; }
   .patient strong { font-size: 14px; }
-  .patient a { font-size: 13px; }
+  .page .patient .phoneCopy[data-variant] { min-height: 44px; font-size: 13px; }
+  .copyFeedback { right: 16px; }
   .expand { grid-column: 3; grid-row: 1; }
   .kind { grid-column: 1; grid-row: 2; }
   .rowStatus { grid-column: 2 / 4; grid-row: 2; }
@@ -175,6 +179,10 @@
   .studies, .comment { grid-column: auto; }
   .pagination { flex-wrap: wrap; justify-content: center; padding: 16px; }
   .pagination > span { width: 100%; text-align: center; }
+}
+
+@media (pointer: coarse) {
+  .page .patient .phoneCopy[data-variant] { min-height: 44px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

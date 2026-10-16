@@ -17,6 +17,12 @@ const shortDate = new Intl.DateTimeFormat("uk-UA", { timeZone: "Europe/Kyiv", da
 const shortTime = new Intl.DateTimeFormat("uk-UA", { timeZone: "Europe/Kyiv", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 const pulsePreferenceKey = "zr-admin-booking-pulse";
 
+function localBookingPhone(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+  if (/^380\d{9}$/.test(digits)) return digits.slice(2);
+  return /^0\d{9}$/.test(digits) ? digits : phone;
+}
+
 function presetRange(period: Exclude<Period, "custom">): DateRange {
   if (period === "all") return { from: "", to: "" };
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Kyiv", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
@@ -50,7 +56,28 @@ export default function BookingsAdminPage() {
   const [expandedId, setExpandedId] = useState("");
   const [statsOpen, setStatsOpen] = useState(true);
   const [pulseEnabled, setPulseEnabled] = useState(true);
+  const [copyFeedback, setCopyFeedback] = useState<{ id: string; error: boolean; message: string } | null>(null);
+  const copyRequestRef = useRef(0);
   const listHeadingRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => () => { copyRequestRef.current += 1; }, []);
+
+  useEffect(() => {
+    if (!copyFeedback) return;
+    const timer = window.setTimeout(() => setCopyFeedback(null), copyFeedback.error ? 8000 : 2500);
+    return () => window.clearTimeout(timer);
+  }, [copyFeedback]);
+
+  const copyPhone = async (booking: AdminBooking) => {
+    const request = ++copyRequestRef.current;
+    setCopyFeedback(null);
+    try {
+      await navigator.clipboard.writeText(localBookingPhone(booking.phone));
+      if (copyRequestRef.current === request) setCopyFeedback({ id: booking.id, error: false, message: "Номер скопійовано" });
+    } catch {
+      if (copyRequestRef.current === request) setCopyFeedback({ id: booking.id, error: true, message: "Не вдалося скопіювати. Виділіть номер і скопіюйте його вручну." });
+    }
+  };
 
   useEffect(() => {
     try { setPulseEnabled(window.localStorage.getItem(pulsePreferenceKey) !== "off"); }
@@ -197,10 +224,17 @@ export default function BookingsAdminPage() {
             const details = parseBookingDetails(booking.comment);
             const open = expandedId === booking.id;
             const service = booking.doctor || (details.studies.length ? details.studies.join("; ") : booking.service);
+            const phone = localBookingPhone(booking.phone);
             return <li className={styles.item} key={booking.id} data-expanded={open} data-status={booking.status} data-category={booking.category}>
               <div className={styles.row}>
                 <time className={styles.date} dateTime={createdAt.dateTime} title={createdAt.label}>{date ? <><span>{shortDate.format(date)}</span><small>{shortTime.format(date)}</small></> : <span>Дата недоступна</span>}</time>
-                <div className={styles.patient}><strong title={booking.patientName}>{booking.patientName}</strong><a href={`tel:${booking.phone}`}>{booking.phone}</a></div>
+                <div className={styles.patient}>
+                  <strong title={booking.patientName}>{booking.patientName}</strong>
+                  <button type="button" className={`admin-ui-button ${styles.phoneCopy}`} data-variant="ghost" aria-label={`Скопіювати телефон ${phone}`} title="Скопіювати номер телефону" onClick={() => void copyPhone(booking)}>
+                    <span>{phone}</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{copyFeedback?.id === booking.id && !copyFeedback.error ? <path d="m5 12 4 4L19 6" /> : <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" /></>}</svg>
+                  </button>
+                </div>
                 <div className={styles.kind}><span>{bookingCategoryLabels[booking.category]}</span></div>
                 <div className={styles.service} title={service}>{service || "Без уточнення"}</div>
                 <label className={styles.rowStatus}><span className={styles.srOnly}>Статус заявки {booking.reference}</span><select value={booking.status} data-status={booking.status} disabled={loading || Boolean(pendingId)} onChange={(event) => mutateBooking(booking, event.target.value as BookingStatus)}>{statusEntries.map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></label>
@@ -222,6 +256,7 @@ export default function BookingsAdminPage() {
           <div className={styles.pagination}><span>{loading ? "Оновлюємо список…" : `${(current.page - 1) * current.pageSize + 1}–${Math.min(current.page * current.pageSize, current.total)} із ${countFormat.format(current.total)}`}</span><div><button type="button" className="admin-ui-button" data-variant="secondary" disabled={loading || current.page <= 1} onClick={() => goToPage(current.page - 1)}>Назад</button><span>{current.page} / {current.totalPages}</span><button type="button" className="admin-ui-button" data-variant="secondary" disabled={loading || current.page >= current.totalPages} onClick={() => goToPage(current.page + 1)}>Далі</button></div></div>
         </> : !error && current ? <div className={styles.empty}><strong>{loading ? "Оновлюємо список…" : hasFilters ? "За цими фільтрами заявок немає" : "За цей період заявок немає"}</strong><p>{hasFilters ? "Змініть пошук, категорію чи статус або скиньте фільтри." : "Оберіть інший період або оновіть список пізніше."}</p>{hasFilters ? <button type="button" className="admin-ui-button" data-variant="secondary" onClick={resetFilters}>Скинути фільтри</button> : null}</div> : null}
       </section>
+      <p className={copyFeedback ? styles.copyFeedback : styles.srOnly} role="status" aria-atomic="true" data-error={copyFeedback?.error}>{copyFeedback?.message ?? ""}</p>
     </div>
   );
 }
