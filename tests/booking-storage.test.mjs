@@ -89,10 +89,10 @@ test("popular services count all submitted statuses in the last 30 days, excludi
       createdAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000).toISOString(),
     });
     const comment = "Обрані дослідження:\n• Феритин";
-    for (const source of ["callback", "family-declaration"]) {
+    for (const source of ["callback", "family-declaration", "screening-40"]) {
       insertBookingFixture(database, { service: "Холтер ЕКГ", source, comment });
     }
-    for (const service of ["Зворотний дзвінок", "Заявка на декларацію із сімейним лікарем"]) {
+    for (const service of ["Зворотний дзвінок", "Заявка на декларацію із сімейним лікарем", "Скринінг здоров’я 40+", "Скринінг 40+"]) {
       insertBookingFixture(database, { service, source: "legacy", comment });
     }
     assert.deepEqual(await store.listPopularBookingServices(), [{ service: "Холтер ЕКГ", count: 4 }]);

@@ -5,6 +5,7 @@
 .page [data-category="ultrasound"] { --booking-accent: #117e9b; }
 .page [data-category="laboratory"] { --booking-accent: #087f72; }
 .page [data-category="holter"] { --booking-accent: #af476b; }
+.page [data-category="screening40"] { --booking-accent: #786529; }
 .page [data-category="declaration"] { --booking-accent: #5d7c33; }
 .page [data-category="callback"] { --booking-accent: #9a710b; }
 .page [data-category="other"] { --booking-accent: #657383; }

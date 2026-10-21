@@ -1,4 +1,4 @@
-export type BookingFormType = "appointment" | "callback" | "family_declaration";
+export type BookingFormType = "appointment" | "callback" | "family_declaration" | "screening_40";
 
 type ConfirmedBookingSubmitEvent = {
   event: "form_submit";

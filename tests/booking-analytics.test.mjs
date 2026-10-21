@@ -45,6 +45,14 @@ test("does nothing without a reference or a browser", () => {
   assert.doesNotThrow(() => tracker(undefined)("ZR-ONE", "appointment"));
 });
 
+test("screening confirmation emits once without patient or physician details", () => {
+  const window = {};
+  const track = tracker(window);
+  track("ZR-SCREENING", "screening_40");
+  track("ZR-SCREENING", "screening_40");
+  assert.deepEqual(window.dataLayer, [{ event: "form_submit", form_type: "screening_40" }]);
+});
+
 test("blocked or failing third-party analytics cannot throw into the booking handler", () => {
   for (const window of [
     { dataLayer: { push() { throw new Error("GTM failed"); } } },

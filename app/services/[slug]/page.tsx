@@ -29,6 +29,8 @@ import { HolterEquipment } from "./HolterEquipment";
 import { HolterFaq, HolterOverview } from "./HolterInformation";
 import { holterSeoDescription, holterSeoImage, holterSeoTitle, holterStructuredData, holterUrl } from "../holterContent";
 import { LabInformation } from "./LabInformation";
+import { ScreeningServicePage } from "./ScreeningServicePage";
+import { screeningSeoDescription, screeningSeoImage, screeningSeoTitle, screeningUrl } from "../screeningContent";
 
 export const dynamic = "force-dynamic";
 
@@ -102,6 +104,28 @@ export async function generateMetadata({
     };
   }
 
+  if (slug === "screening-40") {
+    return {
+      title: screeningSeoTitle,
+      description: screeningSeoDescription,
+      alternates: { canonical: screeningUrl },
+      openGraph: {
+        title: screeningSeoTitle,
+        description: screeningSeoDescription,
+        url: screeningUrl,
+        locale: "uk_UA",
+        type: "website",
+        images: [screeningSeoImage],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: screeningSeoTitle,
+        description: screeningSeoDescription,
+        images: [screeningSeoImage],
+      },
+    };
+  }
+
   return {
     title: `${service.title} — Здорова Родина`,
     description: service.lead,
@@ -116,6 +140,8 @@ export default async function ServiceDetailPage({
   const { slug } = await params;
   const service = getServiceDetail(slug);
   if (!service) notFound();
+
+  if (slug === "screening-40") return <ScreeningServicePage service={service} />;
 
   const bookingCategory = ["ultrasound", "ct", "mri"].includes(service.slug) ? service.slug : null;
   const bookingHref = `/contacts?service=${encodeURIComponent(

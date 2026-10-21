@@ -125,6 +125,7 @@
   .home-page .promo-slide--doctors { --promo-mobile-position: right center; }
   .home-page .promo-slide--dermoscopy { --promo-mobile-position: right center; }
   .home-page .promo-slide--ct-photo { --promo-mobile-position: right center; }
+  .home-page .promo-slide--screening { --promo-mobile-position: right center; }
   .home-page .promo-pagination { bottom: 18px; left: 24px; }
   .home-page .advantages { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px; gap: 0; }
   .home-page .advantage { grid-template-columns: 28px minmax(0, 1fr); gap: 8px; min-height: 0; padding: 14px 8px; border: 0; }

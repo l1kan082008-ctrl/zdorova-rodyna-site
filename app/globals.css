@@ -1992,12 +1992,17 @@ footer {
   --promo-photo: url("/promo/ct-banner-photo-v3.webp");
 }
 
+.promo-slide--screening {
+  --promo-photo: url("/promo/screening-40.webp");
+}
+
 .promo-slide--laboratory::after,
 .promo-slide--home::after,
 .promo-slide--heart::after,
 .promo-slide--mri::after,
 .promo-slide--doctors::after,
 .promo-slide--dermoscopy::after,
+.promo-slide--screening::after,
 .promo-slide--ct-photo::after {
   position: absolute;
   z-index: 1;
@@ -2022,6 +2027,7 @@ footer {
 .promo-slide--mri .promo-visual,
 .promo-slide--doctors .promo-visual,
 .promo-slide--dermoscopy .promo-visual,
+.promo-slide--screening .promo-visual,
 .promo-slide--ct-photo .promo-visual {
   opacity: 0;
 }
@@ -2030,6 +2036,13 @@ footer {
   background-position: center, right center;
   background-size: cover, 92% auto;
   background-repeat: no-repeat;
+}
+
+.promo-slide--screening::after {
+  background-color: #073f45;
+  background-image: linear-gradient(90deg, #033e48 0%, #033e48 52%, rgba(3,62,72,.5) 64%, rgba(3,62,72,0) 80%), var(--promo-photo);
+  background-position: center, right top;
+  background-size: cover, auto 100%;
 }
 
 .promo-copy {
@@ -8401,6 +8414,7 @@ body.calculator-is-open .site-header {
   .promo-slide--mri::after,
   .promo-slide--doctors::after,
   .promo-slide--dermoscopy::after,
+  .promo-slide--screening::after,
   .promo-slide--ct-photo::after {
     inset: 52% 0 0;
     background:
@@ -19604,6 +19618,18 @@ body.calculator-is-open .site-header {
 .family-declaration-submit:disabled {
   cursor: wait;
   opacity: 0.65;
+}
+
+.family-declaration-submit:disabled::before {
+  display: none;
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .family-declaration-submit::before {
+    display: none;
+    animation: none;
+  }
 }
 
 .family-form-status {

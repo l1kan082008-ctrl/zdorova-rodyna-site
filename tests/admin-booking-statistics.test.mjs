@@ -41,6 +41,8 @@ test("request sources and service selections classify all dashboard categories",
   for (const [extra, expected] of [
     [{ source: "callback", service: "МРТ", doctor: "Лікар" }, "callback"],
     [{ source: "family-declaration", service: "МРТ" }, "declaration"],
+    [{ source: "screening-40", service: "Консультація терапевта", doctor: "Лікар" }, "screening40"],
+    [{ source: "legacy", service: "Скринінг здоров’я 40+", doctor: "Лікар" }, "screening40"],
     [{ source: "legacy", service: "Зворотний дзвінок" }, "callback"],
     [{ source: "legacy", service: "Заявка на декларацію із сімейним лікарем" }, "declaration"],
     [{ service: "Консультації лікарів" }, "doctor"],
@@ -55,6 +57,20 @@ test("request sources and service selections classify all dashboard categories",
     [{ service: "Дерматоскопія родимок" }, "other"],
     [{ service: "Допоможіть обрати послугу" }, "other"],
   ]) assert.equal(getBookingCategory(booking(extra), catalog), expected, JSON.stringify(extra));
+});
+
+test("screening requests count once, filter separately and can be found by programme category or doctor", () => {
+  const records = [
+    booking({ id: "screening", source: "screening-40", service: "Скринінг здоров’я 40+", doctor: "Іщук Надія Степанівна" }),
+    booking({ id: "consultation", service: "Консультації лікарів", doctor: "Іщук Надія Степанівна" }),
+    booking({ id: "declaration", source: "family-declaration", service: "Заявка на декларацію із сімейним лікарем" }),
+  ];
+  const filtered = selectAdminBookings(records, query("category=screening40&q=іщук"));
+  assert.deepEqual(filtered.bookings.map(({ id }) => id), ["screening"]);
+  assert.equal(filtered.stats.total, 3);
+  assert.deepEqual(filtered.stats.categories.filter(({ count }) => count).map(({ id, count }) => [id, count]),
+    [["doctor", 1], ["screening40", 1], ["declaration", 1]]);
+  assert.deepEqual(selectAdminBookings(records, query("q=Скринінг+40%2B")).bookings.map(({ id }) => id), ["screening"]);
 });
 
 test("patient comment and branch address never override the actual booking category", () => {

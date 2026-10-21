@@ -171,6 +171,15 @@ export const defaultDoctors: Doctor[] = [
   doctor("bevztetiana", "Бевз Тетяна Ігорівна", "Гастроентеролог"),
   doctor("martyniuk-halyna", "Мартинюк Галина Андріївна", "Гастроентеролог, інфекціоніст, гепатолог"),
   doctor("ishchuk-nadiia", "Іщук Надія Степанівна", "Педіатр, сімейний лікар"),
+  {
+    ...doctor("doctor-4cd65e03-d5d5-4cdc-b2ab-98668b2b7098", "Мельник Віра Олегівна", "Сімейний лікар, Педіатр, терапевт"),
+    // Published profile verified 2026-10-21; also used by the local screening preview.
+    consultationPrice: 700,
+    repeatConsultationPrice: 500,
+    branch: "м. Рівне, вул. Володимира Стельмаха, 18-М",
+    patientGroups: ["adults", "children"],
+    schedule: { sat: "9.00-15.00" },
+  },
   doctor("krokhmal-oksana", "Крохмаль Оксана Петрівна", "Дитячий ендокринолог"),
   doctor("havrysh-olena", "Гавриш Олена Валеріївна", "Дитячий отоларинголог"),
   doctor("pshenychna-valentyna", "Пшенична Валентина Антонівна", "Лікар УЗД серця"),

@@ -6,6 +6,7 @@ export const promoThemes = [
   "doctors",
   "dermoscopy",
   "ct-photo",
+  "screening",
 ] as const;
 
 export type PromoTheme = (typeof promoThemes)[number];
@@ -26,6 +27,18 @@ export type PromoSlide = {
 };
 
 export const defaultPromoSlides: PromoSlide[] = [
+  {
+    id: "screening-40",
+    eyebrow: "Державна програма",
+    title: "Скринінг здоров’я 40+",
+    text: "Огляд, аналізи та індивідуальні рекомендації лікаря для людей від 40 років. Дізнайтеся про програму та оберіть лікаря.",
+    note: "Заявка на сайті або запис телефоном",
+    action: "Дізнатися про програму",
+    href: "/services/screening-40",
+    theme: "screening",
+    active: true,
+    sortOrder: -1,
+  },
   {
     id: "laboratory",
     eyebrow: "Лабораторія",

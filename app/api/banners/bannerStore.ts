@@ -9,19 +9,6 @@ import {
 import { normalizeInternalHref } from "@/lib/publicUrl";
 import { deleteMediaReference, normalizeMediaReference } from "@/lib/mediaStorage";
 
-type D1DatabaseLike = {
-  prepare(query: string): {
-    bind(...values: unknown[]): {
-      all<T>(): Promise<{ results?: T[] }>;
-      first<T>(): Promise<T | null>;
-      run(): Promise<unknown>;
-    };
-    all<T>(): Promise<{ results?: T[] }>;
-    first<T>(): Promise<T | null>;
-    run(): Promise<unknown>;
-  };
-};
-
 type BannerRow = {
   id: string;
   eyebrow: string;
@@ -37,7 +24,7 @@ type BannerRow = {
   sort_order: number;
 };
 
-const db = () => (env as unknown as { DB: D1DatabaseLike }).DB;
+const db = () => env.DB;
 const validThemes = new Set<string>(promoThemes);
 
 async function ensureBannersTable() {
@@ -71,9 +58,47 @@ async function initializeSchemaTables() {
   }
 
   const count = await db().prepare("SELECT COUNT(*) AS count FROM home_banners").first<{ count: number }>();
-  if (Number(count?.count ?? 0) === 0 && process.env.BOOTSTRAP_DEFAULT_CONTENT === "true") {
+  if (Number(count?.count ?? 0) === 0) {
+    if (process.env.BOOTSTRAP_DEFAULT_CONTENT !== "true") return;
     for (const slide of defaultPromoSlides) await insertBanner(slide);
   }
+  await migrateScreeningBanner();
+}
+
+// Insert once without replacing admin content or resurrecting a banner deleted later.
+async function migrateScreeningBanner() {
+  const migration = "screening-40-banner-v1";
+  await db().prepare("CREATE TABLE IF NOT EXISTS banner_migrations (id TEXT PRIMARY KEY)").run();
+  if (await db().prepare("SELECT id FROM banner_migrations WHERE id = ?").bind(migration).first()) return;
+
+  const banner = defaultPromoSlides.find((slide) => slide.id === "screening-40");
+  if (!banner) throw new Error("Missing screening banner default.");
+
+  await db().batch([
+    db().prepare(`
+      INSERT INTO home_banners (
+        id, eyebrow, title, body_text, note, accent, action_label, href,
+        theme, image_key, is_active, sort_order, updated_at
+      )
+      SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        (SELECT COALESCE(MIN(sort_order), 1) - 1 FROM home_banners), CURRENT_TIMESTAMP
+      WHERE NOT EXISTS (SELECT 1 FROM banner_migrations WHERE id = ?)
+        AND NOT EXISTS (
+          SELECT 1 FROM home_banners
+          WHERE id = ? OR href = ? OR href = ? OR href LIKE ?
+            OR href LIKE ? OR href LIKE ? OR href LIKE ?
+        )
+      ON CONFLICT DO NOTHING
+    `).bind(
+      banner.id, banner.eyebrow, banner.title, banner.text, banner.note,
+      banner.accent ?? null, banner.action, banner.href, banner.theme,
+      banner.imageKey ?? null, banner.active ? 1 : 0, migration,
+      banner.id, banner.href, `${banner.href}/`, `${banner.href}?%`,
+      `${banner.href}#%`, `${banner.href}/?%`, `${banner.href}/#%`,
+    ),
+    db().prepare("INSERT INTO banner_migrations (id) VALUES (?) ON CONFLICT(id) DO NOTHING")
+      .bind(migration),
+  ]);
 }
 
 function rowToBanner(row: BannerRow): PromoSlide {

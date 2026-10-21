@@ -90,6 +90,8 @@ function harness(responseOverride, options = {}) {
     },
     "./bookingStore": { createBooking: async data => { stored.push(data); return "ZR-ISOLATED-TEST"; } },
     "@/lib/bookingNotification": { sendBookingNotification: async data => notifications.push(data) },
+    "@/lib/bookingDetails": load("../lib/bookingDetails.ts"),
+    "@/lib/screening40": load("../lib/screening40.ts"),
   });
   let release, releasePrices, releaseDoctors, releaseLocations;
   const gate = new Promise(resolve => { release = resolve; });
@@ -201,6 +203,8 @@ test("a visible booking dialog emits one opening across rerenders and StrictMode
 
 function launcherHarness(url = "http://test.local/") {
   const listeners = new Map(), timers = new Map();
+  const navigations = [];
+  const router = { push: href => navigations.push(href) };
   let request = null, mounted = false, cleanup, nextTimer = 0;
   const analyticsEvents = [];
   const window = {
@@ -225,7 +229,7 @@ function launcherHarness(url = "http://test.local/") {
       useEffect: effect => { if (!mounted) { mounted = true; cleanup = effect(); } },
     },
     "react/jsx-runtime": { jsx, jsxs: jsx },
-    "react-dom": {}, "next/navigation": { usePathname: () => window.location.pathname },
+    "react-dom": {}, "next/navigation": { usePathname: () => window.location.pathname, useRouter: () => router },
     "./SiteSettingsProvider": {}, "./PublicDoctorSpecialtiesProvider": {},
     "@/lib/siteSettings": {}, "@/lib/bookingSubmission": {}, "./useBookingConfirmation": {},
     "@/lib/bookingAnalytics": load("../lib/bookingAnalytics.ts", {}, { window }),
@@ -242,7 +246,7 @@ function launcherHarness(url = "http://test.local/") {
       return event;
     },
     navigate: href => { window.location = new URL(href); listeners.get("hashchange")(); },
-    dispose: () => cleanup?.(), window,
+    dispose: () => cleanup?.(), window, navigations,
   };
 }
 
@@ -294,6 +298,23 @@ test("direct booking URLs and hash navigation create sessions only while the dia
   assert.equal(h.render(), null);
   h.navigate("http://test.local/contacts#booking");
   assert.notEqual(h.render().props.opening, first.props.opening);
+});
+
+test("legacy screening booking links open the dedicated programme form without a generic appointment event", context => {
+  const url = `http://test.local/contacts?service=${encodeURIComponent("Скринінг здоров’я 40+")}#booking`;
+  const direct = launcherHarness(url);
+  context.after(direct.dispose);
+  direct.render(); direct.flushUrl();
+  assert.equal(direct.render(), null);
+  assert.deepEqual(direct.navigations, ["/services/screening-40#screening-doctors"]);
+  assert.deepEqual(direct.window.dataLayer, []);
+
+  const clicked = launcherHarness();
+  context.after(clicked.dispose);
+  clicked.render(); clicked.flushUrl();
+  assert.equal(clicked.click(url).defaultPrevented, true);
+  assert.equal(clicked.render(), null);
+  assert.deepEqual(clicked.navigations, ["/services/screening-40#screening-doctors"]);
 });
 
 test("booking phone is invalid before the browser can dispatch submit", context => {

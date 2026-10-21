@@ -45,6 +45,7 @@ const cardImageBySlug: Record<string, string> = {
   holter: "/service-cards/holter-glass-v3.webp",
   "home-nurse": "/service-cards/home-nurse-glass-v3.jpg",
   family: "/service-cards/family-glass-v3.jpg",
+  "screening-40": "/service-cards/screening-40-glass-v1.webp",
   "wart-removal": "/service-cards/wart-removal-glass-v3.jpg",
   "ear-piercing": "/service-cards/ear-piercing-glass-v3.jpg",
   dermoscopy: "/service-cards/dermoscopy-glass-v3.jpg",
@@ -99,17 +100,17 @@ async function initializeSchemaTables() {
       await insertService(service);
     }
   }
-  await migrateHolterCard();
+  await migrateServiceCard("holter", "holter-service-card-v1");
+  await migrateServiceCard("screening-40", "screening-40-service-card-v1");
 }
 
 // Add the requested card once; subsequent admin edits, hiding and deletion remain authoritative.
-async function migrateHolterCard() {
-  const migration = "holter-service-card-v1";
+async function migrateServiceCard(slug: string, migration: string) {
   await db().prepare("CREATE TABLE IF NOT EXISTS service_migrations (id TEXT PRIMARY KEY)").run();
   if (await db().prepare("SELECT id FROM service_migrations WHERE id = ?").bind(migration).first()) return;
 
-  const service = getDefaultManagedServices().find((item) => item.slug === "holter");
-  if (!service) throw new Error("Missing Holter service default.");
+  const service = getDefaultManagedServices().find((item) => item.slug === slug);
+  if (!service) throw new Error(`Missing service default: ${slug}.`);
 
   await db().batch([
     db().prepare(`
@@ -123,8 +124,8 @@ async function migrateHolterCard() {
       WHERE NOT EXISTS (SELECT 1 FROM service_migrations WHERE id = ?)
         AND NOT EXISTS (
           SELECT 1 FROM managed_services
-          WHERE slug = 'holter' OR href = '/services/holter'
-            OR href = '/services/holter/' OR href LIKE ?
+          WHERE slug = ? OR href = ?
+            OR href = ? OR href LIKE ?
             OR href LIKE ? OR href LIKE ? OR href LIKE ?
         )
       ON CONFLICT DO NOTHING
@@ -133,7 +134,8 @@ async function migrateHolterCard() {
       service.href, service.imageKey, service.imagePath,
       service.showOnServicesPage ? 1 : 0, service.showOnHome ? 1 : 0,
       service.active ? 1 : 0, migration,
-      "/services/holter?%", "/services/holter#%", "/services/holter/?%", "/services/holter/#%",
+      service.slug, service.href, `${service.href}/`,
+      `${service.href}?%`, `${service.href}#%`, `${service.href}/?%`, `${service.href}/#%`,
     ),
     db().prepare("INSERT INTO service_migrations (id) VALUES (?) ON CONFLICT(id) DO NOTHING")
       .bind(migration),
@@ -141,6 +143,11 @@ async function migrateHolterCard() {
 }
 
 function rowToService(row: ServiceRow): ManagedService {
+  // Replace only the original borrowed artwork; keep admin images and stored data intact.
+  const usesLegacyScreeningArtwork = row.slug === "screening-40"
+    && !row.image_key
+    && row.image_path === "/service-cards/family-glass-v3.jpg";
+
   return {
     id: row.id,
     slug: row.slug,
@@ -148,7 +155,7 @@ function rowToService(row: ServiceRow): ManagedService {
     cardDescription: row.card_description,
     href: row.href,
     imageKey: row.image_key,
-    imagePath: row.image_path,
+    imagePath: usesLegacyScreeningArtwork ? cardImageBySlug["screening-40"] : row.image_path,
     sortOrder: Number(row.sort_order),
     showOnServicesPage: Boolean(row.show_on_services_page),
     showOnHome: Boolean(row.show_on_home),

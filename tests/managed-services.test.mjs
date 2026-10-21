@@ -110,6 +110,51 @@ test("an unbootstrapped empty catalogue stays empty", async (context) => {
   assert.deepEqual(await storeFor(DB).listManagedServices(), []);
 });
 
+for (const artwork of [
+  {
+    name: "legacy screening default", slug: "screening-40", imageKey: null,
+    imagePath: "/service-cards/family-glass-v3.jpg",
+    expected: "/service-cards/screening-40-glass-v1.webp",
+  },
+  {
+    name: "uploaded screening image", slug: "screening-40", imageKey: "services/custom.webp",
+    imagePath: "/service-cards/family-glass-v3.jpg", expected: "/service-cards/family-glass-v3.jpg",
+  },
+  {
+    name: "custom screening image path", slug: "screening-40", imageKey: null,
+    imagePath: "/custom-screening.webp", expected: "/custom-screening.webp",
+  },
+  {
+    name: "cleared screening image", slug: "screening-40", imageKey: null,
+    imagePath: null, expected: null,
+  },
+  {
+    name: "family service image", slug: "family", imageKey: null,
+    imagePath: "/service-cards/family-glass-v3.jpg", expected: "/service-cards/family-glass-v3.jpg",
+  },
+]) {
+  test(`artwork resolution preserves stored data and custom settings: ${artwork.name}`, async (context) => {
+    const { DB, sqlite } = fixture(context);
+    await storeFor(DB, true).listManagedServices();
+    sqlite.prepare(`UPDATE managed_services SET image_key = ?, image_path = ?,
+      short_title = 'Власна назва', active = 0, show_on_home = 1,
+      show_on_services_page = 0, sort_order = 77 WHERE slug = ?`)
+      .run(artwork.imageKey, artwork.imagePath, artwork.slug);
+    const before = sqlite.prepare("SELECT * FROM managed_services ORDER BY id").all();
+
+    const services = await storeFor(DB).listManagedServices({ includeInactive: true });
+    const service = services.find((item) => item.slug === artwork.slug);
+    assert.equal(service.imagePath, artwork.expected);
+    assert.equal(service.imageKey, artwork.imageKey);
+    assert.equal(service.shortTitle, "Власна назва");
+    assert.equal(service.active, false);
+    assert.equal(service.showOnHome, true);
+    assert.equal(service.showOnServicesPage, false);
+    assert.equal(service.sortOrder, 77);
+    assert.deepEqual(sqlite.prepare("SELECT * FROM managed_services ORDER BY id").all(), before);
+  });
+}
+
 test("fresh bootstrap and subsequent starts retain only one Holter card", async (context) => {
   const { DB, sqlite } = fixture(context);
   const initial = await storeFor(DB, true).listManagedServices();
@@ -117,7 +162,7 @@ test("fresh bootstrap and subsequent starts retain only one Holter card", async 
   assert.equal(initial.length, serviceData.primaryServiceDetails.length);
   assert.deepEqual(restarted, initial);
   assert.equal(restarted.filter((item) => item.slug === "holter").length, 1);
-  assert.equal(sqlite.prepare("SELECT COUNT(*) AS count FROM service_migrations").get().count, 1);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS count FROM service_migrations").get().count, 2);
 });
 
 test("legacy catalogue gains Holter without changing other cards or their custom order", async (context) => {
@@ -176,7 +221,7 @@ test("migration writes roll back together and a transient failure can be retried
   assert.equal((await store.listManagedServices()).filter((item) => item.slug === "holter").length, 1);
 });
 
-test("concurrent first reads converge to one card and one migration marker", async (context) => {
+test("concurrent first reads converge to one card and one marker per migration", async (context) => {
   const { DB, sqlite, store } = fixture(context);
   seedLegacy(sqlite, store);
   const [first, second] = await Promise.all([
@@ -184,10 +229,10 @@ test("concurrent first reads converge to one card and one migration marker", asy
   ]);
   assert.equal(first.filter((item) => item.slug === "holter").length, 1);
   assert.deepEqual(first, second);
-  assert.equal(sqlite.prepare("SELECT COUNT(*) AS count FROM service_migrations").get().count, 1);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) AS count FROM service_migrations").get().count, 2);
 });
 
-test("the PostgreSQL adapter binds migration statements correctly in one transaction", async (context) => {
+test("the PostgreSQL adapter binds each migration in its own transaction", async (context) => {
   const { sqlite, store: defaults } = fixture(context);
   seedLegacy(sqlite, defaults);
   const queries = [];
@@ -220,7 +265,7 @@ test("the PostgreSQL adapter binds migration statements correctly in one transac
   }, { process: { env: { DATABASE_URL: "postgresql://test.invalid/no-connection" } } });
   const services = await storeFor(getDatabase()).listManagedServices();
   assert.equal(services.filter((item) => item.slug === "holter").length, 1);
-  assert.equal(transactions, 1);
+  assert.equal(transactions, 2);
   assert.ok(queries.some(({ sql, values }) => sql.includes("INSERT INTO managed_services")
     && values.includes("/services/holter?%")));
 });

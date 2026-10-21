@@ -60,6 +60,8 @@ function harness(kind, options = {}) {
       return "ZR-SECONDARY-ISOLATED";
     } },
     "@/lib/bookingNotification": { sendBookingNotification: async data => notifications.push(data) },
+    "@/lib/bookingDetails": load("../lib/bookingDetails.ts"),
+    "@/lib/screening40": load("../lib/screening40.ts"),
   });
   let release;
   const gate = new Promise(resolve => { release = resolve; });
@@ -126,6 +128,7 @@ function harness(kind, options = {}) {
       ...dependencies,
       "@/app/components/useBookingConfirmation": confirmation,
       "@/lib/doctorBranches": load("../lib/doctorBranches.ts"),
+      "@/lib/ukrainianPhone": load("../lib/ukrainianPhone.ts"),
       "@/lib/imageSource": {},
       "@/app/components/TurnstileField": {},
     }, { window, fetch });

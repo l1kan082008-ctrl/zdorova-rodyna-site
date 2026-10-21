@@ -29,6 +29,7 @@ const themeLabels: Record<PromoTheme, string> = {
   doctors: "Лікарі",
   dermoscopy: "Дерматоскопія",
   "ct-photo": "КТ",
+  screening: "Скринінг здоров’я 40+",
 };
 
 function emptyBanner(order: number): PromoSlide {
@@ -36,6 +37,7 @@ function emptyBanner(order: number): PromoSlide {
     ...defaultPromoSlides[0],
     id: "",
     eyebrow: "Нова пропозиція",
+    theme: "laboratory",
     title: "Заголовок нового банера",
     text: "Коротко опишіть пропозицію або послугу.",
     note: "Важлива перевага",

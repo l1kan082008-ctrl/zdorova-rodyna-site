@@ -10,7 +10,7 @@ import { trackBookingFormOpen } from "@/lib/bookingAnalytics";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useModalDialog } from "./useModalDialog";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { TurnstileField } from "./TurnstileField";
 import { clearPriceCalculatorSelection } from "../prices/calculatorSelection";
 import { type CenterLocation } from "../contacts/locationData";
@@ -26,7 +26,7 @@ const services = [
   "Кардіологія та діагностика серця", "Холтерівське моніторування ЕКГ",
   homeVisitService, "Видалення бородавок",
   "Проколювання вух", "Дерматоскопія родимок", "Перевірка слуху",
-  "Сімейна медицина", "Скринінг здоров’я 40+", "Комплекс досліджень",
+  "Сімейна медицина", "Комплекс досліджень",
 ];
 const helpService = "Допоможіть обрати послугу";
 type BookingOpening = { url: URL; session: object };
@@ -34,9 +34,16 @@ type BookingOpening = { url: URL; session: object };
 // Keep real booking URLs as a fallback and preserve modified/new-tab clicks.
 export function BookingLauncher() {
   const pathname = usePathname();
+  const router = useRouter();
   const [request, setRequest] = useState<BookingOpening | null>(null);
   useEffect(() => {
     const openBooking = (url: URL) => {
+      // Screening links use the dedicated physician selection and request form.
+      if (/скрин[іи]нг.*40|40\s*\+/iu.test(url.searchParams.get("service") ?? "")) {
+        setRequest(null);
+        router.push("/services/screening-40#screening-doctors");
+        return;
+      }
       // Changing the selection while the dialog stays open is not another opening.
       setRequest(current => ({ url, session: current?.session ?? {} }));
     };
@@ -64,7 +71,7 @@ export function BookingLauncher() {
       window.removeEventListener("hashchange", openFromUrl);
       window.removeEventListener("popstate", openFromUrl);
     };
-  }, [pathname]);
+  }, [pathname, router]);
   return request ? <BookingDialog key={request.url.href} request={request.url} opening={request.session} sourcePathname={pathname} onClose={() => {
     setRequest(null);
     if (window.location.hash === "#booking") window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);

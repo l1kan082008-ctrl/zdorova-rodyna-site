@@ -36,6 +36,7 @@ const footerServiceLinks = [
   { href: "/services/mri", label: "Магнітно-резонансна томографія" },
   { href: "/services/ultrasound", label: "Ультразвукова діагностика" },
   { href: "/services/consultation", label: "Лікарські консультації" },
+  { href: "/services/screening-40", label: "Скринінг здоров’я 40+" },
 ];
 
 const footerPatientLinks = [
@@ -76,6 +77,7 @@ const navigationForSpecialties = (doctorCategories: PublicDoctorCategory[]): Nav
       { href: "/services/holter", label: "Холтер" },
       { href: "/services/home-nurse", label: "Медсестра додому" },
       { href: "/services/family", label: "Сімейний лікар" },
+      { href: "/services/screening-40", label: "Скринінг здоров’я 40+" },
       { href: "/services/wart-removal", label: "Видалення бородавок" },
       { href: "/services/ear-piercing", label: "Проколювання вух" },
       { href: "/services/dermoscopy", label: "Дерматоскопія родимок" },

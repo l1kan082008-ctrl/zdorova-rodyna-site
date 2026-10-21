@@ -13,6 +13,7 @@ const promoImages = {
   doctors: "/promo/doctors-real-team-v2.webp",
   dermoscopy: "/promo/dermoscopy-photo-v1.webp",
   "ct-photo": "/promo/ct-banner-photo-v3.webp",
+  screening: "/promo/screening-40.webp",
 } as const;
 
 export function PromoSlider() {

@@ -9,6 +9,7 @@ export const bookingCategoryLabels = {
   ultrasound: "УЗД",
   laboratory: "Аналізи",
   holter: "Холтер",
+  screening40: "Скринінг 40+",
   declaration: "Декларації",
   callback: "Зворотний дзвінок",
   other: "Інше",
@@ -70,6 +71,7 @@ function studyName(value: string) {
 }
 
 function explicitServiceCategory(value: string): BookingCategory | undefined {
+  if (/^скринінг(?: здоров[’'ʼ]я)?\s*40\+/iu.test(value)) return "screening40";
   if (/^холтер|^добове моніторування екг(?:\s|\(|$)/iu.test(value)) return "holter";
   if (/^мрт(?:\s|$)|^магнітно[ -]резонанс/iu.test(value)) return "mri";
   if (/^кт(?:[\s-]|$)|^комп[’'`]?ютерн.*томограф/iu.test(value)) return "ct";
@@ -106,6 +108,7 @@ function classifyBooking(booking: BookingSummary, catalog: Map<string, Set<Booki
   const service = normalize(booking.service);
   if (booking.source === "callback" || service === "зворотний дзвінок") return "callback";
   if (booking.source === "family-declaration" || service === "заявка на декларацію із сімейним лікарем") return "declaration";
+  if (booking.source === "screening-40") return "screening40";
 
   // Only generated study blocks are read. The patient's free-form comment must
   // not turn a consultation into a callback or a different examination.
@@ -218,6 +221,7 @@ export function selectAdminBookings<T extends BookingSummary>(
     if (!normalizedQuery || searchMatches?.has(booking.id)) return true;
     return normalize([
       booking.reference, booking.patientName, booking.phone, booking.service, booking.doctor,
+      bookingCategoryLabels[booking.category],
       ...parseBookingDetails(booking.comment).studies,
     ].filter(Boolean).join(" ")).includes(normalizedQuery);
   }).sort((left, right) => {

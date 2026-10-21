@@ -8,6 +8,7 @@ import { useMemo, useRef, useState } from "react";
 import { TurnstileField } from "@/app/components/TurnstileField";
 import { preventNativeBookingSubmit, submitBookingFromClick } from "@/lib/bookingSubmission";
 import { useBookingConfirmation } from "@/app/components/useBookingConfirmation";
+import { PHONE_PREFIX, formatPhoneNumber, getUkrainianPhoneDigits, validatePhoneNumber } from "@/lib/ukrainianPhone";
 
 type FamilyDoctorOption = {
   id: string;
@@ -21,46 +22,10 @@ type FamilyDeclarationFormProps = {
   doctors: FamilyDoctorOption[];
 };
 
-const PHONE_PREFIX = "+38 ";
-
 function formatBirthDate(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 8);
   const parts = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)];
   return parts.filter(Boolean).join(".");
-}
-
-function getUkrainianPhoneDigits(value: string) {
-  let digits = value.replace(/\D/g, "");
-
-  if (value.trimStart().startsWith("+38") && digits.startsWith("38")) {
-    digits = digits.slice(2);
-  } else if (digits.startsWith("380") && digits.length > 10) {
-    digits = digits.slice(2);
-  }
-
-  return digits.slice(0, 10);
-}
-
-function formatPhoneNumber(value: string) {
-  const digits = getUkrainianPhoneDigits(value);
-  if (!digits) return PHONE_PREFIX;
-
-  const operator = digits.slice(0, 3);
-  const first = digits.slice(3, 6);
-  const second = digits.slice(6, 8);
-  const third = digits.slice(8, 10);
-
-  let formatted = `+38 ${operator}`;
-  if (first) formatted += ` ${first}`;
-  if (second) formatted += `-${second}`;
-  if (third) formatted += `-${third}`;
-  return formatted;
-}
-
-function validatePhoneNumber(value: string) {
-  const digits = getUkrainianPhoneDigits(value);
-  if (/^0\d{9}$/.test(digits) && !/^0+$/.test(digits)) return "";
-  return "Будь ласка, вкажіть номер у форматі +38 0XX XXX-XX-XX.";
 }
 
 function parseBirthDate(value: string) {
@@ -362,7 +327,7 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
               autoComplete="name"
               required
               minLength={2}
-              placeholder="Наприклад, Олена Коваль"
+              placeholder="П.І.Б."
             />
           </label>
 
@@ -391,13 +356,19 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
                   const input = event.currentTarget;
                   if ((input.selectionStart ?? 0) < PHONE_PREFIX.length) {
                     window.requestAnimationFrame(() => {
-                      input.setSelectionRange(input.value.length, input.value.length);
+                      const start = input.selectionStart ?? 0;
+                      const end = input.selectionEnd ?? start;
+                      if (start === end && start < PHONE_PREFIX.length) {
+                        input.setSelectionRange(input.value.length, input.value.length);
+                      }
                     });
                   }
                 }}
                 onClick={(event) => {
                   const input = event.currentTarget;
-                  if ((input.selectionStart ?? 0) < PHONE_PREFIX.length) {
+                  const start = input.selectionStart ?? 0;
+                  const end = input.selectionEnd ?? start;
+                  if (start === end && start < PHONE_PREFIX.length) {
                     input.setSelectionRange(input.value.length, input.value.length);
                   }
                 }}

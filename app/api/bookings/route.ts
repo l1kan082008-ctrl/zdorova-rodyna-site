@@ -6,12 +6,15 @@ import {
 } from "@/lib/publicSubmissionSecurity";
 import { createBooking } from "./bookingStore";
 import { sendBookingNotification } from "@/lib/bookingNotification";
+import { formatBookingComment } from "@/lib/bookingDetails";
+import { isScreeningFullName, screeningAddress, screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
 
 const brokenEncodingPattern = /[\u0080-\u009f\u00c2\u00c3\u00d0\u00d1\ufffd]/u;
 const allowedSources = new Map([
   ["contacts", "contacts-v1"],
   ["callback", "callback-v1"],
   ["family-declaration", "family-declaration-v1"],
+  ["screening-40", "screening-40-v1"],
 ]);
 
 function readText(value: unknown, limit: number) {
@@ -56,11 +59,11 @@ export async function POST(request: Request) {
     const payload = payloadRecord(await readBoundedJson(request, 16 * 1024));
     if (!payload) return jsonError("Некоректні дані заявки.", 400);
 
-    const patientName = readText(payload.name, 100);
+    let patientName = readText(payload.name, 100);
     const phone = readText(payload.phone, 30);
     const service = readText(payload.service, 180);
-    const doctor = readText(payload.doctor, 140);
-    const comment = readText(payload.comment, 1200);
+    let doctor = readText(payload.doctor, 140);
+    let comment = readText(payload.comment, 1200);
     const website = readText(payload.website, 200);
     const source = readText(payload.source, 40);
     const consentVersion = readText(payload.consentVersion, 80);
@@ -94,6 +97,9 @@ export async function POST(request: Request) {
       return jsonError("Перевірте номер телефону.", 400);
     }
     if (!service) return jsonError("Оберіть послугу.", 400);
+    if (service === screeningServiceName && source !== "screening-40") {
+      return jsonError("Подайте заявку через форму програми «Скринінг здоров’я 40+».", 400);
+    }
     if (source === "callback" && service !== "Зворотний дзвінок") {
       return jsonError("Некоректні дані заявки.", 400);
     }
@@ -102,6 +108,46 @@ export async function POST(request: Request) {
       && service !== "Заявка на декларацію із сімейним лікарем"
     ) {
       return jsonError("Некоректні дані заявки.", 400);
+    }
+    if (source === "screening-40") {
+      if (service !== screeningServiceName) {
+        return jsonError("Некоректні дані заявки.", 400);
+      }
+      if (!isScreeningFullName(patientName)) {
+        return jsonError("Вкажіть прізвище, ім’я та по батькові повністю.", 400);
+      }
+      if (!/^(?:38)?0\d{9}$/u.test(phoneDigits) || /^0+$/u.test(phoneDigits.replace(/^38/u, ""))) {
+        return jsonError("Перевірте номер телефону.", 400);
+      }
+      if (
+        payload.doctorId !== undefined
+        && (typeof payload.doctorId !== "string" || payload.doctorId.length > 100)
+      ) {
+        return jsonError("Некоректні дані лікаря.", 400);
+      }
+      const doctorId = readText(payload.doctorId, 100);
+      doctor = "";
+      if (doctorId) {
+        if (!screeningDoctorIds.some((id) => id === doctorId)) {
+          return jsonError("Оберіть лікаря програми «Скринінг здоров’я 40+».", 400);
+        }
+        const { getPublicDoctorById } = await import("../doctors/publicDoctors");
+        const selectedDoctor = await getPublicDoctorById(doctorId);
+        if (!selectedDoctor || selectedDoctor.isActive === false) {
+          return jsonError("Цей лікар зараз недоступний для запису. Оновіть сторінку та оберіть іншого.", 400);
+        }
+        doctor = selectedDoctor.name;
+      }
+      patientName = patientName.replace(/\s+/gu, " ");
+      // The programme has one location, regardless of a doctor's other branches.
+      // Resolve the doctor's name from their profile and ignore submitted details.
+      comment = formatBookingComment({
+        locationComment: `Бажане відділення: ${screeningAddress}`,
+        studies: "",
+        total: "",
+        comment: "Заявка на участь у державній програмі «Скринінг здоров’я 40+»."
+          + (doctorId ? "" : " Допоможіть обрати лікаря."),
+      });
     }
     if (brokenEncodingPattern.test(`${patientName} ${service} ${doctor} ${comment}`)) {
       return jsonError("Текст має пошкоджене кодування.", 400);
