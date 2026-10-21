@@ -93,6 +93,15 @@ export async function ScreeningServicePage({ service }: { service: ServiceDetail
             <a className="book-button" href="#screening-doctors">Подати заявку <span aria-hidden="true">↓</span></a>
             <a className="outline-button" href={phoneHref}>Зателефонувати <span aria-hidden="true">→</span></a>
           </div>
+          <Image
+            className={styles.heroMark}
+            src="/promo/screening-40-mark-white.svg"
+            alt=""
+            aria-hidden="true"
+            width={211}
+            height={267}
+            unoptimized
+          />
         </div>
       </section>
 

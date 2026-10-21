@@ -2,15 +2,15 @@
 // (Ambulatory ECG monitoring), CUH (Holter Symptom Diary), Princess Alexandra
 // Hospital NHS Trust (ECG Monitor). Service duration/equipment come from our catalog.
 export const holterUrl = "https://zdorovarodynaplus.com.ua/services/holter";
-export const holterSeoTitle = "Холтер ЕКГ у Рівному — добове моніторування | Здорова Родина";
+export const holterSeoTitle = "12-канальний Холтер ЕКГ у Рівному | Здорова Родина";
 export const holterSeoDescription =
-  "Холтер ЕКГ у Рівному: запис ритму серця 24 години. Опис і розшифрування результатів лікарем входять у вартість. Підготовка та запис у «Здоровій Родині».";
+  "12-канальний Холтер ЕКГ у Рівному: запис ритму серця 24 години. Опис і розшифрування результатів лікарем входять у вартість. Запис у «Здоровій Родині».";
 export const holterSeoImage = {
-  url: "https://zdorovarodynaplus.com.ua/equipment/ecgpro-holter-bs6930-3.webp",
+  url: "https://zdorovarodynaplus.com.ua/equipment/ecgpro-holter-bs6930.webp",
   width: 1200,
   height: 913,
   type: "image/webp",
-  alt: "Монітор ЕКГ BS6930-3 для добового Холтер-моніторування у «Здоровій Родині»",
+  alt: "Монітор ECGpro Holter для добового моніторування ЕКГ у «Здоровій Родині»",
 } as const;
 
 export const holterFaq = [
@@ -52,7 +52,7 @@ export const holterStructuredData = {
       inLanguage: "uk-UA",
       image: { "@id": `${holterUrl}#primaryimage` },
       primaryImageOfPage: { "@id": `${holterUrl}#primaryimage` },
-      about: { "@type": "MedicalTest", name: "Холтерівське моніторування ЕКГ" },
+      about: { "@type": "MedicalTest", name: "12-канальне холтерівське моніторування ЕКГ" },
       breadcrumb: { "@id": `${holterUrl}#breadcrumbs` },
     },
     {

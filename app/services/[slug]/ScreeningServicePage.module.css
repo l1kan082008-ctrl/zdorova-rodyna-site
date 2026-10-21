@@ -59,6 +59,23 @@
   color: #fff;
 }
 
+.heroCopy :global(.outline-button) {
+  border-color: rgba(255, 255, 255, .62);
+  background: rgba(1, 42, 47, .24);
+  color: #fff;
+  backdrop-filter: blur(12px);
+}
+
+.heroCopy :global(.outline-button:hover),
+.heroCopy :global(.outline-button:focus-visible) {
+  border-color: #fff;
+  background: rgba(255, 255, 255, .15);
+}
+
+.heroMark {
+  display: none;
+}
+
 .section,
 .sources {
   width: var(--site-content-width);
@@ -238,6 +255,19 @@
 
   .heroShade { display: none; }
 
+  .heroMark {
+    display: block;
+    position: absolute;
+    z-index: 1;
+    top: calc(100% + 32px);
+    left: 4px;
+    width: clamp(72px, 21vw, 92px);
+    height: auto;
+    pointer-events: none;
+    user-select: none;
+    animation: markBreathe 3.2s ease-in-out infinite;
+  }
+
   .introduction,
   .examinationGrid,
   .steps {
@@ -262,4 +292,17 @@
   .steps h3 { margin-top: 0; }
 
   .sources { margin-top: -20px; }
+}
+
+@media (max-width: 360px) {
+  .heroImage { object-position: 75% top; }
+}
+
+@keyframes markBreathe {
+  0%, 100% { opacity: .72; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroMark { animation: none; }
 }
