@@ -7,7 +7,9 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import { doctorBookingHref, splitDoctorBranches } from "@/lib/doctorBranches";
+import { screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
 import "./portraits.css";
+import screeningStyles from "./screening-actions.module.css";
 import { CloseIcon } from "../components/CloseIcon";
 import {
   doctorPatientGroupOptions,
@@ -270,6 +272,9 @@ const changeMobileView = (nextView: MobileDoctorView) => {
             const returnTo = `${directoryUrl(specialty, query)}#doctor-card-${doctor.id}`;
             const profileHref = `/doctors/${doctor.id}?returnTo=${encodeURIComponent(returnTo)}`;
             const bookingHref = doctorBookingHref(doctor);
+            const canBookScreening = canBookDoctorConsultation(doctor)
+              && screeningDoctorIds.some((id) => id === doctor.id);
+            const screeningBookingHref = doctorBookingHref(doctor, screeningServiceName);
             const consultationPrices = getDoctorConsultationPrices(doctor);
             const consultationSummary = formatDoctorConsultations(doctor);
             const isFocused = focusedDoctorId === doctor.id;
@@ -344,7 +349,16 @@ const changeMobileView = (nextView: MobileDoctorView) => {
                   </span>
 
                   {!isExpanded && (
-                    <div className="doctor-photo-actions">
+                    <div className={`doctor-photo-actions${canBookScreening ? ` ${screeningStyles.photoActions}` : ""}`}>
+                      {canBookScreening && (
+                        <a
+                          className={`doctor-photo-biography ${screeningStyles.photoScreening}`}
+                          href={screeningBookingHref}
+                          aria-label={`Скринінг 40+ — ${doctor.name}`}
+                        >
+                          Скринінг 40+
+                        </a>
+                      )}
                       <a className="doctor-photo-biography" href={profileHref}>{profileLinkLabel}</a>
                       {canBookDoctorConsultation(doctor) && (
                         <a className="doctor-photo-booking" href={bookingHref}>Записатися</a>
@@ -394,7 +408,16 @@ const changeMobileView = (nextView: MobileDoctorView) => {
                     </details>
                   </div> : <p className="doctor-schedule-notice">{getDoctorScheduleNotice(doctor)}</p>}
 
-                  <div className="doctor-card-text-actions">
+                  <div className={`doctor-card-text-actions${canBookScreening ? ` ${screeningStyles.cardActions}` : ""}`}>
+                    {canBookScreening && (
+                      <a
+                        className={`outline-button ${screeningStyles.screeningCta}`}
+                        href={screeningBookingHref}
+                        aria-label={`Скринінг 40+ — ${doctor.name}`}
+                      >
+                        Скринінг 40+ <span aria-hidden="true">→</span>
+                      </a>
+                    )}
                     <a
                       className="doctor-biography-link"
                       href={profileHref}

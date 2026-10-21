@@ -1,0 +1,66 @@
+/* Reuse the directory's outlined secondary action beside its orange booking CTA. */
+.cardActions a.screeningCta {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 58px;
+  margin-bottom: 10px;
+  padding: 0 22px;
+  border: 1px solid rgba(0, 132, 134, 0.42);
+  border-radius: 16px;
+  background: #fff;
+  color: #006f73;
+}
+
+.cardActions a.screeningCta:hover,
+.cardActions a.screeningCta:focus-visible {
+  border-color: #006f73;
+  background: #006f73;
+  color: #fff;
+  transform: none;
+}
+
+.cardActions a.screeningCta:focus-visible {
+  outline: 2px solid #006f73;
+  outline-offset: 3px;
+}
+
+.cardActions a.screeningCta:active {
+  background: #073f45;
+}
+
+.profileActions:global(.doctor-detail-actions) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 721px) {
+  :global(.doctors-directory-v2) :global(.doctor-profile-card-v2.is-focused:not(.is-expanded)) .photoActions:global(.doctor-photo-actions) {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  :global(.doctors-directory-v2) :global(.doctor-profile-card-v2.is-focused:not(.is-expanded)) .photoActions:global(.doctor-photo-actions) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  }
+
+  .photoActions a.photoScreening {
+    grid-column: 1 / -1;
+    padding-inline: 4px;
+  }
+
+  .cardActions a.screeningCta {
+    grid-column: 1 / -1;
+    min-height: 52px;
+    margin-bottom: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardActions a.screeningCta,
+  .cardActions a.screeningCta span {
+    transition: none;
+    transform: none;
+  }
+}

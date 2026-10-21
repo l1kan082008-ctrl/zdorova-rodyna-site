@@ -46,7 +46,48 @@ const surfaces = [
   ['directory', doctor => renderToStaticMarkup(React.createElement(DoctorsDirectory, { initialDoctors: [doctor] }))],
   ['profile', doctor => renderToStaticMarkup(React.createElement(DoctorProfileDetails, { doctor }))],
 ];
+const screeningDoctors = [
+  ['ishchuk-nadiia', 'Іщук Надія Степанівна'],
+  ['pochtar-kateryna', 'Почтар Катерина Дмитрівна'],
+  ['doctor-4cd65e03-d5d5-4cdc-b2ab-98668b2b7098', 'Мельник Віра Олегівна'],
+  ['iziumska-olena', 'Ізюмська Олена Вікторівна'],
+];
+const bookingLinks = html => [...html.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)]
+  .map(([, href, content]) => ({ url: new URL(href.replaceAll('&amp;', '&'), 'https://example.test'), text: text(content).trim() }))
+  .filter(({ url }) => url.pathname === '/contacts' && url.hash === '#booking');
+
 for (const [name, render] of surfaces) {
+  test(name + ': all four programme doctors retain normal booking and offer preselected screening booking', () => {
+    for (const [id, doctorName] of screeningDoctors) {
+      const doctor = { ...baseline, id, name: doctorName, specialty: 'Сімейний лікар, терапевт' };
+      const links = bookingLinks(render(doctor));
+      const screening = links.filter(({ url }) => url.searchParams.get('service') === 'Скринінг здоров’я 40+');
+      assert.equal(screening.length, name === 'directory' ? 2 : 1, `${doctorName}: screening CTA on each card surface`);
+      for (const link of screening) {
+        assert.equal(link.url.searchParams.get('doctorId'), id);
+        assert.equal(link.url.searchParams.get('doctor'), doctorName);
+        assert.match(link.text, /40\+/);
+      }
+      assert.ok(links.some(({ url, text: label }) =>
+        !url.searchParams.has('service')
+        && url.searchParams.get('doctorId') === id
+        && url.searchParams.get('doctor') === doctorName
+        && label.startsWith('Записатися'),
+      ), `${doctorName}: ordinary consultation booking is retained`);
+    }
+  });
+
+  test(name + ': screening booking is absent for an unrelated family doctor or an ineligible consultation', () => {
+    for (const doctor of [
+      { ...baseline, id: 'unrelated-family-doctor', specialty: 'Сімейний лікар, терапевт' },
+      { ...baseline, id: screeningDoctors[0][0], specialty: 'Рентгенолог' },
+    ]) {
+      const html = render(doctor);
+      assert.ok(!bookingLinks(html).some(({ url }) => url.searchParams.has('service')));
+      assert.ok(!text(html).includes('40+'));
+    }
+  });
+
   test(name + ': all doctor branches are visible with a stable doctor booking ID', () => {
     const first = 'м. Рівне, вул. Володимира Стельмаха, 18-М';
     const second = 'м. Рівне, вул. Олександра Олеся, 13';

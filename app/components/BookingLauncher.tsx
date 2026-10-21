@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { CloseIcon } from "./CloseIcon";
 import { useSiteSettings } from "./SiteSettingsProvider";
 import { sitePhoneHref } from "@/lib/siteSettings";
@@ -6,6 +7,7 @@ import { preventNativeBookingSubmit, submitBookingFromClick } from "@/lib/bookin
 import { useBookingConfirmation } from "./useBookingConfirmation";
 import { formatBookingComment } from "@/lib/bookingDetails";
 import { trackBookingFormOpen } from "@/lib/bookingAnalytics";
+import { isScreeningFullName, screeningAddress, screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -38,8 +40,9 @@ export function BookingLauncher() {
   const [request, setRequest] = useState<BookingOpening | null>(null);
   useEffect(() => {
     const openBooking = (url: URL) => {
-      // Screening links use the dedicated physician selection and request form.
-      if (/скрин[іи]нг.*40|40\s*\+/iu.test(url.searchParams.get("service") ?? "")) {
+      // General programme links keep the picker; doctor cards open a preselected dialog.
+      if (/скрин[іи]нг.*40|40\s*\+/iu.test(url.searchParams.get("service") ?? "") &&
+          !(url.searchParams.get("service") === screeningServiceName && url.searchParams.get("doctorId")?.trim())) {
         setRequest(null);
         router.push("/services/screening-40#screening-doctors");
         return;
@@ -85,26 +88,29 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
     .filter(({ value }) => !["group:radiology", "group:ultrasound"].includes(value))
     .map(({ label }) => `Консультація: ${label}`);
   const params = request.searchParams;
-  const studies = params.get("services")?.trim() || "";
+  const requestedService = params.get("service")?.trim() || "";
+  const isScreening = requestedService === screeningServiceName;
+  const studies = isScreening ? "" : params.get("services")?.trim() || "";
   const requestedDoctor = params.get("doctor")?.trim() || "";
   const doctorId = params.get("doctorId")?.trim() || "";
   const isDoctorBooking = Boolean(doctorId || requestedDoctor);
   const [bookingDoctor, setBookingDoctor] = useState<BookingDoctor | null>(null);
   const [doctorLookupStatus, setDoctorLookupStatus] = useState<"loading" | "ready" | "unavailable">(isDoctorBooking ? "loading" : "ready");
-  const doctor = bookingDoctor?.name || requestedDoctor;
-  const total = params.get("total") || "";
-  const requestedService = params.get("service")?.trim() || "";
+  const [doctorLookupAttempt, setDoctorLookupAttempt] = useState(0);
+  const doctor = bookingDoctor?.name || (isScreening ? "" : requestedDoctor);
+  const screeningDoctorReady = doctorLookupStatus === "ready" && bookingDoctor?.id === doctorId && screeningDoctorIds.some(id => id === doctorId);
+  const total = isScreening ? "" : params.get("total") || "";
   const imagingCategory = isDoctorBooking ? null : resolveImagingBookingCategory(params, sourcePathname);
   const imagingLabel = imagingCategory ? imagingBookingLabels[imagingCategory] : "";
-  const [service, setService] = useState(studies ? "Комплекс досліджень" : normalizeBookingService(requestedService) || (isDoctorBooking ? "Консультації лікарів" : imagingLabel || helpService));
+  const [service, setService] = useState(isScreening ? screeningServiceName : studies ? "Комплекс досліджень" : normalizeBookingService(requestedService) || (isDoctorBooking ? "Консультації лікарів" : imagingLabel || helpService));
   const [studyOptions, setStudyOptions] = useState<string[]>([]);
   const [studyOptionsLoading, setStudyOptionsLoading] = useState(Boolean(imagingCategory));
   const [studyOptionsError, setStudyOptionsError] = useState(false);
   const [studyOptionsAttempt, setStudyOptionsAttempt] = useState(0);
-  const [locationId, setLocationId] = useState(params.get("location") || "");
+  const [locationId, setLocationId] = useState(isScreening ? "" : params.get("location") || "");
   const [phone, setPhone] = useState("");
   const [locations, setLocations] = useState<CenterLocation[]>([]);
-  const [locationsLoading, setLocationsLoading] = useState(true);
+  const [locationsLoading, setLocationsLoading] = useState(!isScreening);
   const [locationStatus, setLocationStatus] = useState("");
   const [token, setToken] = useState("");
   const [captchaAttempt, setCaptchaAttempt] = useState(0);
@@ -128,8 +134,9 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
   const branchLoading = locationsLoading || (isDoctorBooking && doctorLookupStatus === "loading");
   const canAutoSelect = !branchLoading && availableLocations.length === 1 && !availableLocations[0].requiresConfirmation && (!isDoctorBooking || assignedBranches);
   const selectedLocation = branchLoading ? undefined : canAutoSelect ? availableLocations[0] : availableLocations.find(({ id }) => id === locationId);
-  useBookingConfirmation(reference === savedReference ? reference : "", "appointment");
-  useEffect(() => { trackBookingFormOpen(opening); }, [opening]);
+  const formType = isScreening ? "screening_40" : "appointment";
+  useBookingConfirmation(reference === savedReference ? reference : "", formType);
+  useEffect(() => { trackBookingFormOpen(opening, formType); }, [opening, formType]);
 
   const closeBooking = () => {
     if (!submittingRef.current) onClose();
@@ -144,6 +151,7 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
   useEffect(() => {
     const root = document.documentElement;
     root.classList.add("quick-booking-open");
+    if (isScreening) return () => root.classList.remove("quick-booking-open");
     const controller = new AbortController();
     fetch("/api/locations", { signal: controller.signal })
       .then(async (response) => {
@@ -159,7 +167,7 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
       controller.abort();
       root.classList.remove("quick-booking-open");
     };
-  }, []);
+  }, [isScreening]);
   useEffect(() => {
     if (!isDoctorBooking) return;
     const controller = new AbortController();
@@ -171,6 +179,7 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
         const record = payload as { doctor?: unknown; doctors?: unknown };
         if (doctorId) {
           if (!isBookingDoctor(record.doctor) || record.doctor.id !== doctorId) throw new Error("doctor");
+          if (isScreening && !screeningDoctorIds.some(id => id === doctorId)) throw new Error("screening doctor");
           return record.doctor;
         }
         if (!Array.isArray(record.doctors) || !record.doctors.every(isBookingDoctor)) throw new Error("doctors");
@@ -182,7 +191,7 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
       .then(record => { if (!controller.signal.aborted) { setBookingDoctor(record); setDoctorLookupStatus("ready"); } })
       .catch(() => { if (!controller.signal.aborted) setDoctorLookupStatus("unavailable"); });
     return () => controller.abort();
-  }, [doctorId, isDoctorBooking, requestedDoctor]);
+  }, [doctorId, isDoctorBooking, requestedDoctor, isScreening, doctorLookupAttempt]);
   useEffect(() => {
     if (!imagingCategory) return;
     const controller = new AbortController();
@@ -205,6 +214,21 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
   async function submit(form: HTMLFormElement) {
     if (submittingRef.current) return;
     const data = new FormData(form);
+    if (isScreening) {
+      if (!screeningDoctorReady) {
+        setError("Не вдалося підтвердити вибір лікаря. Оновіть дані або зателефонуйте нам.");
+        return;
+      }
+      if (!isScreeningFullName(String(data.get("name") || ""))) {
+        setError("Вкажіть прізвище, ім’я та по батькові повністю.");
+        form.querySelector<HTMLInputElement>('input[name="name"]')?.focus();
+        return;
+      }
+      if (data.get("consent") !== "on") {
+        setError("Підтвердьте згоду на обробку контактних даних.");
+        return;
+      }
+    }
     const phoneDigits = phone.replace(/\D/g, "");
     if (phoneDigits.length !== 10 || !phoneDigits.startsWith("0") || /^(\d)\1+$/u.test(phoneDigits)) {
       setError("Перевірте номер телефону: вкажіть повний номер.");
@@ -234,7 +258,13 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
         signal: controller.signal,
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: data.get("name"), phone: `+38${phoneDigits}`, service, doctor, comment, website: data.get("website"), source: "contacts", consent: data.get("consent") === "on", consentVersion: "contacts-v1", turnstileToken: token }),
+        body: JSON.stringify({
+          name: data.get("name"), phone: `+38${phoneDigits}`, website: data.get("website"),
+          consent: data.get("consent") === "on", turnstileToken: token,
+          ...(isScreening
+            ? { service: screeningServiceName, doctorId, source: "screening-40", consentVersion: "screening-40-v1" }
+            : { service, doctor, comment, source: "contacts", consentVersion: "contacts-v1" }),
+        }),
       });
       const payload = await response.json() as { reference?: string; error?: string };
       if (!response.ok || typeof payload.reference !== "string" || !payload.reference.trim()) throw new Error(payload.error || "Не вдалося надіслати заявку. Спробуйте ще раз.");
@@ -270,16 +300,26 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
       <p id="quick-booking-description">{isHomeVisit ? "Адміністратор зателефонує, щоб підтвердити адресу та час виїзду." : "Адміністратор зателефонує, щоб узгодити час візиту."}</p>
       <button className="book-button" type="button" onClick={onClose}>Готово</button>
     </div> : <>
-      <h2 id="quick-booking-title">{isHomeVisit ? "Замовити виїзд медсестри" : "Запис на прийом"}</h2>
+      <h2 id="quick-booking-title">{isScreening ? "Заявка на скринінг 40+" : isHomeVisit ? "Замовити виїзд медсестри" : "Запис на прийом"}</h2>
       <p id="quick-booking-description">{isHomeVisit ? "Виїзд доступний тільки у Рівному. Адміністратор уточнить аналізи, адресу та зручний час." : "Залиште контакти — адміністратор погодить з вами час візиту."}</p>
       <form onSubmit={preventNativeBookingSubmit} aria-busy={submitting}>
         <fieldset disabled={submitting}>
-          {(doctor || studies) && <div className="quick-booking__selection">
+          {isScreening ? <>
+            <div className="quick-booking__selection"><span>Послуга</span><strong>{screeningServiceName}</strong></div>
+            <div className="quick-booking__selection" aria-live="polite" aria-busy={doctorLookupStatus === "loading"}>
+              <span>Обраний лікар</span>
+              {screeningDoctorReady ? <strong>{doctor}</strong> : doctorLookupStatus === "loading" ? <strong>Завантажуємо дані лікаря…</strong> : <>
+                <p role="alert">Не вдалося підтвердити вибір лікаря.</p>
+                <button className="outline-button" type="button" onClick={() => { setDoctorLookupStatus("loading"); setError(""); setDoctorLookupAttempt(value => value + 1); }}>Спробувати ще раз</button>
+                <Link href="/services/screening-40#screening-doctors" onClick={onClose}>Обрати іншого лікаря</Link>
+              </>}
+            </div>
+          </> : (doctor || studies) && <div className="quick-booking__selection">
             <span>{doctor ? "Обраний лікар" : studies ? "Обрані дослідження" : "Обране дослідження"}</span><strong>{doctor || studies.replaceAll(" | ", ", ")}</strong>
             {total && Number.isFinite(Number(total)) && <span>Орієнтовно {Number(total).toLocaleString("uk-UA")} ₴</span>}
           </div>}
           <div className="quick-booking__fields">
-            <label htmlFor="quick-name">Ваше ім’я<input id="quick-name" name="name" autoComplete="name" minLength={2} maxLength={100} placeholder="Ім’я" required /></label>
+            <label htmlFor="quick-name">{isScreening ? "Прізвище, ім’я та по батькові" : "Ваше ім’я"}<input id="quick-name" name="name" autoComplete="name" minLength={2} maxLength={100} placeholder={isScreening ? "П.І.Б." : "Ім’я"} required /></label>
             <label htmlFor="quick-phone">Номер телефону<span className="quick-booking__phone"><span aria-hidden="true">+38</span><input id="quick-phone" name="phone" type="tel" inputMode="tel" autoComplete="tel-national" value={phone} onChange={(event) => setPhone(formatBookingPhone(event.target.value))}
               pattern="(?!000 000 00 00)0[0-9]{2} [0-9]{3} [0-9]{2} [0-9]{2}"
               onInvalid={(event) => {
@@ -298,26 +338,26 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
               <button type="button" className="outline-button" onClick={() => { setStudyOptionsLoading(true); setStudyOptionsError(false); setStudyOptionsAttempt((value) => value + 1); }}>Спробувати ще раз</button>
             </div>}
           </>}
-          {!isDoctorBooking && !studies && !imagingCategory && <label htmlFor="quick-service"><span id="quick-service-label">Послуга</span><select id="quick-service" aria-labelledby="quick-service-label" value={service} required onChange={(event) => setService(event.target.value)}>
+          {!isScreening && !isDoctorBooking && !studies && !imagingCategory && <label htmlFor="quick-service"><span id="quick-service-label">Послуга</span><select id="quick-service" aria-labelledby="quick-service-label" value={service} required onChange={(event) => setService(event.target.value)}>
             <option value={helpService}>{helpService}</option>
             {!services.includes(service) && !consultationServices.includes(service) && service !== helpService && <option value={service}>{service}</option>}
             <optgroup label="Послуги центру">{services.map((item) => <option key={item}>{item}</option>)}</optgroup>
             <optgroup label="Консультації за напрямами">{consultationServices.map((item) => <option key={item}>{item}</option>)}</optgroup>
           </select>
           </label>}
-          {isHomeVisit ? <label htmlFor="quick-address">Адреса виїзду в Рівному
+          {isScreening ? <div className="quick-booking__selection"><span>Місце проведення</span><strong>{screeningAddress}</strong></div> : isHomeVisit ? <label htmlFor="quick-address">Адреса виїзду в Рівному
             <input id="quick-address" name="address" autoComplete="street-address" minLength={5} maxLength={200} placeholder="Вулиця, будинок, квартира" required />
           </label> : <label htmlFor="quick-location"><span id="quick-location-label">Відділення</span><select id="quick-location" aria-labelledby="quick-location-label" aria-busy={branchLoading} disabled={branchLoading} value={selectedLocation?.id || ""} onChange={(event) => setLocationId(event.target.value)}>
             {!canAutoSelect && <option value="">{branchLoading ? "Завантажуємо відділення…" : locationStatus || (isDoctorBooking && doctorLookupStatus === "unavailable") || !availableLocations.length || (category === null && service !== helpService) ? "Адміністратор допоможе обрати" : "Допоможіть обрати"}</option>}
             {availableLocations.map((location) => <option key={location.id} value={location.id}>{location.label}</option>)}
           </select>
           </label>}
-          <details className="quick-booking__comment"><summary>Додати коментар <span>необов’язково</span></summary><label>Ваш коментар<textarea name="comment" maxLength={700} rows={3} placeholder="Наприклад, коли вам зручно зателефонувати" /></label></details>
-          <label className="quick-booking__consent"><input type="checkbox" name="consent" required /><span>Погоджуюся на обробку контактних даних для організації запису.</span></label>
+          {!isScreening && <details className="quick-booking__comment"><summary>Додати коментар <span>необов’язково</span></summary><label>Ваш коментар<textarea name="comment" maxLength={700} rows={3} placeholder="Наприклад, коли вам зручно зателефонувати" /></label></details>}
+          <label className="quick-booking__consent"><input type="checkbox" name="consent" required /><span>{isScreening ? "Погоджуюся на обробку контактних даних для зворотного зв’язку щодо програми «Скринінг здоров’я 40+»." : "Погоджуюся на обробку контактних даних для організації запису."}</span></label>
           <label className="booking-honeypot" aria-hidden="true">Ваш сайт<input name="website" tabIndex={-1} autoComplete="off" /></label>
           <TurnstileField key={captchaAttempt} onToken={setToken} />
           {error && <p className="booking-submit-error" role="alert">{error} Також можна <a href={sitePhoneHref(settings.phone)}>зателефонувати</a>.</p>}
-          <button className="book-button" type="submit" onClick={(event) => submitBookingFromClick(event, submit)} disabled={submitting || (!isHomeVisit && Boolean(locationId) && locationsLoading)}>{submitting ? "Надсилаємо…" : "Надіслати заявку"}<span aria-hidden="true">→</span></button>
+          <button className="book-button" type="submit" onClick={(event) => submitBookingFromClick(event, submit)} disabled={submitting || (isScreening && !screeningDoctorReady) || (!isHomeVisit && Boolean(locationId) && locationsLoading)}>{submitting ? "Надсилаємо…" : "Надіслати заявку"}<span aria-hidden="true">→</span></button>
         </fieldset>
       </form>
     </>}

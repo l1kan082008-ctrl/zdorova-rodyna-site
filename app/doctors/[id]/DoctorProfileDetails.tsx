@@ -2,7 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import { doctorBookingHref, splitDoctorBranches } from "@/lib/doctorBranches";
+import { screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
 import "../portraits.css";
+import screeningStyles from "../screening-actions.module.css";
 import {
   getDoctorInitials,
   formatDoctorConsultations,
@@ -33,6 +35,8 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
   }
 
   const consultationSummary = formatDoctorConsultations(doctor);
+  const canBookScreening = canBookDoctorConsultation(doctor)
+    && screeningDoctorIds.some((id) => id === doctor.id);
   const branches = splitDoctorBranches(doctor.branch);
   const activeDays = getDoctorScheduleDays(doctor.schedule);
   const biographyParagraphs = doctor.biography
@@ -113,7 +117,16 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
               <p className="doctor-schedule-notice">{getDoctorScheduleNotice(doctor)}</p>
             )}
 
-            {canBookDoctorConsultation(doctor) && (<div className="doctor-detail-actions">
+            {canBookDoctorConsultation(doctor) && (<div className={`doctor-detail-actions${canBookScreening ? ` ${screeningStyles.profileActions}` : ""}`}>
+              {canBookScreening && (
+                <a
+                  className="outline-button"
+                  href={doctorBookingHref(doctor, screeningServiceName)}
+                  aria-label={`Скринінг 40+ — ${doctor.name}`}
+                >
+                  Скринінг 40+ <span aria-hidden="true">→</span>
+                </a>
+              )}
               <a
                 className="book-button"
                 href={doctorBookingHref(doctor)}

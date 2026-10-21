@@ -35,6 +35,8 @@ const bookingRequest = load("../lib/bookingRequest.ts", {
   "./locationPolicy": load("../lib/locationPolicy.ts"),
 });
 const siteSettings = load("../lib/siteSettings.ts");
+const screening = load("../lib/screening40.ts");
+const bookingDetails = load("../lib/bookingDetails.ts");
 const publicDoctorSpecialties = load("../lib/publicDoctorSpecialties.ts", {
   "../app/doctors/doctorCategories.ts": load("../app/doctors/doctorCategories.ts"),
 });
@@ -90,8 +92,11 @@ function harness(responseOverride, options = {}) {
     },
     "./bookingStore": { createBooking: async data => { stored.push(data); return "ZR-ISOLATED-TEST"; } },
     "@/lib/bookingNotification": { sendBookingNotification: async data => notifications.push(data) },
-    "@/lib/bookingDetails": load("../lib/bookingDetails.ts"),
-    "@/lib/screening40": load("../lib/screening40.ts"),
+    "@/lib/bookingDetails": bookingDetails,
+    "@/lib/screening40": screening,
+    "../doctors/publicDoctors": {
+      getPublicDoctorById: async id => (options.serverDoctors ?? options.doctors ?? []).find(doctor => doctor.id === id) ?? null,
+    },
   });
   let release, releasePrices, releaseDoctors, releaseLocations;
   const gate = new Promise(resolve => { release = resolve; });
@@ -160,11 +165,12 @@ function harness(responseOverride, options = {}) {
     "@/lib/bookingAnalytics": analytics,
     "./useBookingConfirmation": confirmation,
     "@/lib/bookingDetails": load("../lib/bookingDetails.ts"),
+    "@/lib/screening40": screening,
     "@/lib/doctorBookingLocations": doctorBookingLocations,
     "./useModalDialog": { useModalDialog: () => {} },
     "./BookingStudySelect": { BookingStudySelect: BookingStudySelectBoundary },
     "@/lib/imagingBooking": load("../lib/imagingBooking.ts"),
-    "next/navigation": {}, "./CloseIcon": {}, "./TurnstileField": {},
+    "next/navigation": {}, "next/link": { default: Symbol("Link") }, "./CloseIcon": {}, "./TurnstileField": {},
     "../prices/calculatorSelection": selection, "../../lib/bookingRequest": bookingRequest,
   }, { window, document, fetch, FormData: class { constructor(form) { this.form = form; } get(k) { return this.form[k] ?? null; } } },
   "\nexport { BookingDialog as TestDialog };\n");
@@ -179,7 +185,7 @@ function harness(responseOverride, options = {}) {
     return tree;
   };
   nodes(render()).find(n => n.props?.name === "phone").props.onChange({ target: { value: options.phone ?? "0671234567" } });
-  const form = { name: "ІЗОЛЬОВАНИЙ ТЕСТ", consent: options.consent ?? "on", website: options.website ?? "", comment: "Не реальна заявка", querySelector: () => ({ focus() {} }), reportValidity: () => options.nativeValid ?? true };
+  const form = { name: options.patientName ?? "ІЗОЛЬОВАНИЙ ТЕСТ", consent: options.consent ?? "on", website: options.website ?? "", comment: "Не реальна заявка", querySelector: () => ({ focus() {} }), reportValidity: () => options.nativeValid ?? true };
   let clickPrevented = false;
   const event = { preventDefault() { clickPrevented = true; }, currentTarget: { form } };
   const submit = () => nodes(render()).find(n => n.props?.type === "submit").props.onClick(event);
@@ -230,10 +236,12 @@ function launcherHarness(url = "http://test.local/") {
     },
     "react/jsx-runtime": { jsx, jsxs: jsx },
     "react-dom": {}, "next/navigation": { usePathname: () => window.location.pathname, useRouter: () => router },
+    "next/link": { default: Symbol("Link") },
     "./SiteSettingsProvider": {}, "./PublicDoctorSpecialtiesProvider": {},
     "@/lib/siteSettings": {}, "@/lib/bookingSubmission": {}, "./useBookingConfirmation": {},
     "@/lib/bookingAnalytics": load("../lib/bookingAnalytics.ts", {}, { window }),
     "@/lib/bookingDetails": {}, "@/lib/doctorBookingLocations": {}, "@/lib/imagingBooking": {},
+    "@/lib/screening40": screening,
     "./useModalDialog": {}, "./BookingStudySelect": {}, "./CloseIcon": {}, "./TurnstileField": {},
     "../prices/calculatorSelection": {}, "../../lib/bookingRequest": bookingRequest,
   }, { window, document, Element });
@@ -315,6 +323,22 @@ test("legacy screening booking links open the dedicated programme form without a
   assert.equal(clicked.click(url).defaultPrevented, true);
   assert.equal(clicked.render(), null);
   assert.deepEqual(clicked.navigations, ["/services/screening-40#screening-doctors"]);
+});
+
+test("screening doctor links open the same preselected dialog on activation and direct navigation", context => {
+  const url = bookingUrl({ service: screening.screeningServiceName, doctorId: screening.screeningDoctorIds[1], doctor: "Обрана лікарка" });
+  for (const direct of [false, true]) {
+    const h = launcherHarness(direct ? url : "http://test.local/doctors");
+    context.after(h.dispose);
+    h.render(); h.flushUrl();
+    if (!direct) assert.equal(h.click(url).defaultPrevented, true);
+    const dialog = h.render();
+    assert.ok(dialog, "a doctor-specific programme link must open a dialog instead of losing the doctor in a redirect");
+    assert.equal(dialog.props.request.searchParams.get("service"), screening.screeningServiceName);
+    assert.equal(dialog.props.request.searchParams.get("doctorId"), screening.screeningDoctorIds[1]);
+    assert.deepEqual(h.navigations, []);
+    assert.deepEqual(h.window.dataLayer, [], "the launcher click alone cannot count a visible form");
+  }
 });
 
 test("booking phone is invalid before the browser can dispatch submit", context => {
@@ -470,6 +494,200 @@ function bookingUrl(params = {}) {
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
   return url.href;
 }
+
+const screeningDoctor = {
+  id: screening.screeningDoctorIds[1], name: "Тестова Лікарка Програми",
+  branch: "м. Костопіль, тестова адреса", isActive: true,
+};
+
+function screeningOptions(extra = {}) {
+  return {
+    url: bookingUrl({ service: screening.screeningServiceName, doctorId: screeningDoctor.id, doctor: "Застаріле ім’я з URL" }),
+    doctors: [screeningDoctor], ...extra,
+  };
+}
+
+test("screening dialog submits the selected active doctor and fixed programme contract without calculator or branch contamination", async context => {
+  const h = harness(undefined, screeningOptions({
+    url: bookingUrl({ service: screening.screeningServiceName, doctorId: screeningDoctor.id,
+      doctor: "Застаріле ім’я з URL", services: "СТОРОННЄ ДОСЛІДЖЕННЯ", total: "9999", location: "imaging", bookingCategory: "ct" }),
+    patientName: "  Тестова   Олена  Іванівна ", sourcePathname: "/services/ct",
+  }));
+  context.after(h.dispose);
+  const tree = await h.flush();
+  assert.ok(text(tree).includes(screening.screeningServiceName));
+  assert.ok(text(tree).includes(screeningDoctor.name));
+  assert.ok(text(tree).includes(screening.screeningAddress));
+  assert.doesNotMatch(text(tree), /Застаріле ім’я|СТОРОННЄ ДОСЛІДЖЕННЯ|9999|Костопіль/u);
+  assert.equal(serviceControl(tree), undefined);
+  assert.equal(locationControl(tree), undefined);
+  assert.equal(nodes(tree).some(node => node.type === "textarea"), false);
+  assert.equal(nodes(tree).find(node => node.props?.id === "quick-name").props.placeholder, "П.І.Б.");
+  assert.deepEqual(h.resourceRequests, [`/api/doctors?id=${encodeURIComponent(screeningDoctor.id)}`]);
+  assert.deepEqual(h.window.dataLayer, [{ event: "booking_form_open", form_type: "screening_40" }]);
+
+  const pending = h.submit();
+  await h.submit();
+  assert.equal(h.requests.length, 1, "rapid duplicate activation must not create a second programme request");
+  assert.equal(h.requests[0].source, "screening-40");
+  assert.equal(h.requests[0].consentVersion, "screening-40-v1");
+  assert.equal(h.requests[0].service, screening.screeningServiceName);
+  assert.equal(h.requests[0].doctorId, screeningDoctor.id);
+  assert.equal(h.requests[0].phone, "+380671234567");
+  assert.equal(h.requests[0].consent, true);
+  assert.deepEqual(h.conversions, []);
+  h.release(); await pending;
+
+  assert.equal(h.stored.length, 1);
+  assert.equal(h.notifications.length, 1);
+  const saved = h.stored[0];
+  assert.equal(saved.patientName, "Тестова Олена Іванівна");
+  assert.equal(saved.service, screening.screeningServiceName);
+  assert.equal(saved.doctor, screeningDoctor.name);
+  assert.equal(saved.source, "screening-40");
+  assert.equal(saved.consentVersion, "screening-40-v1");
+  assert.equal(bookingDetails.parseBookingDetails(saved.comment).location, screening.screeningAddress);
+  assert.deepEqual(bookingDetails.parseBookingDetails(saved.comment).studies, []);
+  assert.doesNotMatch(JSON.stringify(saved), /Костопіль|СТОРОННЄ ДОСЛІДЖЕННЯ|9999|Застаріле ім’я/u);
+  assert.deepEqual(h.selection.readPriceCalculatorSelection(), ["test-ct"]);
+  assert.deepEqual(h.selection.readPriceCalculatorCitoSelection(), ["test-ct"]);
+  assert.deepEqual(h.events, [], "a programme booking must leave an unrelated calculator untouched");
+  assert.deepEqual(h.conversions, [], "success analytics waits for the confirmation UI");
+  assert.match(text(h.render()), /Заявку отримано/);
+  assert.deepEqual(h.conversions, [{ event: "form_submit", form_type: "screening_40" }]);
+  assert.deepEqual(h.eventVisibility, [true]);
+  h.render();
+  assert.equal(h.conversions.length, 1);
+});
+
+test("screening cannot submit before the selected doctor's lookup finishes, then uses the resolved doctor", async context => {
+  const h = harness(undefined, screeningOptions({ deferDoctors: true }));
+  context.after(h.dispose);
+  const waiting = await h.flush();
+  assert.equal(nodes(waiting).find(node => node.props?.type === "submit").props.disabled, true);
+  await h.submit();
+  assert.deepEqual(h.requests, [], "calling a handler directly must not bypass the disabled control");
+  assert.deepEqual(h.conversions, []);
+  h.releaseDoctors();
+  const loaded = await h.flush();
+  assert.equal(nodes(loaded).find(node => node.props?.type === "submit").props.disabled, false);
+  const pending = h.submit(); h.release(); await pending;
+  assert.equal(h.stored[0].doctor, screeningDoctor.name);
+});
+
+test("screening retries the original doctor after a failed lookup without replacing the selection or reopening analytics", async context => {
+  let attempts = 0;
+  const h = harness(undefined, screeningOptions({
+    doctorsResponse: () => ++attempts === 1
+      ? Response.json({}, { status: 503 })
+      : Response.json({ doctor: screeningDoctor }),
+  }));
+  context.after(h.dispose);
+  const failed = await h.flush();
+  const retry = nodes(failed).find(node => node.type === "button" && text(node) === "Спробувати ще раз");
+  assert.ok(retry);
+  assert.equal(nodes(failed).find(node => node.props?.type === "submit").props.disabled, true);
+  retry.props.onClick();
+  const loading = h.render();
+  assert.equal(nodes(loading).find(node => node.props?.type === "submit").props.disabled, true);
+  assert.match(text(loading), /Завантажуємо дані лікаря/u);
+  await h.submit();
+  assert.deepEqual(h.requests, []);
+  const ready = await h.flush();
+  assert.equal(nodes(ready).find(node => node.props?.type === "submit").props.disabled, false);
+  assert.ok(text(ready).includes(screeningDoctor.name));
+  assert.deepEqual(h.resourceRequests, Array(2).fill(`/api/doctors?id=${encodeURIComponent(screeningDoctor.id)}`));
+  assert.deepEqual(h.window.dataLayer, [{ event: "booking_form_open", form_type: "screening_40" }]);
+  const pending = h.submit(); h.release(); await pending;
+  assert.equal(h.stored.length, 1);
+  assert.equal(h.stored[0].doctor, screeningDoctor.name);
+});
+
+test("screening failed lookup offers the programme picker and closes the dialog before navigating", async context => {
+  const h = harness(undefined, screeningOptions({ doctorsResponse: () => Response.json({}, { status: 404 }) }));
+  context.after(h.dispose);
+  const fallback = nodes(await h.flush()).find(node => node.props?.href === "/services/screening-40#screening-doctors");
+  assert.ok(fallback);
+  assert.match(text(fallback), /Обрати іншого лікаря/u);
+  fallback.props.onClick();
+  assert.equal(h.isClosed(), true);
+  assert.deepEqual(h.requests, []);
+  assert.deepEqual(h.conversions, []);
+});
+
+for (const [failure, doctorsResponse] of [
+  ["server failure", () => Response.json({}, { status: 503 })],
+  ["missing doctor", () => Response.json({}, { status: 404 })],
+  ["wrong doctor", () => Response.json({ doctor: { ...screeningDoctor, id: screening.screeningDoctorIds[0] } })],
+  ["inactive doctor", () => Response.json({ doctor: { ...screeningDoctor, isActive: false } })],
+]) {
+  test(`screening ${failure} cannot silently substitute another doctor or create a no-preference request`, async context => {
+    const h = harness(undefined, screeningOptions({ doctorsResponse }));
+    context.after(h.dispose);
+    const tree = await h.flush();
+    assert.equal(nodes(tree).find(node => node.props?.type === "submit").props.disabled, true);
+    assert.doesNotMatch(text(tree), /Застаріле ім’я з URL/u);
+    await h.submit();
+    assert.deepEqual(h.requests, []);
+    assert.deepEqual(h.stored, []);
+    assert.deepEqual(h.notifications, []);
+    assert.deepEqual(h.conversions, []);
+  });
+}
+
+test("screening rejects a published doctor outside the programme even when the URL carries a valid-looking name", async context => {
+  const doctor = { ...screeningDoctor, id: "unrelated-published-doctor" };
+  const h = harness(undefined, screeningOptions({
+    url: bookingUrl({ service: screening.screeningServiceName, doctorId: doctor.id, doctor: doctor.name }), doctors: [doctor],
+  }));
+  context.after(h.dispose);
+  const tree = await h.flush();
+  assert.equal(nodes(tree).find(node => node.props?.type === "submit").props.disabled, true);
+  await h.submit();
+  assert.deepEqual(h.requests, []);
+  assert.deepEqual(h.conversions, []);
+});
+
+test("screening requires a full name before sending even if native validation is bypassed", async context => {
+  for (const patientName of ["Олена", "Коваль 123"]) {
+    const h = harness(undefined, screeningOptions({ patientName }));
+    context.after(h.dispose);
+    await h.flush();
+    await h.submit();
+    assert.deepEqual(h.requests, []);
+    assert.ok(nodes(h.render()).some(node => node.props?.role === "alert"));
+    assert.deepEqual(h.conversions, []);
+  }
+});
+
+test("screening requires consent and rejects a doctor removed at the server after the form opened", async context => {
+  for (const patch of [{ consent: "" }, { serverDoctors: [] }]) {
+    const h = harness(undefined, screeningOptions(patch));
+    context.after(h.dispose);
+    await h.flush();
+    const pending = h.submit(); h.release(); await pending;
+    assert.equal(h.requests.length, patch.consent === "" ? 0 : 1);
+    assert.deepEqual(h.stored, []);
+    assert.deepEqual(h.notifications, []);
+    assert.deepEqual(h.conversions, []);
+    assert.ok(nodes(h.render()).some(node => node.props?.role === "alert"));
+  }
+});
+
+test("screening server failure keeps the selected doctor and permits retry without a false success", async context => {
+  const h = harness(() => Response.json({ error: "Тестова помилка" }, { status: 503 }), screeningOptions());
+  context.after(h.dispose);
+  await h.flush();
+  const pending = h.submit(); h.release(); await pending;
+  const tree = h.render();
+  assert.ok(text(tree).includes(screeningDoctor.name));
+  assert.equal(nodes(tree).find(node => node.props?.type === "submit").props.disabled, false);
+  assert.ok(nodes(tree).some(node => node.props?.role === "alert"));
+  await h.submit();
+  assert.equal(h.requests.length, 2);
+  assert.deepEqual(h.stored, []);
+  assert.deepEqual(h.conversions, []);
+});
 
 for (const [category, label, requested, changed, allowed] of [
   ["ct", "КТ", "КТ головного мозку", "КТ органів грудної клітки", ["КТ головного мозку", "КТ органів грудної клітки"]],

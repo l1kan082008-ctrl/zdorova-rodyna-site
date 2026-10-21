@@ -7,14 +7,14 @@ type ConfirmedBookingSubmitEvent = {
 
 type BookingFormOpenEvent = {
   event: "booking_form_open";
-  form_type: "appointment";
+  form_type: "appointment" | "screening_40";
 };
 
 // The object identifies one visible dialog session only and is never transmitted.
 const reportedOpenings = new WeakSet<object>();
 
-/** Call only after the appointment dialog has committed to the page. */
-export function trackBookingFormOpen(opening: object) {
+/** Call only after the booking dialog has committed to the page. */
+export function trackBookingFormOpen(opening: object, formType: BookingFormOpenEvent["form_type"] = "appointment") {
   if (typeof window === "undefined" || reportedOpenings.has(opening)) return;
 
   try {
@@ -22,7 +22,7 @@ export function trackBookingFormOpen(opening: object) {
     const dataLayer = analyticsWindow.dataLayer ??= [] as BookingFormOpenEvent[];
     // Also protects against StrictMode effect replay and synchronous GTM re-entry.
     reportedOpenings.add(opening);
-    dataLayer.push({ event: "booking_form_open", form_type: "appointment" });
+    dataLayer.push({ event: "booking_form_open", form_type: formType });
   } catch {
     // Analytics must never prevent opening or using the booking form.
   }
