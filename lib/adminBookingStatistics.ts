@@ -19,9 +19,16 @@ export const bookingStatusLabels: Record<BookingStatus, string> = {
   new: "Нова",
   contacted: "Зв’язалися",
   confirmed: "Підтверджено",
-  closed: "Закрито",
+  no_answer: "Не відповідає",
+  closed: "Завершено",
   cancelled: "Скасовано",
 };
+
+// Historical closed requests keep their meaning; unsuccessful calls are a
+// separate, nonterminal status in the current workflow.
+export const bookingWorkflowStatuses = [
+  "new", "contacted", "confirmed", "no_answer", "cancelled",
+] as const satisfies readonly BookingStatus[];
 
 export type BookingCategory = keyof typeof bookingCategoryLabels;
 export type BookingSummary = Pick<Booking, "id" | "service" | "doctor" | "comment" | "source" | "status"> &
@@ -206,7 +213,7 @@ export function selectAdminBookings<T extends BookingSummary>(
   }).map((booking) => ({ ...booking, category: classifyBooking(booking, categoryIndex) }));
   const stats: BookingStatistics = {
     total: dated.length,
-    statuses: { new: 0, contacted: 0, confirmed: 0, closed: 0, cancelled: 0 },
+    statuses: { new: 0, contacted: 0, confirmed: 0, no_answer: 0, closed: 0, cancelled: 0 },
     categories: (Object.entries(bookingCategoryLabels) as Array<[BookingCategory, string]>)
       .map(([id, label]) => ({ id, label, count: 0 })),
   };

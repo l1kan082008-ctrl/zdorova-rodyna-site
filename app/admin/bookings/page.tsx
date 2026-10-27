@@ -3,15 +3,16 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { formatBookingDateTime } from "./bookingDateTime";
 import { parseBookingDetails } from "@/lib/bookingDetails";
-import { bookingCategoryLabels, bookingStatusLabels, type BookingCategory, type AdminBooking, type AdminBookingsResponse } from "@/lib/adminBookingStatistics";
+import { bookingCategoryLabels, bookingStatusLabels, bookingWorkflowStatuses, type BookingCategory, type AdminBooking, type AdminBookingsResponse } from "@/lib/adminBookingStatistics";
 import type { BookingStatus } from "../../api/bookings/bookingStore";
 import styles from "./bookings.module.css";
 
 type DateRange = { from: string; to: string };
 type Period = "today" | "7" | "30" | "all" | "custom";
-const statusEntries = Object.entries(bookingStatusLabels) as [BookingStatus, string][];
+const workflowStatusEntries: [BookingStatus, string][] = bookingWorkflowStatuses.map((key) => [key, bookingStatusLabels[key]]);
+const completedStatusEntry: [BookingStatus, string] = ["closed", bookingStatusLabels.closed];
 const categoryEntries = Object.entries(bookingCategoryLabels) as [BookingCategory, string][];
-const statusCountLabels: Record<BookingStatus, string> = { new: "Нові", contacted: "Зв’язалися", confirmed: "Підтверджені", closed: "Закриті", cancelled: "Скасовані" };
+const statusCountLabels: Record<BookingStatus, string> = { new: "Нові", contacted: "Зв’язалися", confirmed: "Підтверджені", no_answer: "Не відповідає", closed: "Завершені", cancelled: "Скасовані" };
 const countFormat = new Intl.NumberFormat("uk-UA");
 const shortDate = new Intl.DateTimeFormat("uk-UA", { timeZone: "Europe/Kyiv", day: "2-digit", month: "2-digit", year: "numeric" });
 const shortTime = new Intl.DateTimeFormat("uk-UA", { timeZone: "Europe/Kyiv", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
@@ -163,6 +164,8 @@ export default function BookingsAdminPage() {
   };
 
   const stats = result?.rangeKey === rangeKey && !error ? result.payload.stats : undefined;
+  const showCompletedStatus = Boolean(stats?.statuses.closed) || status === "closed";
+  const statusEntries = showCompletedStatus ? [...workflowStatusEntries, completedStatusEntry] : workflowStatusEntries;
   const hasFilters = Boolean(category || status || query);
   const rangeLabel = range.from ? `${range.from.split("-").reverse().join(".")} — ${range.to.split("-").reverse().join(".")}` : "Усі збережені заявки";
 
@@ -185,7 +188,7 @@ export default function BookingsAdminPage() {
           <button type="submit" className="admin-ui-button" data-variant="primary">Застосувати</button>
           {dateError ? <p className={styles.error} role="alert">{dateError}</p> : null}
         </form> : null}
-        <div id="booking-statistics-content" hidden={!statsOpen}><div className={styles.metrics}>
+        <div id="booking-statistics-content" hidden={!statsOpen}><div className={styles.metrics} data-legacy={showCompletedStatus}>
           <button type="button" className={`${styles.metric} ${styles.metricTotal}`} aria-pressed={!hasFilters} onClick={resetFilters}><span>Усього заявок</span><strong>{stats ? countFormat.format(stats.total) : "—"}</strong></button>
           {statusEntries.map(([key]) => <button key={key} type="button" className={styles.metric} data-status={key} aria-pressed={status === key} onClick={() => { setStatus(status === key ? "" : key); setPage(1); }}><span><i aria-hidden="true" />{statusCountLabels[key]}</span><strong>{stats ? countFormat.format(stats.statuses[key]) : "—"}</strong></button>)}
         </div>
@@ -237,11 +240,11 @@ export default function BookingsAdminPage() {
                 </div>
                 <div className={styles.kind}><span>{bookingCategoryLabels[booking.category]}</span></div>
                 <div className={styles.service} title={service}>{service || "Без уточнення"}</div>
-                <label className={styles.rowStatus}><span className={styles.srOnly}>Статус заявки {booking.reference}</span><select value={booking.status} data-status={booking.status} disabled={loading || Boolean(pendingId)} onChange={(event) => mutateBooking(booking, event.target.value as BookingStatus)}>{statusEntries.map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></label>
+                <label className={styles.rowStatus}><span className={styles.srOnly}>Статус заявки {booking.reference}</span><select value={booking.status} data-status={booking.status} disabled={loading || Boolean(pendingId)} onChange={(event) => mutateBooking(booking, event.target.value as BookingStatus)}>{(booking.status === "closed" ? [...workflowStatusEntries, completedStatusEntry] : workflowStatusEntries).map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></label>
                 <button type="button" className={`admin-ui-icon-button ${styles.expand}`} data-variant="ghost" aria-label={`${open ? "Згорнути" : "Деталі заявки"} ${booking.reference}`} aria-expanded={open} aria-controls={`booking-${booking.id}`} onClick={() => setExpandedId(open ? "" : booking.id)}><Chevron open={open} /></button>
               </div>
               {open ? <div className={styles.expanded} id={`booking-${booking.id}`}>
-                <div className={styles.detailHeading}><div><strong>{booking.patientName}</strong><span>{booking.reference} · {createdAt.label}</span></div><button type="button" className="admin-ui-button" data-variant="danger" disabled={loading || Boolean(pendingId)} onClick={() => mutateBooking(booking)}>{pendingId === booking.id ? "Зберігаємо…" : "Видалити заявку"}</button></div>
+                <div className={styles.detailHeading}><div><strong>{booking.patientName}</strong><span>{booking.reference} · {createdAt.label}</span></div><button type="button" className="admin-ui-button" data-variant="ghost" data-intent="danger" aria-label={`Видалити заявку ${booking.reference}`} aria-busy={pendingId === booking.id} disabled={loading || Boolean(pendingId)} onClick={() => mutateBooking(booking)}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6" /></svg>{pendingId === booking.id ? "Зберігаємо…" : "Видалити"}</button></div>
                 <dl className={styles.details}>
                   <div><dt>Послуга</dt><dd>{booking.service || "Не вказано"}</dd></div>
                   {booking.doctor ? <div><dt>Лікар</dt><dd>{booking.doctor}</dd></div> : null}

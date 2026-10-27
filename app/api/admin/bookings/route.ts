@@ -15,6 +15,7 @@ const statuses = new Set<BookingStatus>([
   "new",
   "contacted",
   "confirmed",
+  "no_answer",
   "closed",
   "cancelled",
 ]);

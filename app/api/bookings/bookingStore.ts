@@ -12,6 +12,7 @@ export type BookingStatus =
   | "new"
   | "contacted"
   | "confirmed"
+  | "no_answer"
   | "closed"
   | "cancelled";
 
@@ -230,7 +231,7 @@ export async function listPopularBookingServices() {
   const result = await env.DB.prepare(
     `SELECT service, comment
      FROM bookings
-     WHERE status IN ('new', 'contacted', 'confirmed', 'closed')
+     WHERE status IN ('new', 'contacted', 'confirmed', 'no_answer', 'closed')
        AND datetime(created_at) >= datetime('now', '-30 days')
        AND source NOT IN ('callback', 'family-declaration', 'screening-40')
        AND TRIM(service) NOT IN ('Зворотний дзвінок', 'Заявка на декларацію із сімейним лікарем', 'Скринінг здоров’я 40+', 'Скринінг 40+')

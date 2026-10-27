@@ -127,6 +127,15 @@ html[data-admin-theme="dark"] .admin-ui {
   --admin-button-border: transparent;
   --admin-button-hover: var(--admin-canvas);
 }
+.admin-ui[data-admin-ui] :is(.admin-ui-button, .admin-ui-icon-button)[data-variant="ghost"][data-intent="danger"] {
+  font-weight: 600;
+}
+.admin-ui[data-admin-ui] :is(.admin-ui-button, .admin-ui-icon-button)[data-variant="ghost"][data-intent="danger"]:is(:hover, :focus-visible):not(:disabled) {
+  --admin-button-ink: var(--admin-danger);
+  --admin-button-hover: var(--admin-danger-surface);
+  color: var(--admin-danger);
+  background: var(--admin-danger-surface);
+}
 .admin-ui[data-admin-ui] :is(.admin-ui-button, .admin-ui-icon-button, .admin-save-button, .admin-danger-button, .admin-banner-create-button, .admin-banner-upload-button, .admin-booking-delete, .outline-button, .book-button):hover:not(:disabled):not([aria-disabled="true"]) {
   color: var(--admin-button-ink);
   border-color: var(--admin-button-border);

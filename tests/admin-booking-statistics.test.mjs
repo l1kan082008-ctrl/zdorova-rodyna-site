@@ -136,7 +136,23 @@ test("filters and pagination do not narrow the date-period summary", () => {
   assert.equal(result.totalPages, 1);
   assert.equal(result.bookings[0].id, "b");
   assert.equal(result.stats.total, 3);
-  assert.deepEqual(result.stats.statuses, { new: 1, contacted: 0, confirmed: 1, closed: 0, cancelled: 1 });
+  assert.deepEqual(result.stats.statuses, { new: 1, contacted: 0, confirmed: 1, no_answer: 0, closed: 0, cancelled: 1 });
+});
+
+test("unanswered calls filter separately without reclassifying historical completed requests", () => {
+  const records = [
+    booking({ id: "unanswered", status: "no_answer" }),
+    booking({ id: "completed", status: "closed" }),
+    booking({ id: "new" }),
+  ];
+  const result = selectAdminBookings(records, query("status=no_answer"));
+  assert.deepEqual(result.bookings.map(({ id }) => id), ["unanswered"]);
+  assert.equal(result.stats.total, 3);
+  assert.equal(result.stats.statuses.no_answer, 1);
+  assert.equal(result.stats.statuses.closed, 1);
+  assert.equal(Object.values(result.stats.statuses).reduce((sum, count) => sum + count, 0), 3);
+  assert.deepEqual(selectAdminBookings(records, query("status=closed")).bookings.map(({ id, status }) => [id, status]),
+    [["completed", "closed"]]);
 });
 
 test("stable newest ordering normalizes UTC, ISO and offset timestamps", () => {
@@ -240,4 +256,33 @@ test("GET authenticates, validates parameters and returns private paginated resu
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await response.json(), result);
+});
+
+test("PATCH authenticates unanswered calls, rejects unknown statuses and preserves legacy completed values", async () => {
+  let authorized = false;
+  const updates = [];
+  const route = load("../app/api/admin/bookings/route.ts", {
+    adminAuth: {
+      isAuthorizedAdmin: async () => authorized,
+      unauthorizedAdminResponse: () => Response.json({ error: "Unauthorized" }, { status: 401 }),
+    },
+    bookingStore: { updateBookingStatus: async (id, status) => { updates.push({ id, status }); return id !== "missing"; } },
+    priceStore: { listManagedPriceItems: async () => catalog },
+    requestBody: { readBoundedJson: async (request) => request.json() },
+  });
+  const patch = (status, id = "test-only") => route.PATCH(new Request("https://example.invalid/api/admin/bookings", {
+    method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status }),
+  }));
+  assert.equal((await patch("no_answer")).status, 401);
+  assert.deepEqual(updates, []);
+  authorized = true;
+  assert.equal((await patch("unknown")).status, 400);
+  assert.deepEqual(updates, []);
+  const unanswered = await patch("no_answer");
+  assert.equal(unanswered.status, 200);
+  assert.equal(unanswered.headers.get("cache-control"), "private, no-store");
+  assert.deepEqual(await unanswered.json(), { success: true });
+  assert.equal((await patch("closed")).status, 200);
+  assert.deepEqual(updates, [{ id: "test-only", status: "no_answer" }, { id: "test-only", status: "closed" }]);
+  assert.equal((await patch("no_answer", "missing")).status, 404);
 });

@@ -43,6 +43,7 @@ function insertBookingFixture(database, values) {
     .run(id, `ZR-${id}`, "ТЕСТ — не пацієнт", "+380000000001", values.service,
       values.comment ?? "", values.source ?? "contacts", values.status ?? "new",
       values.createdAt ?? new Date().toISOString());
+  return id;
 }
 
 test("booking is persisted, readable by admin, confirmed and removed in an isolated database", async () => {
@@ -81,7 +82,7 @@ test("popular services count all submitted statuses in the last 30 days, excludi
   try {
     const store = loadModule("../app/api/bookings/bookingStore.ts", database);
     await store.ensureBookingsTable();
-    for (const status of ["new", "contacted", "confirmed", "closed", "cancelled"]) {
+    for (const status of ["new", "contacted", "confirmed", "no_answer", "closed", "cancelled"]) {
       insertBookingFixture(database, { service: "Холтер ЕКГ", status });
     }
     insertBookingFixture(database, {
@@ -95,10 +96,35 @@ test("popular services count all submitted statuses in the last 30 days, excludi
     for (const service of ["Зворотний дзвінок", "Заявка на декларацію із сімейним лікарем", "Скринінг здоров’я 40+", "Скринінг 40+"]) {
       insertBookingFixture(database, { service, source: "legacy", comment });
     }
-    assert.deepEqual(await store.listPopularBookingServices(), [{ service: "Холтер ЕКГ", count: 4 }]);
+    assert.deepEqual(await store.listPopularBookingServices(), [{ service: "Холтер ЕКГ", count: 5 }]);
   } finally {
     database.sqlite.close();
   }
+});
+
+test("unanswered status persists as an open request while completed history and retention stay distinct", async () => {
+  const database = temporaryDatabase();
+  try {
+    const store = loadModule("../app/api/bookings/bookingStore.ts", database);
+    await store.ensureBookingsTable();
+    const unansweredId = insertBookingFixture(database, { service: "МРТ" });
+    const completedId = insertBookingFixture(database, { service: "КТ", status: "closed" });
+    const expiredId = insertBookingFixture(database, {
+      service: "Холтер ЕКГ", status: "no_answer",
+      createdAt: new Date(Date.now() - 366 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+    assert.equal(await store.updateBookingStatus(unansweredId, "no_answer"), true);
+    // An unanswered request is not a closed/cancelled request at its 180-day
+    // retention checkpoint. The existing 365-day overall limit still applies.
+    database.sqlite.prepare("UPDATE bookings SET retention_until = ? WHERE id = ?")
+      .run(new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), unansweredId);
+    const records = await store.listBookings();
+    assert.equal(records.find(({ id }) => id === unansweredId)?.status, "no_answer");
+    assert.equal(records.find(({ id }) => id === completedId)?.status, "closed");
+    assert.equal(records.some(({ id }) => id === expiredId), false);
+    assert.equal(await store.updateBookingStatus(unansweredId, "confirmed"), true);
+    assert.equal((await store.listBookings()).find(({ id }) => id === unansweredId)?.status, "confirmed");
+  } finally { database.sqlite.close(); }
 });
 
 test("popular services score structured selected studies once and discard CITO surcharges and patient text", async () => {
