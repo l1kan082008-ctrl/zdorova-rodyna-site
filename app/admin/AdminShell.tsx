@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { useModalDialog } from "../components/useModalDialog";
+import { AdminThemeToggle } from "./AdminThemeToggle";
+import { persistAdminTheme, type AdminTheme } from "./adminTheme";
 import "./admin-ui.css";
+import "./admin-legacy-theme.css";
 import styles from "./AdminShell.module.css";
 
 const sections = [
@@ -43,7 +46,7 @@ function subscribeToViewport(onChange: () => void) {
 const isMobileViewport = () => window.matchMedia(mobileQuery).matches;
 const serverViewport = () => false;
 
-export default function AdminShell({ children }: { children: ReactNode }) {
+export default function AdminShell({ children, initialTheme = "light" }: { children: ReactNode; initialTheme?: AdminTheme }) {
   const pathname = usePathname();
   const router = useRouter();
   const isMobile = useSyncExternalStore(subscribeToViewport, isMobileViewport, serverViewport);
@@ -52,6 +55,23 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   const navigationRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const [theme, setTheme] = useState<AdminTheme>(initialTheme);
+
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    const previousTheme = root.getAttribute("data-admin-theme");
+    root.setAttribute("data-admin-theme", theme);
+    return () => {
+      if (previousTheme === null) root.removeAttribute("data-admin-theme");
+      else root.setAttribute("data-admin-theme", previousTheme);
+    };
+  }, [theme]);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    persistAdminTheme(nextTheme);
+  };
 
   useModalDialog({
     open: menuOpen,
@@ -80,7 +100,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
     };
   }, [menuOpen]);
 
-  if (pathname === "/admin/login") return <div className="admin-ui" data-admin-ui>{children}</div>;
+  if (pathname === "/admin/login") return <div className={`admin-ui ${styles.loginShell}`} data-admin-ui data-admin-theme={theme}><div className={styles.loginThemeControl}><AdminThemeToggle theme={theme} onToggle={toggleTheme} /></div>{children}</div>;
 
   const logout = async () => {
     await fetch("/api/admin/session", {
@@ -93,7 +113,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className={"admin-ui " + styles.shell} data-admin-ui>
+    <div className={"admin-ui " + styles.shell} data-admin-ui data-admin-theme={theme}>
       <header className={styles.mobileHeader}>
         <Link className={styles.mobileBrand} href="/admin" onClick={() => setMenuPath(null)}>
           <span className={styles.brandMark}>ЗР</span>
@@ -124,6 +144,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
             })}
           </nav>
           <div className={styles.sidebarFooter}>
+            <AdminThemeToggle theme={theme} onToggle={toggleTheme} />
             {/* Reload the document when leaving the admin's analytics-free layout and CSP. */}
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a className="admin-ui-button" data-variant="secondary" href="/"><NavigationIcon name="external" />На сайт</a>

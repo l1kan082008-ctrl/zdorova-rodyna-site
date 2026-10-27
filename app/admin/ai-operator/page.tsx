@@ -280,7 +280,7 @@ export default function AiOperatorPage() {
       <section style={styles.grid}>
         <article style={styles.callCard}>
           <div style={styles.statusRow}>
-            <span style={{ ...styles.dot, background: state === "active" ? "#16a34a" : state === "connecting" ? "#f59e0b" : "#94a3b8" }} />
+            <span style={{ ...styles.dot, background: state === "active" ? "var(--admin-success)" : state === "connecting" ? "var(--admin-warning)" : "var(--admin-muted)" }} />
             <strong style={styles.statusText}>
               {activeTool
                 ? `Інструмент: ${activeTool}`
@@ -364,40 +364,40 @@ export default function AiOperatorPage() {
 }
 
 const styles: Record<string, CSSProperties> = {
-  page: { width: "min(100%, 1420px)", margin: "0 auto", color: "#073f45", fontFamily: "Manrope, Arial, sans-serif" },
+  page: { width: "min(100%, 1420px)", margin: "0 auto", color: "var(--admin-ink)", fontFamily: "Manrope, Arial, sans-serif" },
   header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 30, marginBottom: 34, flexWrap: "wrap" },
-  kicker: { display: "block", marginBottom: 8, color: "#008a91", fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" },
+  kicker: { display: "block", marginBottom: 8, color: "var(--admin-primary)", fontSize: 12, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" },
   title: { margin: 0, fontSize: "clamp(28px, 3vw, 36px)", lineHeight: 1.2, fontWeight: 500, letterSpacing: "-.045em" },
-  subtitle: { maxWidth: 780, margin: "16px 0 0", color: "#587276", fontSize: 17, lineHeight: 1.55 },
+  subtitle: { maxWidth: 780, margin: "16px 0 0", color: "var(--admin-muted)", fontSize: 17, lineHeight: 1.55 },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))", gap: 22 },
-  callCard: { minHeight: 620, padding: "28px clamp(22px, 3vw, 38px)", border: "1px solid #dce1e5", borderRadius: 20, background: "#fff", boxShadow: "0 4px 16px rgba(20,30,40,.04)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" },
-  statusRow: { width: "100%", display: "flex", alignItems: "center", gap: 10, paddingBottom: 22, borderBottom: "1px solid #e3eceb" },
+  callCard: { minHeight: 620, padding: "28px clamp(22px, 3vw, 38px)", border: "1px solid var(--admin-border)", borderRadius: 20, background: "var(--admin-panel)", boxShadow: "var(--admin-panel-shadow)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" },
+  statusRow: { width: "100%", display: "flex", alignItems: "center", gap: 10, paddingBottom: 22, borderBottom: "1px solid var(--admin-border)" },
   dot: { width: 9, height: 9, borderRadius: 99 },
   statusText: { fontSize: 14 },
-  timer: { marginLeft: "auto", color: "#718589", fontVariantNumeric: "tabular-nums" },
+  timer: { marginLeft: "auto", color: "var(--admin-muted)", fontVariantNumeric: "tabular-nums" },
   orbWrap: { display: "grid", placeItems: "center", flex: "1 1 auto", minHeight: 250 },
-  orb: { width: 170, height: 170, display: "grid", placeItems: "center", borderRadius: "50%", background: "#087f82", transition: "transform .25s ease, box-shadow .25s ease" },
-  orbActive: { outline: "6px solid #edf6f5" },
-  mic: { width: 26, height: 26, display: "grid", placeItems: "center", color: "#fff", fontSize: 28 },
+  orb: { width: 170, height: 170, display: "grid", placeItems: "center", borderRadius: "50%", background: "var(--admin-primary-solid)", transition: "transform .25s ease, box-shadow .25s ease" },
+  orbActive: { outline: "6px solid var(--admin-selection)" },
+  mic: { width: 26, height: 26, display: "grid", placeItems: "center", color: "var(--admin-on-primary)", fontSize: 28 },
   callTitle: { margin: "0 0 10px", fontSize: 28, fontWeight: 550, letterSpacing: "-.03em" },
-  callCopy: { maxWidth: 540, margin: "0 0 22px", color: "#587276", lineHeight: 1.55 },
-  button: { width: "100%", minHeight: 54, padding: "0 24px", border: 0, borderRadius: 16, background: "#008f97", color: "#fff", font: "inherit", fontWeight: 800, cursor: "pointer" },
-  stopButton: { background: "#b42318" },
-  error: { width: "100%", margin: "0 0 14px", padding: 12, borderRadius: 12, background: "#fff0ee", color: "#9f241b", fontSize: 14, textAlign: "left" },
-  privacyNote: { margin: "14px 0 0", color: "#849598", fontSize: 12, lineHeight: 1.45 },
-  transcriptCard: { minHeight: 620, padding: "28px clamp(20px, 3vw, 34px)", borderRadius: 20, background: "#fff", color: "#073f45", border: "1px solid #dce1e5", overflow: "hidden" },
+  callCopy: { maxWidth: 540, margin: "0 0 22px", color: "var(--admin-muted)", lineHeight: 1.55 },
+  button: { width: "100%", minHeight: 54, padding: "0 24px", border: 0, borderRadius: 16, background: "var(--admin-primary-solid)", color: "var(--admin-on-primary)", font: "inherit", fontWeight: 800, cursor: "pointer" },
+  stopButton: { background: "var(--admin-danger-solid, #b42318)" },
+  error: { width: "100%", margin: "0 0 14px", padding: 12, borderRadius: 12, background: "var(--admin-danger-surface)", color: "var(--admin-danger)", fontSize: 14, textAlign: "left" },
+  privacyNote: { margin: "14px 0 0", color: "var(--admin-muted)", fontSize: 12, lineHeight: 1.45 },
+  transcriptCard: { minHeight: 620, padding: "28px clamp(20px, 3vw, 34px)", borderRadius: 20, background: "var(--admin-panel)", color: "var(--admin-ink)", border: "1px solid var(--admin-border)", overflow: "hidden" },
   transcriptHeader: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, marginBottom: 20 },
   transcriptTitle: { margin: 0, fontSize: 32, fontWeight: 500, letterSpacing: "-.035em" },
-  clearButton: { border: "1px solid rgba(255,255,255,.2)", borderRadius: 12, padding: "9px 13px", color: "#d7e7e6", background: "transparent", cursor: "pointer" },
+  clearButton: { border: "1px solid var(--admin-border)", borderRadius: 12, padding: "9px 13px", color: "var(--admin-ink)", background: "transparent", cursor: "pointer" },
   log: { height: 520, overflowY: "auto", paddingRight: 5, display: "flex", flexDirection: "column", gap: 12 },
   message: { maxWidth: "88%", padding: "14px 16px", borderRadius: 18 },
-  aiMessage: { alignSelf: "flex-start", background: "#edf6f5" },
-  patientMessage: { alignSelf: "flex-end", background: "#fff", color: "#073f45" },
-  systemMessage: { maxWidth: "100%", alignSelf: "stretch", background: "#f1f3f5", color: "#587276" },
+  aiMessage: { alignSelf: "flex-start", background: "var(--admin-selection)" },
+  patientMessage: { alignSelf: "flex-end", background: "var(--admin-panel)", color: "var(--admin-ink)" },
+  systemMessage: { maxWidth: "100%", alignSelf: "stretch", background: "var(--admin-canvas)", color: "var(--admin-muted)" },
   messageRole: { display: "block", marginBottom: 5, fontSize: 10, fontWeight: 900, letterSpacing: ".08em", textTransform: "uppercase", opacity: .7 },
   messageText: { margin: 0, fontSize: 15, lineHeight: 1.5 },
   bottomGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: 22, marginTop: 22 },
-  infoCard: { padding: 26, border: "1px solid #dce1e5", borderRadius: 20, background: "#fff" },
+  infoCard: { padding: 26, border: "1px solid var(--admin-border)", borderRadius: 20, background: "var(--admin-panel)" },
   infoTitle: { margin: "0 0 9px", fontSize: 22, fontWeight: 600 },
-  infoText: { margin: 0, color: "#587276", lineHeight: 1.55 },
+  infoText: { margin: 0, color: "var(--admin-muted)", lineHeight: 1.55 },
 };

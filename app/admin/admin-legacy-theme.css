@@ -1,0 +1,237 @@
+/* Dark surfaces for legacy admin screens. Public .promo-* previews keep their own palette. */
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-price-import-heading h2, .admin-price-editor-heading h2, .admin-prices-list-tools label,
+  .admin-price-editor > label, .admin-active-switch, .admin-active-switch > span, .admin-topbar strong,
+  .admin-editor-sidebar > header strong, .admin-banner-preview__header strong,
+  .admin-banner-media-toolbar__copy strong, .admin-banner-form-section h2,
+  .admin-banner-order-field, .admin-toggle-row strong, .admin-service-fieldset,
+  .admin-editor-heading h1, .admin-photo-panel strong, .admin-patient-groups legend,
+  .admin-schedule-editor legend, .admin-doctors-list > label > span
+) { color: var(--admin-ink); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-price-import-heading p, .admin-import-more, .admin-import-metrics b,
+  .admin-prices-scroll small, .admin-price-editor small,
+  .admin-editor-sidebar__heading > div > span, .admin-location-list-item small,
+  .admin-banner-preview__header div span, .admin-banner-media-toolbar__copy span,
+  .admin-toggle-row small, .admin-save-state, .admin-safe-save-state,
+  .admin-doctors-list button small, .admin-photo-panel p, .admin-form-grid label small,
+  .admin-doctor-form > label small, .admin-patient-groups > p, .admin-schedule-editor > p,
+  .admin-loading
+) { color: var(--admin-muted); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-price-import-heading > div:first-child > span, .admin-price-editor-heading > div > span,
+  .admin-prices-scroll b, .admin-import-confirm p, .admin-import-status,
+  .admin-page-links a, .admin-topbar a
+) { color: var(--admin-primary); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-prices-list-tools, .admin-editor-sidebar > header,
+  .admin-service-fieldset, .admin-patient-groups, .admin-schedule-editor,
+  .admin-doctors-list > label, .admin-banner-form-section + .admin-banner-form-section
+) { border-color: var(--admin-border); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-editor-empty, .admin-state
+) {
+  border-color: var(--admin-border);
+  background: var(--admin-panel);
+  color: var(--admin-muted);
+  box-shadow: var(--admin-panel-shadow);
+}
+
+/* Lists and controls still used by the older editors. */
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-prices-scroll > button, .admin-editor-list-item, .admin-location-list-item,
+  .admin-doctors-list button, .admin-patient-groups label, .admin-service-option
+) {
+  border-color: var(--admin-border);
+  background: var(--admin-panel);
+  color: var(--admin-ink);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-prices-scroll > button, .admin-editor-list-item, .admin-location-list-item,
+  .admin-doctors-list button
+):is(:hover, .is-active) { background: var(--admin-selection); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-service-option:hover {
+  border-color: var(--admin-border-hover);
+  background: var(--admin-panel-hover);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-service-option.is-selected {
+  border-color: var(--admin-selection-border);
+  background: var(--admin-selection);
+  color: var(--admin-primary);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-current-photo, .admin-doctors-list button > span:first-child
+) {
+  background-color: var(--admin-selection);
+  color: var(--admin-primary);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-file-picker {
+  border-color: var(--admin-border-hover);
+  background: var(--admin-panel);
+  color: var(--admin-primary);
+}
+
+/* Import preview and warnings. */
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-import-note {
+  border-color: var(--admin-warning-border);
+  background: var(--admin-warning-surface);
+  color: var(--admin-ink);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-import-metrics span {
+  border-color: var(--admin-border);
+  background: var(--admin-canvas);
+  color: var(--admin-ink);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-import-metrics span.has-errors, .admin-import-issues, .admin-state.admin-error
+) {
+  border-color: var(--admin-danger-border);
+  background: var(--admin-danger-surface);
+  color: var(--admin-danger);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-import-metrics span.has-errors b { color: inherit; }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-import-preview, .admin-import-preview th, .admin-import-preview td
+) { border-color: var(--admin-border); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-import-preview table { color: var(--admin-ink); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-import-preview th {
+  background: var(--admin-canvas);
+  color: var(--admin-muted);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-import-preview td span.is-update {
+  background: var(--admin-selection);
+  color: var(--admin-primary);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-import-preview td span.is-new {
+  background: var(--admin-warning-surface);
+  color: var(--admin-warning);
+}
+
+/* Banner controls only: the preview viewport and its public buttons are untouched. */
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-banner-status {
+  border-color: var(--admin-border);
+  color: var(--admin-muted);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-banner-status.is-active {
+  border-color: var(--admin-success-border);
+  background: var(--admin-success-surface);
+  color: var(--admin-success);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-banner-settings {
+  /* The legacy settings border is itself important. */
+  border-color: var(--admin-border) !important;
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-toggle {
+  border-color: var(--admin-border-hover);
+  background: var(--admin-canvas);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-toggle span {
+  background: var(--admin-ink);
+  box-shadow: none;
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-toggle-row input:checked + .admin-toggle {
+  border-color: var(--admin-primary);
+  background: var(--admin-primary);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-toggle-row input:checked + .admin-toggle span { background: var(--admin-canvas); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-toggle-row input:focus-visible + .admin-toggle { box-shadow: 0 0 0 3px var(--admin-focus-ring); }
+
+/* Save status stays semantic in both sticky and inline action bars. */
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-price-actions {
+  border-color: var(--admin-border);
+  background: var(--admin-canvas);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-price-actions p { color: var(--admin-primary); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-safe-save-state.is-dirty { color: var(--admin-warning); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-safe-save-state.is-saved, .admin-editor-state.is-success, .admin-save-state.is-success
+) { color: var(--admin-success); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-safe-save-state.is-error, .admin-editor-state.is-error, .admin-save-state.is-error
+) { color: var(--admin-danger); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-safe-save-state i { background: currentColor; }
+
+/* History is portalled to body and carries its own admin-ui scope. */
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui].admin-history-backdrop {
+  background: var(--admin-overlay);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-history-dialog {
+  background: var(--admin-panel);
+  color: var(--admin-ink);
+  box-shadow: var(--admin-panel-shadow);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-history-heading h2, .admin-history-version > span, .admin-history-confirm p,
+  .admin-history-state strong, .admin-history-heading > button
+) { color: var(--admin-ink); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-history-heading span, .admin-history-version time
+) { color: var(--admin-primary); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-history-heading p, .admin-history-note p, .admin-history-state p, .admin-history-version p
+) { color: var(--admin-muted); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] :is(
+  .admin-history-list li, .admin-history-state, .admin-history-note
+) {
+  border-color: var(--admin-border);
+  background: var(--admin-canvas);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-history-confirm { border-color: var(--admin-border); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-history-state.is-error {
+  border-color: var(--admin-danger-border);
+  background: var(--admin-danger-surface);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-history-state.is-error p { color: var(--admin-danger); }
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-history-note > span {
+  background: var(--admin-selection);
+  color: var(--admin-primary);
+}
+
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] .admin-history-heading > button:focus-visible { outline-color: var(--admin-focus); }
+
+/* Match the existing inset arrow, using the readable dark-theme accent. */
+:is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] select:not([multiple]):not([size]) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%2375d5cf' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+@media (forced-colors: active) {
+  :is(html[data-admin-theme="dark"] .admin-ui, .admin-ui[data-admin-theme="dark"])[data-admin-ui] select:not([multiple]):not([size]) { background-image: none; }
+}

@@ -49,7 +49,7 @@
   border: 1px solid var(--admin-border);
   border-radius: 12px;
   color: var(--admin-ink);
-  background: #fff;
+  background: var(--admin-panel);
   font-size: 14px;
   font-weight: 750;
   text-decoration: none;
@@ -71,15 +71,15 @@
 }
 
 .error {
-  border: 1px solid #f0c3bc;
+  border: 1px solid var(--admin-danger-border);
   color: var(--admin-danger);
-  background: #fff8f6;
+  background: var(--admin-danger-surface);
 }
 
 .loading {
   border: 1px solid var(--admin-border);
   color: var(--admin-muted);
-  background: #fff;
+  background: var(--admin-panel);
 }
 
 .workspace {
@@ -95,7 +95,7 @@
   min-width: 0;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-panel-radius);
-  background: #fff;
+  background: var(--admin-panel);
   box-shadow: var(--admin-panel-shadow);
 }
 
@@ -137,8 +137,8 @@
   padding: 0 12px;
   border: 0;
   border-radius: 10px;
-  color: #fff;
-  background: var(--admin-primary);
+  color: var(--admin-on-primary);
+  background: var(--admin-primary-solid);
   font: inherit;
   font-size: 13px;
   font-weight: 800;
@@ -196,15 +196,15 @@
   height: 34px;
   place-items: center;
   border-radius: 10px;
-  color: #0a8385;
+  color: var(--admin-primary);
   background: var(--admin-canvas);
   font-size: 11px;
   font-weight: 850;
 }
 
 .locationItemActive .locationNumber {
-  color: #fff;
-  background: var(--admin-primary);
+  color: var(--admin-on-primary);
+  background: var(--admin-primary-solid);
 }
 
 .locationCopy {
@@ -229,7 +229,7 @@
 }
 
 .locationArrow {
-  color: #88a4a4;
+  color: var(--admin-muted);
   font-size: 22px;
 }
 
@@ -279,8 +279,8 @@
   gap: 7px;
   padding: 0 11px;
   border-radius: 10px;
-  color: #24766d;
-  background: #edf8f4;
+  color: var(--admin-success);
+  background: var(--admin-success-surface);
   font-size: 12px;
   font-weight: 750;
   opacity: 0;
@@ -355,7 +355,7 @@
   border-radius: var(--admin-control-radius);
   outline: none;
   color: var(--admin-ink);
-  background: #fff;
+  background: var(--admin-panel);
   font: inherit;
   font-size: 14px;
   font-weight: 500;
@@ -381,8 +381,8 @@
 
 .formGrid input:focus,
 .formGrid textarea:focus {
-  border-color: #168f91;
-  box-shadow: 0 0 0 3px rgba(22, 143, 145, 0.1);
+  border-color: var(--admin-focus);
+  box-shadow: 0 0 0 3px var(--admin-focus-ring);
 }
 
 .wideField {
@@ -404,7 +404,7 @@
   border: 1px solid var(--admin-border);
   border-radius: 12px;
   color: var(--admin-ink);
-  background: #fff;
+  background: var(--admin-panel);
   font: inherit;
   font-size: 13px;
   font-weight: 750;
@@ -413,8 +413,8 @@
 }
 
 .serviceOption:hover {
-  border-color: #9dc9c5;
-  background: #fbfdfd;
+  border-color: var(--admin-border-hover);
+  background: var(--admin-panel-hover, var(--admin-canvas));
 }
 
 .serviceOption span {
@@ -423,20 +423,20 @@
   height: 24px;
   place-items: center;
   border-radius: 8px;
-  color: #0b8587;
+  color: var(--admin-primary);
   background: var(--admin-canvas);
   font-size: 15px;
 }
 
 .serviceOptionSelected {
-  border-color: #82c0bb;
-  color: #07565a;
+  border-color: var(--admin-selection-border);
+  color: var(--admin-primary);
   background: var(--admin-selection);
 }
 
 .serviceOptionSelected span {
-  color: #fff;
-  background: var(--admin-primary);
+  color: var(--admin-on-primary);
+  background: var(--admin-primary-solid);
 }
 
 .actions {
@@ -460,7 +460,7 @@
 }
 
 .deleteButton {
-  border: 1px solid #e1cbca;
+  border: 1px solid var(--admin-danger-border);
   color: var(--admin-danger);
   background: transparent;
 }
@@ -468,9 +468,9 @@
 .saveButton,
 .emptyEditor button {
   border: 0;
-  color: #fff;
-  background: var(--admin-primary);
-  box-shadow: 0 9px 20px rgba(8, 127, 130, 0.16);
+  color: var(--admin-on-primary);
+  background: var(--admin-primary-solid);
+  box-shadow: var(--admin-panel-shadow);
 }
 
 .emptyEditor {
@@ -614,10 +614,10 @@
 }
 
 .photoGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 16px; margin-block: 16px; }
-.photoCard { min-width: 0; display: grid; gap: 12px; padding: 12px; border: 1px solid var(--admin-border); border-radius: 16px; background: #fff; }
+.photoCard { min-width: 0; display: grid; gap: 12px; padding: 12px; border: 1px solid var(--admin-border); border-radius: 16px; background: var(--admin-panel); }
 .photoCard img { width: 100%; height: 160px; object-fit: cover; border-radius: 10px; }
 .photoCard span { overflow-wrap: anywhere; color: var(--admin-ink); }
 .photoCard button { min-height: 44px; }
-.mediaHint { color: #587276; font-size: 13px; line-height: 1.6; }
+.mediaHint { color: var(--admin-muted); font-size: 13px; line-height: 1.6; }
 .mediaDetails summary { cursor: pointer; min-height: 44px; padding-block: 12px; color: var(--admin-ink); }
 .photoCard button:focus-visible, .mediaDetails summary:focus-visible { outline: 2px solid var(--admin-primary); outline-offset: 3px; }

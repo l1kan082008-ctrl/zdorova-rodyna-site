@@ -1,4 +1,4 @@
-.page { --booking-columns: 108px minmax(144px, 1.15fr) minmax(104px, .8fr) minmax(144px, 1.5fr) 144px 44px; --booking-accent: #657383; }
+.page { --booking-columns: 108px minmax(144px, 1.15fr) minmax(104px, .8fr) minmax(144px, 1.5fr) 144px 44px; --booking-accent: #657383; --booking-detail-surface: #f7f9fa; --booking-label-mix: #000; }
 .page [data-category="doctor"] { --booking-accent: #356fa0; }
 .page [data-category="mri"] { --booking-accent: #7952ab; }
 .page [data-category="ct"] { --booking-accent: #af5c2e; }
@@ -48,7 +48,7 @@
 .categoryLabel::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: var(--booking-accent); }
 .category strong { font-size: 14px; font-variant-numeric: tabular-nums; }
 .category:hover { background: var(--admin-canvas); }
-.category[aria-pressed="true"] { border-color: color-mix(in srgb, var(--booking-accent) 40%, white); background: color-mix(in srgb, var(--booking-accent) 7%, white); }
+.category[aria-pressed="true"] { border-color: color-mix(in srgb, var(--booking-accent) 40%, var(--admin-panel)); background: color-mix(in srgb, var(--booking-accent) 7%, var(--admin-panel)); }
 .categoryTrack { grid-column: 1 / -1; height: 3px; border-radius: 3px; background: var(--admin-canvas); overflow: hidden; }
 .categoryTrack > span { display: block; height: 100%; background: var(--booking-accent); border-radius: inherit; }
 .note { margin: 12px 0 0; font-size: 11px; line-height: 1.6; color: var(--admin-muted); }
@@ -72,7 +72,7 @@
 .page .item[data-status="new"][data-expanded="true"] > .row::before { animation: none; opacity: .07; }
 .page[data-pulse="true"] .list[data-loading="true"] .item[data-status="new"] > .row::before { animation-play-state: paused; }
 @keyframes bookingNewPulse { 0%, 100% { opacity: .045; } 50% { opacity: .13; } }
-.row:hover, .item[data-expanded="true"] > .row { background: #f7f9fa; }
+.row:hover, .item[data-expanded="true"] > .row { background: var(--booking-detail-surface); }
 .row > * { min-width: 0; }
 .date { display: grid; gap: 4px; color: var(--admin-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
 .date small { color: var(--admin-muted); font-size: 12px; }
@@ -83,14 +83,14 @@
 .page .patient .phoneCopy[data-variant] > svg { width: 14px; height: 14px; flex: 0 0 14px; }
 .copyFeedback { position: fixed; z-index: 110; right: 24px; bottom: max(24px, env(safe-area-inset-bottom)); width: max-content; max-width: min(400px, calc(100vw - 32px)); margin: 0; padding: 12px 16px; border: 1px solid var(--admin-selection-border); border-radius: var(--admin-control-radius); background: var(--admin-panel); color: var(--admin-ink); box-shadow: var(--admin-panel-shadow); font-size: 14px; line-height: 1.5; pointer-events: none; }
 .copyFeedback[data-error="true"] { color: var(--admin-danger); border-color: var(--admin-danger-border); }
-.kind { font-size: 11px; color: color-mix(in srgb, var(--booking-accent) 82%, black); }
-.kind > span { display: inline-block; padding: 4px 7px; border: 1px solid color-mix(in srgb, var(--booking-accent) 25%, white); background: color-mix(in srgb, var(--booking-accent) 8%, white); border-radius: 6px; line-height: 1.4; font-weight: 650; }
+.kind { font-size: 11px; color: color-mix(in srgb, var(--booking-accent) 82%, var(--booking-label-mix)); }
+.kind > span { display: inline-block; padding: 4px 7px; border: 1px solid color-mix(in srgb, var(--booking-accent) 25%, var(--admin-panel)); background: color-mix(in srgb, var(--booking-accent) 8%, var(--admin-panel)); border-radius: 6px; line-height: 1.4; font-weight: 650; }
 .service { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; font-size: 12px; line-height: 1.5; }
 .page .rowStatus select { font-size: 12px; min-height: 44px; padding-left: 10px; }
 .page .rowStatus select[data-status="new"] { color: #835200; border-color: #dfca9d; background-color: #fff9eb; }
 .page .rowStatus select[data-status="confirmed"] { color: #076465; border-color: #b7d7d2; background-color: var(--admin-selection); }
 .page .rowStatus select[data-status="cancelled"] { color: var(--admin-danger); border-color: var(--admin-danger-border); background-color: var(--admin-danger-surface); }
-.expanded { padding: 20px 24px 24px; background: #f7f9fa; border-top: 1px solid var(--admin-border); }
+.expanded { padding: 20px 24px 24px; background: var(--booking-detail-surface); border-top: 1px solid var(--admin-border); }
 .detailHeading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
 .detailHeading > div { display: grid; min-width: 0; gap: 4px; }
 .detailHeading strong { font-size: 16px; overflow-wrap: anywhere; }
@@ -113,6 +113,24 @@
 .empty p { margin: 0; }
 .error { color: var(--admin-danger); margin: 0; padding: 12px 24px; font-size: 14px; }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+/* Keep category identities while lifting contrast on dark admin surfaces. */
+:global([data-admin-theme="dark"]) .page { --booking-accent: #b1bdcc; --booking-detail-surface: var(--admin-canvas); --booking-label-mix: var(--admin-ink); }
+:global([data-admin-theme="dark"]) .page [data-category="doctor"] { --booking-accent: #83b8e9; }
+:global([data-admin-theme="dark"]) .page [data-category="mri"] { --booking-accent: #ba9be9; }
+:global([data-admin-theme="dark"]) .page [data-category="ct"] { --booking-accent: #e9ac83; }
+:global([data-admin-theme="dark"]) .page [data-category="ultrasound"] { --booking-accent: #75c8e3; }
+:global([data-admin-theme="dark"]) .page [data-category="laboratory"] { --booking-accent: #6ccbb7; }
+:global([data-admin-theme="dark"]) .page [data-category="holter"] { --booking-accent: #e997b3; }
+:global([data-admin-theme="dark"]) .page [data-category="screening40"] { --booking-accent: #d7c17c; }
+:global([data-admin-theme="dark"]) .page [data-category="declaration"] { --booking-accent: #b0c98b; }
+:global([data-admin-theme="dark"]) .page [data-category="callback"] { --booking-accent: #e4c06a; }
+:global([data-admin-theme="dark"]) .page [data-category="other"] { --booking-accent: #b1bdcc; }
+:global([data-admin-theme="dark"]) .page .category[aria-pressed="true"] { border-color: color-mix(in srgb, var(--booking-accent) 60%, var(--admin-panel)); background: color-mix(in srgb, var(--booking-accent) 15%, var(--admin-panel)); }
+:global([data-admin-theme="dark"]) .page .metric[data-status="new"] i { background: var(--admin-warning); }
+:global([data-admin-theme="dark"]) .page .metric[data-status="contacted"] i { background: #83b8e9; }
+:global([data-admin-theme="dark"]) .page .rowStatus select[data-status="new"] { color: var(--admin-warning); border-color: var(--admin-warning-border); background-color: var(--admin-warning-surface); }
+:global([data-admin-theme="dark"]) .page .rowStatus select[data-status="confirmed"] { color: var(--admin-success); border-color: var(--admin-success-border); background-color: var(--admin-success-surface); }
 
 @media (max-width: 1279px) {
   .page { --booking-columns: 88px minmax(128px, 1.1fr) minmax(84px, .8fr) minmax(100px, 1fr) 144px 44px; }

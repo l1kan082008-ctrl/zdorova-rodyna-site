@@ -1,25 +1,74 @@
 /* Shared admin language. Portals opt in with the same class and data attribute. */
+html[data-admin-theme="dark"] { color-scheme: dark; background: #000; }
+html[data-admin-theme="dark"] body { background: #000; }
 .admin-ui {
   --admin-primary: #087f82;
+  --admin-primary-solid: #087f82;
+  --admin-on-primary: #fff;
   --admin-primary-hover: #066b6e;
   --admin-ink: #153b40;
   --admin-muted: #596a70;
   --admin-canvas: #f1f3f5;
   --admin-panel: #fff;
+  --admin-panel-hover: #fcfdfd;
   --admin-border: #d7dde2;
+  --admin-control-border: #d7dde2;
   --admin-border-hover: #aebbc2;
   --admin-selection: #eaf5f3;
   --admin-selection-border: #b7d7d2;
   --admin-danger: #a43d35;
+  --admin-danger-solid: #b42318;
   --admin-danger-border: #d9aaa5;
   --admin-danger-surface: #fff2f0;
+  --admin-success: #24766d;
+  --admin-success-surface: #edf8f4;
+  --admin-success-border: #b7d7d2;
+  --admin-warning: #9b610e;
+  --admin-warning-surface: #fff9ec;
+  --admin-warning-border: #e8c780;
   --admin-focus: #087f82;
+  --admin-focus-ring: rgb(8 127 130 / 12%);
+  --admin-placeholder: #6b7880;
+  --admin-overlay: rgb(19 31 42 / 32%);
   --admin-control-radius: 12px;
   --admin-panel-radius: 20px;
   --admin-panel-shadow: 0 4px 16px rgb(25 32 45 / 4%);
   font-family: "Manrope", Arial, sans-serif;
   color: var(--admin-ink);
   line-height: 1.5;
+  color-scheme: light;
+}
+
+.admin-ui[data-admin-theme="dark"],
+html[data-admin-theme="dark"] .admin-ui {
+  --admin-primary: #75d5cf;
+  --admin-primary-solid: #087f82;
+  --admin-primary-hover: #066b6e;
+  --admin-ink: #f3f3f3;
+  --admin-muted: #b5b5b5;
+  --admin-canvas: #000;
+  --admin-panel: #101010;
+  --admin-panel-hover: #181818;
+  --admin-border: #303030;
+  --admin-control-border: #666;
+  --admin-border-hover: #777;
+  --admin-selection: #202020;
+  --admin-selection-border: #626262;
+  --admin-danger: #ffb4a9;
+  --admin-danger-border: #a66860;
+  --admin-danger-surface: #402a2c;
+  --admin-success: #8bdbb4;
+  --admin-success-surface: #203c32;
+  --admin-success-border: #4f8c70;
+  --admin-warning: #f0ce88;
+  --admin-warning-surface: #3a3222;
+  --admin-warning-border: #a28a52;
+  --admin-focus: #75d5cf;
+  --admin-focus-ring: rgb(117 213 207 / 22%);
+  --admin-placeholder: #a5a5a5;
+  --admin-overlay: rgb(0 0 0 / 55%);
+  --admin-panel-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+  color-scheme: dark;
 }
 
 .admin-ui[data-admin-ui] :is(.admin-ui-button, .admin-ui-icon-button, .admin-save-button, .admin-danger-button, .admin-banner-create-button, .admin-banner-upload-button, .admin-booking-delete, .outline-button, .book-button) {
@@ -54,9 +103,9 @@
 
 .admin-ui[data-admin-ui] :is(.admin-save-button, .admin-banner-create-button, .book-button),
 .admin-ui[data-admin-ui] :is(.admin-ui-button, .admin-ui-icon-button)[data-variant="primary"] {
-  --admin-button-bg: var(--admin-primary);
-  --admin-button-ink: #fff;
-  --admin-button-border: var(--admin-primary);
+  --admin-button-bg: var(--admin-primary-solid);
+  --admin-button-ink: var(--admin-on-primary);
+  --admin-button-border: var(--admin-primary-solid);
   --admin-button-hover: var(--admin-primary-hover);
 }
 .admin-ui[data-admin-ui] :is(.admin-danger-button, .admin-booking-delete),
@@ -99,7 +148,7 @@
   width: 100%;
   min-height: 44px;
   padding: 10px 12px;
-  border: 1px solid var(--admin-border);
+  border: 1px solid var(--admin-control-border);
   border-radius: var(--admin-control-radius);
   color: var(--admin-ink);
   background-color: var(--admin-panel);
@@ -111,8 +160,8 @@
 }
 .admin-ui[data-admin-ui] select { padding-right: 38px; }
 .admin-ui[data-admin-ui] textarea { min-height: 104px; height: auto; resize: vertical; }
-.admin-ui[data-admin-ui] :is(input, textarea)::placeholder { color: #6b7880; opacity: 1; }
-.admin-ui[data-admin-ui] :is(input, select, textarea):focus { border-color: var(--admin-focus); box-shadow: 0 0 0 3px rgb(8 127 130 / 12%); }
+.admin-ui[data-admin-ui] :is(input, textarea)::placeholder { color: var(--admin-placeholder); opacity: 1; }
+.admin-ui[data-admin-ui] :is(input, select, textarea):focus { border-color: var(--admin-focus); box-shadow: 0 0 0 3px var(--admin-focus-ring); }
 .admin-ui[data-admin-ui] :is(input, select, textarea)[aria-invalid="true"] { border-color: var(--admin-danger); }
 .admin-ui[data-admin-ui] :is(input, select, textarea):disabled { color: var(--admin-muted); background-color: var(--admin-canvas); cursor: not-allowed; opacity: .75; }
 .admin-ui[data-admin-ui] :is(input[type="checkbox"], input[type="radio"]) { accent-color: var(--admin-primary); }

@@ -62,7 +62,7 @@
   padding: 0 15px;
   border: 1px solid var(--admin-border);
   color: var(--admin-ink);
-  background: #fff;
+  background: var(--admin-panel);
   text-decoration: none;
   white-space: nowrap;
 }
@@ -91,15 +91,15 @@
 }
 
 .error {
-  border: 1px solid #f0c3bc;
+  border: 1px solid var(--admin-danger-border);
   color: var(--admin-danger);
-  background: #fff8f6;
+  background: var(--admin-danger-surface);
 }
 
 .loading {
   border: 1px solid var(--admin-border);
   color: var(--admin-muted);
-  background: #fff;
+  background: var(--admin-panel);
 }
 
 .workspace {
@@ -115,7 +115,7 @@
   min-width: 0;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-panel-radius);
-  background: #fff;
+  background: var(--admin-panel);
   box-shadow: var(--admin-panel-shadow);
 }
 
@@ -158,8 +158,8 @@
   min-height: 44px;
   padding: 0 12px;
   border: 0;
-  color: #fff;
-  background: var(--admin-primary);
+  color: var(--admin-on-primary);
+  background: var(--admin-primary-solid);
 }
 
 .createButton:hover,
@@ -179,7 +179,7 @@
   padding: 8px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #b9cecc transparent;
+  scrollbar-color: var(--admin-border-hover) transparent;
 }
 
 .serviceItem {
@@ -215,15 +215,15 @@
   height: 34px;
   place-items: center;
   border-radius: 10px;
-  color: #0a8385;
+  color: var(--admin-primary);
   background: var(--admin-canvas);
   font-size: 11px;
   font-weight: 850;
 }
 
 .serviceItemActive .order {
-  color: #fff;
-  background: var(--admin-primary);
+  color: var(--admin-on-primary);
+  background: var(--admin-primary-solid);
 }
 
 .serviceCopy strong,
@@ -243,7 +243,7 @@
 }
 
 .chevron {
-  color: #88a4a4;
+  color: var(--admin-muted);
   font-size: 22px;
 }
 
@@ -322,6 +322,14 @@
 }
 
 .previewCard {
+  /* This is a preview of the public card, which keeps its light palette. */
+  --admin-ink: #153b40;
+  --admin-muted: #596a70;
+  --admin-primary-solid: #087f82;
+  --admin-on-primary: #fff;
+  --admin-border: #d7dde2;
+  color: var(--admin-ink);
+  color-scheme: light;
   position: relative;
   display: flex;
   min-height: 178px;
@@ -374,8 +382,8 @@
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  color: #fff;
-  background: var(--admin-primary);
+  color: var(--admin-on-primary);
+  background: var(--admin-primary-solid);
   font-size: 20px;
   font-style: normal;
 }
@@ -439,7 +447,7 @@
   border-radius: var(--admin-control-radius);
   outline: 0;
   color: var(--admin-ink);
-  background: #fff;
+  background: var(--admin-panel);
   font: inherit;
   font-size: 14px;
   font-weight: 500;
@@ -462,8 +470,8 @@
 .formGrid input:focus,
 .formGrid textarea:focus,
 .orderField input:focus {
-  border-color: #5eb1af;
-  box-shadow: 0 0 0 3px rgba(8, 127, 130, .1);
+  border-color: var(--admin-focus);
+  box-shadow: 0 0 0 3px var(--admin-focus-ring);
 }
 
 .mediaRow {
@@ -506,9 +514,9 @@
 
 .uploadButton {
   padding: 0 15px;
-  border: 1px solid #9fc9c6;
+  border: 1px solid var(--admin-selection-border);
   color: var(--admin-primary);
-  background: #fff;
+  background: var(--admin-panel);
 }
 
 .publishPanel {
@@ -523,7 +531,7 @@
 
 .orderField input {
   max-width: 130px;
-  background: #fff;
+  background: var(--admin-panel);
 }
 
 .toggleRow {
@@ -557,7 +565,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--admin-on-primary);
   box-shadow: 0 2px 6px rgba(2, 49, 54, .18);
   transition: transform 180ms cubic-bezier(.2,.8,.2,1);
 }
@@ -566,7 +574,7 @@
   background: transparent;
 }
 
-.toggleOn::before { background: var(--admin-primary); }
+.toggleOn::before { background: var(--admin-primary-solid); }
 
 .toggleOn span {
   transform: translateX(18px);
@@ -588,21 +596,21 @@
 }
 
 .deleteButton {
-  border: 1px solid #d9a9a4;
+  border: 1px solid var(--admin-danger-border);
   color: var(--admin-danger);
   background: transparent;
 }
 
 .deleteButton:hover {
-  border-color: #bb6c64;
-  background: #fff8f6;
+  border-color: var(--admin-danger);
+  background: var(--admin-danger-surface);
 }
 
 .saveButton,
 .emptyEditor button {
   border: 0;
-  color: #fff;
-  background: var(--admin-primary);
+  color: var(--admin-on-primary);
+  background: var(--admin-primary-solid);
 }
 
 .saveButton:disabled,
@@ -620,7 +628,7 @@
   height: 14px;
   margin-right: 8px;
   border: 2px solid rgba(255,255,255,.42);
-  border-top-color: #fff;
+  border-top-color: var(--admin-on-primary);
   border-radius: 50%;
   vertical-align: -2px;
   animation: spin .7s linear infinite;
@@ -642,7 +650,7 @@
 
 .emptyEditor p {
   margin: 0 0 10px;
-  color: #748a8c;
+  color: var(--admin-muted);
 }
 
 .emptyEditor button {
