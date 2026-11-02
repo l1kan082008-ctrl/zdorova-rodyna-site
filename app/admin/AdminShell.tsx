@@ -6,6 +6,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, typ
 import { useModalDialog } from "../components/useModalDialog";
 import { AdminThemeToggle } from "./AdminThemeToggle";
 import { persistAdminTheme, type AdminTheme } from "./adminTheme";
+import { useAdminSession } from "./useAdminSession";
 import "./admin-ui.css";
 import "./admin-legacy-theme.css";
 import styles from "./AdminShell.module.css";
@@ -49,6 +50,7 @@ const serverViewport = () => false;
 export default function AdminShell({ children, initialTheme = "light" }: { children: ReactNode; initialTheme?: AdminTheme }) {
   const pathname = usePathname();
   const router = useRouter();
+  useAdminSession(pathname !== "/admin/login");
   const isMobile = useSyncExternalStore(subscribeToViewport, isMobileViewport, serverViewport);
   const [menuPath, setMenuPath] = useState<string | null>(null);
   const menuOpen = isMobile && menuPath === pathname;

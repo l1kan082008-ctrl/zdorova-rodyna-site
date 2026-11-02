@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "../adminFetch";
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
@@ -57,7 +58,7 @@ export default function ServicesAdminPage() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/admin/services", { cache: "no-store" });
+      const response = await adminFetch("/api/admin/services", { cache: "no-store" });
       const payload = (await response.json()) as ApiPayload;
       if (!response.ok || !payload.services) throw new Error(payload.error || "Не вдалося завантажити послуги.");
       setServices(payload.services);
@@ -86,7 +87,7 @@ export default function ServicesAdminPage() {
     setCreating(true);
     setError("");
     try {
-      const response = await fetch("/api/admin/services", {
+      const response = await adminFetch("/api/admin/services", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(emptyService(services.length)),
@@ -107,7 +108,7 @@ export default function ServicesAdminPage() {
     setSaving(true);
     setError("");
     try {
-      const response = await fetch("/api/admin/services", {
+      const response = await adminFetch("/api/admin/services", {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(draft),
@@ -150,7 +151,7 @@ export default function ServicesAdminPage() {
     setSaving(true);
     setError("");
     try {
-      const response = await fetch(`/api/admin/services?id=${encodeURIComponent(draft.id)}`, { method: "DELETE" });
+      const response = await adminFetch(`/api/admin/services?id=${encodeURIComponent(draft.id)}`, { method: "DELETE" });
       const payload = (await response.json()) as ApiPayload;
       if (!response.ok) throw new Error(payload.error || "Не вдалося видалити послугу.");
       const remaining = services.filter((item) => item.id !== draft.id);
@@ -190,7 +191,7 @@ export default function ServicesAdminPage() {
       const body = new FormData();
       body.set("image", file);
       body.set("serviceId", draft.id);
-      const response = await fetch("/api/admin/services/image", { method: "POST", body });
+      const response = await adminFetch("/api/admin/services/image", { method: "POST", body });
       const payload = (await response.json()) as { imageKey?: string; error?: string };
       if (!response.ok || !payload.imageKey) throw new Error(payload.error || "Не вдалося завантажити зображення.");
       update("imageKey", payload.imageKey);

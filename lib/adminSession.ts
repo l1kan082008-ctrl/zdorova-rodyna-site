@@ -10,7 +10,6 @@ const PASSWORD_HASH_ITERATIONS = 100_000;
 const PASSWORD_HASH_BYTES = 32;
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
 const SESSION_IDLE_DURATION_MS = 30 * 60 * 1000;
-const SESSION_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_BLOCK_MS = 30 * 60 * 1000;
 const LOGIN_MAX_ATTEMPTS = 5;
@@ -25,6 +24,12 @@ type SessionRow = {
   expires_at: number;
   idle_expires_at: number;
   last_seen_at: number;
+};
+
+export type AdminSessionState = {
+  serverNow: number;
+  idleExpiresAt: number;
+  expiresAt: number;
 };
 
 function toBase64Url(bytes: Uint8Array) {
@@ -192,14 +197,13 @@ export async function createAdminSession(secret: string, db: AppDatabase) {
   return `${payload}.${await hmac(secret, payload)}`;
 }
 
-export async function verifyAdminSession(
+async function verifiedSessionToken(
   token: string | undefined,
-  secret: string | undefined,
-  db: AppDatabase | undefined,
+  secret: string,
 ) {
-  if (!token || token.length > 512 || !secret || !db) return false;
+  if (!token || token.length > 512 || !secret) return null;
   const parts = token.split(".");
-  if (parts.length !== 4) return false;
+  if (parts.length !== 4) return null;
   const [version, sessionId, expiresRaw, signatureRaw] = parts;
   if (
     version !== "v2" ||
@@ -207,54 +211,82 @@ export async function verifyAdminSession(
     !/^\d{13}$/.test(expiresRaw) ||
     !/^[A-Za-z0-9_-]{43}$/.test(signatureRaw)
   ) {
-    return false;
+    return null;
   }
   const expiresAt = Number(expiresRaw);
-  const now = Date.now();
-  if (!Number.isSafeInteger(expiresAt) || expiresAt <= now) return false;
+  if (!Number.isSafeInteger(expiresAt) || expiresAt <= Date.now()) return null;
   const payload = `${version}.${sessionId}.${expiresRaw}`;
   const suppliedSignature = fromBase64Url(signatureRaw);
-  if (!suppliedSignature) return false;
+  if (!suppliedSignature) return null;
   const expectedSignature = await hmacBytes(secret, payload);
-  if (!timingSafeEqual(suppliedSignature, expectedSignature)) return false;
+  if (!timingSafeEqual(suppliedSignature, expectedSignature)) return null;
 
-  const tokenHash = toBase64Url(await sha256(sessionId));
+  return { tokenHash: toBase64Url(await sha256(sessionId)), expiresAt };
+}
+
+function sessionState(row: SessionRow | null, expectedExpiresAt: number): AdminSessionState | null {
+  if (!row) return null;
+  // PostgreSQL drivers may expose BIGINT columns as strings.
+  const expiresAt = Number(row.expires_at);
+  const idleExpiresAt = Number(row.idle_expires_at);
+  const lastSeenAt = Number(row.last_seen_at);
+  const serverNow = Date.now();
+  if (
+    !Number.isSafeInteger(expiresAt) ||
+    !Number.isSafeInteger(idleExpiresAt) ||
+    !Number.isSafeInteger(lastSeenAt) ||
+    expiresAt !== expectedExpiresAt ||
+    expiresAt <= serverNow ||
+    idleExpiresAt <= serverNow ||
+    idleExpiresAt > expiresAt
+  ) return null;
+  return { serverNow, idleExpiresAt, expiresAt };
+}
+
+async function readSessionToken(token: string | undefined, secret: string, db: AppDatabase) {
+  const verified = await verifiedSessionToken(token, secret);
+  if (!verified) return null;
+  const row = await db.prepare(`
+    SELECT expires_at, idle_expires_at, last_seen_at
+    FROM admin_sessions
+    WHERE token_hash = ?
+  `).bind(verified.tokenHash).first<SessionRow>();
+  return sessionState(row, verified.expiresAt);
+}
+
+// Status checks and ordinary API requests must not extend an idle session.
+export async function readAdminSession(request: Request, secret: string, db: AppDatabase) {
+  return readSessionToken(readCookie(request, ADMIN_SESSION_COOKIE), secret, db);
+}
+
+export async function touchAdminSession(request: Request, secret: string, db: AppDatabase) {
+  const verified = await verifiedSessionToken(readCookie(request, ADMIN_SESSION_COOKIE), secret);
+  if (!verified) return null;
+  const now = Date.now();
+  const idleExpiresAt = Math.min(verified.expiresAt, now + SESSION_IDLE_DURATION_MS);
+  // Atomic eligibility check and monotonic update: delayed heartbeats cannot
+  // revive an expired/revoked session or shorten a newer activity deadline.
+  const row = await db.prepare(`
+    UPDATE admin_sessions
+    SET last_seen_at = CASE WHEN last_seen_at < ? THEN ? ELSE last_seen_at END,
+        idle_expires_at = CASE WHEN idle_expires_at < ? THEN ? ELSE idle_expires_at END
+    WHERE token_hash = ? AND expires_at = ? AND expires_at > ? AND idle_expires_at > ?
+    RETURNING expires_at, idle_expires_at, last_seen_at
+  `).bind(
+    now, now, idleExpiresAt, idleExpiresAt,
+    verified.tokenHash, verified.expiresAt, now, now,
+  ).first<SessionRow>();
+  return sessionState(row, verified.expiresAt);
+}
+
+export async function verifyAdminSession(
+  token: string | undefined,
+  secret: string | undefined,
+  db: AppDatabase | undefined,
+) {
+  if (!secret || !db) return false;
   try {
-    const row = await db.prepare(`
-      SELECT expires_at, idle_expires_at, last_seen_at
-      FROM admin_sessions
-      WHERE token_hash = ?
-    `).bind(tokenHash).first<SessionRow>();
-    if (!row) return false;
-    // PostgreSQL drivers may expose BIGINT columns as strings. Normalize the
-    // persisted timestamps before strict comparisons and session arithmetic.
-    const persistedExpiresAt = Number(row.expires_at);
-    const idleExpiresAt = Number(row.idle_expires_at);
-    const lastSeenAt = Number(row.last_seen_at);
-    if (
-      !Number.isSafeInteger(persistedExpiresAt) ||
-      !Number.isSafeInteger(idleExpiresAt) ||
-      !Number.isSafeInteger(lastSeenAt) ||
-      persistedExpiresAt !== expiresAt
-    ) return false;
-    if (persistedExpiresAt <= now || idleExpiresAt <= now) {
-      await db.prepare("DELETE FROM admin_sessions WHERE token_hash = ?")
-        .bind(tokenHash)
-        .run();
-      return false;
-    }
-    if (now - lastSeenAt >= SESSION_REFRESH_INTERVAL_MS) {
-      await db.prepare(`
-        UPDATE admin_sessions
-        SET last_seen_at = ?, idle_expires_at = ?
-        WHERE token_hash = ?
-      `).bind(
-        now,
-        Math.min(persistedExpiresAt, now + SESSION_IDLE_DURATION_MS),
-        tokenHash,
-      ).run();
-    }
-    return true;
+    return (await readSessionToken(token, secret, db)) !== null;
   } catch (error) {
     console.error(JSON.stringify({
       event: "admin_session_verification_failed",

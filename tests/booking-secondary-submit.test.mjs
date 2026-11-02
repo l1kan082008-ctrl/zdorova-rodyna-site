@@ -112,6 +112,10 @@ function harness(kind, options = {}) {
     const loaded = load("../app/components/SiteChrome.tsx", {
       ...dependencies,
       "./useBookingConfirmation": confirmation,
+      "./BookingHoursNotice": {
+        BookingHoursNotice: Symbol("BookingHoursNotice"),
+        useBookingHours: () => ({ currentHours: null, submittedHours: null, captureSubmissionHours() {} }),
+      },
       "./PublicDoctorSpecialtiesProvider": { usePublicDoctorSpecialties: () => doctorCategories.doctorCategories },
       "./CloseIcon": {},
       "./SiteSettingsProvider": { useSiteSettings: () => siteSettings.defaultSiteSettings },
@@ -127,6 +131,10 @@ function harness(kind, options = {}) {
     const loaded = load("../app/services/[slug]/FamilyDeclarationForm.tsx", {
       ...dependencies,
       "@/app/components/useBookingConfirmation": confirmation,
+      "@/app/components/BookingHoursNotice": {
+        BookingHoursNotice: Symbol("BookingHoursNotice"),
+        useBookingHours: () => ({ currentHours: null, submittedHours: null, captureSubmissionHours() {} }),
+      },
       "@/lib/doctorBranches": load("../lib/doctorBranches.ts"),
       "@/lib/ukrainianPhone": load("../lib/ukrainianPhone.ts"),
       "@/lib/imageSource": {},

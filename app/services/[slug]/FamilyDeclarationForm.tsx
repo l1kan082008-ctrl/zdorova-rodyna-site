@@ -8,6 +8,7 @@ import { useMemo, useRef, useState } from "react";
 import { TurnstileField } from "@/app/components/TurnstileField";
 import { preventNativeBookingSubmit, submitBookingFromClick } from "@/lib/bookingSubmission";
 import { useBookingConfirmation } from "@/app/components/useBookingConfirmation";
+import { BookingHoursNotice, useBookingHours } from "@/app/components/BookingHoursNotice";
 import { PHONE_PREFIX, formatPhoneNumber, getUkrainianPhoneDigits, validatePhoneNumber } from "@/lib/ukrainianPhone";
 
 type FamilyDoctorOption = {
@@ -74,6 +75,7 @@ function formatBranch(branch?: string) {
 }
 
 export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
+  const { currentHours, submittedHours, captureSubmissionHours } = useBookingHours();
   const submittingRef = useRef(false);
   const firstDoctorInputRef = useRef<HTMLInputElement>(null);
   const phoneInputRef = useRef<HTMLInputElement>(null);
@@ -139,6 +141,7 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
 
     submittingRef.current = true;
     setStatus({ type: "loading" });
+    captureSubmissionHours();
 
     try {
       const response = await fetch("/api/bookings", {
@@ -505,6 +508,7 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
                   <small>Обраний лікар: {selectedDoctor.name}</small>
                 ) : null}
               </div>
+              <BookingHoursNotice value={submittedHours} confirmation />
               <button
                 type="button"
                 onClick={() => setStatus({ type: "idle" })}
@@ -514,6 +518,7 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
             </div>
           ) : (
             <>
+              <BookingHoursNotice value={currentHours} />
               <button
                 className="family-declaration-submit"
                 type="submit"

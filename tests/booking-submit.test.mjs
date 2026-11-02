@@ -164,6 +164,10 @@ function harness(responseOverride, options = {}) {
     "@/lib/bookingSubmission": load("../lib/bookingSubmission.ts"),
     "@/lib/bookingAnalytics": analytics,
     "./useBookingConfirmation": confirmation,
+    "./BookingHoursNotice": {
+      BookingHoursNotice: Symbol("BookingHoursNotice"),
+      useBookingHours: () => ({ currentHours: null, submittedHours: null, captureSubmissionHours() {} }),
+    },
     "@/lib/bookingDetails": load("../lib/bookingDetails.ts"),
     "@/lib/screening40": screening,
     "@/lib/doctorBookingLocations": doctorBookingLocations,
@@ -239,6 +243,7 @@ function launcherHarness(url = "http://test.local/") {
     "next/link": { default: Symbol("Link") },
     "./SiteSettingsProvider": {}, "./PublicDoctorSpecialtiesProvider": {},
     "@/lib/siteSettings": {}, "@/lib/bookingSubmission": {}, "./useBookingConfirmation": {},
+    "./BookingHoursNotice": {},
     "@/lib/bookingAnalytics": load("../lib/bookingAnalytics.ts", {}, { window }),
     "@/lib/bookingDetails": {}, "@/lib/doctorBookingLocations": {}, "@/lib/imagingBooking": {},
     "@/lib/screening40": screening,

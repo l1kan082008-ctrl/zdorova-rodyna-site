@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "../adminFetch";
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { formatBookingDateTime } from "./bookingDateTime";
@@ -114,7 +115,7 @@ export default function BookingsAdminPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch(`/api/admin/bookings?${requestQuery}`, { signal: controller.signal, cache: "no-store" })
+    adminFetch(`/api/admin/bookings?${requestQuery}`, { signal: controller.signal, cache: "no-store" })
       .then(async (response) => {
         const payload = await response.json();
         if (!response.ok || !Array.isArray(payload.bookings) || !payload.stats) throw new Error(payload.error || "Не вдалося завантажити заявки");
@@ -150,7 +151,7 @@ export default function BookingsAdminPage() {
     if (!nextStatus && !window.confirm(`Видалити заявку ${booking.reference}? Цю дію неможливо скасувати.`)) return;
     setPendingId(booking.id); setMutationError(""); setNotice("");
     try {
-      const response = await fetch("/api/admin/bookings", {
+      const response = await adminFetch("/api/admin/bookings", {
         method: nextStatus ? "PATCH" : "DELETE", headers: { "content-type": "application/json" },
         body: JSON.stringify(nextStatus ? { id: booking.id, status: nextStatus } : { id: booking.id }),
       });

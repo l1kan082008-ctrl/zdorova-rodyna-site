@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { TurnstileField } from "@/app/components/TurnstileField";
 import { useBookingConfirmation } from "@/app/components/useBookingConfirmation";
+import { BookingHoursNotice, useBookingHours } from "@/app/components/BookingHoursNotice";
 import { getDoctorInitials, type Doctor } from "../../doctors/doctorData";
 import { PHONE_PREFIX, formatPhoneNumber, getUkrainianPhoneDigits, validatePhoneNumber } from "@/lib/ukrainianPhone";
 import { preventNativeBookingSubmit, submitBookingFromClick } from "@/lib/bookingSubmission";
@@ -27,6 +28,7 @@ function nameError(value: string) {
 }
 
 export function ScreeningTherapistPicker({ doctors, phone: sitePhone }: { doctors: ScreeningDoctor[]; phone: string }) {
+  const { currentHours, submittedHours, captureSubmissionHours } = useBookingHours();
   const submittingRef = useRef(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
@@ -64,6 +66,7 @@ export function ScreeningTherapistPicker({ doctors, phone: sitePhone }: { doctor
 
     submittingRef.current = true;
     setStatus({ type: "loading" });
+    captureSubmissionHours();
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 20_000);
     try {
@@ -186,6 +189,7 @@ export function ScreeningTherapistPicker({ doctors, phone: sitePhone }: { doctor
               <p>Заявка № {status.reference}. Адміністратор зателефонує, щоб погодити дату й час скринінгу.</p>
               <small>{status.doctorName ? `Обраний лікар: ${status.doctorName}` : "Адміністратор допоможе обрати лікаря."}</small>
             </div>
+            <BookingHoursNotice value={submittedHours} confirmation />
             <button type="button" onClick={() => { setStatus({ type: "idle" }); setSelectedId(""); setErrors({ name: "", phone: "" }); }}>Подати ще одну заявку</button>
           </div>
         ) : (
@@ -294,6 +298,7 @@ export function ScreeningTherapistPicker({ doctors, phone: sitePhone }: { doctor
               <span>Погоджуюся на обробку контактних даних для зворотного зв’язку щодо програми «Скринінг здоров’я 40+».</span>
             </label>
             <TurnstileField key={turnstileKey} onToken={setTurnstileToken} />
+            <BookingHoursNotice value={currentHours} />
             <button className={`family-declaration-submit ${styles.submit}`} type="submit" disabled={loading} onClick={(event) => submitBookingFromClick(event, handleSubmit)}>
               {loading ? "Надсилаємо…" : "Подати заявку"}<span aria-hidden="true">→</span>
             </button>

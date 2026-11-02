@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "../adminFetch";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -27,7 +28,7 @@ export default function AdminSettingsPage() {
     const controller = new AbortController();
     async function load() {
       try {
-        const response = await fetch("/api/admin/settings", { cache: "no-store", signal: controller.signal });
+        const response = await adminFetch("/api/admin/settings", { cache: "no-store", signal: controller.signal });
         const payload = await response.json() as SettingsResponse;
         if (response.status === 401) setNeedsLogin(true);
         if (!response.ok || !payload.settings) throw new Error(payload.error || "Не вдалося завантажити налаштування.");
@@ -69,7 +70,7 @@ export default function AdminSettingsPage() {
     savingRef.current = true;
     setSaving(true);
     try {
-      const response = await fetch("/api/admin/settings", {
+      const response = await adminFetch("/api/admin/settings", {
         method: "PUT", headers: { "Content-Type": "application/json" },
         credentials: "same-origin", body: JSON.stringify(settings),
       });
@@ -149,7 +150,7 @@ export default function AdminSettingsPage() {
               </div>
               <label>Основна адреса<textarea autoComplete="street-address" value={draft.address} maxLength={300} rows={2} required onChange={(event) => update("address", event.target.value)} /></label>
               <label>Графік роботи<textarea value={draft.hours.join("\n")} maxLength={846} rows={3} required aria-describedby="settings-hours-help" onChange={(event) => update("hours", event.target.value.split(/\r?\n/u))} /></label>
-              <p className={styles.help} id="settings-hours-help">Кожен період — з нового рядка, до 7 рядків. Наприклад: Пн–Пт 08:00–19:00.</p>
+              <p className={styles.help} id="settings-hours-help">Кожен період — з нового рядка, до 7 рядків. Наприклад: Пн–Пт 08:00–20:00.</p>
               <p className={styles.note}>Адреси, телефони та графіки окремих відділень редагуються у розділі <Link href="/admin/locations">«Відділення»</Link>.</p>
             </section>
             <section className={`admin-ui-panel ${styles.panel}`} aria-labelledby="settings-social-title">

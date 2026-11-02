@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { ADMIN_SESSION_EXPIRING_EVENT, isAdminSessionExpiring } from "./adminSessionClient";
 
 type StoredAdminDraft<T> = {
   version: 1;
@@ -144,7 +145,28 @@ export function useAdminSafeSave<T>({
 
   useEffect(() => {
     if (!dirty) return;
+    const preserveDraftOnExpiry = () => {
+      if (!storageKey || !value || !baseline) return;
+      const stored: StoredAdminDraft<T> = {
+        version: 1,
+        baseline: baselineSerialized,
+        value,
+        updatedAt: Date.now(),
+      };
+      try {
+        window.localStorage.setItem(storageKey, JSON.stringify(stored));
+      } catch {
+        // Storage restrictions must not block returning to the login screen.
+      }
+    };
+    window.addEventListener(ADMIN_SESSION_EXPIRING_EVENT, preserveDraftOnExpiry);
+    return () => window.removeEventListener(ADMIN_SESSION_EXPIRING_EVENT, preserveDraftOnExpiry);
+  }, [baseline, baselineSerialized, dirty, storageKey, value]);
+
+  useEffect(() => {
+    if (!dirty) return;
     const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (isAdminSessionExpiring()) return;
       event.preventDefault();
       event.returnValue = "";
     };
@@ -156,6 +178,7 @@ export function useAdminSafeSave<T>({
     if (!dirty) return;
     const protectNavigation = (event: MouseEvent) => {
       if (
+        isAdminSessionExpiring() ||
         event.defaultPrevented ||
         event.button !== 0 ||
         event.ctrlKey ||
@@ -209,6 +232,7 @@ export function useAdminSafeSave<T>({
   }, [busy, dirty]);
 
   const confirmDiscard = useCallback(() => {
+    if (isAdminSessionExpiring()) return true;
     if (!dirty) return true;
     if (!window.confirm(leaveMessage)) return false;
     clearStoredDraft();

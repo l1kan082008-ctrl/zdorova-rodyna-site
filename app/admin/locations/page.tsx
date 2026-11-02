@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "../adminFetch";
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -76,7 +77,7 @@ export default function LocationsAdminPage() {
   );
 
   useEffect(() => {
-    fetch("/api/admin/locations")
+    adminFetch("/api/admin/locations")
       .then(async (response) => {
         const payload = (await response.json()) as ApiPayload;
         if (!response.ok || !payload.locations) throw new Error(payload.error || "Не вдалося завантажити відділення.");
@@ -109,7 +110,7 @@ export default function LocationsAdminPage() {
         const form = new FormData();
         form.append("locationId", draft.id);
         form.append("photo", file);
-        const response = await fetch("/api/admin/locations/photo", { method: "POST", body: form });
+        const response = await adminFetch("/api/admin/locations/photo", { method: "POST", body: form });
         const result = await response.json() as { src?: string; error?: string };
         if (!response.ok || !result.src) throw new Error(result.error || "Не вдалося завантажити фото.");
         const photo = { src: result.src, alt: draft.address };
@@ -135,7 +136,7 @@ export default function LocationsAdminPage() {
     setSaving(true);
     setError("");
     try {
-      const response = await fetch("/api/admin/locations", {
+      const response = await adminFetch("/api/admin/locations", {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ ...draft, gallery: parseGallery(galleryText) }),
@@ -183,7 +184,7 @@ export default function LocationsAdminPage() {
     setCreating(true);
     setError("");
     try {
-      const response = await fetch("/api/admin/locations", {
+      const response = await adminFetch("/api/admin/locations", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(emptyLocation(settings.phone)),
@@ -204,7 +205,7 @@ export default function LocationsAdminPage() {
     setSaving(true);
     setError("");
     try {
-      const response = await fetch(`/api/admin/locations?id=${encodeURIComponent(draft.id)}`, { method: "DELETE" });
+      const response = await adminFetch(`/api/admin/locations?id=${encodeURIComponent(draft.id)}`, { method: "DELETE" });
       const payload = (await response.json()) as ApiPayload;
       if (!response.ok) throw new Error(payload.error || "Не вдалося видалити відділення.");
       const remaining = locations.filter((item) => item.id !== draft.id);

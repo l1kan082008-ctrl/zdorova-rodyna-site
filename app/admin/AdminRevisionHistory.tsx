@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "./adminFetch";
 import { CloseIcon } from "../components/CloseIcon";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -151,7 +152,7 @@ export default function AdminRevisionHistory({
     setError("");
     try {
       const params = new URLSearchParams({ entityType, entityId });
-      const response = await fetch(`/api/admin/revisions?${params}`);
+      const response = await adminFetch(`/api/admin/revisions?${params}`);
       const payload = await response.json() as HistoryPayload;
       if (!response.ok || !payload.revisions) {
         throw new Error(payload.error || "Не вдалося завантажити історію.");
@@ -173,7 +174,7 @@ export default function AdminRevisionHistory({
     setRestoringId(revision.id);
     setError("");
     try {
-      const response = await fetch("/api/admin/revisions", {
+      const response = await adminFetch("/api/admin/revisions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ entityType, entityId, revisionId: revision.id }),

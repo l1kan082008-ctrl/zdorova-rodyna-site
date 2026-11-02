@@ -5,6 +5,7 @@ import { useSiteSettings } from "./SiteSettingsProvider";
 import { sitePhoneHref } from "@/lib/siteSettings";
 import { preventNativeBookingSubmit, submitBookingFromClick } from "@/lib/bookingSubmission";
 import { useBookingConfirmation } from "./useBookingConfirmation";
+import { BookingHoursNotice, useBookingHours } from "./BookingHoursNotice";
 import { formatBookingComment } from "@/lib/bookingDetails";
 import { trackBookingFormOpen } from "@/lib/bookingAnalytics";
 import { isScreeningFullName, screeningAddress, screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
@@ -83,6 +84,7 @@ export function BookingLauncher() {
 
 function BookingDialog({ request, opening, sourcePathname, onClose }: { request: URL; opening: object; sourcePathname?: string; onClose: () => void }) {
   const settings = useSiteSettings();
+  const { currentHours, submittedHours, captureSubmissionHours } = useBookingHours();
   const doctorCategories = usePublicDoctorSpecialties();
   const consultationServices = doctorCategories
     .filter(({ value }) => !["group:radiology", "group:ultrasound"].includes(value))
@@ -251,6 +253,7 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
     submittingRef.current = true;
     setSubmitting(true);
     setError("");
+    captureSubmissionHours();
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 20000);
     try {
@@ -298,6 +301,7 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
       <span className="section-kicker">Заявку отримано</span>
       <h2 id="quick-booking-title" tabIndex={-1} ref={successRef}>Дякуємо!</h2>
       <p id="quick-booking-description">{isHomeVisit ? "Адміністратор зателефонує, щоб підтвердити адресу та час виїзду." : "Адміністратор зателефонує, щоб узгодити час візиту."}</p>
+      <BookingHoursNotice value={submittedHours} confirmation />
       <button className="book-button" type="button" onClick={onClose}>Готово</button>
     </div> : <>
       <h2 id="quick-booking-title">{isScreening ? "Заявка на скринінг 40+" : isHomeVisit ? "Замовити виїзд медсестри" : "Запис на прийом"}</h2>
@@ -356,6 +360,7 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
           <label className="quick-booking__consent"><input type="checkbox" name="consent" required /><span>{isScreening ? "Погоджуюся на обробку контактних даних для зворотного зв’язку щодо програми «Скринінг здоров’я 40+»." : "Погоджуюся на обробку контактних даних для організації запису."}</span></label>
           <label className="booking-honeypot" aria-hidden="true">Ваш сайт<input name="website" tabIndex={-1} autoComplete="off" /></label>
           <TurnstileField key={captchaAttempt} onToken={setToken} />
+          <BookingHoursNotice value={currentHours} />
           {error && <p className="booking-submit-error" role="alert">{error} Також можна <a href={sitePhoneHref(settings.phone)}>зателефонувати</a>.</p>}
           <button className="book-button" type="submit" onClick={(event) => submitBookingFromClick(event, submit)} disabled={submitting || (isScreening && !screeningDoctorReady) || (!isHomeVisit && Boolean(locationId) && locationsLoading)}>{submitting ? "Надсилаємо…" : "Надіслати заявку"}<span aria-hidden="true">→</span></button>
         </fieldset>

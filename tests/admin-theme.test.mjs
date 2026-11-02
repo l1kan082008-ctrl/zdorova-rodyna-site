@@ -89,6 +89,7 @@ function shellHarness(options = {}) {
     "../components/useModalDialog": { useModalDialog() {} },
     "./AdminThemeToggle": { AdminThemeToggle },
     "./adminTheme": preference,
+    "./useAdminSession": { useAdminSession() {} },
     "./admin-ui.css": {}, "./admin-legacy-theme.css": {},
     "./AdminShell.module.css": { default: styles },
   }, context);

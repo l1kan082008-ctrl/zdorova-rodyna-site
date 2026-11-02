@@ -31,7 +31,10 @@ export default function LoginForm() {
       }
 
       const requested = searchParams.get("next");
-      const destination = requested?.startsWith("/admin/") ? requested : "/admin/doctors";
+      const requestedPath = requested?.split(/[?#]/u)[0];
+      const destination = requested && !requested.includes("\\")
+        && (requestedPath === "/admin" || requestedPath?.startsWith("/admin/"))
+        && requestedPath !== "/admin/login" ? requested : "/admin/doctors";
       window.location.assign(destination);
     } catch {
       setError("Не вдалося перевірити пароль. Спробуйте ще раз.");
@@ -46,7 +49,11 @@ export default function LoginForm() {
         <div className={styles.mark}>ЗР</div>
         <p className={styles.eyebrow}>Захищений доступ</p>
         <h1 className={styles.title}>Вхід в адмінпанель</h1>
-        <p className={styles.description}>Введіть пароль адміністратора, щоб керувати сайтом.</p>
+        <p className={styles.description}>
+          {searchParams.get("reason") === "expired"
+            ? "Сесію завершено. Введіть пароль, щоб продовжити роботу."
+            : "Введіть пароль адміністратора, щоб керувати сайтом."}
+        </p>
         <form onSubmit={submit}>
           <label className={styles.label} htmlFor="admin-password">Пароль</label>
           <input

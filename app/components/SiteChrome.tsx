@@ -8,6 +8,7 @@ import { useSiteSettings } from "./SiteSettingsProvider";
 import { sitePhoneHref, siteViberHref } from "@/lib/siteSettings";
 import { preventNativeBookingSubmit, submitBookingFromClick } from "@/lib/bookingSubmission";
 import { useBookingConfirmation } from "./useBookingConfirmation";
+import { BookingHoursNotice, useBookingHours } from "./BookingHoursNotice";
 import { formatBookingPhone } from "@/lib/bookingRequest";
 import type { CSSProperties } from "react";
 import { createPortal } from "react-dom";
@@ -157,6 +158,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
   const [headerPlaceholderStyle, setHeaderPlaceholderStyle] = useState<CSSProperties>();
   const [openNavigationMenu, setOpenNavigationMenu] = useState<string | null>(null);
   const [supportOpen, setSupportOpen] = useState(false);
+  const { currentHours, submittedHours, captureSubmissionHours } = useBookingHours(supportOpen);
   const [supportClosing, setSupportClosing] = useState(false);
   const [supportPhone, setSupportPhone] = useState("");
   const [supportError, setSupportError] = useState("");
@@ -238,6 +240,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
 
     supportSubmittingRef.current = true;
     setSupportSubmitting(true);
+    captureSubmissionHours();
 
     try {
       const response = await fetch("/api/bookings", {
@@ -644,7 +647,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
               <div className="support-dialog-success" role="status">
                 <span aria-hidden="true">✓</span>
                 <strong>Заявку прийнято</strong>
-                <p>Адміністратор зателефонує вам у робочий час: {settings.hours.join("; ")}.</p>
+                {submittedHours && submittedHours.state !== "open" ? <BookingHoursNotice value={submittedHours} confirmation /> : <p>Адміністратор зателефонує вам у робочий час: {settings.hours.join("; ")}.</p>}
                 <button type="button" onClick={closeSupport}>
                   Готово
                 </button>
@@ -655,13 +658,13 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
                   <div className="support-dialog-intro">
                     <h2>Зворотний дзвінок</h2>
                     <p>Залиште номер — передзвонимо.</p>
-                    <div className="support-dialog-hours" aria-label={`Графік адміністраторів: ${settings.hours.join("; ")}`}>
+                    {(!currentHours || currentHours.state === "open") && <div className="support-dialog-hours" aria-label={`Графік адміністраторів: ${settings.hours.join("; ")}`}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
                         <circle cx="12" cy="12" r="8.5" />
                         <path d="M12 7v5l3 2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                       <span>{settings.hours.join(" · ")}</span>
-                    </div>
+                    </div>}
                   </div>
                   <div className="support-phone-row">
                     <div
@@ -703,6 +706,7 @@ export function SiteHeader({ active, home = false, bookingHref = "/contacts#book
                     </p>
                   ) : null}
                   <TurnstileField onToken={setSupportTurnstileToken} />
+                  <BookingHoursNotice value={currentHours} />
                   <button
                     className="support-callback-submit"
                     type="submit"

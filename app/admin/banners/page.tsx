@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "../adminFetch";
 
 import {
   useCallback,
@@ -74,7 +75,7 @@ export default function BannersAdminPage() {
   );
 
   useEffect(() => {
-    fetch("/api/admin/banners")
+    adminFetch("/api/admin/banners")
       .then(async (response) => {
         const payload = await response.json() as Payload;
         if (!response.ok || !payload.banners) throw new Error(payload.error || "Не вдалося завантажити банери.");
@@ -104,7 +105,7 @@ export default function BannersAdminPage() {
     setSaving(true);
     setError("");
     try {
-      const response = await fetch("/api/admin/banners", {
+      const response = await adminFetch("/api/admin/banners", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(draft),
@@ -139,7 +140,7 @@ export default function BannersAdminPage() {
     setCreating(true);
     setError("");
     try {
-      const response = await fetch("/api/admin/banners", {
+      const response = await adminFetch("/api/admin/banners", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(emptyBanner(banners.length)),
@@ -160,7 +161,7 @@ export default function BannersAdminPage() {
     setSaving(true);
     setError("");
     try {
-      const response = await fetch(`/api/admin/banners?id=${encodeURIComponent(draft.id)}`, { method: "DELETE" });
+      const response = await adminFetch(`/api/admin/banners?id=${encodeURIComponent(draft.id)}`, { method: "DELETE" });
       const payload = await response.json() as { error?: string };
       if (!response.ok) throw new Error(payload.error || "Не вдалося видалити банер.");
       const remaining = banners.filter((item) => item.id !== draft.id);
@@ -185,7 +186,7 @@ export default function BannersAdminPage() {
       const formData = new FormData();
       formData.set("image", image);
       formData.set("bannerId", draft.id || "draft");
-      const response = await fetch("/api/admin/banners/image", {
+      const response = await adminFetch("/api/admin/banners/image", {
         method: "POST",
         body: formData,
       });

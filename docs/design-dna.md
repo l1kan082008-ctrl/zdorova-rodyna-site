@@ -90,6 +90,8 @@ Public overlay scrollbars use one neutral treatment: 4px in WebKit/Blink, thin i
 
 Booking and callback fields share 48px height, 12px corners, 16px text, neutral #c9ced5 borders and a #087f82 focus border with a restrained 3px teal-alpha ring. Composite phone fields render focus only around their outer wrapper. Textareas retain natural multiline height and error states retain semantic red.
 
+Public appointment, callback, family declaration and screening forms share a quiet after-hours notice before submission and in the successful confirmation. Use the neutral information surface, a 20px outline clock, compact readable text and the administrator schedule from site settings. Determine working hours in Europe/Kyiv, refresh while the form is open, and retain the submission-time state in the confirmation. Unsupported schedule text uses a neutral working-hours reminder without claiming the office is closed. The notice never blocks submission, uses no animation and does not promise an exact callback time.
+
 Directory search controls (prices, doctors and FAQ) use a separate spacious capsule treatment: 62px height and 999px radius, matching the price toolbar and CITO control. Booking fields retain their compact 48px/12px geometry.
 
 ## Public page start spacing
@@ -145,6 +147,8 @@ The homepage doctor ribbon supports primary-button mouse dragging with a 6px hor
 ## Admin interface — 2026-09-21
 
 The admin shell and history portals use the scoped `admin-ui` design language: Manrope, white panels on #f1f3f5, #087f82 primary actions, quiet secondary actions and red outlined destructive actions. Controls have a 44px minimum target and 12px radius; panels use 20px corners and light neutral borders/shadows. Sidebar icons share one 20px SVG stroke style. The mobile navigation is a focus-trapped dialog with Escape, focus restoration and inert closed content.
+
+Admin sessions return to the password screen after 30 minutes of inactivity or the existing eight-hour maximum. Only actual interaction extends inactivity; background data loading and session checks do not. The login screen explains that the session ended and returns to the previous section after sign-in. Existing recoverable form drafts are flushed before automatic navigation, which bypasses leave warnings. Temporary network or service failures alone do not trigger a logout.
 
 Booking detail deletion uses the shared ghost button with a trash outline icon and muted “Видалити” label, without a coloured frame at rest. The danger intent appears on hover or keyboard focus; the 44px target, visible focus and confirmation remain. “Не відповідає” is a separate follow-up status for unanswered calls. Historical closed records remain “Завершено”; show their statistics/filter only when relevant and do not offer that legacy status for new transitions.
 

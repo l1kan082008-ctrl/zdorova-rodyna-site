@@ -8,8 +8,10 @@ import {
   ensureAdminSecuritySchema,
   expiredAdminSessionCookie,
   isTrustedAdminMutation,
+  readAdminSession,
   recordFailedAdminLogin,
   revokeAdminSession,
+  touchAdminSession,
   verifyAdminPassword,
 } from "../../../../lib/adminSession";
 
@@ -67,6 +69,41 @@ function jsonError(error: string, status: number, extraHeaders?: HeadersInit) {
     status,
     headers: { ...responseHeaders, ...extraHeaders },
   });
+}
+
+async function sessionResponse(request: Request, activity: boolean) {
+  const runtimeEnv = env as unknown as AdminEnv;
+  if (!runtimeEnv.ADMIN_SESSION_SECRET || !runtimeEnv.DB) {
+    return jsonError("Перевірка сеансу тимчасово недоступна.", 503);
+  }
+  try {
+    const session = await (activity ? touchAdminSession : readAdminSession)(
+      request, runtimeEnv.ADMIN_SESSION_SECRET, runtimeEnv.DB,
+    );
+    if (!session) {
+      // A late check for an old session must not erase a newer login cookie
+      // shared with another tab. Only an explicit logout clears the cookie.
+      return jsonError("Сеанс завершено. Увійдіть знову.", 401);
+    }
+    return Response.json({ ok: true, ...session }, { headers: responseHeaders });
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: "admin_session_check_failed",
+      error: error instanceof Error ? error.message : "unknown",
+    }));
+    return jsonError("Перевірка сеансу тимчасово недоступна.", 503);
+  }
+}
+
+export async function GET(request: Request) {
+  return sessionResponse(request, false);
+}
+
+export async function PATCH(request: Request) {
+  if (!isTrustedAdminMutation(request)) {
+    return jsonError("Запит відхилено.", 403);
+  }
+  return sessionResponse(request, true);
 }
 
 export async function POST(request: Request) {

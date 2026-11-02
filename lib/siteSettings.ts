@@ -13,7 +13,7 @@ export const defaultSiteSettings: SiteSettings = {
   phone: "+38 (067) 671-44-44",
   email: "zdorovarodynarivne@ukr.net",
   address: "м. Рівне, вул. Володимира Стельмаха (Курчатова), 18-М",
-  hours: ["Пн–Пт 08:00–19:00", "Сб 08:00–17:00"],
+  hours: ["Пн–Пт 08:00–20:00", "Сб 08:00–17:00", "Нд — вихідний"],
   facebookUrl: "https://www.facebook.com/zdorovarodina.rivne",
   instagramUrl: "https://www.instagram.com/zdorova_rodyna_rivne/",
   tiktokUrl: "",

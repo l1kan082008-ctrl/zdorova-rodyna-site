@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "../adminFetch";
 
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -82,7 +83,7 @@ function PriceEditor({
     setStatus("");
     setHasError(false);
     try {
-      const response = await fetch("/api/admin/prices", {
+      const response = await adminFetch("/api/admin/prices", {
         method: draft.id ? "PATCH" : "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -145,7 +146,7 @@ function PriceEditor({
     setStatus("");
     setHasError(false);
     try {
-      const response = await fetch("/api/admin/prices", {
+      const response = await adminFetch("/api/admin/prices", {
         method: "DELETE",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ id: draft.id }),
@@ -374,7 +375,7 @@ export default function PricesAdminPage() {
   const editorGuardRef = useRef<(() => boolean) | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/prices")
+    adminFetch("/api/admin/prices")
       .then(async (response) => {
         const payload = (await response.json()) as ApiPayload;
         if (!response.ok || !payload.items) {

@@ -1,4 +1,54 @@
 /* Contacts and the shared booking dialog follow the existing site tokens. */
+.booking-hours-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--surface-neutral, #f1f3f5);
+  color: var(--ink, #073f45);
+  text-align: left;
+}
+.booking-hours-notice .booking-hours-notice__icon {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  color: var(--teal, #087f82);
+}
+.booking-hours-notice .booking-hours-notice__copy { min-width: 0; }
+.booking-hours-notice .booking-hours-notice__copy strong {
+  display: block;
+  margin: 0;
+  color: var(--ink, #073f45);
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+.booking-hours-notice .booking-hours-notice__copy p {
+  margin: 4px 0 0;
+  color: #587276;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.booking-hours-notice .booking-hours-notice__copy small {
+  display: block;
+  margin: 8px 0 0;
+  color: #587276;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.quick-booking__success > .booking-hours-notice { margin: 16px 0; }
+.support-dialog-success > .booking-hours-notice { margin: 16px 0; }
+.family-declaration-success > .booking-hours-notice { grid-column: 1 / -1; }
+@media (max-width: 760px) {
+  .booking-hours-notice { padding: 12px; gap: 8px; }
+}
+
 /* Shared inset arrow for native dropdowns across public and admin forms. */
 html select:not([multiple]):not([size]) {
   appearance: none;

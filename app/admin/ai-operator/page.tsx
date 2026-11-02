@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "../adminFetch";
 
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
@@ -88,7 +89,7 @@ export default function AiOperatorPage() {
 
     let result: ToolResult;
     try {
-      const response = await fetch("/api/admin/ai-operator/tools", {
+      const response = await adminFetch("/api/admin/ai-operator/tools", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name: event.name, arguments: args }),
@@ -227,7 +228,7 @@ export default function AiOperatorPage() {
       const offer = await peer.createOffer();
       await peer.setLocalDescription(offer);
 
-      const response = await fetch("/api/admin/ai-operator/realtime", {
+      const response = await adminFetch("/api/admin/ai-operator/realtime", {
         method: "POST",
         headers: { "content-type": "application/sdp" },
         body: offer.sdp || "",

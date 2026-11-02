@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "../adminFetch";
 
 import { ChangeEvent, useMemo, useRef, useState } from "react";
 import type { PriceItem } from "../../prices/priceData";
@@ -63,7 +64,7 @@ export default function PriceImportPanel({
     setExporting(true);
     setExportError("");
     try {
-      const response = await fetch("/api/admin/prices", { cache: "no-store" });
+      const response = await adminFetch("/api/admin/prices", { cache: "no-store" });
       const payload = await response.json() as ImportResponse;
       if (!response.ok || !payload.items) throw new Error(payload.error || "Не вдалося завантажити прайс.");
       const { createPriceWorkbook } = await import("./priceExport");
@@ -121,7 +122,7 @@ export default function PriceImportPanel({
     setImporting(true);
     setStatus("");
     try {
-      const response = await fetch("/api/admin/prices/import", {
+      const response = await adminFetch("/api/admin/prices/import", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

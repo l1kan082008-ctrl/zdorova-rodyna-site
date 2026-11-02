@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "../adminFetch";
 
 import { useCallback, useEffect, useState } from "react";
 import { getSpecialtyOptions } from "./doctorFormState";
@@ -19,7 +20,7 @@ export function useDoctorSpecialtyCatalog() {
     const controller = new AbortController();
     setLoading(true);
     setError("");
-    fetch("/api/admin/doctor-specialties", { cache: "no-store", signal: controller.signal })
+    adminFetch("/api/admin/doctor-specialties", { cache: "no-store", signal: controller.signal })
       .then(async (response) => {
         const payload = await response.json() as CatalogPayload;
         if (!response.ok || !validOptions(payload.specialties)) {
@@ -36,7 +37,7 @@ export function useDoctorSpecialtyCatalog() {
   }, [attempt]);
 
   const save = useCallback<SaveDoctorSpecialty>(async (name) => {
-    const response = await fetch("/api/admin/doctor-specialties", {
+    const response = await adminFetch("/api/admin/doctor-specialties", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ name }),

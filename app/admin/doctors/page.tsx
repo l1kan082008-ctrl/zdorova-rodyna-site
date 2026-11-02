@@ -1,4 +1,5 @@
 "use client";
+import { adminFetch } from "../adminFetch";
 
 import {
   FormEvent,
@@ -35,6 +36,7 @@ import {
   type DoctorSchedule,
 } from "../../doctors/doctorData";
 import { useAdminSafeSave } from "../useAdminSafeSave";
+import { isAdminSessionExpiring } from "../adminSessionClient";
 import AdminRevisionHistory from "../AdminRevisionHistory";
 
 type ApiPayload = {
@@ -63,10 +65,12 @@ function useSpecialtySaving() {
   useEffect(() => {
     if (!specialtySaving) return;
     const preventUnload = (event: BeforeUnloadEvent) => {
+      if (isAdminSessionExpiring()) return;
       event.preventDefault();
       event.returnValue = "";
     };
     const preventNavigation = (event: MouseEvent) => {
+      if (isAdminSessionExpiring()) return;
       if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
       const anchor = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
       if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download") || anchor.href === window.location.href) return;
@@ -157,7 +161,7 @@ function CreateDoctorForm({ specialtyOptions, onCreateSpecialty, branches, onCre
     setCreating(true);
     setError("");
     try {
-      const response = await fetch("/api/admin/doctors", {
+      const response = await adminFetch("/api/admin/doctors", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -351,7 +355,7 @@ function DoctorEditor({
     setHasError(false);
 
     try {
-      const response = await fetch("/api/admin/doctors", {
+      const response = await adminFetch("/api/admin/doctors", {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -434,7 +438,7 @@ function DoctorEditor({
       const formData = new FormData();
       formData.set("doctorId", doctor.id);
       formData.set("photo", photo);
-      const response = await fetch("/api/admin/doctors/photo", {
+      const response = await adminFetch("/api/admin/doctors/photo", {
         method: "POST",
         body: formData,
       });
@@ -460,7 +464,7 @@ function DoctorEditor({
     setStatus("");
     setHasError(false);
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `/api/admin/doctors?id=${encodeURIComponent(doctor.id)}`,
         { method: "DELETE" },
       );
@@ -714,7 +718,7 @@ export default function DoctorsAdminPage() {
     const controller = new AbortController();
     setLoading(true);
     setError("");
-    fetch("/api/admin/doctors", { signal: controller.signal, cache: "no-store" })
+    adminFetch("/api/admin/doctors", { signal: controller.signal, cache: "no-store" })
       .then(async (response) => {
         const payload = await response.json() as ApiPayload;
         if (!response.ok || !payload.doctors) throw new Error(payload.error || "Не вдалося завантажити лікарів.");
