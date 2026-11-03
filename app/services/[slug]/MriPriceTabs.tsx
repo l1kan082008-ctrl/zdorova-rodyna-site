@@ -49,7 +49,7 @@ function PriceOption({
       {item && requiresSeparateBooking(item) ? (
         <Link
           className={`${styles.priceBooking}${contrast ? ` ${styles.priceBookingContrast}` : ""}`}
-          href={`/contacts?service=${encodeURIComponent(item.name)}&bookingCategory=mri#booking`}
+          href={`/contacts?service=${encodeURIComponent(item.name)}&bookingCategory=mri&priceItemId=${encodeURIComponent(item.id)}#booking`}
           aria-label={`Записатися на ${item.name}`}
         >
           <strong>{item.amount.toLocaleString("uk-UA")} грн</strong>

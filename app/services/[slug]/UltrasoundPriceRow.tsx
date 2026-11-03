@@ -43,14 +43,14 @@ function guidance(name: string): Guidance {
   return { purpose: parts.join(" ") || "Опис цього дослідження уточнюється.", preparation: prep.join(" ") || "Особливі вимоги до підготовки уточніть під час запису; візьміть попередні результати обстеження." };
 }
 
-export function UltrasoundPriceRow({ name, amount }: { name: string; amount: number }) {
+export function UltrasoundPriceRow({ priceItemId, name, amount }: { priceItemId: string; name: string; amount: number }) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const info = guidance(name);
   return <div className="ultrasound-price-row">
     <div><h3>{name}</h3></div>
     <strong>{new Intl.NumberFormat("uk-UA").format(amount)} грн</strong>
-    <Link className="book-button" href={"/contacts?service=" + encodeURIComponent(name) + "&bookingCategory=ultrasound&location=stelmakha-18m#booking"}>Записатися <span aria-hidden="true">→</span></Link>
+    <Link className="book-button" href={"/contacts?service=" + encodeURIComponent(name) + "&bookingCategory=ultrasound&priceItemId=" + encodeURIComponent(priceItemId) + "&location=stelmakha-18m#booking"}>Записатися <span aria-hidden="true">→</span></Link>
     <button className="ultrasound-description-toggle" aria-label={(open ? "Згорнути опис: " : "Детальніше: ") + name} aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}>{open ? "Згорнути" : "Детальніше"}<svg aria-hidden="true" viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" /></svg></button>
     <div id={id} className="ultrasound-description" hidden={!open}>
       <dl>

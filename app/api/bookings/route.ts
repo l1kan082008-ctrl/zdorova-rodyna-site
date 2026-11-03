@@ -7,6 +7,7 @@ import {
 import { createBooking } from "./bookingStore";
 import { sendBookingNotification } from "@/lib/bookingNotification";
 import { formatBookingComment } from "@/lib/bookingDetails";
+import { applyImagingBookingPrice } from "@/lib/bookingPricing";
 import { isScreeningFullName, screeningAddress, screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
 
 const brokenEncodingPattern = /[\u0080-\u009f\u00c2\u00c3\u00d0\u00d1\ufffd]/u;
@@ -152,6 +153,10 @@ export async function POST(request: Request) {
     if (brokenEncodingPattern.test(`${patientName} ${service} ${doctor} ${comment}`)) {
       return jsonError("Текст має пошкоджене кодування.", 400);
     }
+
+    comment = await applyImagingBookingPrice({
+      source, service, doctor, comment, priceItemId: payload.priceItemId,
+    });
 
     const reference = await createBooking({
       patientName,

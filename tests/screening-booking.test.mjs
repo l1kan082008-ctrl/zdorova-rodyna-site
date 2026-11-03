@@ -34,6 +34,11 @@ function harness(options = {}) {
   const route = load("../app/api/bookings/route.ts", {
     "@/lib/screening40": screening,
     "@/lib/bookingDetails": details,
+    "@/lib/bookingPricing": load("../lib/bookingPricing.ts", {
+      "./bookingDetails": details,
+      "./imagingBooking": load("../lib/imagingBooking.ts"),
+      "../app/prices/priceData": { catalogItems: [] },
+    }),
     "@/lib/requestBody": load("../lib/requestBody.ts"),
     "@/lib/publicSubmissionSecurity": {
       isSameOriginSubmission: () => options.sameOrigin !== false,

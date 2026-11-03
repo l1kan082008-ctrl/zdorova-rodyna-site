@@ -31,6 +31,11 @@ function nodes(node) {
 const siteSettings = load("../lib/siteSettings.ts");
 const doctorCategories = load("../app/doctors/doctorCategories.ts");
 const requestBody = load("../lib/requestBody.ts");
+const bookingPricing = load("../lib/bookingPricing.ts", {
+  "./bookingDetails": load("../lib/bookingDetails.ts"),
+  "./imagingBooking": load("../lib/imagingBooking.ts"),
+  "../app/prices/priceData": { catalogItems: [] },
+});
 const bookingRequest = load("../lib/bookingRequest.ts", {
   "./locationPolicy": load("../lib/locationPolicy.ts"),
 });
@@ -61,6 +66,7 @@ function harness(kind, options = {}) {
     } },
     "@/lib/bookingNotification": { sendBookingNotification: async data => notifications.push(data) },
     "@/lib/bookingDetails": load("../lib/bookingDetails.ts"),
+    "@/lib/bookingPricing": bookingPricing,
     "@/lib/screening40": load("../lib/screening40.ts"),
   });
   let release;

@@ -37,6 +37,12 @@ const bookingRequest = load("../lib/bookingRequest.ts", {
 const siteSettings = load("../lib/siteSettings.ts");
 const screening = load("../lib/screening40.ts");
 const bookingDetails = load("../lib/bookingDetails.ts");
+const imagingBooking = load("../lib/imagingBooking.ts");
+const bookingPricing = load("../lib/bookingPricing.ts", {
+  "./bookingDetails": bookingDetails,
+  "./imagingBooking": imagingBooking,
+  "../app/prices/priceData": { catalogItems: [] },
+});
 const publicDoctorSpecialties = load("../lib/publicDoctorSpecialties.ts", {
   "../app/doctors/doctorCategories.ts": load("../app/doctors/doctorCategories.ts"),
 });
@@ -93,6 +99,12 @@ function harness(responseOverride, options = {}) {
     "./bookingStore": { createBooking: async data => { stored.push(data); return "ZR-ISOLATED-TEST"; } },
     "@/lib/bookingNotification": { sendBookingNotification: async data => notifications.push(data) },
     "@/lib/bookingDetails": bookingDetails,
+    "@/lib/bookingPricing": {
+      applyImagingBookingPrice: input => bookingPricing.applyImagingBookingPrice(input, async () => {
+        if (options.serverPriceFailure) throw new Error("Isolated price lookup failure");
+        return options.serverPriceItems ?? options.priceItems ?? priceItems;
+      }),
+    },
     "@/lib/screening40": screening,
     "../doctors/publicDoctors": {
       getPublicDoctorById: async id => (options.serverDoctors ?? options.doctors ?? []).find(doctor => doctor.id === id) ?? null,
@@ -173,7 +185,7 @@ function harness(responseOverride, options = {}) {
     "@/lib/doctorBookingLocations": doctorBookingLocations,
     "./useModalDialog": { useModalDialog: () => {} },
     "./BookingStudySelect": { BookingStudySelect: BookingStudySelectBoundary },
-    "@/lib/imagingBooking": load("../lib/imagingBooking.ts"),
+    "@/lib/imagingBooking": imagingBooking,
     "next/navigation": {}, "next/link": { default: Symbol("Link") }, "./CloseIcon": {}, "./TurnstileField": {},
     "../prices/calculatorSelection": selection, "../../lib/bookingRequest": bookingRequest,
   }, { window, document, fetch, FormData: class { constructor(form) { this.form = form; } get(k) { return this.form[k] ?? null; } } },
@@ -700,26 +712,32 @@ for (const [category, label, requested, changed, allowed] of [
   ["ultrasound", "УЗД", "УЗД щитоподібної залози", "Доплер судин шиї", ["УЗД щитоподібної залози", "Доплер судин шиї"]],
 ]) {
   test(category + " booking lists only its studies and submits the newly chosen name to the real API handler", async context => {
-    const h = harness(undefined, { url: bookingUrl({ service: requested, bookingCategory: category }) });
+    const initialPrice = priceItems.find(item => item.name === requested);
+    const changedPrice = priceItems.find(item => item.name === changed);
+    const h = harness(undefined, { url: bookingUrl({ service: requested, bookingCategory: category, priceItemId: initialPrice.id }) });
     context.after(h.dispose);
     let tree = await h.flush();
     let select = serviceControl(tree);
     assert.equal(select.props.value, requested);
     assert.deepEqual(studyProps(select).options, allowed);
     assert.equal(select.props.helpValue, label);
+    assert.ok(studyPriceText(tree).includes(initialPrice.amount.toLocaleString("uk-UA")));
     select.props.onChange(changed);
     tree = h.render();
     select = serviceControl(tree);
     assert.equal(select.props.value, changed);
+    assert.ok(studyPriceText(tree).includes(changedPrice.amount.toLocaleString("uk-UA")));
     const locationSelect = nodes(tree).find(node => node.props?.id === "quick-location");
     assert.deepEqual(optionValues(locationSelect), ["imaging"], "modality-compatible branch remains available for a name without its prefix");
     const pending = h.submit();
     assert.equal(studyProps(serviceControl(h.render())).disabled, true, "the picker is disabled while the form submits");
     assert.equal(h.requests[0].service, changed);
+    assert.equal(h.requests[0].priceItemId, changedPrice.id, "changing the study replaces the URL's initial price item");
     h.release();
     await pending;
     assert.equal(h.stored[0].service, changed);
     assert.equal(h.notifications[0].service, changed);
+    assert.equal(bookingDetails.parseBookingDetails(h.stored[0].comment).total, `${changedPrice.amount.toLocaleString("uk-UA")} ₴`);
     assert.doesNotMatch(h.stored[0].comment, new RegExp(requested));
     assert.deepEqual(h.selection.readPriceCalculatorSelection(), ["test-ct"], "single study booking must not clear the unrelated calculator");
     assert.deepEqual(h.selection.readPriceCalculatorCitoSelection(), ["test-ct"]);
@@ -746,6 +764,82 @@ test("header booking on each modality page inherits the category while an ordina
   select.props.onChange({ target: { value: "Лабораторні дослідження" } });
   const pending = h.submit(); h.release(); await pending;
   assert.equal(h.stored[0].service, "Лабораторні дослідження");
+});
+
+function studyPriceText(tree) {
+  const price = nodes(tree).find(node => node.props?.className === "quick-booking__hint" && text(node).startsWith("Орієнтовна вартість:"));
+  return price ? text(price) : "";
+}
+
+test("single-study price preview ignores a URL total and the saved price comes from the server catalog", async context => {
+  const item = priceItems[0];
+  const h = harness(undefined, {
+    url: bookingUrl({ service: item.name, bookingCategory: "ct", priceItemId: item.id, total: "1" }),
+    serverPriceItems: [{ ...item, amount: 1350 }],
+  });
+  context.after(h.dispose);
+  assert.ok(studyPriceText(await h.flush()).includes("1 200"));
+  const pending = h.submit(); h.release(); await pending;
+  assert.equal(h.requests[0].priceItemId, item.id);
+  assert.equal(bookingDetails.parseBookingDetails(h.requests[0].comment).total, "1 200 ₴");
+  assert.equal(bookingDetails.parseBookingDetails(h.stored[0].comment).total, "1 350 ₴");
+  assert.equal(bookingDetails.parseBookingDetails(h.notifications[0].comment).total, "1 350 ₴");
+});
+
+test("a catalog category and ID preserve pricing for a CT study whose name has no modality prefix", async context => {
+  const study = { id: "ct-metastases", category: "ct", categoryLabel: "КТ", name: "Пошук метастазів за призначенням лікаря", amount: 3200 };
+  const h = harness(undefined, {
+    url: bookingUrl({ service: study.name, bookingCategory: study.category, priceItemId: study.id }),
+    priceItems: [study],
+  });
+  context.after(h.dispose);
+  const tree = await h.flush();
+  assert.equal(serviceControl(tree).props.helpValue, "КТ");
+  assert.deepEqual(studyProps(serviceControl(tree)).options, [study.name]);
+  assert.ok(studyPriceText(tree).includes(study.amount.toLocaleString("uk-UA")));
+  const pending = h.submit(); h.release(); await pending;
+  assert.equal(h.requests[0].priceItemId, study.id);
+  assert.equal(h.stored[0].service, study.name);
+  assert.equal(bookingDetails.parseBookingDetails(h.stored[0].comment).total, `${study.amount.toLocaleString("uk-UA")} ₴`);
+});
+
+test("generic imaging booking remains available without an invented price", async context => {
+  for (const [bookingCategory, service] of [["ct", "КТ"], ["mri", "МРТ"], ["ultrasound", "УЗД"]]) {
+    const h = harness(undefined, { url: bookingUrl({ service, bookingCategory, total: "9999" }) });
+    context.after(h.dispose);
+    assert.equal(studyPriceText(await h.flush()), "");
+    const pending = h.submit(); h.release(); await pending;
+    assert.equal(h.requests[0].priceItemId, undefined);
+    assert.equal(h.stored[0].service, service);
+    assert.equal(bookingDetails.parseBookingDetails(h.stored[0].comment).total, "");
+  }
+});
+
+test("unavailable or mismatched requested IDs never borrow another study's price", async context => {
+  for (const id of ["missing", "ct-chest", ""]) {
+    const h = harness(undefined, { url: bookingUrl({ service: priceItems[0].name, bookingCategory: "ct", priceItemId: id, total: "9999" }) });
+    context.after(h.dispose);
+    assert.equal(studyPriceText(await h.flush()), "");
+    const pending = h.submit(); h.release(); await pending;
+    assert.equal(h.requests[0].priceItemId, id);
+    assert.equal(h.stored[0].service, priceItems[0].name);
+    assert.equal(bookingDetails.parseBookingDetails(h.stored[0].comment).total, "");
+  }
+});
+
+test("ambiguous names need a price item ID, while an explicit zero price remains visible", async context => {
+  const first = { ...priceItems[0], amount: 0 };
+  const catalog = [first, { ...first, id: "same-name-other-price", amount: 800 }];
+  for (const id of [undefined, first.id]) {
+    const h = harness(undefined, { url: bookingUrl({ service: first.name, ...(id ? { priceItemId: id } : {}) }), priceItems: catalog });
+    context.after(h.dispose);
+    const preview = studyPriceText(await h.flush());
+    assert.equal(Boolean(preview), Boolean(id));
+    if (id) assert.match(preview, /0\s+₴/u);
+    const pending = h.submit(); h.release(); await pending;
+    assert.equal(h.requests[0].priceItemId, id);
+    assert.equal(bookingDetails.parseBookingDetails(h.stored[0].comment).total, id ? "0 ₴" : "");
+  }
 });
 
 test("an explicitly chosen non-imaging service on a modality page keeps general service booking", async context => {
@@ -980,6 +1074,7 @@ test("while modality studies load the requested study is preserved and unrelated
   assert.equal(studyProps(select).loading, true);
   assert.deepEqual(select.props.options, []);
   assert.equal(select.props.helpValue, "МРТ");
+  assert.equal(studyPriceText(initial), "", "do not guess a price before the catalog arrives");
   h.releasePrices();
   const loaded = serviceControl(await h.flush());
   assert.equal(loaded.props.value, requested);
@@ -991,6 +1086,9 @@ for (const [name, response] of [
   ["HTTP error", () => Response.json({ error: "Isolated prices failure" }, { status: 503 })],
   ["network failure", () => { throw new Error("Isolated prices network failure"); }],
   ["malformed catalog", () => Response.json({ items: priceItems })],
+  ["malformed catalog entry", () => Response.json([null])],
+  ["malformed study name", () => Response.json([{ ...priceItems[0], name: null }])],
+  ["malformed study amount", () => Response.json([{ ...priceItems[0], amount: "1200" }])],
   ["empty catalog", () => Response.json([])],
 ]) {
   test(name + " never broadens the scoped study selector or discards the requested study", async context => {
@@ -1003,8 +1101,10 @@ for (const [name, response] of [
     assert.equal(studyProps(select).loading, false);
     assert.deepEqual(select.props.options, []);
     assert.equal(select.props.helpValue, "КТ");
+    assert.equal(studyPriceText(tree), "", "failed catalog lookups must not display a price");
     const pending = h.submit(); h.release(); await pending;
     assert.equal(h.stored[0].service, requested);
+    assert.equal(bookingDetails.parseBookingDetails(h.requests[0].comment).total, "");
   });
 }
 

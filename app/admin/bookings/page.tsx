@@ -1,15 +1,15 @@
 "use client";
 import { adminFetch } from "../adminFetch";
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { formatBookingDateTime } from "./bookingDateTime";
+import BookingDateRangePicker from "./BookingDateRangePicker";
+import { formatBookingRange, getBookingPresetRange, type BookingDateRange, type BookingPeriod } from "./bookingDateRange";
 import { parseBookingDetails } from "@/lib/bookingDetails";
 import { bookingCategoryLabels, bookingStatusLabels, bookingWorkflowStatuses, type BookingCategory, type AdminBooking, type AdminBookingsResponse } from "@/lib/adminBookingStatistics";
 import type { BookingStatus } from "../../api/bookings/bookingStore";
 import styles from "./bookings.module.css";
 
-type DateRange = { from: string; to: string };
-type Period = "today" | "7" | "30" | "all" | "custom";
 const workflowStatusEntries: [BookingStatus, string][] = bookingWorkflowStatuses.map((key) => [key, bookingStatusLabels[key]]);
 const completedStatusEntry: [BookingStatus, string] = ["closed", bookingStatusLabels.closed];
 const categoryEntries = Object.entries(bookingCategoryLabels) as [BookingCategory, string][];
@@ -25,25 +25,13 @@ function localBookingPhone(phone: string) {
   return /^0\d{9}$/.test(digits) ? digits : phone;
 }
 
-function presetRange(period: Exclude<Period, "custom">): DateRange {
-  if (period === "all") return { from: "", to: "" };
-  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Kyiv", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
-  const part = (type: string) => parts.find((item) => item.type === type)!.value;
-  const to = `${part("year")}-${part("month")}-${part("day")}`;
-  const start = new Date(`${to}T12:00:00Z`);
-  start.setUTCDate(start.getUTCDate() - (period === "today" ? 0 : Number(period) - 1));
-  return { from: start.toISOString().slice(0, 10), to };
-}
-
 function Chevron({ open = false }: { open?: boolean }) {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={open ? "m6 15 6-6 6 6" : "m6 9 6 6 6-6"} /></svg>;
 }
 
 export default function BookingsAdminPage() {
-  const [period, setPeriod] = useState<Period>("30");
-  const [range, setRange] = useState<DateRange>(() => presetRange("30"));
-  const [draftRange, setDraftRange] = useState<DateRange>(() => presetRange("30"));
-  const [dateError, setDateError] = useState("");
+  const [period, setPeriod] = useState<BookingPeriod>("30");
+  const [range, setRange] = useState<BookingDateRange>(() => getBookingPresetRange("30"));
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<BookingCategory | "">("");
@@ -130,15 +118,8 @@ export default function BookingsAdminPage() {
     return () => controller.abort();
   }, [requestQuery, requestKey, rangeKey]);
 
-  const selectPeriod = (value: Period) => {
-    setPeriod(value); setDateError("");
-    if (value === "custom") { setDraftRange(range.from ? range : presetRange("30")); return; }
-    setRange(presetRange(value)); setPage(1);
-  };
-  const applyDates = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!draftRange.from || !draftRange.to || draftRange.from > draftRange.to) { setDateError("Оберіть дати: початок періоду не може бути пізніше за кінець."); return; }
-    setDateError(""); setRange(draftRange); setPage(1);
+  const applyDates = (nextRange: BookingDateRange, nextPeriod: BookingPeriod) => {
+    setRange(nextRange); setPeriod(nextPeriod); setPage(1); setExpandedId("");
   };
   const resetFilters = () => { setQuery(""); setSearch(""); setCategory(""); setStatus(""); setPage(1); };
   const goToPage = (next: number) => {
@@ -168,7 +149,7 @@ export default function BookingsAdminPage() {
   const showCompletedStatus = Boolean(stats?.statuses.closed) || status === "closed";
   const statusEntries = showCompletedStatus ? [...workflowStatusEntries, completedStatusEntry] : workflowStatusEntries;
   const hasFilters = Boolean(category || status || query);
-  const rangeLabel = range.from ? `${range.from.split("-").reverse().join(".")} — ${range.to.split("-").reverse().join(".")}` : "Усі збережені заявки";
+  const rangeLabel = formatBookingRange(range);
 
   return (
     <div className={`admin-bookings-page ${styles.page}`} data-pulse={pulseEnabled}>
@@ -181,14 +162,8 @@ export default function BookingsAdminPage() {
       <section className={styles.overview} aria-labelledby="booking-statistics-heading" aria-busy={loading}>
         <div className={styles.overviewHeading}>
           <div><h2 id="booking-statistics-heading">Статистика заявок</h2><p>{rangeLabel}</p></div>
-          <div className={styles.overviewControls}><label className={styles.period}><span>Період</span><select value={period} onChange={(event) => selectPeriod(event.target.value as Period)}><option value="today">Сьогодні</option><option value="7">Останні 7 днів</option><option value="30">Останні 30 днів</option><option value="all">Усі збережені</option><option value="custom">Обрати дати</option></select></label><button type="button" className="admin-ui-icon-button" data-variant="ghost" aria-label={statsOpen ? "Згорнути статистику" : "Розгорнути статистику"} aria-expanded={statsOpen} aria-controls="booking-statistics-content" onClick={() => setStatsOpen(!statsOpen)}><Chevron open={statsOpen} /></button></div>
+          <div className={styles.overviewControls}><BookingDateRangePicker value={range} period={period} onChange={applyDates} /><button type="button" className="admin-ui-icon-button" data-variant="ghost" aria-label={statsOpen ? "Згорнути статистику" : "Розгорнути статистику"} aria-expanded={statsOpen} aria-controls="booking-statistics-content" onClick={() => setStatsOpen(!statsOpen)}><Chevron open={statsOpen} /></button></div>
         </div>
-        {period === "custom" ? <form className={styles.dateForm} onSubmit={applyDates}>
-          <label><span>Від</span><input type="date" required value={draftRange.from} max={draftRange.to || undefined} onChange={(event) => setDraftRange({ ...draftRange, from: event.target.value })} /></label>
-          <label><span>До</span><input type="date" required value={draftRange.to} min={draftRange.from || undefined} onChange={(event) => setDraftRange({ ...draftRange, to: event.target.value })} /></label>
-          <button type="submit" className="admin-ui-button" data-variant="primary">Застосувати</button>
-          {dateError ? <p className={styles.error} role="alert">{dateError}</p> : null}
-        </form> : null}
         <div id="booking-statistics-content" hidden={!statsOpen}><div className={styles.metrics} data-legacy={showCompletedStatus}>
           <button type="button" className={`${styles.metric} ${styles.metricTotal}`} aria-pressed={!hasFilters} onClick={resetFilters}><span>Усього заявок</span><strong>{stats ? countFormat.format(stats.total) : "—"}</strong></button>
           {statusEntries.map(([key]) => <button key={key} type="button" className={styles.metric} data-status={key} aria-pressed={status === key} onClick={() => { setStatus(status === key ? "" : key); setPage(1); }}><span><i aria-hidden="true" />{statusCountLabels[key]}</span><strong>{stats ? countFormat.format(stats.statuses[key]) : "—"}</strong></button>)}
@@ -228,6 +203,7 @@ export default function BookingsAdminPage() {
             const details = parseBookingDetails(booking.comment);
             const open = expandedId === booking.id;
             const service = booking.doctor || (details.studies.length ? details.studies.join("; ") : booking.service);
+            const missingImagingPrice = !details.total && ["ct", "mri", "ultrasound"].includes(booking.category);
             const phone = localBookingPhone(booking.phone);
             return <li className={styles.item} key={booking.id} data-expanded={open} data-status={booking.status} data-category={booking.category}>
               <div className={styles.row}>
@@ -240,7 +216,10 @@ export default function BookingsAdminPage() {
                   </button>
                 </div>
                 <div className={styles.kind}><span>{bookingCategoryLabels[booking.category]}</span></div>
-                <div className={styles.service} title={service}>{service || "Без уточнення"}</div>
+                <div className={styles.service}>
+                  <span className={styles.serviceName} title={service}>{service || "Без уточнення"}</span>
+                  {details.total ? <span className={styles.servicePrice}>Орієнтовно <strong>{details.total}</strong></span> : missingImagingPrice ? <span className={styles.priceUnavailable}>Вартість не збережена</span> : null}
+                </div>
                 <label className={styles.rowStatus}><span className={styles.srOnly}>Статус заявки {booking.reference}</span><select value={booking.status} data-status={booking.status} disabled={loading || Boolean(pendingId)} onChange={(event) => mutateBooking(booking, event.target.value as BookingStatus)}>{(booking.status === "closed" ? [...workflowStatusEntries, completedStatusEntry] : workflowStatusEntries).map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></label>
                 <button type="button" className={`admin-ui-icon-button ${styles.expand}`} data-variant="ghost" aria-label={`${open ? "Згорнути" : "Деталі заявки"} ${booking.reference}`} aria-expanded={open} aria-controls={`booking-${booking.id}`} onClick={() => setExpandedId(open ? "" : booking.id)}><Chevron open={open} /></button>
               </div>
@@ -251,7 +230,7 @@ export default function BookingsAdminPage() {
                   {booking.doctor ? <div><dt>Лікар</dt><dd>{booking.doctor}</dd></div> : null}
                   {details.location ? <div><dt>Відділення</dt><dd>{details.location}</dd></div> : null}
                   {details.studies.length ? <div className={styles.studies}><dt>Обрані дослідження</dt><dd><ol>{details.studies.map((study, index) => <li key={`${index}-${study}`}>{study}</li>)}</ol></dd></div> : null}
-                  {details.total ? <div><dt>Орієнтовна сума</dt><dd className={styles.total}>{details.total}</dd></div> : null}
+                  {details.total ? <div><dt>Орієнтовна сума</dt><dd className={styles.total}>{details.total}</dd></div> : missingImagingPrice ? <div><dt>Вартість</dt><dd className={styles.priceUnavailable}>Не збережена в заявці</dd></div> : null}
                   {details.comment ? <div className={styles.comment}><dt>Коментар</dt><dd>{details.comment}</dd></div> : null}
                 </dl>
               </div> : null}

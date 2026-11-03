@@ -1,0 +1,68 @@
+:global(.admin-ui[data-admin-ui]) .trigger[data-variant] { min-height: 56px; padding: 8px 12px; gap: 12px; text-align: left; }
+.trigger > span { display: grid; gap: 2px; min-width: 0; }
+.trigger small { color: var(--admin-muted); font-size: 11px; font-weight: 500; }
+.trigger strong { color: var(--admin-ink); font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.layer[data-admin-ui] { position: fixed; inset: 0; z-index: 150; }
+
+.dialog { position: absolute; display: flex; flex-direction: column; width: min(860px, calc(100vw - 32px)); overflow: hidden; background: var(--admin-panel); border: 1px solid var(--admin-control-border); border-radius: var(--admin-panel-radius); box-shadow: 0 16px 56px rgb(0 0 0 / 18%); }
+.header { display: flex; flex-shrink: 0; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px 12px 24px; border-bottom: 1px solid var(--admin-border); }
+.header h3 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em; color: var(--admin-ink); }
+.body { display: flex; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.presets { display: flex; flex: 0 0 184px; flex-direction: column; gap: 2px; padding: 16px 12px; border-right: 1px solid var(--admin-border); background: var(--admin-canvas); }
+.layer[data-admin-ui] .preset[data-variant] { width: 100%; min-height: 40px; padding: 8px 12px; justify-content: space-between; font-size: 12px; font-weight: 550; text-align: left; border-radius: 8px; --admin-button-ink: var(--admin-ink); }
+.layer[data-admin-ui] .preset[data-variant][aria-pressed="true"] { --admin-button-bg: var(--admin-panel); --admin-button-ink: var(--admin-primary); --admin-button-border: var(--admin-selection-border); font-weight: 750; }
+.layer[data-admin-ui] .preset[data-variant]:hover { --admin-button-hover: var(--admin-panel); }
+.main { flex: 1; padding: 20px 24px 16px; min-width: 0; }
+.fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.main label { display: grid; gap: 6px; min-width: 0; font-size: 12px; font-weight: 600; color: var(--admin-muted); }
+.layer[data-admin-ui] .fields input { width: 100%; min-width: 0; font-size: 14px; height: 44px; padding: 10px 12px; font-variant-numeric: tabular-nums; }
+.fields input[aria-invalid="true"] { border-color: var(--admin-danger-border); }
+.monthNav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 16px 0 12px; }
+.monthNav > div { display: flex; gap: 8px; min-width: 0; }
+.layer[data-admin-ui] .monthNav select { width: auto; max-width: 150px; min-width: 0; padding-left: 12px; padding-right: 32px; background-position: right 8px center; min-height: 44px; font-size: 13px; }
+.calendars { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+.month { min-width: 0; }
+.monthTitle { margin: 0 0 8px; text-align: center; font-size: 13px; font-weight: 700; text-transform: capitalize; color: var(--admin-ink); }
+.grid { width: 100%; table-layout: fixed; border-collapse: collapse; border-spacing: 0; font-variant-numeric: tabular-nums; }
+.grid th { height: 28px; padding: 0; color: var(--admin-muted); font-size: 11px; font-weight: 550; text-align: center; }
+.cell { height: 40px; padding: 0; border: 0; text-align: center; }
+.cell[data-selected="true"] { background: var(--admin-selection); }
+.cell[data-start="true"] { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+.cell[data-end="true"] { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+.layer[data-admin-ui] .day { display: inline-flex; justify-content: center; align-items: center; width: 100%; max-width: 40px; height: 40px; padding: 0; border: 1px solid transparent; border-radius: 10px; color: var(--admin-ink); background: transparent; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.layer[data-admin-ui] .day:disabled { opacity: .4; }
+.day[aria-current="date"] { font-weight: 800; text-decoration: underline; text-underline-offset: 5px; }
+.layer[data-admin-ui] .day:not(:disabled):hover { background: var(--admin-canvas); border-color: var(--admin-selection-border); }
+.layer[data-admin-ui] .day[data-endpoint="true"], .layer[data-admin-ui] .day[data-endpoint="true"]:hover { background: var(--admin-primary-solid); color: var(--admin-on-primary); font-weight: 750; border-color: var(--admin-primary-solid); }
+.layer[data-admin-ui] .day:focus-visible { outline: 2px solid var(--admin-focus); outline-offset: 1px; position: relative; z-index: 1; }
+.hint { min-height: 18px; margin: 12px 0 0; color: var(--admin-muted); font-size: 11px; line-height: 1.6; }
+.error { margin: 8px 0 0; color: var(--admin-danger); font-size: 12px; line-height: 1.5; }
+.footer { display: flex; flex-shrink: 0; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 16px 24px; border-top: 1px solid var(--admin-border); background: var(--admin-panel); }
+.footer > span { color: var(--admin-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.footer > div { display: flex; gap: 8px; margin-left: auto; }
+.quickSelect { margin-bottom: 16px; }
+@media (max-width: 1000px) {
+  .dialog { width: min(460px, calc(100vw - 32px)); }
+  .calendars { grid-template-columns: minmax(0, 1fr); }
+  .main { padding: 16px 20px; }
+  .cell, .layer[data-admin-ui] .day { height: 44px; }
+  .layer[data-admin-ui] .day { max-width: 44px; }
+  .monthTitle { display: none; }
+  .footer { padding: 12px 20px; }
+  .footer > span { flex: 1 1 100%; }
+}
+@media (max-width: 430px) {
+  :global(.admin-ui[data-admin-ui]) .trigger[data-variant] { width: 100%; }
+  .trigger > span { flex: 1; }
+  .header { padding: 8px 8px 8px 16px; }
+  .main { padding: 12px; }
+  .fields { gap: 8px; }
+  .layer[data-admin-ui] .fields input { font-size: 16px; padding-inline: 8px; }
+  .layer[data-admin-ui] .monthNav select { padding-left: 8px; padding-right: 26px; font-size: 12px; }
+  .monthNav > div { gap: 4px; }
+  .monthNav { gap: 2px; margin-block: 12px 8px; }
+  .footer { padding: 12px; gap: 8px; }
+  .footer > div { width: 100%; }
+  .footer button { flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .layer[data-admin-ui] *, .trigger { transition: none !important; } }

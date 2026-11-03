@@ -21,7 +21,7 @@ import { compatibleLocations, formatBookingPhone, serviceCategory, homeVisitServ
 import { usePublicDoctorSpecialties } from "./PublicDoctorSpecialtiesProvider";
 import { BookingStudySelect } from "./BookingStudySelect";
 import type { PriceItem } from "../prices/priceData";
-import { getImagingBookingOptions, imagingBookingLabels, resolveImagingBookingCategory } from "@/lib/imagingBooking";
+import { findImagingBookingPrice, getImagingBookingOptions, imagingBookingLabels, resolveImagingBookingCategory } from "@/lib/imagingBooking";
 import { assignedDoctorBookingLocations, doctorNameKey, isBookingDoctor, toDoctorBookingLocation, type BookingDoctor } from "@/lib/doctorBookingLocations";
 
 const services = [
@@ -105,10 +105,15 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
   const imagingCategory = isDoctorBooking ? null : resolveImagingBookingCategory(params, sourcePathname);
   const imagingLabel = imagingCategory ? imagingBookingLabels[imagingCategory] : "";
   const [service, setService] = useState(isScreening ? screeningServiceName : studies ? "Комплекс досліджень" : normalizeBookingService(requestedService) || (isDoctorBooking ? "Консультації лікарів" : imagingLabel || helpService));
-  const [studyOptions, setStudyOptions] = useState<string[]>([]);
+  const [studyItems, setStudyItems] = useState<PriceItem[]>([]);
+  const [requestedPriceItemId, setRequestedPriceItemId] = useState<string | undefined>(() => params.get("priceItemId")?.trim());
   const [studyOptionsLoading, setStudyOptionsLoading] = useState(Boolean(imagingCategory));
   const [studyOptionsError, setStudyOptionsError] = useState(false);
   const [studyOptionsAttempt, setStudyOptionsAttempt] = useState(0);
+  const studyOptions = imagingCategory ? getImagingBookingOptions(studyItems, imagingCategory) : [];
+  const selectedStudyPrice = imagingCategory && !studyOptionsLoading && !studyOptionsError
+    ? findImagingBookingPrice(studyItems, service, imagingCategory, requestedPriceItemId) : null;
+  const bookingTotal = imagingCategory ? selectedStudyPrice ? String(selectedStudyPrice.amount) : "" : total;
   const [locationId, setLocationId] = useState(isScreening ? "" : params.get("location") || "");
   const [phone, setPhone] = useState("");
   const [locations, setLocations] = useState<CenterLocation[]>([]);
@@ -201,11 +206,13 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
       .then(async (response) => {
         if (!response.ok) throw new Error("prices");
         const items: unknown = await response.json();
-        if (!Array.isArray(items)) throw new Error("prices");
-        return getImagingBookingOptions(items as PriceItem[], imagingCategory);
+        if (!Array.isArray(items) || items.some(item => !item || typeof item !== "object"
+          || typeof item.id !== "string" || typeof item.name !== "string"
+          || typeof item.category !== "string" || typeof item.amount !== "number")) throw new Error("prices");
+        return items as PriceItem[];
       })
-      .then((options) => {
-        if (!controller.signal.aborted) { setStudyOptions(options); setStudyOptionsError(false); }
+      .then((items) => {
+        if (!controller.signal.aborted) { setStudyItems(items); setStudyOptionsError(false); }
       })
       .catch(() => { if (!controller.signal.aborted) setStudyOptionsError(true); })
       .finally(() => { if (!controller.signal.aborted) setStudyOptionsLoading(false); });
@@ -246,7 +253,7 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
     const comment = formatBookingComment({
       locationComment: isHomeVisit ? addressComment : selectedLocation ? `Бажане відділення: ${selectedLocation.fullAddress}.` : "Допоможіть обрати відділення.",
       studies,
-      total,
+      total: bookingTotal,
       comment: String(data.get("comment") || ""),
     });
     if (comment.length > 1200) { setError("Забагато тексту для однієї заявки. Скоротіть коментар або набір досліджень."); return; }
@@ -266,7 +273,11 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
           consent: data.get("consent") === "on", turnstileToken: token,
           ...(isScreening
             ? { service: screeningServiceName, doctorId, source: "screening-40", consentVersion: "screening-40-v1" }
-            : { service, doctor, comment, source: "contacts", consentVersion: "contacts-v1" }),
+            : {
+              service, doctor, comment, source: "contacts", consentVersion: "contacts-v1",
+              ...(imagingCategory && (selectedStudyPrice?.id ?? requestedPriceItemId) !== undefined
+                ? { priceItemId: selectedStudyPrice?.id ?? requestedPriceItemId } : {}),
+            }),
         }),
       });
       const payload = await response.json() as { reference?: string; error?: string };
@@ -336,7 +347,8 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
           </div>
           {!isDoctorBooking && !studies && imagingCategory && <>
             <BookingStudySelect id="quick-service" label="Послуга" value={service} options={studyOptions}
-              helpValue={imagingLabel} loading={studyOptionsLoading} disabled={submitting} onChange={setService} />
+              helpValue={imagingLabel} loading={studyOptionsLoading} disabled={submitting} onChange={value => { setService(value); setRequestedPriceItemId(undefined); }} />
+            {selectedStudyPrice && <p className="quick-booking__hint" role="status">Орієнтовна вартість: <strong>{selectedStudyPrice.amount.toLocaleString("uk-UA")} ₴</strong></p>}
             {studyOptionsError && <div role="status">
               <p className="quick-booking__service-detail">Не вдалося завантажити інші дослідження. Обрана послуга збережена.</p>
               <button type="button" className="outline-button" onClick={() => { setStudyOptionsLoading(true); setStudyOptionsError(false); setStudyOptionsAttempt((value) => value + 1); }}>Спробувати ще раз</button>

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { officialPriceItems } from "../app/prices/officialPriceData.ts";
-import { getImagingBookingOptions, getOfficialCtPosition, imagingBookingLabels, isBookableImagingItem, resolveImagingBookingCategory } from "../lib/imagingBooking.ts";
+import { findImagingBookingPrice, getImagingBookingOptions, getOfficialCtPosition, imagingBookingLabels, isBookableImagingItem, resolveImagingBookingCategory } from "../lib/imagingBooking.ts";
 
 const item = (id, category, name, extra = {}) => ({ id, category, name, categoryLabel: category, amount: 100, ...extra });
 const resolve = (values = {}, pathname) => resolveImagingBookingCategory(new URLSearchParams(values), pathname);
@@ -96,4 +96,60 @@ test("the shipped catalog offers imaging studies and Doppler but no accessories 
     assert.ok(accessory, id + " exists in catalog");
     assert.ok(!getImagingBookingOptions(officialPriceItems, accessory.category).includes(accessory.name.trim()));
   }
+});
+
+test("indicative price matches exact study names with normalized whitespace, case and apostrophes", () => {
+  const study = item("ct-soft", "ct", "КТ м’яких тканин шиї", { amount: 1234.5 });
+  assert.equal(findImagingBookingPrice([study], "  кт   м'яких  тканин шиї  ", "ct"), study);
+  assert.equal(findImagingBookingPrice([study], "КТ мʼяких тканин шиї", "ct", "ct-soft"), study);
+  assert.equal(findImagingBookingPrice([study], "КТ м’яких тканин", "ct"), null);
+  assert.equal(findImagingBookingPrice([study], "КТ м’яких тканин шиї з контрастуванням", "ct"), null);
+});
+
+test("price lookup respects modality, treats Doppler as ultrasound, and accepts a zero price", () => {
+  const doppler = item("doppler", "doppler", "Доплер судин шиї", { amount: 0 });
+  assert.equal(findImagingBookingPrice([doppler], doppler.name, "ultrasound"), doppler);
+  assert.equal(findImagingBookingPrice([doppler], doppler.name, null, doppler.id), doppler);
+  assert.equal(findImagingBookingPrice([doppler], doppler.name, "ct", doppler.id), null);
+  const nonImaging = item("blood", "general", "Загальний аналіз крові");
+  assert.equal(findImagingBookingPrice([nonImaging], nonImaging.name, null, nonImaging.id), null);
+  for (const label of ["КТ", "МРТ", "УЗД", "  кт  ", ""]) {
+    assert.equal(findImagingBookingPrice([item("generic", "ct", label)], label), null);
+  }
+});
+
+test("inactive, accessory and non-finite or negative prices cannot become booking estimates", () => {
+  const cases = [
+    item("inactive", "ct", "КТ голови", { isActive: false }),
+    item("official-230-060", "ct", "КТ голови"),
+    item("official-258-116", "mri", "МРТ голови"),
+    ...[-1, Infinity, NaN, "100"].map(amount => item("bad-price", "ct", "КТ голови", { amount })),
+  ];
+  for (const study of cases) {
+    assert.equal(findImagingBookingPrice([study], study.name), null);
+    assert.equal(findImagingBookingPrice([study], study.name, null, study.id), null);
+  }
+});
+
+test("a supplied ID must identify the matching active study and never falls back to another ID", () => {
+  const available = item("available", "ct", "КТ голови", { amount: 1200 });
+  const other = item("other", "ct", "КТ грудної клітки", { amount: 1400 });
+  const inactive = { ...available, id: "inactive", isActive: false };
+  const items = [available, other, inactive];
+  for (const id of ["", "missing", "other", "inactive"]) {
+    assert.equal(findImagingBookingPrice(items, available.name, "ct", id), null, id);
+  }
+  assert.equal(findImagingBookingPrice(items, available.name, "ct", available.id), available);
+});
+
+test("name-only lookup permits duplicate names only when both price and category agree", () => {
+  const first = item("first", "ultrasound", "УЗД нирок", { amount: 500 });
+  const same = item("same", "ultrasound", "узд  нирок", { amount: 500 });
+  const differentAmount = { ...same, id: "different-price", amount: 600 };
+  const differentCategory = { ...same, id: "different-category", category: "doppler" };
+  assert.equal(findImagingBookingPrice([first, same], first.name, "ultrasound"), first);
+  assert.equal(findImagingBookingPrice([first, differentAmount], first.name, "ultrasound"), null);
+  assert.equal(findImagingBookingPrice([first, differentCategory], first.name, "ultrasound"), null);
+  assert.equal(findImagingBookingPrice([first, differentAmount], first.name, "ultrasound", differentAmount.id), differentAmount);
+  assert.equal(findImagingBookingPrice([], first.name, "ultrasound"), null);
 });

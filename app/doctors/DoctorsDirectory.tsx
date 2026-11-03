@@ -2,7 +2,7 @@
 
 import { findPublicDoctorCategory, getPublicDoctorCategories, matchesPublicDoctorCategory, publicDoctorSpecialtyKey } from "@/lib/publicDoctorSpecialties";
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
@@ -49,41 +49,31 @@ const directoryUrl = (nextSpecialty: string, nextQuery: string) => {
   return `/doctors${params.size ? `?${params}` : ""}`;
 };
 
-// Keep the directory in the initial HTML while URL state hydrates separately.
-function DirectoryUrlSync({ onChange }: { onChange: (params: string) => void }) {
-  const searchParams = useSearchParams();
-  const serializedParams = searchParams.toString();
-
-  useEffect(() => {
-    onChange(serializedParams);
-  }, [serializedParams, onChange]);
-
-  return null;
-}
-
 export function DoctorsDirectory({
   initialDoctors,
 }: {
   initialDoctors: Doctor[];
 }) {
   const doctors = initialDoctors;
+  const searchParams = useSearchParams();
   const groupedSpecialties = useMemo(() => getPublicDoctorCategories(doctors), [doctors]);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [query, setQuery] = useState("");
-  const [specialty, setSpecialty] = useState("all");
+  // The dynamic page renders these URL filters on the server too. Applying them
+  // in an effect would scroll to a card in the full list before it shrinks.
+  const requestedSearch = searchParams.get("search") ?? "";
+  const query = requestedSearch.trim() ? requestedSearch : "";
+  const requestedSpecialty = searchParams.get("specialty")?.trim();
   const [focusedDoctorId, setFocusedDoctorId] = useState<string | null>(null);
   const [expandedDoctorId, setExpandedDoctorId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<MobileDoctorView>("quad");
 
   const changeFilters = (nextSpecialty: string, nextQuery: string) => {
-    setSpecialty(nextSpecialty);
-    setQuery(nextQuery);
     setFocusedDoctorId(null);
     setExpandedDoctorId(null);
     window.history.replaceState(null, "", directoryUrl(nextSpecialty, nextQuery));
   };
 
-const changeMobileView = (nextView: MobileDoctorView) => {
+  const changeMobileView = (nextView: MobileDoctorView) => {
     setMobileView(nextView);
     setFocusedDoctorId(null);
     setExpandedDoctorId(null);
@@ -131,33 +121,15 @@ const changeMobileView = (nextView: MobileDoctorView) => {
     [doctors],
   );
 
-  const syncUrlFilters = useCallback((serializedParams: string) => {
-    const params = new URLSearchParams(serializedParams);
-    const requestedSearch = params.get("search") ?? "";
-    const requestedSpecialty = params.get("specialty")?.trim();
-    setQuery(requestedSearch.trim() ? requestedSearch : "");
-
+  const specialty = useMemo(() => {
     // A shared or saved name search must not inherit a stale category.
-    if (requestedSearch.trim()) {
-      setSpecialty("all");
-      if (params.has("specialty")) {
-        params.delete("specialty");
-        window.history.replaceState(null, "", `/doctors?${params}${window.location.hash}`);
-      }
-      return;
-    }
-
-    if (!requestedSpecialty) {
-      setSpecialty("all");
-      return;
-    }
+    if (query || !requestedSpecialty) return "all";
 
     const normalizedRequested = publicDoctorSpecialtyKey(requestedSpecialty);
     const matchingGroup = findPublicDoctorCategory(requestedSpecialty, groupedSpecialties);
 
     if (matchingGroup) {
-      setSpecialty(matchingGroup.value);
-      return;
+      return matchingGroup.value;
     }
 
     const matchingSpecialty = specialties.find((item) =>
@@ -170,8 +142,15 @@ const changeMobileView = (nextView: MobileDoctorView) => {
         ),
     );
 
-    setSpecialty(matchingSpecialty ?? "all");
-  }, [specialties, groupedSpecialties]);
+    return matchingSpecialty ?? "all";
+  }, [query, requestedSpecialty, specialties, groupedSpecialties]);
+
+  useEffect(() => {
+    if (!query || !searchParams.has("specialty")) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("specialty");
+    window.history.replaceState(null, "", `/doctors?${params}${window.location.hash}`);
+  }, [query, searchParams]);
 
   const filteredDoctors = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("uk");
@@ -200,9 +179,6 @@ const changeMobileView = (nextView: MobileDoctorView) => {
 
   return (
     <section className="doctors-directory-section" aria-label="Каталог лікарів">
-      <Suspense fallback={null}>
-        <DirectoryUrlSync onChange={syncUrlFilters} />
-      </Suspense>
       <div className="directory-toolbar doctor-directory-toolbar">
         <div className="doctor-directory-search">
         <label htmlFor="doctor-search">

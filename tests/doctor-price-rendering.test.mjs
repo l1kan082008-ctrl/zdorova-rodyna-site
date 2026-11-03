@@ -11,6 +11,7 @@ import ts from 'typescript';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const requirePackage = createRequire(import.meta.url);
 const modules = new Map();
+let navigationParams = '';
 // Render real client components with their real context. Only framework link/image
 // wrappers are replaced with HTML equivalents; no fetches or database calls occur.
 function load(relative) {
@@ -25,7 +26,7 @@ function load(relative) {
   }).outputText;
   const resolve = name => {
     if (name.endsWith('.css')) return {};
-    if (name === 'next/navigation') return { useSearchParams: () => new URLSearchParams() };
+    if (name === 'next/navigation') return { useSearchParams: () => new URLSearchParams(navigationParams) };
     if (name === 'next/link') return { __esModule: true, default: ({ children, ...props }) => React.createElement('a', props, children) };
     if (name === 'next/image') return { __esModule: true, default: (props) => { const htmlProps = { ...props }; for (const key of ['fill', 'sizes', 'quality', 'priority', 'preload', 'unoptimized']) delete htmlProps[key]; return React.createElement('img', htmlProps); } };
     if (name.startsWith('@/')) return load(name.slice(2));
@@ -182,4 +183,85 @@ test('real biography remains visible with its paragraphs and directory label', (
   assert.ok(profile.includes('<p>Освіта лікаря.</p>'));
   assert.ok(profile.includes('<p>Професійний досвід.</p>'));
   assert.ok(text(surfaces[0][1](doctor)).includes('Біографія'));
+});
+
+const directoryDoctors = [
+  { ...baseline, id: 'fixture-family-first', name: 'Марія Приклад', specialty: 'Сімейний лікар, терапевт' },
+  { ...baseline, id: 'fixture-cardiology', name: 'Олена Приклад', specialty: 'Кардіолог' },
+  { ...baseline, id: 'fixture-family-last', name: 'Іван Тестовий', specialty: 'Педіатр, сімейний лікар' },
+  { ...baseline, id: 'fixture-new-specialty', name: 'Андрій Демонстраційний', specialty: 'Нейрохірург' },
+];
+function renderDirectory(params) {
+  const previous = navigationParams;
+  navigationParams = new URLSearchParams(params).toString();
+  try {
+    // Effects do not run during this render. Filtering must precede native
+    // hash scrolling, rather than shorten the document after hydration.
+    return renderToStaticMarkup(React.createElement(DoctorsDirectory, { initialDoctors: directoryDoctors }));
+  } finally {
+    navigationParams = previous;
+  }
+}
+const directoryCardIds = html => [...html.matchAll(/<article\b[^>]*\bid="doctor-card-([^"]+)"/g)].map(([, id]) => id);
+const profileReturnLinks = html => [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)]
+  .map(([, href]) => new URL(href.replaceAll('&amp;', '&'), 'https://example.test'))
+  .filter(url => url.pathname.startsWith('/doctors/') && url.searchParams.has('returnTo'));
+
+test('directory applies category aliases and category IDs in the initial HTML, before effects run', () => {
+  for (const specialty of ['group:family', 'Сімейний лікар/терапевт', '  ТЕРАПЕВТ  ']) {
+    const html = renderDirectory({ specialty });
+    assert.deepEqual(directoryCardIds(html), ['fixture-family-first', 'fixture-family-last'], specialty);
+    assert.match(html, /<option[^>]*value="group:family"[^>]*selected=""/);
+  }
+  assert.deepEqual(directoryCardIds(renderDirectory({ specialty: 'Нейрохірург' })), ['fixture-new-specialty']);
+});
+
+test('directory applies a name search immediately and search wins over a stale category', () => {
+  for (const params of [{ search: 'Олена Приклад' }, { specialty: 'group:family', search: 'Олена Приклад' }]) {
+    const html = renderDirectory(params);
+    assert.deepEqual(directoryCardIds(html), ['fixture-cardiology']);
+    assert.match(html, /id="doctor-search"[^>]*value="Олена Приклад"/);
+    const links = profileReturnLinks(html);
+    assert.ok(links.length > 0);
+    for (const profile of links) {
+      const back = new URL(profile.searchParams.get('returnTo'), 'https://example.test');
+      assert.equal(back.searchParams.get('search'), 'Олена Приклад');
+      assert.equal(back.searchParams.has('specialty'), false, 'return links must not revive the stale category');
+      assert.equal(back.hash, '#doctor-card-fixture-cardiology');
+    }
+  }
+  assert.deepEqual(directoryCardIds(renderDirectory({ search: 'Такого імені немає' })), []);
+});
+
+test('each filtered profile link returns to its own card with the same resolved directory filter', () => {
+  const html = renderDirectory({ specialty: 'Сімейна медицина' });
+  const links = profileReturnLinks(html);
+  assert.ok(links.length > 0);
+  for (const profile of links) {
+    const back = new URL(profile.searchParams.get('returnTo'), 'https://example.test');
+    assert.equal(back.pathname, '/doctors');
+    assert.equal(back.searchParams.get('specialty'), 'group:family');
+    assert.equal(back.searchParams.has('search'), false);
+    assert.equal(back.hash, `#doctor-card-${profile.pathname.split('/').at(-1)}`);
+    assert.ok(directoryCardIds(html).includes(profile.pathname.split('/').at(-1)));
+  }
+});
+
+test('empty or unknown categories show all doctors immediately and do not leak into return links', () => {
+  for (const params of [{}, { specialty: '' }, { specialty: '   ', search: '   ' }, { specialty: 'Невідома категорія' }]) {
+    const html = renderDirectory(params);
+    assert.deepEqual(directoryCardIds(html), directoryDoctors.map(doctor => doctor.id));
+    for (const profile of profileReturnLinks(html)) {
+      const back = new URL(profile.searchParams.get('returnTo'), 'https://example.test');
+      assert.equal(back.search, '');
+      assert.equal(back.hash, `#doctor-card-${profile.pathname.split('/').at(-1)}`);
+    }
+  }
+});
+
+test('successive URL-driven renders switch filters without retaining a previous directory category', () => {
+  assert.deepEqual(directoryCardIds(renderDirectory({ specialty: 'Кардіологія' })), ['fixture-cardiology']);
+  assert.deepEqual(directoryCardIds(renderDirectory({ specialty: 'group:family' })), ['fixture-family-first', 'fixture-family-last']);
+  assert.deepEqual(directoryCardIds(renderDirectory({ search: 'Андрій' })), ['fixture-new-specialty']);
+  assert.deepEqual(directoryCardIds(renderDirectory({})), directoryDoctors.map(doctor => doctor.id));
 });

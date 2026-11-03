@@ -19,12 +19,8 @@
 .page h2 { margin: 0; color: var(--admin-ink); font-size: 20px; font-weight: 700; line-height: 1.4; letter-spacing: -.02em; }
 .overviewHeading p { margin: 4px 0 0; color: var(--admin-muted); font-size: 12px; }
 .page label { display: grid; min-width: 0; gap: 6px; color: var(--admin-ink); font-size: 12px; font-weight: 650; }
-.page .period { grid-template-columns: auto 190px; align-items: center; gap: 12px; }
-.page .period select, .page .filters select, .page .dateForm input { font-size: 14px; }
-.page :is(.period, .filters, .rowStatus) select:not([multiple]):not([size]) { padding-right: 40px; }
-.dateForm { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--admin-border); }
-.dateForm label { width: 180px; }
-.dateForm .error { flex-basis: 100%; margin: 0; }
+.page .filters select { font-size: 14px; }
+.page :is(.filters, .rowStatus) select:not([multiple]):not([size]) { padding-right: 40px; }
 .metrics { display: grid; grid-template-columns: 1.25fr repeat(5, 1fr); gap: 0; padding: 20px 0; margin: 20px 0 0; border-top: 1px solid var(--admin-border); border-bottom: 1px solid var(--admin-border); }
 .metrics[data-legacy="true"] { grid-template-columns: 1.25fr repeat(6, minmax(0, 1fr)); }
 .metric { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; min-height: 76px; padding: 8px 16px; border: 0; border-right: 1px solid var(--admin-border); color: var(--admin-ink); background: transparent; text-align: left; cursor: pointer; border-radius: 0; }
@@ -87,7 +83,11 @@
 .copyFeedback[data-error="true"] { color: var(--admin-danger); border-color: var(--admin-danger-border); }
 .kind { font-size: 11px; color: color-mix(in srgb, var(--booking-accent) 82%, var(--booking-label-mix)); }
 .kind > span { display: inline-block; padding: 4px 7px; border: 1px solid color-mix(in srgb, var(--booking-accent) 25%, var(--admin-panel)); background: color-mix(in srgb, var(--booking-accent) 8%, var(--admin-panel)); border-radius: 6px; line-height: 1.4; font-weight: 650; }
-.service { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; font-size: 12px; line-height: 1.5; }
+.service { display: grid; gap: 4px; font-size: 12px; line-height: 1.5; }
+.serviceName { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+.servicePrice { color: var(--admin-muted); font-size: 11px; }
+.servicePrice strong { color: var(--admin-ink); font-size: 12px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.priceUnavailable { color: var(--admin-muted); font-size: 11px; }
 .page .rowStatus select { font-size: 12px; min-height: 44px; padding-left: 10px; }
 .page .rowStatus select[data-status="new"] { color: #835200; border-color: #dfca9d; background-color: #fff9eb; }
 .page .rowStatus select[data-status="confirmed"] { color: #076465; border-color: #b7d7d2; background-color: var(--admin-selection); }
@@ -166,7 +166,7 @@
   .overview { padding: 16px; }
   .overviewHeading { flex-wrap: wrap; gap: 16px; }
   .overviewControls { width: 100%; }
-  .page .period { grid-template-columns: auto minmax(0, 1fr); width: 100%; }
+  .overviewControls > :first-child { flex: 1; }
   .page h2 { font-size: 18px; }
   .metrics { padding-block: 16px; margin-top: 16px; row-gap: 12px; }
   .metric { padding: 4px 10px; min-height: 64px; }
@@ -178,9 +178,6 @@
   .categoriesHeading > span { font-size: 10px; }
   .category { padding: 8px 4px; font-size: 11px; column-gap: 6px; }
   .note { font-size: 10px; }
-  .dateForm { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .dateForm label { width: auto; }
-  .dateForm button, .dateForm .error { grid-column: 1 / -1; }
   .listHeading { padding: 16px 16px 0; flex-wrap: wrap; gap: 4px; }
   .filters { padding: 16px; gap: 12px 8px; }
   .page .filters select { font-size: 12px; padding-left: 10px; }

@@ -119,3 +119,18 @@ export function parseBookingDetails(comment: string): BookingDetails {
   details.comment = remainder;
   return details;
 }
+
+/** Replace only the generated estimate; patient text stays inside its own block. */
+export function withBookingTotal(comment: string, total: number | null): string {
+  if (total !== null && (!Number.isFinite(total) || total < 0)) {
+    throw new RangeError("Booking total must be a nonnegative finite amount.");
+  }
+  const details = parseBookingDetails(comment);
+  return formatBookingComment({
+    locationComment: details.location && details.location !== locationHelp
+      ? `${locationPrefix}${details.location}` : details.location,
+    studies: details.studies.join(" | "),
+    total: total === null ? "" : String(total),
+    comment: details.comment,
+  });
+}

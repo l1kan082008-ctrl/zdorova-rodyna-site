@@ -330,7 +330,7 @@ export default async function Home() {
         amount: item.amount,
         turnaround: item.turnaround,
         href: `/prices?search=${encodeURIComponent(item.name)}`,
-        actionHref: `/contacts?service=${encodeURIComponent(item.name)}#booking`,
+        actionHref: `/contacts?service=${encodeURIComponent(item.name)}${["ct", "mri", "ultrasound", "doppler"].includes(item.category) ? `&bookingCategory=${item.category === "doppler" ? "ultrasound" : item.category}&priceItemId=${encodeURIComponent(item.id)}` : ""}#booking`,
         keywords: (item.aliases ?? []).join(" "),
       })),
     ...centerLocations.map((location) => ({
@@ -470,7 +470,7 @@ export default async function Home() {
                 <PopularAnalysisButton itemId={item.priceItemId} />
               ) : <Link
                 className="outline-button"
-                href={`/contacts?service=${encodeURIComponent(item.title)}#booking`}
+                href={`/contacts?service=${encodeURIComponent(item.title)}${["ct", "mri", "ultrasound", "doppler"].includes(item.category) ? `&bookingCategory=${item.category === "doppler" ? "ultrasound" : item.category}&priceItemId=${encodeURIComponent(item.priceItemId)}` : ""}#booking`}
               >
                 Записатися <span>→</span>
               </Link>}

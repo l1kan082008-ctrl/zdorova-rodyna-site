@@ -44,6 +44,7 @@ export function getOfficialCtPosition(item: Pick<PriceItem, "id" | "sortOrder">)
 }
 
 const NON_BOOKABLE_CT_POSITIONS = new Set([60, 61, 62, 63, 64, 65, 68]);
+const imagingNameKey = (value: string) => value.trim().toLocaleLowerCase("uk-UA").replace(/[’ʼ‘']/gu, "’").replace(/\s+/gu, " ");
 
 // Keep the booking selector and the price-table links on the same accessory rules.
 export function isBookableImagingItem(item: Pick<PriceItem, "id" | "sortOrder" | "category">): boolean {
@@ -66,4 +67,28 @@ export function getImagingBookingOptions(items: PriceItem[], category: ImagingBo
     if (!names.has(key)) names.set(key, name);
   }
   return [...names.values()];
+}
+
+/** Only an exact eligible catalog match can supply an indicative booking price. */
+export function findImagingBookingPrice(
+  items: readonly PriceItem[],
+  service: string,
+  category?: ImagingBookingCategory | null,
+  itemId?: string,
+): PriceItem | null {
+  const name = imagingNameKey(service);
+  if (!name || Object.values(imagingBookingLabels).some(label => imagingNameKey(label) === name)) return null;
+  const eligible = (item: PriceItem) => item.isActive !== false
+    && isBookableImagingItem(item)
+    && Number.isFinite(item.amount) && item.amount >= 0
+    && (!category || item.category === category || (category === "ultrasound" && item.category === "doppler"))
+    && imagingNameKey(item.name) === name;
+
+  if (itemId !== undefined) {
+    const exact = items.find(item => item.id === itemId);
+    return exact && eligible(exact) ? exact : null;
+  }
+  const matches = items.filter(eligible);
+  const first = matches[0];
+  return first && matches.every(item => item.amount === first.amount && item.category === first.category) ? first : null;
 }
