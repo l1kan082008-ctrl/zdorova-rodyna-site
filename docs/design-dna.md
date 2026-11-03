@@ -76,6 +76,10 @@ Service information sections use one editorial treatment at every viewport: whit
 
 Laboratory directions use a centered section heading and three equal, unboxed topic groups across the shared content width. At tablet sizes, groups stack with two-column lists; mobile lists use one column. Preparation follows in its own centered section with two columns and an odd final item spanning both, keeping the same editorial markers and dividers.
 
+The laboratory service page states that samples at the centre are collected without an appointment, in a live queue. Its closing panel reuses the shared CTA styling with a call action for preparation and collection hours; do not show the generic appointment/time-selection copy here. Home nurse visits retain their separate scheduled flow.
+
+A calculator selection containing only laboratory categories offers “Уточнити аналізи”, retaining the chosen studies, CITO and estimate in the shared contact form. Its heading, consent and confirmation describe a callback about studies, cost and preparation, with an explicit walk-in notice. Treat this as a laboratory request when choosing branches and saving its service. Mixed selections and home collection keep their existing scheduling flow.
+
 Public directory framing uses neutral #dedfe1 borders and black-alpha shadows, without teal tint. Contact action buttons use the shared pill radius; call actions are labelled Зателефонувати. Preserve approved mint selection surfaces and location-hover gradients.
 
 Public editorial section headings share 36px desktop / 28px mobile, 1.15 line height, weight 450. Section rhythm is 64px desktop / 48px mobile, with a 24px heading-to-content gap. These tokens exclude hero titles, card titles, footer navigation, and bespoke CT/MRI/cardiology/family sections.

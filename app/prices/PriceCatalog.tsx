@@ -401,6 +401,8 @@ export function PriceCatalog({
     (item) => citoSelectedIds.includes(item.id) && item.citoAvailable,
   ).length;
   const citoSurchargeTotal = calculateCitoSurcharge(citoSelectedCount);
+  const isLaboratoryInquiry = selectedItems.length > 0
+    && selectedItems.every((item) => ANALYSIS_CATEGORIES.has(item.category));
   const total =
     selectedItems.reduce((sum, item) => sum + item.amount, 0) +
     citoSurchargeTotal;
@@ -431,7 +433,7 @@ export function PriceCatalog({
           ]
         : []),
     ].join(" | "),
-  )}&total=${total}#booking`;
+  )}&total=${total}${isLaboratoryInquiry ? "&bookingIntent=lab-inquiry" : ""}#booking`;
 
   useEffect(() => {
     let cancelled = false;
@@ -1237,8 +1239,9 @@ export function PriceCatalog({
                 <strong>{formatPrice(total)}</strong>
               </div>
               <p>
-                Остаточну вартість і можливість виконати дослідження в один день
-                підтвердить адміністратор.
+                {isLaboratoryInquiry
+                  ? "Аналізи у центрі здають без попереднього запису, у порядку живої черги. Адміністратор допоможе уточнити вартість і підготовку."
+                  : "Остаточну вартість і можливість виконати дослідження в один день підтвердить адміністратор."}
               </p>
               <div className="calculator-total-actions">
                 <button
@@ -1253,7 +1256,7 @@ export function PriceCatalog({
                   Очистити
                 </button>
                 <a className="book-button" href={checkoutHref} onClick={() => setCalculatorOpen(false)}>
-                  Перейти до запису <span>→</span>
+                  {isLaboratoryInquiry ? "Уточнити аналізи" : "Перейти до запису"} <span>→</span>
                 </a>
               </div>
             </div>

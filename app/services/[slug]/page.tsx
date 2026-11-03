@@ -4,6 +4,7 @@ import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import { doctorBookingHref } from "@/lib/doctorBranches";
 import { responsiveBackground } from "@/lib/responsiveBackground";
+import { sitePhoneHref } from "@/lib/siteSettings";
 import { centerLocations, getDirectionsUrl } from "../../contacts/locationData";
 import serviceStyles from "./CtServicePage.module.css";
 import { UltrasoundPriceList } from "./UltrasoundPriceList";
@@ -12,6 +13,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { listPublicDoctors as listDoctors } from "../../api/doctors/publicDoctors";
 import { listPublicPriceItems } from "../../api/prices/priceStore";
+import { getSiteSettings } from "../../api/settings/settingsStore";
 import { GlowPriceCard } from "../../components/GlowPriceCard";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
 import { catalogItems } from "../../prices/priceData";
@@ -189,6 +191,9 @@ export default async function ServiceDetailPage({
   const isCinematicWartRemoval = service.slug === "wart-removal";
   const isCinematicAudiometry = service.slug === "audiometry";
   const isCinematicLaboratory = service.slug === "lab";
+  const laboratoryPhoneHref = isCinematicLaboratory
+    ? sitePhoneHref((await getSiteSettings()).phone)
+    : undefined;
   const isFamilyMedicine = service.slug === "family";
   const isConsultation = service.slug === "consultation";
   const isCompactProcedure = [
@@ -1374,7 +1379,16 @@ export default async function ServiceDetailPage({
       </aside>}
 
       {!isCinematicUltrasound && (
-      <ServiceBookingCta bookingHref={bookingHref} />
+        isCinematicLaboratory ? (
+          <ServiceBookingCta
+            bookingHref={laboratoryPhoneHref!}
+            kicker="Забір аналізів у центрі"
+            title="Аналізи — без попереднього запису"
+            description="Забір аналізів проводимо в порядку живої черги. Підготовку та години забору матеріалу можна уточнити в адміністратора."
+            buttonLabel="Зателефонувати"
+            ariaLabel="Аналізи без попереднього запису"
+          />
+        ) : <ServiceBookingCta bookingHref={bookingHref} />
       )}
       </>
       ) : null}

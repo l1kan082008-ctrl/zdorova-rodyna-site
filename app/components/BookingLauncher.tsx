@@ -104,7 +104,7 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
   const total = isScreening ? "" : params.get("total") || "";
   const imagingCategory = isDoctorBooking ? null : resolveImagingBookingCategory(params, sourcePathname);
   const imagingLabel = imagingCategory ? imagingBookingLabels[imagingCategory] : "";
-  const [service, setService] = useState(isScreening ? screeningServiceName : studies ? "Комплекс досліджень" : normalizeBookingService(requestedService) || (isDoctorBooking ? "Консультації лікарів" : imagingLabel || helpService));
+  const [service, setService] = useState(isScreening ? screeningServiceName : studies ? params.get("bookingIntent") === "lab-inquiry" ? "Лабораторні дослідження" : "Комплекс досліджень" : normalizeBookingService(requestedService) || (isDoctorBooking ? "Консультації лікарів" : imagingLabel || helpService));
   const [studyItems, setStudyItems] = useState<PriceItem[]>([]);
   const [requestedPriceItemId, setRequestedPriceItemId] = useState<string | undefined>(() => params.get("priceItemId")?.trim());
   const [studyOptionsLoading, setStudyOptionsLoading] = useState(Boolean(imagingCategory));
@@ -130,7 +130,10 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
   const successRef = useRef<HTMLHeadingElement>(null);
   const submittingRef = useRef(false);
   const isHomeVisit = !isDoctorBooking && !studies && isHomeVisitService(service);
-  const locationService = isDoctorBooking ? "Консультації лікарів" : imagingLabel || service;
+  const isLabInquiry = !isScreening && !isDoctorBooking && !isHomeVisit && !imagingCategory
+    && (studies ? params.get("bookingIntent") === "lab-inquiry"
+      : ["Лабораторні дослідження", "Лабораторія", "Аналізи"].includes(service));
+  const locationService = isDoctorBooking ? "Консультації лікарів" : isLabInquiry ? "Лабораторні дослідження" : imagingLabel || service;
   const category = serviceCategory(locationService);
   const assignedBranches = Boolean(bookingDoctor?.branch.trim());
   const availableLocations = isDoctorBooking && doctorLookupStatus !== "ready"
@@ -307,16 +310,16 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
     }}>
       <div className="mobile-overlay-dismiss" aria-hidden="true" onClick={closeBooking} />
       <section className="quick-booking" role="dialog" aria-modal="true" aria-labelledby="quick-booking-title" aria-describedby="quick-booking-description" tabIndex={-1}>
-    <button ref={closeButtonRef} className="quick-booking__close" type="button" aria-label="Закрити форму запису" disabled={submitting} onClick={onClose}><CloseIcon /></button>
+    <button ref={closeButtonRef} className="quick-booking__close" type="button" aria-label={isLabInquiry ? "Закрити форму уточнення аналізів" : "Закрити форму запису"} disabled={submitting} onClick={onClose}><CloseIcon /></button>
     {reference ? <div className="quick-booking__success" role="status">
       <span className="section-kicker">Заявку отримано</span>
       <h2 id="quick-booking-title" tabIndex={-1} ref={successRef}>Дякуємо!</h2>
-      <p id="quick-booking-description">{isHomeVisit ? "Адміністратор зателефонує, щоб підтвердити адресу та час виїзду." : "Адміністратор зателефонує, щоб узгодити час візиту."}</p>
+      <p id="quick-booking-description">{isHomeVisit ? "Адміністратор зателефонує, щоб підтвердити адресу та час виїзду." : isLabInquiry ? "Адміністратор зателефонує, щоб уточнити аналізи, вартість і підготовку. Забір у центрі — без попереднього запису, у порядку живої черги." : "Адміністратор зателефонує, щоб узгодити час візиту."}</p>
       <BookingHoursNotice value={submittedHours} confirmation />
       <button className="book-button" type="button" onClick={onClose}>Готово</button>
     </div> : <>
-      <h2 id="quick-booking-title">{isScreening ? "Заявка на скринінг 40+" : isHomeVisit ? "Замовити виїзд медсестри" : "Запис на прийом"}</h2>
-      <p id="quick-booking-description">{isHomeVisit ? "Виїзд доступний тільки у Рівному. Адміністратор уточнить аналізи, адресу та зручний час." : "Залиште контакти — адміністратор погодить з вами час візиту."}</p>
+      <h2 id="quick-booking-title">{isScreening ? "Заявка на скринінг 40+" : isHomeVisit ? "Замовити виїзд медсестри" : isLabInquiry ? "Уточнення щодо аналізів" : "Запис на прийом"}</h2>
+      <p id="quick-booking-description">{isHomeVisit ? "Виїзд доступний тільки у Рівному. Адміністратор уточнить аналізи, адресу та зручний час." : isLabInquiry ? "Залиште контакти — адміністратор допоможе уточнити аналізи, вартість і підготовку. Забір у центрі — без попереднього запису, у порядку живої черги." : "Залиште контакти — адміністратор погодить з вами час візиту."}</p>
       <form onSubmit={preventNativeBookingSubmit} aria-busy={submitting}>
         <fieldset disabled={submitting}>
           {isScreening ? <>
@@ -369,12 +372,12 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
           </select>
           </label>}
           {!isScreening && <details className="quick-booking__comment"><summary>Додати коментар <span>необов’язково</span></summary><label>Ваш коментар<textarea name="comment" maxLength={700} rows={3} placeholder="Наприклад, коли вам зручно зателефонувати" /></label></details>}
-          <label className="quick-booking__consent"><input type="checkbox" name="consent" required /><span>{isScreening ? "Погоджуюся на обробку контактних даних для зворотного зв’язку щодо програми «Скринінг здоров’я 40+»." : "Погоджуюся на обробку контактних даних для організації запису."}</span></label>
+          <label className="quick-booking__consent"><input type="checkbox" name="consent" required /><span>{isScreening ? "Погоджуюся на обробку контактних даних для зворотного зв’язку щодо програми «Скринінг здоров’я 40+»." : isLabInquiry ? "Погоджуюся на обробку контактних даних для зворотного зв’язку щодо лабораторних досліджень." : "Погоджуюся на обробку контактних даних для організації запису."}</span></label>
           <label className="booking-honeypot" aria-hidden="true">Ваш сайт<input name="website" tabIndex={-1} autoComplete="off" /></label>
           <TurnstileField key={captchaAttempt} onToken={setToken} />
           <BookingHoursNotice value={currentHours} />
           {error && <p className="booking-submit-error" role="alert">{error} Також можна <a href={sitePhoneHref(settings.phone)}>зателефонувати</a>.</p>}
-          <button className="book-button" type="submit" onClick={(event) => submitBookingFromClick(event, submit)} disabled={submitting || (isScreening && !screeningDoctorReady) || (!isHomeVisit && Boolean(locationId) && locationsLoading)}>{submitting ? "Надсилаємо…" : "Надіслати заявку"}<span aria-hidden="true">→</span></button>
+          <button className="book-button" type="submit" onClick={(event) => submitBookingFromClick(event, submit)} disabled={submitting || (isScreening && !screeningDoctorReady) || (!isHomeVisit && Boolean(locationId) && locationsLoading)}>{submitting ? "Надсилаємо…" : isLabInquiry ? "Надіслати запит" : "Надіслати заявку"}<span aria-hidden="true">→</span></button>
         </fieldset>
       </form>
     </>}
