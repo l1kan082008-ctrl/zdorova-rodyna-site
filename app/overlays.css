@@ -1024,6 +1024,7 @@ body .ct-preparation-gradient > div {
 /* Public directory cards share neutral framing; brand surfaces remain intact. */
 :root { --public-card-border: #dedfe1; --public-card-shadow: 0 12px 26px rgba(0,0,0,.065); }
 body .contacts-page.contacts-page--compact :is(.book-button, .outline-button),
+body .contacts-page.contacts-page--compact .branch-navigator-actions > button,
 body .branch-modal :is(.book-button, .outline-button) { border-radius: 999px; }
 body :is(.services-directory-grid .service-card, .doctors-directory .doctor-profile-card, .about-values .values-grid > article) {
   border-color: var(--public-card-border);
