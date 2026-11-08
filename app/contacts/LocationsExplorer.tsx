@@ -6,6 +6,7 @@ import { useModalDialog } from "../components/useModalDialog";
 
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
+import styles from "./LocationsExplorer.module.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   branchServiceCatalog,
@@ -23,39 +24,37 @@ type LocationsExplorerProps = {
 
 type MediaMode = "photos" | "video";
 
+// Verified exterior from the branch's published gallery; its legacy cover is the reception.
+const kostopilFacade = {
+  src: "https://xrvfqucbraqxhqhv.public.blob.vercel-storage.com/locations/ab74b0ee-05c3-4c19-912f-9d46e213764d.webp",
+  alt: "Фасад і вхід — «Здорова Родина», Костопіль, Грушевського, 4",
+};
+
 function DirectionsIcon() {
   return <svg className="branch-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m21 3-7 18-3-8-8-3 18-7Z" /></svg>;
 }
 
-function getLocationIconType(location: CenterLocation) {
-  if (location.services.length === 1 && location.services[0] === "laboratory") return "laboratory";
-  return location.services.length > 3 ? "center" : "clinic";
-}
+function LocationPreview({ photo, single }: { photo?: CenterLocation["gallery"][number]; single: boolean }) {
+  const [failedSource, setFailedSource] = useState<string | null>(null);
+  if (!photo?.src || failedSource === photo.src) return null;
 
-function LocationIcon({ location }: { location: CenterLocation }) {
-  const type = getLocationIconType(location);
   return (
-    <svg className="branch-location-symbol" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {type === "laboratory" ? (
-        <>
-          <rect x="7" y="2" width="10" height="5" rx="1.2" fill="currentColor" stroke="none" />
-          <path d="M8 7v11a4 4 0 0 0 8 0V7" />
-          <rect x="10" y="10" width="4" height="6" rx="0.7" fill="currentColor" fillOpacity="0.25" stroke="none" />
-        </>
-      ) : type === "center" ? (
-        <>
-          <path d="M7 21V3h10v18M7 9H2v12h20V9h-5M10 21v-5h4v5M12 6v6M9 9h6M4 13h1M4 17h1M19 13h1M19 17h1" />
-        </>
-      ) : (
-        <>
-          <rect x="5" y="7" width="14" height="14" rx="2" />
-          <path d="M12 10v4M10 12h4M10 21v-4h4v4" />
-        </>
-      )}
-    </svg>
+    <span className={styles.preview} aria-hidden="true">
+      <Image
+        src={resolveImageSource(photo.src)}
+        alt=""
+        fill
+        sizes={single
+          ? "(max-width: 760px) calc(100vw - 32px), (max-width: 1080px) calc(100vw - 48px), (max-width: 1288px) calc(40vw - 29px), 486px"
+          : "(max-width: 760px) calc(100vw - 32px), (max-width: 1080px) calc(50vw - 32px), (max-width: 1288px) calc(30vw - 30px), 357px"}
+        unoptimized={!canOptimizeImage(photo.src)}
+        style={photo.src === kostopilFacade.src ? { objectPosition: "50% 0%" } : undefined}
+        onError={() => setFailedSource(photo.src)}
+      />
+    </span>
   );
 }
+
 function BranchServiceTags({ services }: { services: BranchServiceId[] }) {
   return (
     <span className="branch-service-tags" aria-label="Доступні послуги">
@@ -266,16 +265,16 @@ export function LocationsExplorer({
     photoTargetRef.current = null;
   };
 
-  const selectLocation = (location: CenterLocation, showMapOnMobile = false) => {
+  const selectLocation = (location: CenterLocation, showMapWhenStacked = false) => {
     onSelectLocation(location.id);
 
     if (
-      showMapOnMobile &&
-      window.matchMedia("(max-width: 820px)").matches
+      showMapWhenStacked &&
+      window.matchMedia("(max-width: 1080px)").matches
     ) {
       window.requestAnimationFrame(() => {
         mapRef.current?.scrollIntoView({
-          behavior: "smooth",
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
           block: "start",
         });
       });
@@ -317,31 +316,34 @@ export function LocationsExplorer({
           </div>
         </div>
 
-        <div className={`branch-navigator${visibleLocations.length === 1 ? " branch-navigator--single" : ""}`}>
+        <div className={`branch-navigator ${styles.navigator}${visibleLocations.length === 1 ? " branch-navigator--single" : ""}`}>
           <div className="branch-navigation-list">
             {visibleLocations.map((location) => {
               const isActive = location.id === selectedLocation.id;
+              const galleryCover = location.gallery[0];
+              const previewPhoto = location.id === "kostopil-hrushevskoho-4"
+                && galleryCover?.src === "/locations/kostopil-hrushevskoho-4.jpg"
+                ? kostopilFacade : galleryCover;
 
               return (
                 <button
-                  className={`branch-navigation-item${isActive ? " is-active" : ""}`}
+                  className={`branch-navigation-item ${styles.locationCard}${isActive ? " is-active" : ""}`}
                   type="button"
                   aria-pressed={isActive}
                   key={location.id}
                   onClick={() => selectLocation(location, true)}
                 >
-                  <span className="branch-navigation-icon" aria-hidden="true">
-                    <LocationIcon location={location} />
-                  </span>
+                  <LocationPreview photo={previewPhoto} single={visibleLocations.length === 1} />
                   <span className="branch-navigation-copy">
                     <strong>{location.address}</strong>
                     <small>
-                      {location.type} · {location.hours[0]}
+                      <span className={styles.locationType}>{location.type}</span>
+                      <span className={styles.locationHours}>{location.hours[0]}</span>
                     </small>
                     <BranchServiceTags services={location.services} />
-                  </span>
-                  <span className="branch-navigation-arrow" aria-hidden="true">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m9 5 7 7-7 7" /></svg>
+                    <span className={styles.cardArrow} aria-hidden="true">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m9 5 7 7-7 7" /></svg>
+                    </span>
                   </span>
                 </button>
               );
