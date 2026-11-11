@@ -8,7 +8,7 @@ import { sitePhoneHref } from "@/lib/siteSettings";
 import { centerLocations, getDirectionsUrl } from "../../contacts/locationData";
 import serviceStyles from "./CtServicePage.module.css";
 import { UltrasoundPriceList } from "./UltrasoundPriceList";
-import type { Metadata } from "next";
+import type { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { listPublicDoctors as listDoctors } from "../../api/doctors/publicDoctors";
@@ -70,11 +70,10 @@ export function generateStaticParams() {
   return serviceDetails.map((service) => ({ slug: service.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> },
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
   const { slug } = await params;
   const service = getServiceDetail(slug);
 
@@ -124,6 +123,28 @@ export async function generateMetadata({
         title: screeningSeoTitle,
         description: screeningSeoDescription,
         images: [screeningSeoImage],
+      },
+    };
+  }
+
+  if (slug === "mri") {
+    const title = "МРТ у Рівному — ціни та запис | Здорова Родина";
+    const parentMetadata = await parent;
+
+    return {
+      title,
+      description: service.lead,
+      openGraph: {
+        title,
+        description: service.lead,
+        type: "website",
+        images: parentMetadata.openGraph?.images ?? [],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description: service.lead,
+        images: parentMetadata.twitter?.images ?? [],
       },
     };
   }
