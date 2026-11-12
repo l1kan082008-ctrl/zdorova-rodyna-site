@@ -7,8 +7,9 @@ import { DoctorsDirectory } from "./DoctorsDirectory";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Лікарі — Здорова Родина",
-  description: "Лікарі лікувально-діагностичного центру Здорова Родина у Рівному.",
+  title: "Лікарі у Рівному та Звягелі — запис | Здорова Родина",
+  description:
+    "Лікарі медичного центру «Здорова Родина» у Рівному та Звягелі. Спеціальності, профілі лікарів, ціни консультацій і місця прийому. Оберіть спеціаліста та залиште заявку.",
 };
 
 export default async function DoctorsPage() {
