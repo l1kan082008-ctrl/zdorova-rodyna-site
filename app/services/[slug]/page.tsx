@@ -127,23 +127,28 @@ export async function generateMetadata(
     };
   }
 
-  if (slug === "mri") {
-    const title = "МРТ у Рівному — ціни та запис | Здорова Родина";
+  if (slug === "mri" || slug === "ct") {
+    const title = slug === "ct"
+      ? "КТ у Рівному та Костополі — ціни | Здорова Родина"
+      : "МРТ у Рівному — ціни та запис | Здорова Родина";
+    const description = slug === "ct"
+      ? "Комп’ютерна томографія у Рівному та Костополі. Перелік досліджень, ціни, інформація про контрастування й підготовку. Запис у медичний центр «Здорова Родина»."
+      : service.lead;
     const parentMetadata = await parent;
 
     return {
       title,
-      description: service.lead,
+      description,
       openGraph: {
         title,
-        description: service.lead,
+        description,
         type: "website",
         images: parentMetadata.openGraph?.images ?? [],
       },
       twitter: {
         card: "summary_large_image",
         title,
-        description: service.lead,
+        description,
         images: parentMetadata.twitter?.images ?? [],
       },
     };
