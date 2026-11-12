@@ -5,6 +5,7 @@ import { doctorBookingHref, splitDoctorBranches } from "@/lib/doctorBranches";
 import { screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
 import "../portraits.css";
 import screeningStyles from "../screening-actions.module.css";
+import { DoctorProfileBackLink } from "./DoctorProfileBackLink";
 import {
   getDoctorInitials,
   formatDoctorConsultations,
@@ -47,9 +48,7 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
   return (
     <>
       <section className="doctor-detail-shell">
-        <Link className="doctor-detail-back" href={returnTo ?? "/doctors"}>
-          {returnTo ? "← Повернутися до вибору лікаря" : "← Всі лікарі"}
-        </Link>
+        <DoctorProfileBackLink doctorId={doctor.id} returnTo={returnTo} />
 
         <div className="doctor-detail-hero">
           <div className="doctor-detail-photo">

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { DoctorProfileLink } from "./DoctorProfileLink";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import "../doctors/portraits.css";
@@ -189,14 +189,14 @@ export function DoctorsShowcase({ doctors }: DoctorsShowcaseProps) {
                 </button>
 
                 {isActive ? (
-                  <Link
+                  <DoctorProfileLink
                     className="doctor-showcase-profile-link"
-                    href={`/doctors/${doctor.id}`}
+                    doctorId={doctor.id}
                     aria-label={`Переглянути профіль лікаря ${doctor.name}`}
                   >
                     <span>Профіль</span>
                     <i aria-hidden="true">→</i>
-                  </Link>
+                  </DoctorProfileLink>
                 ) : null}
               </article>
             );

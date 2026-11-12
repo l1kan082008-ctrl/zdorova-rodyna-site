@@ -11,6 +11,7 @@ import { screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
 import "./portraits.css";
 import screeningStyles from "./screening-actions.module.css";
 import { CloseIcon } from "../components/CloseIcon";
+import { DoctorProfileLink } from "../components/DoctorProfileLink";
 import {
   doctorPatientGroupOptions,
   getDoctorInitials,
@@ -246,7 +247,6 @@ export function DoctorsDirectory({
             const activeSchedule = getDoctorScheduleDays(doctor.schedule);
             const profileLinkLabel = doctor.biography.trim() ? "Біографія" : "Профіль";
             const returnTo = `${directoryUrl(specialty, query)}#doctor-card-${doctor.id}`;
-            const profileHref = `/doctors/${doctor.id}?returnTo=${encodeURIComponent(returnTo)}`;
             const bookingHref = doctorBookingHref(doctor);
             const canBookScreening = canBookDoctorConsultation(doctor)
               && screeningDoctorIds.some((id) => id === doctor.id);
@@ -288,9 +288,10 @@ export function DoctorsDirectory({
                     </span>
                   )}
 
-                  <a
+                  <DoctorProfileLink
                     className="doctor-card-photo-profile-link"
-                    href={profileHref}
+                    doctorId={doctor.id}
+                    returnTo={returnTo}
                     aria-label={`Відкрити профіль лікаря ${doctor.name}`}
                   />
 
@@ -335,7 +336,7 @@ export function DoctorsDirectory({
                           Скринінг 40+
                         </a>
                       )}
-                      <a className="doctor-photo-biography" href={profileHref}>{profileLinkLabel}</a>
+                      <DoctorProfileLink className="doctor-photo-biography" doctorId={doctor.id} returnTo={returnTo}>{profileLinkLabel}</DoctorProfileLink>
                       {canBookDoctorConsultation(doctor) && (
                         <a className="doctor-photo-booking" href={bookingHref}>Записатися</a>
                       )}
@@ -394,12 +395,13 @@ export function DoctorsDirectory({
                         Скринінг 40+ <span aria-hidden="true">→</span>
                       </a>
                     )}
-                    <a
+                    <DoctorProfileLink
                       className="doctor-biography-link"
-                      href={profileHref}
+                      doctorId={doctor.id}
+                      returnTo={returnTo}
                     >
                       {profileLinkLabel}
-                    </a>
+                    </DoctorProfileLink>
                     {canBookDoctorConsultation(doctor) && (<a
                       className="doctor-book-text-link doctor-book-cta"
                       href={bookingHref}

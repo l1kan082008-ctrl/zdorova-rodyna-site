@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import { splitDoctorBranches } from "@/lib/doctorBranches";
-import Link from "next/link";
+import { DoctorProfileLink } from "@/app/components/DoctorProfileLink";
 import { useMemo, useRef, useState } from "react";
 import { TurnstileField } from "@/app/components/TurnstileField";
 import { preventNativeBookingSubmit, submitBookingFromClick } from "@/lib/bookingSubmission";
@@ -275,13 +275,14 @@ export function FamilyDeclarationForm({ doctors }: FamilyDeclarationFormProps) {
                       {isSelected ? "✓" : ""}
                     </span>
                   </label>
-                  <Link
+                  <DoctorProfileLink
                     className="family-doctor-biography"
-                    href={`/doctors/${doctor.id}?returnTo=${encodeURIComponent("/services/family#family-declaration")}`}
+                    doctorId={doctor.id}
+                    returnTo="/services/family#family-declaration"
                     aria-label={`Переглянути профіль: ${doctor.name}`}
                   >
                     Профіль <span aria-hidden="true">→</span>
-                  </Link>
+                  </DoctorProfileLink>
                 </div>
               );
             })

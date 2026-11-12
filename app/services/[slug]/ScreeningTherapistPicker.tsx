@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { DoctorProfileLink } from "@/app/components/DoctorProfileLink";
 import { useRef, useState } from "react";
 import { TurnstileField } from "@/app/components/TurnstileField";
 import { useBookingConfirmation } from "@/app/components/useBookingConfirmation";
@@ -167,13 +167,14 @@ export function ScreeningTherapistPicker({ doctors, phone: sitePhone }: { doctor
                 </span>
                 <span className="family-doctor-check" aria-hidden="true">{selected ? "✓" : ""}</span>
               </label>
-              <Link
+              <DoctorProfileLink
                 className="family-doctor-biography"
-                href={`/doctors/${doctor.id}?returnTo=${encodeURIComponent("/services/screening-40#screening-doctors")}`}
+                doctorId={doctor.id}
+                returnTo="/services/screening-40#screening-doctors"
                 aria-label={`Переглянути профіль: ${doctor.name}`}
               >
                 Профіль <span aria-hidden="true">→</span>
-              </Link>
+              </DoctorProfileLink>
             </div>
           );
         }) : <p className="family-doctor-empty">Перелік лікарів зараз недоступний. Залиште заявку — адміністратор допоможе обрати спеціаліста.</p>}

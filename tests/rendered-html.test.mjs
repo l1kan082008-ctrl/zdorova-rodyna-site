@@ -671,7 +671,7 @@ test("homepage all-doctor showcase expands on click and links to profiles", asyn
   assert.doesNotMatch(showcase, /onPointerMove|onMouseEnter/);
   assert.match(showcase, /window\.clearTimeout\(alignTimeoutRef\.current\)/);
   assert.match(showcase, /className="doctor-showcase-copy"/);
-  assert.match(showcase, /href=\{`\/doctors\/\$\{doctor\.id\}`\}/);
+  assert.match(showcase, /<DoctorProfileLink[\s\S]*?doctorId=\{doctor\.id\}/);
   assert.doesNotMatch(showcase, /family-doctors-summary/);
   const referencedPhotos = [...doctorData.matchAll(/"\/doctors\/([^"\/]+\.webp)"/g)].map((match) => match[1]);
   assert.ok(referencedPhotos.length > 0);

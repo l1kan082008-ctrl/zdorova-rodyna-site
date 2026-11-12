@@ -203,9 +203,17 @@ function renderDirectory(params) {
   }
 }
 const directoryCardIds = html => [...html.matchAll(/<article\b[^>]*\bid="doctor-card-([^"]+)"/g)].map(([, id]) => id);
-const profileReturnLinks = html => [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)]
-  .map(([, href]) => new URL(href.replaceAll('&amp;', '&'), 'https://example.test'))
-  .filter(url => url.pathname.startsWith('/doctors/') && url.searchParams.has('returnTo'));
+const profileReturnLinks = html => [...html.matchAll(/<a\b[^>]*>/g)].flatMap(([anchor]) => {
+  const href = anchor.match(/\bhref="([^"]+)"/)?.[1];
+  if (!href) return [];
+  const profile = new URL(href.replaceAll('&amp;', '&'), 'https://example.test');
+  if (!profile.pathname.startsWith('/doctors/')) return [];
+  assert.equal(profile.search, '', 'profile href is clean, even with a filtered return destination');
+  assert.equal(profile.hash, '');
+  const target = anchor.match(/\bdata-doctor-return-to="([^"]+)"/)?.[1];
+  assert.ok(target, 'directory profile links retain return context outside the URL');
+  return [{ profile, back: new URL(target.replaceAll('&amp;', '&'), 'https://example.test') }];
+});
 
 test('directory applies category aliases and category IDs in the initial HTML, before effects run', () => {
   for (const specialty of ['group:family', 'Сімейний лікар/терапевт', '  ТЕРАПЕВТ  ']) {
@@ -223,8 +231,7 @@ test('directory applies a name search immediately and search wins over a stale c
     assert.match(html, /id="doctor-search"[^>]*value="Олена Приклад"/);
     const links = profileReturnLinks(html);
     assert.ok(links.length > 0);
-    for (const profile of links) {
-      const back = new URL(profile.searchParams.get('returnTo'), 'https://example.test');
+    for (const { back } of links) {
       assert.equal(back.searchParams.get('search'), 'Олена Приклад');
       assert.equal(back.searchParams.has('specialty'), false, 'return links must not revive the stale category');
       assert.equal(back.hash, '#doctor-card-fixture-cardiology');
@@ -237,8 +244,7 @@ test('each filtered profile link returns to its own card with the same resolved 
   const html = renderDirectory({ specialty: 'Сімейна медицина' });
   const links = profileReturnLinks(html);
   assert.ok(links.length > 0);
-  for (const profile of links) {
-    const back = new URL(profile.searchParams.get('returnTo'), 'https://example.test');
+  for (const { profile, back } of links) {
     assert.equal(back.pathname, '/doctors');
     assert.equal(back.searchParams.get('specialty'), 'group:family');
     assert.equal(back.searchParams.has('search'), false);
@@ -251,8 +257,9 @@ test('empty or unknown categories show all doctors immediately and do not leak i
   for (const params of [{}, { specialty: '' }, { specialty: '   ', search: '   ' }, { specialty: 'Невідома категорія' }]) {
     const html = renderDirectory(params);
     assert.deepEqual(directoryCardIds(html), directoryDoctors.map(doctor => doctor.id));
-    for (const profile of profileReturnLinks(html)) {
-      const back = new URL(profile.searchParams.get('returnTo'), 'https://example.test');
+    const links = profileReturnLinks(html);
+    assert.ok(links.length > 0);
+    for (const { profile, back } of links) {
       assert.equal(back.search, '');
       assert.equal(back.hash, `#doctor-card-${profile.pathname.split('/').at(-1)}`);
     }

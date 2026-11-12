@@ -2,6 +2,7 @@ import { ServiceBookingCta } from "./ServiceBookingCta";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import Link from "next/link";
+import { DoctorProfileLink } from "../../components/DoctorProfileLink";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
 import type { CenterLocation } from "../../contacts/locationData";
 import { centerLocations, getDirectionsUrl } from "../../contacts/locationData";
@@ -135,7 +136,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
         </article>
         <div className={styles.doctorsPanel}>
           <SectionTitle title="Наші лікарі-рентгенологи" />
-          <div className={styles.doctorRail}>{shownDoctors.map((doctor) => <Link href={`/doctors/${doctor.id}`} aria-label={`Профіль лікаря: ${doctor.name}`} className={styles.doctorCard} data-doctor-id={doctor.id} key={doctor.id}><div className={styles.doctorPhoto}><Image src={resolveImageSource(doctor.photoUrl)} unoptimized={!canOptimizeImage(doctor.photoUrl)} alt={doctor.name} fill quality={85} sizes="(max-width: 760px) calc(70vw - 22px), (max-width: 1100px) calc(33.33vw - 27px), (max-width: 1288px) calc(20vw - 22px), 236px" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></Link>)}</div>
+          <div className={styles.doctorRail}>{shownDoctors.map((doctor) => <DoctorProfileLink doctorId={doctor.id} aria-label={`Профіль лікаря: ${doctor.name}`} className={styles.doctorCard} data-doctor-id={doctor.id} key={doctor.id}><div className={styles.doctorPhoto}><Image src={resolveImageSource(doctor.photoUrl)} unoptimized={!canOptimizeImage(doctor.photoUrl)} alt={doctor.name} fill quality={85} sizes="(max-width: 760px) calc(70vw - 22px), (max-width: 1100px) calc(33.33vw - 27px), (max-width: 1288px) calc(20vw - 22px), 236px" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></DoctorProfileLink>)}</div>
         </div>
       </section>
 

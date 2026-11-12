@@ -2,8 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
+import { PassThrough } from "node:stream";
 import ts from "typescript";
-import { cache } from "react";
+import { cache, createElement, Suspense } from "react";
+import * as jsxRuntime from "react/jsx-runtime";
+import { renderToPipeableStream } from "react-dom/server";
 
 // Run actual stores and route handlers against disposable SQLite only.
 // No environment files, production credentials, network, or external database are used.
@@ -30,6 +33,7 @@ const pricing = loadModule("../lib/doctorPricing.ts");
 const publication = loadModule("../lib/doctorPublication.ts");
 const initialization = loadModule("../lib/initializeOnce.ts");
 const requestBody = loadModule("../lib/requestBody.ts");
+const profileNavigation = loadModule("../lib/doctorProfileNavigation.ts");
 const doctorData = loadModule("../app/doctors/doctorData.ts", {}, { process: { env: { NODE_ENV: "development" } } });
 const auth = {
   isAuthorizedAdmin: async () => true,
@@ -69,6 +73,45 @@ function storeFor(DB, bootstrap = false) {
   }, { process: { env: { BOOTSTRAP_DEFAULT_CONTENT: String(bootstrap) } } });
 }
 
+function loadProfile(publicDoctors) {
+  return loadModule("../app/doctors/[id]/page.tsx", {
+    "next/navigation": { notFound: () => { throw new Error("NEXT_HTTP_ERROR_FALLBACK;404"); } },
+    react: { cache },
+    "react/jsx-runtime": jsxRuntime,
+    "../../components/SiteChrome": { SiteHeader: () => null, SiteFooter: () => null },
+    "../../api/doctors/publicDoctors": publicDoctors,
+    "../../../lib/doctorProfileNavigation": profileNavigation,
+    "./DoctorProfileDetails": { DoctorProfileDetails: () => null },
+  });
+}
+
+function renderProfileWithDelayedMetadata(profile, props) {
+  let releaseMetadata;
+  const metadataPending = new Promise((resolve) => { releaseMetadata = resolve; });
+  async function StreamedMetadata() {
+    await metadataPending;
+    const metadata = await profile.generateMetadata(props);
+    assert.equal(metadata.alternates?.canonical, undefined, "canonical has one server-rendered owner");
+    return createElement("title", null, metadata.title);
+  }
+  return new Promise((resolve, reject) => {
+    let html = "";
+    const output = new PassThrough();
+    output.on("data", (chunk) => { html += chunk; });
+    output.on("end", () => resolve(html));
+    output.on("error", reject);
+    const document = createElement("html", null, createElement("head"), createElement("body", null,
+      createElement(profile.default, props),
+      createElement(Suspense, { fallback: null }, createElement(StreamedMetadata)),
+    ));
+    const stream = renderToPipeableStream(document, {
+      onShellReady() { stream.pipe(output); releaseMetadata(); },
+      onShellError: reject,
+      onError: reject,
+    });
+  });
+}
+
 function fixture(context) {
   const database = temporaryDatabase();
   context.after(() => database.sqlite.close());
@@ -101,14 +144,7 @@ function fixture(context) {
     "../../doctors/doctorData": doctorData, "./doctorStore": store,
   }, { process: { env: { NODE_ENV: "production" } } });
   const publicRoute = loadModule("../app/api/doctors/route.ts", { "./publicDoctors": publicDoctors });
-  const notFound = () => { throw new Error("NEXT_HTTP_ERROR_FALLBACK;404"); };
-  const profile = loadModule("../app/doctors/[id]/page.tsx", {
-    "next/navigation": { notFound },
-    "react/jsx-runtime": { jsx: (type, props) => ({ type, props }), jsxs: (type, props) => ({ type, props }) },
-    "../../components/SiteChrome": { SiteHeader: () => null, SiteFooter: () => null },
-    "../../api/doctors/publicDoctors": publicDoctors,
-    "./DoctorProfileDetails": { DoctorProfileDetails: () => null },
-  });
+  const profile = loadProfile(publicDoctors);
   return { ...database, store, route, revisions, restore, publicRoute, profile };
 }
 
@@ -430,6 +466,36 @@ test("public API excludes hidden doctors even with includeInactive query and adm
   assert.deepEqual((await adminResponse.json()).doctors.map((doctor) => doctor.id), [hidden.id, visible.id]);
   assert.equal(await store.getDoctorById(hidden.id), null);
   assert.equal((await store.getDoctorById(hidden.id, { includeInactive: true })).isActive, false);
+});
+
+test("active profiles emit exactly one self-canonical in the original head even when metadata is delayed", async (context) => {
+  const { store } = fixture(context);
+  const profile = loadProfile({ getPublicDoctorById: async (id) => {
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    return store.getDoctorById(id);
+  } });
+  for (const id of ["pshenychna-valentyna", "pochtar-kateryna"]) {
+    const doctor = await store.createDoctor({ ...identity, id });
+    const expectedCanonical = `https://zdorovarodynaplus.com.ua/doctors/${id}`;
+    for (const searchParams of [
+      {},
+      { returnTo: "/doctors?specialty=Кардіолог#doctor-card-pshenychna-valentyna" },
+      { returnTo: ["/services/screening-40#screening-doctors", "/doctors"] },
+    ]) {
+      const props = {
+        params: Promise.resolve({ id }), searchParams: Promise.resolve(searchParams),
+      };
+      const html = await renderProfileWithDelayedMetadata(profile, props);
+      const head = html.match(/<head>([\s\S]*?)<\/head>/)?.[1] ?? "";
+      const canonicalLinks = [...html.matchAll(/<link\b[^>]*rel="canonical"[^>]*>/g)].map(([tag]) => tag);
+      assert.equal(canonicalLinks.length, 1);
+      assert.ok(head.includes(canonicalLinks[0]));
+      assert.ok(canonicalLinks[0].includes(`href="${expectedCanonical}"`));
+      const metadata = await profile.generateMetadata(props);
+      assert.equal(metadata.title, `${doctor.name} — Здорова Родина`);
+      assert.equal(metadata.robots, undefined);
+    }
+  }
 });
 
 test("hidden and deleted default doctor profiles return 404 instead of resurrecting the bundled profile", async (context) => {
