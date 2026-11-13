@@ -53,7 +53,7 @@ function PriceOption({
           aria-label={`Записатися на ${item.name}`}
         >
           <strong>{item.amount.toLocaleString("uk-UA")} грн</strong>
-          <span className={styles.priceBookingAction}>Записатися <span aria-hidden="true">→</span></span>
+          <span className={styles.priceBookingAction}>Записатися</span>
         </Link>
       ) : item ? (
         <span className={styles.priceStatic}>
@@ -91,7 +91,6 @@ export function MriPriceTabs({ items }: Props) {
     ? active
     : (availableGroups[0]?.id ?? "head");
   const selectedGroupMeta = availableGroups.find((group) => group.id === selectedGroup);
-  const visibleItems = groupedPairs.get(selectedGroup) ?? [];
 
   useEffect(() => {
     const syncCategoryFromHash = () => {
@@ -216,12 +215,14 @@ export function MriPriceTabs({ items }: Props) {
             <button
               className={selectedGroup === group.id ? styles.priceTabActive : styles.priceTab}
               data-price-group={group.id}
+              id={`mri-price-tab-${group.id}`}
               key={group.id}
               onClick={() => {
                 selectGroup(group.id);
               }}
               onKeyDown={(event) => handleTabKeyDown(event, index)}
               role="tab"
+              aria-controls={`mri-price-panel-${group.id}`}
               aria-selected={selectedGroup === group.id}
               tabIndex={selectedGroup === group.id ? 0 : -1}
               type="button"
@@ -233,20 +234,30 @@ export function MriPriceTabs({ items }: Props) {
         </div>
       </div>
 
-      <div className={`${styles.priceTable} ${selectedGroup === "additional" ? mri.additionalPrices : ""}`} role="table" aria-label={`Ціни МРТ: ${MRI_PRICE_GROUPS.find((group) => group.id === selectedGroup)?.label ?? "Категорія"}`}>
-        <div className={`${styles.priceTableHead} ${mri.neutralPriceHeader}`} role="row">
-          <span role="columnheader">Дослідження</span>
-          <span role="columnheader">{selectedGroup === "additional" ? "Вартість" : "Без контрасту"}</span>
-          {selectedGroup !== "additional" && <span role="columnheader">З контрастом</span>}
-        </div>
-        {visibleItems.map((item) => (
-          <div className={`${styles.priceRow} ${mri.neutralPriceRow}`} key={item.id} role="row">
-            <strong className={styles.priceTitle} role="rowheader">{item.name}</strong>
-            <PriceOption item={item.withoutContrast} label={selectedGroup === "additional" ? "Вартість" : "Без контрасту"} />
-            {selectedGroup !== "additional" && <PriceOption item={item.withContrast} label="З контрастом" contrast />}
+      {availableGroups.map((group) => (
+        <div
+          key={group.id}
+          id={`mri-price-panel-${group.id}`}
+          role="tabpanel"
+          aria-labelledby={`mri-price-tab-${group.id}`}
+          hidden={selectedGroup !== group.id}
+        >
+          <div className={`${styles.priceTable} ${group.id === "additional" ? mri.additionalPrices : ""}`} role="table" aria-label={`Ціни МРТ: ${group.label}`}>
+            <div className={`${styles.priceTableHead} ${mri.neutralPriceHeader}`} role="row">
+              <span role="columnheader">Дослідження</span>
+              <span role="columnheader">{group.id === "additional" ? "Вартість" : "Без контрасту"}</span>
+              {group.id !== "additional" && <span role="columnheader">З контрастом</span>}
+            </div>
+            {(groupedPairs.get(group.id) ?? []).map((item) => (
+              <div className={`${styles.priceRow} ${mri.neutralPriceRow}`} key={item.id} role="row">
+                <strong className={styles.priceTitle} role="rowheader">{item.name}</strong>
+                <PriceOption item={item.withoutContrast} label={group.id === "additional" ? "Вартість" : "Без контрасту"} />
+                {group.id !== "additional" && <PriceOption item={item.withContrast} label="З контрастом" contrast />}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }
