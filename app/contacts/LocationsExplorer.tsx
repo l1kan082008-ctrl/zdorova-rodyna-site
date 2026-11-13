@@ -6,8 +6,10 @@ import { useModalDialog } from "../components/useModalDialog";
 
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
+import { sitePhoneHref } from "@/lib/siteSettings";
 import styles from "./LocationsExplorer.module.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import {
   branchServiceCatalog,
   getDirectionsUrl,
@@ -72,6 +74,7 @@ function BranchServiceTags({ services }: { services: BranchServiceId[] }) {
 }
 
 function getHoursForDay(location: CenterLocation, day: number | null) {
+  if (location.hours.length === 0) return "Графік уточнюйте у відділенні";
   if (day === null || location.hours.length === 1) {
     return location.hours[0];
   }
@@ -115,9 +118,6 @@ export function LocationsExplorer({
   const photoTrackWidthRef = useRef(0);
   const photoIndexRef = useRef(0);
   const photoTargetRef = useRef<number | null>(null);
-  useModalDialog({ open: openLocationId !== null, dialogRef: mediaDialogRef,
-    initialFocusRef: mediaCloseRef, onClose: () => setOpenLocationId(null) });
-
   const selectableLocations = useMemo(() => locations.filter(location => !isInformationOnlyLocation(location)), [locations]);
   const cities = useMemo(
     () => Array.from(new Set(selectableLocations.map((location) => location.city))),
@@ -126,16 +126,18 @@ export function LocationsExplorer({
 
   const selectedLocation =
     selectableLocations.find((location) => location.id === selectedLocationId) ??
-    selectableLocations[0] ?? locations[0];
+    selectableLocations[0];
 
   const openLocation = useMemo(
     () =>
-      locations.find((location) => location.id === openLocationId) ??
+      selectableLocations.find((location) => location.id === openLocationId) ??
       null,
-    [locations, openLocationId],
+    [selectableLocations, openLocationId],
   );
+  useModalDialog({ open: openLocation !== null, dialogRef: mediaDialogRef,
+    initialFocusRef: mediaCloseRef, onClose: () => setOpenLocationId(null) });
   const visibleLocations = selectableLocations.filter(
-    (location) => location.city === selectedLocation.city,
+    (location) => location.city === selectedLocation?.city,
   );
   const photoCount = openLocation?.gallery.length ?? 0;
 
@@ -223,7 +225,7 @@ export function LocationsExplorer({
       left: Math.max(0, activeCity.offsetLeft - 16),
       behavior: "smooth",
     });
-  }, [selectedLocation.city]);
+  }, [selectedLocation?.city]);
 
   useEffect(() => {
     if (!openLocation) {
@@ -281,6 +283,24 @@ export function LocationsExplorer({
     }
   };
 
+  const handleCityKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
+    let nextIndex = index;
+    if (event.key === "ArrowRight") nextIndex = (index + 1) % cities.length;
+    else if (event.key === "ArrowLeft") nextIndex = (index + cities.length - 1) % cities.length;
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = cities.length - 1;
+    else return;
+    event.preventDefault();
+    const nextLocation = selectableLocations.find(location => location.city === cities[nextIndex]);
+    if (!nextLocation) return;
+    selectLocation(nextLocation);
+    cityNavRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[nextIndex]?.focus();
+  };
+
+  if (!selectedLocation) {
+    return <section id="locations" className="branch-directory" aria-label="Наші відділення"><p>Інформація про відділення уточнюється.</p></section>;
+  }
+
   return (
     <>
       <section id="locations" style={{ scrollMarginTop: 100 }} className="branch-directory" aria-label="Наші відділення">
@@ -293,7 +313,7 @@ export function LocationsExplorer({
               aria-label="Міста"
               ref={cityNavRef}
             >
-              {cities.map((city) => {
+              {cities.map((city, index) => {
                 const cityLocations = selectableLocations.filter(
                   (location) => location.city === city,
                 );
@@ -304,9 +324,13 @@ export function LocationsExplorer({
                     className={isActive ? "is-active" : ""}
                     type="button"
                     role="tab"
+                    id={`branch-city-tab-${index}`}
+                    aria-controls={`branch-city-panel-${index}`}
                     aria-selected={isActive}
+                    tabIndex={isActive ? 0 : -1}
                     key={city}
                     onClick={() => selectLocation(cityLocations[0])}
+                    onKeyDown={event => handleCityKeyDown(event, index)}
                   >
                     {city}
                   </button>
@@ -317,8 +341,17 @@ export function LocationsExplorer({
         </div>
 
         <div className={`branch-navigator ${styles.navigator}${visibleLocations.length === 1 ? " branch-navigator--single" : ""}`}>
-          <div className="branch-navigation-list">
-            {visibleLocations.map((location) => {
+          {cities.map((city, cityIndex) => {
+            const cityLocations = selectableLocations.filter(location => location.city === city);
+            return <div
+              className={`branch-navigation-list ${styles.cityPanel}`}
+              id={`branch-city-panel-${cityIndex}`}
+              role="tabpanel"
+              aria-labelledby={`branch-city-tab-${cityIndex}`}
+              hidden={city !== selectedLocation.city}
+              key={city}
+            >
+            {cityLocations.map((location) => {
               const isActive = location.id === selectedLocation.id;
               const galleryCover = location.gallery[0];
               const previewPhoto = location.id === "kostopil-hrushevskoho-4"
@@ -329,11 +362,13 @@ export function LocationsExplorer({
                 <button
                   className={`branch-navigation-item ${styles.locationCard}${isActive ? " is-active" : ""}`}
                   type="button"
+                  id={`branch-location-button-${location.id}`}
+                  aria-controls={`branch-location-panel-${location.id}`}
                   aria-pressed={isActive}
                   key={location.id}
                   onClick={() => selectLocation(location, true)}
                 >
-                  <LocationPreview photo={previewPhoto} single={visibleLocations.length === 1} />
+                  <LocationPreview photo={previewPhoto} single={cityLocations.length === 1} />
                   <span className="branch-navigation-copy">
                     <strong>{location.address}</strong>
                     <small>
@@ -348,7 +383,8 @@ export function LocationsExplorer({
                 </button>
               );
             })}
-          </div>
+          </div>;
+          })}
 
           <aside
             className="branch-navigator-map"
@@ -369,28 +405,37 @@ export function LocationsExplorer({
                 referrerPolicy="no-referrer-when-downgrade"
               />
             </div>
-            <div className="branch-navigator-map-card">
+            {selectableLocations.map(location => (
+            <div
+              className={`branch-navigator-map-card ${styles.locationPanel}`}
+              id={`branch-location-panel-${location.id}`}
+              data-location-panel={location.id}
+              role="region"
+              aria-labelledby={`branch-location-title-${location.id}`}
+              hidden={location.id !== selectedLocation.id}
+              key={location.id}
+            >
               <div className="branch-navigator-map-copy">
-                <span>{selectedLocation.type}</span>
-                <h3>{selectedLocation.address}</h3>
-                <BranchServiceTags services={selectedLocation.services} />
+                <span>{location.type} · {location.city}</span>
+                <h3 id={`branch-location-title-${location.id}`}>{location.fullAddress}</h3>
+                <BranchServiceTags services={location.services} />
                 <div className="branch-desktop-hours">
                   <strong>Графік роботи</strong>
                   <div>
-                    {selectedLocation.hours.map((line) => (
+                    {location.hours.map((line) => (
                       <span key={line}>{line}</span>
                     ))}
                   </div>
                 </div>
                 <div className="branch-today-hours">
-                  <strong>Сьогодні</strong>
-                  <span>{getHoursForDay(selectedLocation, currentDay)}</span>
+                  <strong>{location.hours.length === 1 ? "Графік роботи" : "Сьогодні"}</strong>
+                  <span>{getHoursForDay(location, currentDay)}</span>
                 </div>
-                {selectedLocation.hours.length > 1 ? (
+                {location.hours.length > 1 ? (
                   <details className="branch-full-hours">
                     <summary>Увесь графік</summary>
                     <div>
-                      {selectedLocation.hours.map((line) => (
+                      {location.hours.map((line) => (
                         <span key={line}>{line}</span>
                       ))}
                     </div>
@@ -398,17 +443,17 @@ export function LocationsExplorer({
                 ) : null}
               </div>
               <div className="branch-navigator-actions">
-                <a className="branch-direct-phone" href={`tel:${selectedLocation.phone}`}>{selectedLocation.phone}</a>
-                <a className="book-button branch-direct-call" href={`tel:${selectedLocation.phone}`}>
+                {location.phone && <><a className="branch-direct-phone" href={sitePhoneHref(location.phone)}>{location.phone}</a>
+                <a className="book-button branch-direct-call" href={sitePhoneHref(location.phone)}>
                   Зателефонувати у відділення
-                </a>
-                <button type="button" onClick={() => showLocation(selectedLocation)}>
+                </a></>}
+                <button type="button" onClick={() => showLocation(location)}>
                   <svg className="branch-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true"><path d="M4 6h3l2-3h6l2 3h3a2 2 0 0 1 2 2v11H2V8a2 2 0 0 1 2-2Z"/><circle cx="12" cy="12" r="4"/></svg>
                   <span>Фото і відео</span>
                 </button>
                 <a
                   className="outline-button"
-                  href={getDirectionsUrl(selectedLocation)}
+                  href={getDirectionsUrl(location)}
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -417,6 +462,7 @@ export function LocationsExplorer({
                 </a>
               </div>
             </div>
+            ))}
           </aside>
         </div>
       </section>

@@ -1,3 +1,8 @@
+.cityPanel[hidden],
+.locationPanel[hidden] {
+  display: none !important;
+}
+
 :global(body .contacts-page--compact) .navigator {
   grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
   align-items: start;

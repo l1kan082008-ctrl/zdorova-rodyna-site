@@ -12,6 +12,8 @@ export default function ContactsLayout({
   children: React.ReactNode;
 }>) {
   return <>
+    {/* React hoists this link into the initial head, including URL variants. */}
+    <link rel="canonical" href="https://zdorovarodynaplus.com.ua/contacts" />
     <link rel="preconnect" href="https://www.google.com" />
     {children}
   </>;
