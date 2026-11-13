@@ -185,6 +185,12 @@ export default async function ServiceDetailPage({
   const service = getServiceDetail(slug);
   if (!service) notFound();
 
+  // React hoists this server-rendered link into the initial head, including
+  // responses for agents that receive streamed generateMetadata.
+  const canonical = ["ct", "mri", "ultrasound", "lab"].includes(slug) ? (
+    <link rel="canonical" href={`https://zdorovarodynaplus.com.ua/services/${slug}`} />
+  ) : null;
+
   if (slug === "screening-40") return <ScreeningServicePage service={service} />;
 
   const bookingCategory = ["ultrasound", "ct", "mri"].includes(service.slug) ? service.slug : null;
@@ -251,7 +257,7 @@ export default async function ServiceDetailPage({
     ]);
     const mriPrices = prices.filter(item => item.category === "mri" && item.isActive !== false);
     const rohal = doctors.find(doctor => doctor.id === "rohalskyi-vitalii");
-    return <MriServicePage service={service} doctors={rohal ? [rohal] : []} prices={mriPrices.length ? mriPrices : catalogItems.filter(item => item.category === "mri" && item.isActive !== false)} bookingHref={bookingHref} priceHref={priceHref} />;
+    return <>{canonical}<MriServicePage service={service} doctors={rohal ? [rohal] : []} prices={mriPrices.length ? mriPrices : catalogItems.filter(item => item.category === "mri" && item.isActive !== false)} bookingHref={bookingHref} priceHref={priceHref} /></>;
   }
   if (isCinematicCt) {
     const [doctors, prices] = await Promise.all([
@@ -269,13 +275,16 @@ export default async function ServiceDetailPage({
     );
 
     return (
-      <CtServicePage
-        service={service}
-        doctors={radiologists}
-        prices={ctPrices.length > 0 ? ctPrices : fallbackCtPrices}
-        bookingHref={bookingHref}
-        priceHref={priceHref}
-      />
+      <>
+        {canonical}
+        <CtServicePage
+          service={service}
+          doctors={radiologists}
+          prices={ctPrices.length > 0 ? ctPrices : fallbackCtPrices}
+          bookingHref={bookingHref}
+          priceHref={priceHref}
+        />
+      </>
     );
   }
   const relevantDoctors = isCardiology || isFamilyMedicine
@@ -319,6 +328,7 @@ export default async function ServiceDetailPage({
 
   return (
     <main className={`inner-page service-detail-page${isHomeNurse ? " home-nurse-page" : ""}${isCardiology ? " cardiology-page" : ""}${isCinematicUltrasound ? " ultrasound-page" : ""}${isCinematicAudiometry ? " audiometry-page" : ""}`}>
+      {canonical}
       <SiteHeader active="services" />
 
       {isCinematicHolter && (
