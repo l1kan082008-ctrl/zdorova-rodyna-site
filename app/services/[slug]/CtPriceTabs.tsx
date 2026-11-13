@@ -108,7 +108,7 @@ function PriceOption({
           aria-label={`Записатися на ${item.name}`}
         >
           <strong>{item.amount.toLocaleString("uk-UA")} грн</strong>
-          <span className={styles.priceBookingAction}>Записатися <span aria-hidden="true">→</span></span>
+          <span className={styles.priceBookingAction}>Записатися</span>
         </Link>
       ) : item ? (
         <span className={styles.priceStatic}>
