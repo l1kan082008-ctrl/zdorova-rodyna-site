@@ -11,7 +11,6 @@ export function UltrasoundPriceList({ items }: { items: Item[] }) {
   const contentId = useId();
   const toggleRef = useRef<HTMLButtonElement>(null);
   const hasMore = items.length > PREVIEW_COUNT;
-  const visibleItems = expanded ? items : items.slice(0, PREVIEW_COUNT);
 
   function toggle() {
     setExpanded(value => !value);
@@ -27,7 +26,15 @@ export function UltrasoundPriceList({ items }: { items: Item[] }) {
     <div className="ultrasound-collapsible-prices">
       <div id={contentId} className="ultrasound-price-rows">
         <div className="ultrasound-price-head" aria-hidden="true"><span>Дослідження</span><span>Ціна</span><span>Запис</span></div>
-        {visibleItems.map(item => <UltrasoundPriceRow key={item.id} priceItemId={item.id} name={item.name} amount={item.amount} />)}
+        {items.map((item, index) => (
+          <UltrasoundPriceRow
+            key={item.id}
+            priceItemId={item.id}
+            name={item.name}
+            amount={item.amount}
+            hidden={!expanded && index >= PREVIEW_COUNT}
+          />
+        ))}
       </div>
       {hasMore && <div className="ultrasound-price-controls ultrasound-price-controls-bottom">
         <button ref={toggleRef} type="button" className="outline-button" aria-expanded={expanded} aria-controls={contentId} onClick={toggle}>

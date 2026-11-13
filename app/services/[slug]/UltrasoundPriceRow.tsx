@@ -43,11 +43,11 @@ function guidance(name: string): Guidance {
   return { purpose: parts.join(" ") || "Опис цього дослідження уточнюється.", preparation: prep.join(" ") || "Особливі вимоги до підготовки уточніть під час запису; візьміть попередні результати обстеження." };
 }
 
-export function UltrasoundPriceRow({ priceItemId, name, amount }: { priceItemId: string; name: string; amount: number }) {
+export function UltrasoundPriceRow({ priceItemId, name, amount, hidden = false }: { priceItemId: string; name: string; amount: number; hidden?: boolean }) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const info = guidance(name);
-  return <div className="ultrasound-price-row">
+  return <div className="ultrasound-price-row" hidden={hidden}>
     <div><h3>{name}</h3></div>
     <strong>{new Intl.NumberFormat("uk-UA").format(amount)} грн</strong>
     <Link className="book-button" href={"/contacts?service=" + encodeURIComponent(name) + "&bookingCategory=ultrasound&priceItemId=" + encodeURIComponent(priceItemId) + "&location=stelmakha-18m#booking"}>Записатися</Link>
