@@ -1,18 +1,16 @@
-import { isInformationOnlyLocation } from "../../../lib/locationPolicy";
-import { listLocations } from "./locationStore";
-import { centerLocations } from "../../contacts/locationData";
+import { listPublicLocations } from "./publicLocations";
 
 export async function GET() {
   // Local previews can read the bundled catalogue without a database.
   // Configured databases and production must still surface real failures.
   if (process.env.NODE_ENV === "development" && !process.env.DATABASE_URL?.trim()) {
-    return Response.json({ locations: centerLocations }, {
+    return Response.json({ locations: await listPublicLocations() }, {
       headers: { "cache-control": "no-store" },
     });
   }
   try {
-    const locations = await listLocations();
-    return Response.json({ locations: locations.filter(location => !isInformationOnlyLocation(location)) });
+    const locations = await listPublicLocations();
+    return Response.json({ locations });
   } catch (error) {
     const incidentId = crypto.randomUUID();
     console.error(JSON.stringify({

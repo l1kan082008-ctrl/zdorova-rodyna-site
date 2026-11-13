@@ -31,6 +31,8 @@ import { HolterEquipment } from "./HolterEquipment";
 import { HolterFaq, HolterOverview } from "./HolterInformation";
 import { holterSeoDescription, holterSeoImage, holterSeoTitle, holterStructuredData, holterUrl } from "../holterContent";
 import { LabInformation } from "./LabInformation";
+import { LabLocations } from "./LabLocations";
+import { listPublicLocations } from "../../api/locations/publicLocations";
 import { ScreeningServicePage } from "./ScreeningServicePage";
 import { screeningSeoDescription, screeningSeoImage, screeningSeoTitle, screeningUrl } from "../screeningContent";
 
@@ -242,6 +244,7 @@ export default async function ServiceDetailPage({
   const laboratoryPhoneHref = isCinematicLaboratory
     ? sitePhoneHref((await getSiteSettings()).phone)
     : undefined;
+  const laboratoryLocations = isCinematicLaboratory ? await listPublicLocations() : [];
   const isFamilyMedicine = service.slug === "family";
   const isConsultation = service.slug === "consultation";
   const isCompactProcedure = [
@@ -1374,6 +1377,7 @@ export default async function ServiceDetailPage({
         </section>
       )}
       {service.slug === "lab" && <LabInformation service={service} />}
+      {isCinematicLaboratory && <LabLocations locations={laboratoryLocations} />}
       {!isCardiology && !isFamilyMedicine && !isConsultation && service.slug !== "lab" ? (
       <section className="service-information-grid">
         {!isCinematicUltrasound && <article>
