@@ -1,5 +1,11 @@
 import { isInformationOnlyLocation } from "./locationPolicy";
+import { priceReferences } from "../app/prices/priceReferences";
 import type { BranchServiceId, CenterLocation } from "../app/contacts/locationData";
+
+const holterServiceNames = new Set<string>([
+  ...priceReferences.holter.aliases,
+  "Холтерівське моніторування ЕКГ",
+].map(name => name.trim().toLocaleLowerCase("uk-UA").replace(/\s+/gu, " ")));
 
 export function serviceCategory(service: string): BranchServiceId | null {
   if (/^КТ(?:\s|$)/u.test(service)) return "ct";
@@ -11,7 +17,8 @@ export function serviceCategory(service: string): BranchServiceId | null {
 }
 
 export function compatibleLocations(locations: CenterLocation[], service: string) {
-  if (["Кардіологія", "Кардіологія та діагностика серця"].includes(service.trim())) {
+  if (["Кардіологія", "Кардіологія та діагностика серця"].includes(service.trim())
+    || holterServiceNames.has(service.trim().toLocaleLowerCase("uk-UA").replace(/\s+/gu, " "))) {
     return locations.filter(location => location.id === "stelmakha-18m");
   }
   const category = serviceCategory(service);

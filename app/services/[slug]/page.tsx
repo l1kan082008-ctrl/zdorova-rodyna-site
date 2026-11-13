@@ -28,6 +28,7 @@ import { ConsultationExperience } from "./ConsultationExperience";
 import { CtServicePage } from "./CtServicePage";
 import { MriServicePage } from "./MriServicePage";
 import { HolterEquipment } from "./HolterEquipment";
+import { HolterPriceBooking } from "./HolterPriceBooking";
 import { HolterFaq, HolterOverview } from "./HolterInformation";
 import { holterSeoDescription, holterSeoImage, holterSeoTitle, holterStructuredData, holterUrl } from "../holterContent";
 import { LabInformation } from "./LabInformation";
@@ -245,6 +246,14 @@ export default async function ServiceDetailPage({
     ? sitePhoneHref((await getSiteSettings()).phone)
     : undefined;
   const laboratoryLocations = isCinematicLaboratory ? await listPublicLocations() : [];
+  const [holterPrices, holterLocations] = isCinematicHolter
+    ? await Promise.all([
+        process.env.NODE_ENV === "development" && !process.env.DATABASE_URL?.trim()
+          ? Promise.resolve(catalogItems.filter(item => item.isActive !== false))
+          : listPublicPriceItems().catch(() => []),
+        listPublicLocations().catch(() => []),
+      ])
+    : [[], []];
   const isFamilyMedicine = service.slug === "family";
   const isConsultation = service.slug === "consultation";
   const isCompactProcedure = [
@@ -360,9 +369,9 @@ export default async function ServiceDetailPage({
               <Link className="book-button" href={bookingHref}>
                 Записатися <span>→</span>
               </Link>
-              <Link className="outline-button" href={priceHref}>
+              <a className="outline-button" href="#holter-price-booking">
                 Переглянути вартість <span>→</span>
-              </Link>
+              </a>
             </div>
           </div>
           <div className="holter-cinematic-signal" aria-hidden="true">
@@ -1251,6 +1260,8 @@ export default async function ServiceDetailPage({
             ))}
       </section>
       ) : null}
+
+      {isCinematicHolter && <HolterPriceBooking prices={holterPrices} locations={holterLocations} serviceName={service.title} priceHref={priceHref} />}
 
       {isConsultation ? (
         <ConsultationExperience />
