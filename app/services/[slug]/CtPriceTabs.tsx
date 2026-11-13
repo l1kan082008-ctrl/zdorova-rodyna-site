@@ -145,7 +145,6 @@ export function CtPriceTabs({ items }: Props) {
     ? active
     : (availableGroups[0]?.id ?? "head");
   const selectedGroupMeta = availableGroups.find((group) => group.id === selectedGroup);
-  const visibleItems = groupedPairs.get(selectedGroup) ?? [];
 
   useEffect(() => {
     const syncCategoryFromHash = () => {
@@ -270,12 +269,14 @@ export function CtPriceTabs({ items }: Props) {
             <button
               className={selectedGroup === group.id ? styles.priceTabActive : styles.priceTab}
               data-price-group={group.id}
+              id={`ct-price-tab-${group.id}`}
               key={group.id}
               onClick={() => {
                 selectGroup(group.id);
               }}
               onKeyDown={(event) => handleTabKeyDown(event, index)}
               role="tab"
+              aria-controls={`ct-price-panel-${group.id}`}
               aria-selected={selectedGroup === group.id}
               tabIndex={selectedGroup === group.id ? 0 : -1}
               type="button"
@@ -287,20 +288,30 @@ export function CtPriceTabs({ items }: Props) {
         </div>
       </div>
 
-      <div className={styles.priceTable} role="table" aria-label={`Ціни КТ: ${CT_PRICE_GROUPS.find((group) => group.id === selectedGroup)?.label ?? "Категорія"}`}>
-        <div className={styles.priceTableHead} role="row">
-          <span role="columnheader">Дослідження</span>
-          <span role="columnheader">Без контрасту</span>
-          <span role="columnheader">З контрастом</span>
-        </div>
-        {visibleItems.map((item) => (
-          <div className={styles.priceRow} key={item.id} role="row">
-            <strong className={styles.priceTitle} role="rowheader">{item.name}</strong>
-            <PriceOption item={item.withoutContrast} label="Без контрасту" />
-            <PriceOption item={item.withContrast} label="З контрастом" contrast />
+      {availableGroups.map((group) => (
+        <div
+          key={group.id}
+          id={`ct-price-panel-${group.id}`}
+          role="tabpanel"
+          aria-labelledby={`ct-price-tab-${group.id}`}
+          hidden={selectedGroup !== group.id}
+        >
+          <div className={styles.priceTable} role="table" aria-label={`Ціни КТ: ${group.label}`}>
+            <div className={styles.priceTableHead} role="row">
+              <span role="columnheader">Дослідження</span>
+              <span role="columnheader">Без контрасту</span>
+              <span role="columnheader">З контрастом</span>
+            </div>
+            {(groupedPairs.get(group.id) ?? []).map((item) => (
+              <div className={styles.priceRow} key={item.id} role="row">
+                <strong className={styles.priceTitle} role="rowheader">{item.name}</strong>
+                <PriceOption item={item.withoutContrast} label="Без контрасту" />
+                <PriceOption item={item.withContrast} label="З контрастом" contrast />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }
