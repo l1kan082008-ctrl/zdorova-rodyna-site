@@ -130,6 +130,14 @@ export async function generateMetadata(
     };
   }
 
+  if (slug === "audiometry") {
+    return {
+      title: "Аудіометрія у Рівному — перевірка слуху | Здорова Родина",
+      description:
+        "Аудіометрія у медичному центрі «Здорова Родина» у Рівному. Як проходить перевірка слуху, підготовка до обстеження та запис телефоном або через сайт.",
+    };
+  }
+
   if (slug === "ultrasound") {
     return {
       title: "УЗД у Рівному та Звягелі — ціни | Здорова Родина",
@@ -190,7 +198,7 @@ export default async function ServiceDetailPage({
 
   // React hoists this server-rendered link into the initial head, including
   // responses for agents that receive streamed generateMetadata.
-  const canonical = ["ct", "mri", "ultrasound", "lab"].includes(slug) ? (
+  const canonical = ["ct", "mri", "ultrasound", "lab", "audiometry"].includes(slug) ? (
     <link rel="canonical" href={`https://zdorovarodynaplus.com.ua/services/${slug}`} />
   ) : null;
 
