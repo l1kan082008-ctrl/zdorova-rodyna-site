@@ -198,7 +198,20 @@ export default async function ServiceDetailPage({
 
   // React hoists this server-rendered link into the initial head, including
   // responses for agents that receive streamed generateMetadata.
-  const canonical = ["ct", "mri", "ultrasound", "lab", "audiometry"].includes(slug) ? (
+  const canonical = [
+    "ct",
+    "mri",
+    "ultrasound",
+    "lab",
+    "audiometry",
+    "consultation",
+    "cardiology",
+    "home-nurse",
+    "wart-removal",
+    "ear-piercing",
+    "dermoscopy",
+    "family",
+  ].includes(slug) ? (
     <link rel="canonical" href={`https://zdorovarodynaplus.com.ua/services/${slug}`} />
   ) : null;
 
