@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-11-17",
+  "environment": "http://127.0.0.1:3118",
+  "published": false,
+  "visualCoherence": 9.5,
+  "componentConsistency": 9,
+  "responsive": 9.5,
+  "typography": 9.5,
+  "layoutSpacing": 9,
+  "accessibility": 9.5,
+  "performance": 10,
+  "motion": 9,
+  "contentFlow": 9.5,
+  "stateCoverage": 9,
+  "evidence": {
+    "design": "Existing unboxed editorial rows, Manrope, teal headings, orange section marks, neutral dividers and shared outline action. No Design DNA changes.",
+    "viewports": ["1331x864", "768x1024", "390x844", "320x740"],
+    "verified": [
+      "All four biographies have semantic headings, lists and strong emphasis in server HTML; no raw formatting markers.",
+      "Instagram appears once for each Chumak and has a visible keyboard focus ring and a 44px target. Source links to LifeScan are removed.",
+      "No horizontal page overflow at desktop, 390px or 320px; tablet stacks section labels above facts.",
+      "Legacy non-partner profiles retain the original paragraph renderer.",
+      "Existing certificates retain counts 23, 0, 42 and 27.",
+      "All four profiles return 200 with one correct canonical.",
+      "TypeScript and 64 pricing/rendering tests pass. Parser escapes HTML and preserves legacy plain-text paragraphs.",
+      "No client component, library, image or animation was added for the biography layout."
+    ],
+    "contentCorrection": "Pavliuk medical practice starts in 2020 according to the directly retrieved LifeScan HTML; an older cached extraction said 2016.",
+    "screenshots": [
+      "work/lifescan-doctors/qa/structured-biography-desktop.jpg",
+      "work/lifescan-doctors/qa/structured-biography-tablet.jpg",
+      "work/lifescan-doctors/qa/structured-biography-mobile.jpg"
+    ]
+  }
+}

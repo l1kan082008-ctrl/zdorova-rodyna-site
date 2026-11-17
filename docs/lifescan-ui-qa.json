@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-11-17",
+  "environment": "http://127.0.0.1:3118",
+  "published": false,
+  "visualCoherence": 9.5,
+  "componentConsistency": 9,
+  "responsive": 9,
+  "typography": 9,
+  "layoutSpacing": 9,
+  "accessibility": 9,
+  "performance": 9,
+  "motion": 9,
+  "contentFlow": 9,
+  "stateCoverage": 9,
+  "evidence": {
+    "viewports": ["1280x720", "768x1024", "390x844", "844x390"],
+    "verified": [
+      "Four profiles return 200 with one self-referencing canonical each.",
+      "SSR preview counts are 23, 0, 42 and 27; no full certificate images or dialog while closed.",
+      "All 92 document assets and their thumbnails exist; source downloads decoded successfully.",
+      "Desktop, tablet and mobile document viewers fit their viewports; portrait and landscape certificates preserve aspect ratio.",
+      "Previous/next controls, thumbnail selection, keyboard arrows, zoom and close work.",
+      "Escape restores focus to the opening preview; Shift+Tab wraps within the dialog; background scrolling is locked.",
+      "No horizontal page overflow; preview and thumbnail rails scroll independently.",
+      "Nine radiologists have the requested ordering; CT retains its existing five doctors.",
+      "TypeScript passes; 90 existing tests pass."
+    ],
+    "limitations": [
+      "Touch swipe and pinch cancellation were code-reviewed; physical touch gestures were not exercised by browser automation.",
+      "Loading/error and reduced-motion branches were reviewed in code; a failed image response was not artificially injected.",
+      "Existing development-only CSP eval diagnostic appears in Next.js; no new certificate viewer runtime errors were observed.",
+      "Production doctor rows are not created by the defaults update; see lifescan-doctors-sources.json publication notes."
+    ],
+    "screenshots": [
+      "work/lifescan-doctors/qa/certificates-desktop.jpg",
+      "work/lifescan-doctors/qa/viewer-desktop.jpg",
+      "work/lifescan-doctors/qa/viewer-mobile.jpg",
+      "work/lifescan-doctors/qa/viewer-landscape.jpg"
+    ]
+  }
+}

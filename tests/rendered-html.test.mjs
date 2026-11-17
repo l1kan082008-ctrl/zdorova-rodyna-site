@@ -18,8 +18,12 @@ test("database stores keep values out of SQL text", async () => {
   const stores = await Promise.all(storePaths.map(readSource));
 
   for (const [index, source] of stores.entries()) {
+    // A variable-length IN clause may interpolate placeholders, never ID values.
+    const placeholderList = '${ids.map(() => "?").join(", ")}';
+    const checkedSource = source.replaceAll(placeholderList, "?");
+    if (source.includes(placeholderList)) assert.match(source, /\)\.bind\(\.\.\.ids\)\.all<BookingRow>/);
     assert.doesNotMatch(
-      source,
+      checkedSource,
       /\.prepare\(\s*`[^`]*\$\{/,
       `${storePaths[index]} must not interpolate values into SQL`,
     );
@@ -450,7 +454,7 @@ test("MRI page features the real 2026 Siemens MAGNETOM Flow Plus", async () => {
     ),
   ]);
 
-  assert.match(await readSource("app/services/[slug]/page.tsx"), /return <MriServicePage/);
+  assert.match(await readSource("app/services/[slug]/page.tsx"), /<MriServicePage\s/);
   assert.match(page, /Siemens MAGNETOM Flow Plus/);
   assert.match(page, /2026 рік випуску/);
   assert.match(page, /src="\/service-heroes\/mri-cinematic-v1\.webp"/);
@@ -503,7 +507,7 @@ test("cardiology page includes Holter as a fourth service", async () => {
   assert.doesNotMatch(page, /cardiology-direct-booking is-primary/);
   assert.match(page, /includes\("кардіолог"\)/);
   assert.match(page, /encodeURIComponent\(option\.title\)/);
-  assert.match(page, /encodeURIComponent\(doctor\.name\)/);
+  assert.match(page, /doctorBookingHref\(doctor, option\.title\)/);
   assert.match(page, /id=\{isCardiology \? "cardiology-services"/);
   assert.match(css, /\.service-facts--booking\s*\{[\s\S]*?repeat\(4,/);
   assert.match(css, /\.cardiology-doctor-picker summary\s*\{/);
@@ -521,11 +525,11 @@ test("cardiology page includes Holter as a fourth service", async () => {
   assert.doesNotMatch(page, /className="cardiology-guide-services"/);
   assert.match(
     page,
-    /!isCardiology && !isFamilyMedicine && !isConsultation \? \([\s\S]*?className="service-information-grid"/,
+    /!isCardiology && !isFamilyMedicine && !isConsultation(?: && [^?\n]+)? \? \([\s\S]*?className="service-information-grid"/,
   );
   assert.match(
     page,
-    /!isCardiology && !isFamilyMedicine && !isConsultation \? \([\s\S]*?className="service-process"/,
+    /!isCardiology && !isFamilyMedicine && !isConsultation(?: && [^?\n]+)? \? \([\s\S]*?className="service-process"/,
   );
   assert.match(
     css,

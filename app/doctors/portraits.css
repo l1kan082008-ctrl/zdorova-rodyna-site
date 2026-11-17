@@ -22,3 +22,47 @@
 .doctor-detail-portrait-frame > .doctor-detail-portrait {
   object-position: center 12%;
 }
+
+/* Preserve the top of this tightly framed source at every portrait size. */
+.doctor-portrait[src*="ahii-vladyslava-selected"] {
+  box-sizing: border-box;
+  padding-top: 6%;
+  object-position: center top;
+  background: linear-gradient(90deg, #ccc6c1, #cac4bf 35%, #d2ccc7 82%, #cac4bf);
+}
+
+#doctor-card-ahii-vladyslava .doctor-photo-image {
+  transform-origin: center top;
+}
+
+/* Keep the full position readable in both mobile card densities. */
+.doctors-directory-v2 .doctor-profile-card-v2 .doctor-card-photo-identity .doctor-card-position {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+}
+
+.doctor-detail-shell .doctor-detail-content--structured {
+  display: block;
+  margin-top: 64px;
+}
+
+.doctor-detail-shell.doctor-detail-shell--certificates { padding-bottom: 16px; }
+
+.doctor-detail-shell .doctor-detail-content--structured .doctor-biography {
+  max-width: none;
+  padding: 0;
+}
+
+.doctor-detail-content--structured .doctor-biography > h2 {
+  margin: 12px 0 28px;
+  font-size: 36px;
+  font-weight: 450;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+@media (max-width: 760px) {
+  .doctor-detail-shell .doctor-detail-content--structured { margin-top: 48px; }
+  .doctor-detail-content--structured .doctor-biography > h2 { font-size: 28px; margin-bottom: 24px; }
+}

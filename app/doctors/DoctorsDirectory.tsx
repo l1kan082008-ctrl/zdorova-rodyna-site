@@ -15,6 +15,11 @@ import { DoctorProfileLink } from "../components/DoctorProfileLink";
 import {
   doctorPatientGroupOptions,
   getDoctorInitials,
+  getDoctorPosition,
+  getDoctorReportingModalities,
+  getDoctorExperienceLabel,
+  getMriReportingPartner,
+  mriReportingPartners,
   formatDoctorConsultations,
   getDoctorConsultationPrices,
   canBookDoctorConsultation,
@@ -42,6 +47,21 @@ const formatDoctorBranch = (branch: string) => {
 };
 
 type MobileDoctorView = "double" | "quad";
+
+const radiologyDoctorOrder = new Map(
+  [...new Set([
+    "rohalskyi-vitalii",
+    "pysarchuk-taras",
+    "zhyber-kostiantyn",
+    "verchenko-dmytro",
+    "novak-bohdana",
+    "deresh-nataliia",
+    "chumak-anatolii",
+    "radchenko-kateryna",
+    "ahii-vladyslava",
+    ...mriReportingPartners.map((partner) => partner.id),
+  ])].map((id, index) => [id, index]),
+);
 
 const directoryUrl = (nextSpecialty: string, nextQuery: string) => {
   const params = new URLSearchParams();
@@ -156,7 +176,7 @@ export function DoctorsDirectory({
   const filteredDoctors = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("uk");
 
-    return doctors.filter((doctor) => {
+    const matchingDoctors = doctors.filter((doctor) => {
       const matchesQuery =
         !normalized ||
         `${doctor.name} ${doctor.specialty} ${doctor.branch}`
@@ -174,6 +194,15 @@ export function DoctorsDirectory({
 
       return matchesQuery && matchesSpecialty;
     });
+
+    if (specialty === "group:radiology") {
+      matchingDoctors.sort((first, second) =>
+        (radiologyDoctorOrder.get(first.id) ?? radiologyDoctorOrder.size) -
+        (radiologyDoctorOrder.get(second.id) ?? radiologyDoctorOrder.size),
+      );
+    }
+
+    return matchingDoctors;
   }, [doctors, query, specialty, groupedSpecialties]);
 
   const visibleDoctors = filteredDoctors;
@@ -244,6 +273,9 @@ export function DoctorsDirectory({
       {visibleDoctors.length ? (
         <div className={`doctors-directory doctors-directory-v2 is-mobile-view-${mobileView}`}>
           {visibleDoctors.map((doctor) => {
+            const position = getDoctorPosition(doctor);
+            const reportingModalities = getDoctorReportingModalities(doctor);
+            const reportingPartner = getMriReportingPartner(doctor);
             const activeSchedule = getDoctorScheduleDays(doctor.schedule);
             const profileLinkLabel = doctor.biography.trim() ? "Біографія" : "Профіль";
             const returnTo = `${directoryUrl(specialty, query)}#doctor-card-${doctor.id}`;
@@ -317,6 +349,7 @@ export function DoctorsDirectory({
                     <span>
                       <b>{doctor.name}</b>
                       <small>{formatDoctorSpecialty(doctor.specialty)}</small>
+                      {position && <small className="doctor-card-position">{position}</small>}
                       {canBookDoctorConsultation(doctor) && consultationSummary && (<span className="doctor-card-consultation-price">
                         {doctor.repeatConsultationPrice != null ? consultationPrices.map(({ label, value }) => (
                           <span className="doctor-price-row" key={label}><span>{label}</span><span>{value}</span></span>
@@ -347,24 +380,28 @@ export function DoctorsDirectory({
 
                 <div className="doctor-profile-content doctor-card-editorial-content">
                   <div className="doctor-card-facts">
-                    <div>
+                    {(!reportingPartner || getDoctorExperienceLabel(doctor, "")) && <div>
                       <span>Досвід</span>
                       <strong>
-                        {doctor.experienceLabel ?? (doctor.experienceYears ? `${doctor.experienceYears} років` : "Уточнюйте")}
+                        {getDoctorExperienceLabel(doctor)}
                       </strong>
-                    </div>
+                    </div>}
                     {canBookDoctorConsultation(doctor) && (<div><span>Приймає</span><strong>{patientGroups || "Вік уточнюйте"}</strong></div>)}
                     <div>
-                      <span>Відділення</span>
-                      <strong className="doctor-branch-addresses">{splitDoctorBranches(doctor.branch).map(formatDoctorBranch).join("\n") || "Відділення уточнюйте"}</strong>
+                      <span>{reportingPartner ? reportingPartner.organization ? "Співпраця" : "Напрям роботи" : "Відділення"}</span>
+                      <strong className="doctor-branch-addresses">{reportingPartner ? reportingPartner.organization ? `Медичний центр ${reportingPartner.organization}` : "Опис МРТ-досліджень" : splitDoctorBranches(doctor.branch).map(formatDoctorBranch).join("\n") || "Відділення уточнюйте"}</strong>
                     </div>
                     {canBookDoctorConsultation(doctor) && consultationSummary && (<div>
                       <span>Консультація</span>
                       <strong>{consultationSummary}</strong>
                     </div>)}
+                    {reportingModalities && <div>
+                      <span>Що описує лікар</span>
+                      <strong>{reportingModalities}</strong>
+                    </div>}
                   </div>
 
-                  {activeSchedule.length ? <div className="doctor-card-schedule-line">
+                  {!reportingModalities && (activeSchedule.length ? <div className="doctor-card-schedule-line">
                     <div>
                       <span>Найближчий графік</span>
                       <strong>{getScheduleSummary(doctor.schedule)}</strong>
@@ -383,7 +420,7 @@ export function DoctorsDirectory({
                         ))}
                       </div>
                     </details>
-                  </div> : <p className="doctor-schedule-notice">{getDoctorScheduleNotice(doctor)}</p>}
+                  </div> : <p className="doctor-schedule-notice">{getDoctorScheduleNotice(doctor)}</p>)}
 
                   <div className={`doctor-card-text-actions${canBookScreening ? ` ${screeningStyles.cardActions}` : ""}`}>
                     {canBookScreening && (

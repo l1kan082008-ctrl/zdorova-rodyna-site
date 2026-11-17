@@ -3,9 +3,10 @@ import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
+import { DoctorProfileLink } from "../../components/DoctorProfileLink";
 import type { CenterLocation } from "../../contacts/locationData";
 import { centerLocations, getDirectionsUrl } from "../../contacts/locationData";
-import type { Doctor } from "../../doctors/doctorData";
+import { getDoctorPosition, mriReportingPartners, type Doctor } from "../../doctors/doctorData";
 import type { PriceItem } from "../../prices/priceData";
 import type { ServiceDetail } from "../serviceData";
 import { CtFaqAccordion } from "./CtFaqAccordion";
@@ -22,8 +23,12 @@ type Props = {
   priceHref: string;
 };
 
-// Keep the doctors panel disabled until the MRI reporting team is confirmed.
-const SHOW_MRI_DOCTORS = false;
+const mriDoctorIds = [...new Set([
+  "deresh-nataliia",
+  "chumak-anatolii",
+  "rohalskyi-vitalii",
+  ...mriReportingPartners.map(partner => partner.id),
+])];
 const areas = MRI_PRICE_GROUPS;
 const faq = [
   ["Як підготуватися до МРТ?", "Підготовка залежить від ділянки та протоколу. Під час запису уточніть рекомендації, візьміть направлення та результати попередніх досліджень."],
@@ -38,7 +43,10 @@ function SectionTitle({ eyebrow, title, lead }: { eyebrow?: string; title: strin
 
 export function MriServicePage({ service, doctors, prices, bookingHref }: Props) {
   const locations = centerLocations.filter(location => location.services.includes("mri"));
-  const shownDoctors = doctors.filter(doctor => doctor.isActive !== false && doctor.id === "rohalskyi-vitalii").slice(0, 1);
+  const shownDoctors = mriDoctorIds.flatMap(id => {
+    const doctor = doctors.find(item => item.id === id && item.isActive !== false);
+    return doctor ? [doctor] : [];
+  });
 
   return (
     <main className={`${styles.page} ${mri.page}`}>
@@ -94,9 +102,28 @@ export function MriServicePage({ service, doctors, prices, bookingHref }: Props)
           <div className={`${styles.equipmentMedia} ${mri.equipmentMedia}`}><div className={`${styles.equipmentImageFrame} ${mri.equipmentImageFrame}`}><Image className={`${styles.equipmentImage} ${mri.equipmentImage}`} src="/service-heroes/mri-flow-plus-dark-v3.webp" alt="МР-томограф Siemens MAGNETOM Flow Plus" fill quality={85} sizes="(max-width: 338px) 230px, (max-width: 426px) 68vw, (max-width: 760px) 290px, (max-width: 1288px) calc(42vw - 20px), 521px" /></div></div>
           <div className={styles.equipmentCopy}><span>Наше обладнання</span><h2>Siemens MAGNETOM Flow Plus</h2><p>МР-томограф 1,5 Тесла · 2026 рік випуску.</p></div>
         </article>
-        {SHOW_MRI_DOCTORS && <div className={styles.doctorsPanel}>
+        {shownDoctors.length > 0 && <div className={styles.doctorsPanel}>
           <SectionTitle title="Лікарі, які описують МРТ" />
-          <div className={`${styles.doctorRail} ${mri.doctorRail}`}>{shownDoctors.map((doctor) => <article className={styles.doctorCard} data-doctor-id={doctor.id} key={doctor.id}><div className={styles.doctorPhoto}><Image src={resolveImageSource(doctor.photoUrl)} unoptimized={!canOptimizeImage(doctor.photoUrl)} alt={doctor.name} fill quality={85} sizes="(max-width: 760px) calc(70vw - 22px), (max-width: 1100px) calc(50vw - 32px), (max-width: 1288px) calc(25vw - 24px), 298px" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></article>)}{[1, 2, 3].map(number => <article className={styles.doctorCard} key={`placeholder-${number}`}><div className={`${styles.doctorPhoto} ${mri.placeholder}`} aria-hidden="true"><svg viewBox="0 0 120 140"><circle cx="60" cy="42" r="22" /><path d="M20 124v-12a40 40 0 0 1 80 0v12" /></svg></div><strong>Лікар-рентгенолог</strong><span>Інформацію додамо незабаром</span></article>)}</div>
+          <div className={`${styles.doctorRail} ${mri.doctorRail}`}>
+            {shownDoctors.map(doctor => (
+              <DoctorProfileLink
+                doctorId={doctor.id}
+                returnTo={`/services/mri#doctor-card-${doctor.id}`}
+                id={`doctor-card-${doctor.id}`}
+                aria-label={`Профіль лікаря: ${doctor.name}`}
+                className={styles.doctorCard}
+                data-doctor-id={doctor.id}
+                key={doctor.id}
+              >
+                <div className={styles.doctorPhoto}>
+                  <Image src={resolveImageSource(doctor.photoUrl)} unoptimized={!canOptimizeImage(doctor.photoUrl)} alt={doctor.name} fill quality={85} sizes="(max-width: 760px) calc(70vw - 22px), (max-width: 1100px) calc(50vw - 32px), (max-width: 1288px) calc(25vw - 24px), 298px" />
+                </div>
+                <strong>{doctor.name}</strong>
+                <span>{doctor.specialty}</span>
+                {getDoctorPosition(doctor) && <span>{getDoctorPosition(doctor)}</span>}
+              </DoctorProfileLink>
+            ))}
+          </div>
         </div>}
       </section>
 

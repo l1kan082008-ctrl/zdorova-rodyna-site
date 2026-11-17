@@ -1,0 +1,161 @@
+.biography {
+  width: 100%;
+  min-width: 0;
+  color: #53676a;
+}
+
+.section {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: start;
+  gap: 24px 48px;
+  padding-block: 28px;
+  border-top: 1px solid #dedfe1;
+}
+
+.heading {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  color: var(--ink, #073f45);
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+}
+
+.heading::before {
+  content: "";
+  flex: 0 0 12px;
+  height: 2px;
+  background: var(--orange, #ff7900);
+  transform: translateY(-5px);
+}
+
+.content,
+.introduction {
+  min-width: 0;
+  max-width: 70ch;
+  font-size: 16px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.introduction {
+  margin-block: 0 28px;
+}
+
+.content p,
+.introduction p {
+  margin: 0 0 16px;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.content > :last-child,
+.introduction > :last-child {
+  margin-bottom: 0;
+}
+
+.facts {
+  display: block;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.facts li {
+  margin: 0;
+  padding: 12px 0;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.facts li + li {
+  border-top: 1px solid #ebecee;
+}
+
+.facts li:first-child {
+  padding-top: 0;
+}
+
+.facts li:last-child {
+  padding-bottom: 0;
+}
+
+.biography strong {
+  color: var(--ink, #073f45);
+  font-weight: 700;
+}
+
+.social {
+  margin-top: 24px;
+}
+
+.biography > .social {
+  margin-top: 0;
+  padding: 24px 0 0 268px;
+  border-top: 1px solid #dedfe1;
+}
+
+.instagram:global(.outline-button) {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 44px;
+  gap: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.instagram svg {
+  flex: 0 0 20px;
+}
+
+.instagram:focus-visible {
+  outline: 2px solid #087f82;
+  outline-offset: 4px;
+}
+
+@media (max-width: 1000px) and (min-width: 769px) {
+  .section {
+    grid-template-columns: 180px minmax(0, 1fr);
+    column-gap: 32px;
+  }
+
+  .biography > .social {
+    padding-left: 212px;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding-block: 24px;
+  }
+
+  .heading {
+    font-size: 18px;
+  }
+
+  .biography > .social {
+    padding-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .instagram:global(.outline-button) {
+    transition: none;
+  }
+
+  .instagram:hover,
+  .instagram:focus-visible {
+    transform: none;
+  }
+}

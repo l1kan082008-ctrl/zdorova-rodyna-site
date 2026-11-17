@@ -1,0 +1,83 @@
+{
+  "checkedAt": "2026-11-17",
+  "environment": "http://127.0.0.1:3118",
+  "published": false,
+  "largerCompactPreviews": {
+    "implementation": "Three large previews on desktop, two at tablet widths and one88%-width card on phones. Images keep their proportions and use responsive NextImage sources/quality85 instead of fixed480px thumbnails. Header actions share the title row on desktop; mobile count and arrows share one line. Preview frames292/260/240px avoid excessive empty space; certificate profiles alone have16px bottom padding.",
+    "verified": "Desktop landscape preview374x264px versus previous226x160px. Section height reduced from532.6 to420.6px compared with the first enlarged version; gap from rail to footer reduced from98 to50px. Inspected1280,768,390 and320px widths, no horizontal page overflow. Images load, navigation uses the new measured widths, certificate opens and Escape restores focus. Keyboard-only pause remains available without covering the visible count. TypeScript and targeted ESLint pass; no new dependency, no publication.",
+    "screenshots": ["work/lifescan-doctors/qa/certificates-large-compact-desktop.jpg", "work/lifescan-doctors/qa/certificates-large-compact-mobile.jpg"]
+  },
+  "zoomRevision": {
+    "implementation": "Replaced intrinsic-size/top-left scroll zoom with a fitted image transformed around its centre or the pointer. One existing button toggles fit/2.5x; wheel and +/- keys adjust1–4x, double-click anchors to the chosen point,0 resets. Mouse and one-finger pan are bounded to the image edges, while native browser pinch and Ctrl/Cmd zoom remain available. No new visible toolbar or library; existing transparent viewer and shared controls retained.",
+    "verified": [
+      "Button zoom reaches scale2.5 with translation0,0 and a240ms transform transition. Mouse dragging interrupts at the rendered scale and follows directly with no transition.",
+      "Horizontal pan clamps at-378.5px for an802px fitted image at2.5x in a1248px stage. Double-click at800,470 yields anchored translation approximately-240,-165 at2.5x.",
+      "Native mouse-wheel input reduces250% to187% smoothly; keyboard arrows pan. Repeated+ clamps at400%,0 restores fit. Selecting another certificate resets to scale1 and translation0,0.",
+      "Landscape and portrait documents inspected at desktop1280px, tablet768px and mobile390px. Zoom controls remain accessible and the page does not gain an outer scrollbar.",
+      "Escape restores the original thumbnail focus and body scrolling. TypeScript and targeted ESLint pass; independent review checked pointer cancellation, source/close/resize reset, wheel handling and parent integration."
+    ],
+    "screenshots": ["work/lifescan-doctors/qa/certificate-zoom-desktop.jpg", "work/lifescan-doctors/qa/certificate-zoom-mobile.jpg"],
+    "limitations": "Native touchscreen pinch and one-finger pan were code-reviewed but not tested on physical touch hardware. Reduced-motion CSS disables the image transform transition. No publication."
+  },
+  "fullViewerRevision": {
+    "implementation": "The outgoing and incoming document use two fitted layers and a 350ms directional transform animation. Drag release continues from the pointer offset. The requested image is decoded before replacing the current document; only the current and adjacent sources are prepared while the viewer is open. Rapid commands retain their latest accumulated destination; reduced motion skips the animation. No added dependency or change to the white/transparent Design DNA.",
+    "verified": [
+      "Arrow transition sampled actual incoming transforms 63.6, 45.2, 30.5, 19.1, 10.7, 6.2, 2.9, 0.2, 0; outgoing layer disappears after completion.",
+      "Mouse release at -470px continues outgoing movement from -546px while the incoming document approaches from701px; no immediate replacement at the centre.",
+      "Three rapid ArrowLeft commands correctly navigate from12 to9. End selects23 and Next wraps to1.",
+      "Zoom and panning retain scroll displacement432px horizontal and189px vertical. Escape during navigation closes without reopening, restores the original certificate button focus and releases body scroll.",
+      "Desktop1280px, tablet768px and mobile390px layouts inspected. Original certificate proportions and four compact controls remain unchanged.",
+      "TypeScript and targeted ESLint pass. Independent review fixes clear stale drag state after fallback completion and permit reopening after a transient image error."
+    ],
+    "screenshots": ["work/lifescan-doctors/qa/viewer-smooth-desktop.jpg", "work/lifescan-doctors/qa/viewer-smooth-mobile.jpg"],
+    "limitations": "Physical touch gestures and forced network failures were not exercised. Their code paths and reduced-motion handling were reviewed. No publication."
+  },
+  "doctorRemoval": "At the user's request, chumak-yaroslav was removed from the pending public doctor/partner defaults and empty certificate mapping. Local profile404; doctors catalogue, API and sitemap200 omit hisID. Other three pending profiles200;32 doctor-pricing tests pass. Production database and publication untouched.",
+  "manualScrollRevision": {
+    "request": "Remove the visible hint, caption labels, decorative thumbnail arrows and pause button; make manual scrolling smooth. User explicitly confirmed keeping autoplay.",
+    "implementation": "Removed CSS scroll snapping so it cannot compete with mouse motion. Pointer movement follows 1:1, followed by a bounded velocity projection and an interruptible 300–480ms cubic ease-out to the nearest certificate. Arrow and automatic advances use the same animation. Keyboard-only pause remains available on focus; ordinary layout has only previous/next buttons.",
+    "verification": "Desktop pointer-release samples progress through 832.7, 864.7, 887.3, 908, 927.3, 944.7, 965.3, 980, 996.7, 1008, 1020.7, 1032, 1039.3, 1046, 1052.7, 1057.3, 1060.7, 1064 before the final 1072 stop. No accidental dialog opened. Arrow easing, continued autoplay, keyboard pause visibility, certificate opening, Escape and focus restoration confirmed. Desktop 1280px, tablet 768px and mobile 390px inspected; mobile has no horizontal page overflow. TypeScript and targeted ESLint pass. Independent review completed; focus entry cancels an active animation.",
+    "screenshots": ["work/lifescan-doctors/qa/certificates-smooth-desktop.jpg", "work/lifescan-doctors/qa/certificates-smooth-mobile.jpg"],
+    "limitations": "Physical touch-device gestures were not tested. No publication. Earlier evidence below describes the initial gallery revision."
+  },
+  "supersedes": "Certificate gallery and lightbox observations in lifescan-ui-qa.json",
+  "visualCoherence": 9.5,
+  "componentConsistency": 9.5,
+  "responsive": 9.5,
+  "typography": 9,
+  "layoutSpacing": 9.5,
+  "accessibility": 9.5,
+  "performance": 9.5,
+  "motion": 9,
+  "contentFlow": 9.5,
+  "stateCoverage": 9,
+  "evidence": {
+    "design": "White document rail without grey thumbnail frames; existing Manrope, teal and 44px outline controls. Minimal viewer uses the existing transparent blurred overlay, one document, zoom, close, previous, next and a counter.",
+    "viewports": ["1280x720", "1280x800", "768x1024", "844x390", "390x844", "320x740"],
+    "verified": [
+      "Mouse grab scrolls the rail without accidentally opening a document; an ordinary click opens the selected certificate.",
+      "The rail advances automatically at a four-second interval and pauses on hover. Manual pause changes to a resume control.",
+      "Dragging the open certificate switches documents. Zooming permits mouse panning; Home and ArrowLeft wrap from the first document to the last.",
+      "Clicking the document itself keeps the viewer open. Escape closes it, restores opener focus and restores body scrolling. Tab wraps from the last viewer control to zoom.",
+      "Mobile and tablet viewer images fit the available area; the short landscape layout moves controls beside the image. No horizontal page overflow at 390px or 320px.",
+      "TypeScript and targeted ESLint pass. The existing 64 pricing/rendering tests pass. All 184 WebP certificate assets are readable; certificate counts remain 23, 0, 42 and 27.",
+      "Independent code review confirmed gesture cleanup after pointer cancellation, window blur, release outside the stage and mouse movement without a pressed button. Pointer capture begins only after the drag threshold.",
+      "No new library or image assets were added for this revision. Full-size certificate loading remains limited to the open document."
+    ],
+    "codeReviewed": [
+      "Autoplay also pauses while focus is within the gallery, during interaction, while the viewer is open, while the tab or gallery is not visible, and for reduced-motion preference.",
+      "Touch scrolling remains native in the rail; the viewer supports horizontal swipes without preventing pinch zoom or native vertical gestures."
+    ],
+    "limitations": [
+      "Physical touchscreen swipe and pinch gestures were not tested on a device; responsive viewport rendering and touch handling code were checked.",
+      "An existing Next.js development CSP issue badge remains unrelated to this change. No production deployment was performed."
+    ],
+    "screenshots": [
+      "work/lifescan-doctors/qa/certificates-clean-desktop.jpg",
+      "work/lifescan-doctors/qa/certificates-clean-mobile.jpg",
+      "work/lifescan-doctors/qa/certificate-lightbox-desktop.jpg",
+      "work/lifescan-doctors/qa/certificate-lightbox-tablet.jpg",
+      "work/lifescan-doctors/qa/certificate-lightbox-mobile.jpg"
+    ]
+  }
+}

@@ -12,6 +12,7 @@ import type { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { listPublicDoctors as listDoctors } from "../../api/doctors/publicDoctors";
+import { getMriReportingPartner } from "../../doctors/doctorData";
 import { listPublicPriceItems } from "../../api/prices/priceStore";
 import { getSiteSettings } from "../../api/settings/settingsStore";
 import { GlowPriceCard } from "../../components/GlowPriceCard";
@@ -289,8 +290,7 @@ export default async function ServiceDetailPage({
       listPublicPriceItems().catch(() => catalogItems),
     ]);
     const mriPrices = prices.filter(item => item.category === "mri" && item.isActive !== false);
-    const rohal = doctors.find(doctor => doctor.id === "rohalskyi-vitalii");
-    return <>{canonical}<MriServicePage service={service} doctors={rohal ? [rohal] : []} prices={mriPrices.length ? mriPrices : catalogItems.filter(item => item.category === "mri" && item.isActive !== false)} bookingHref={bookingHref} priceHref={priceHref} /></>;
+    return <>{canonical}<MriServicePage service={service} doctors={doctors} prices={mriPrices.length ? mriPrices : catalogItems.filter(item => item.category === "mri" && item.isActive !== false)} bookingHref={bookingHref} priceHref={priceHref} /></>;
   }
   if (isCinematicCt) {
     const [doctors, prices] = await Promise.all([
@@ -298,7 +298,7 @@ export default async function ServiceDetailPage({
       listPublicPriceItems().catch(() => catalogItems),
     ]);
     const radiologists = doctors.filter((doctor) =>
-      doctor.specialty.toLocaleLowerCase("uk-UA").includes("рентгенолог"),
+      doctor.specialty.toLocaleLowerCase("uk-UA").includes("рентгенолог") && !getMriReportingPartner(doctor),
     );
     const ctPrices = prices.filter(
       (item) => item.category === "ct" && item.isActive !== false,

@@ -1,0 +1,56 @@
+{
+  "checkedAt": "2026-11-18",
+  "status": "All requested MRI reporting doctors prepared and verified locally; not published",
+  "visualCoherence": 9.5,
+  "componentConsistency": 9.5,
+  "responsive": 9.5,
+  "typography": 9,
+  "layoutSpacing": 9,
+  "accessibility": 9,
+  "performance": 9.5,
+  "motion": 9,
+  "contentFlow": 9,
+  "stateCoverage": 9,
+  "implementation": [
+    "Reused existing MRI/CT doctor cards and structured biographies; no new UI system or dependencies",
+    "MRI now shows active Rohalskyi then confirmed MRI reporting partners; no placeholders",
+    "Per-partner optional organization prevents a false LifeScan affiliation for Ahii",
+    "No unverified clinical experience, on-site schedules, consultation prices or individual booking"
+  ],
+  "verification": {
+    "http": "200 for Radchenko, Ahii, MRI and CT; one correct original-head canonical each",
+    "initialHtml": "MRI contains seven real doctors, including Radchenko, Deresh Natalia and Ahii. Deresh profile is HTTP200 with one self canonical and45certificate buttons in initial HTML.",
+    "catalogue": "Original order Rohalskyi, Pysarchuk, Zhyber, Verchenko, Novak preserved; additions follow existing reporting partners",
+    "desktop": "1280px: four-column MRI grid, both profile portraits loaded, no overflow; MRI profile return anchor verified",
+    "tablet": "900px: two equal columns across all six cards, all images loaded, no page overflow",
+    "mobile": "390px: horizontal MRI rail and profile layout checked; Radchenko and Ahii profile returns restore the selected card, no page overflow",
+    "keyboard": "MRI cards reachable by Tab, visible focus, Enter opens Ahii; Back link works",
+    "automated": "TypeScript + targeted ESLint +38 doctor pricing/navigation tests passed",
+    "certificates": "No public scans found for Radchenko or Ahii; no fabricated gallery or empty section",
+    "deresh": "Official portrait,186-word structured biography,45unique documents/90readableWebPassets; gallery open and next navigation verified; MRI link and card return verified.",
+    "ahiiPhoto": "User-selected photo extracted from attachment without top Pinterest interface/left gutter;31.6KBWebP, unchanged face and body; MRI rendering verified.",
+    "ahiiHeadroom": {
+      "date": "2026-11-18",
+      "change": "CSS-only:6%top padding inside the image, top-aligned cover fit, backdrop matching photo; top transform origin in catalogue preserves margin during zoom. Scoped to selected portrait asset, no bitmap retouching.",
+      "checks": [
+        "Desktop1280profile31pxheadroom, complete hair visible",
+        "Mobile390profile20pxheadroom, no horizontal overflow",
+        "MRI mobile14pxheadroom, allotherMRI portraits retain0padding",
+        "Desktopcatalogue full hair and margin visible; mobile computed9.9pxheadroom, top zoom origin"
+      ],
+      "proof": [
+        "work/lifescan-doctors/qa/ahii-headroom-desktop.jpg",
+        "work/lifescan-doctors/qa/ahii-headroom-mobile.jpg"
+      ]
+    }
+  },
+  "proof": [
+    "work/lifescan-doctors/qa/mri-new-doctors-mobile.jpg",
+    "work/lifescan-doctors/qa/mri-new-doctors-desktop.jpg",
+    "work/lifescan-doctors/qa/mri-three-doctors-final.jpg"
+  ],
+  "pending": [
+    "Production doctor rows will need existing store/admin publication flow; defaults never replace database or resurrect hidden doctors."
+  ],
+  "localConsoleNote": "Existing development-only React eval/CSP diagnostic appears in Next.js issue indicator. Navigation and image checks passed; no security settings were weakened."
+}

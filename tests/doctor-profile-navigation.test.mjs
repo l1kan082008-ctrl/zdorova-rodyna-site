@@ -36,10 +36,10 @@ function browser(path = "/doctors?specialty=group%3Afamily") {
 
 test("legacy destinations accept only local doctor-selection pages", () => {
   const { safeDoctorReturnTo, doctorProfileHref } = browser().load();
-  for (const target of ["/doctors", "/doctors?specialty=group%3Afamily#doctor-card-a", "/doctors?search=%D0%9E%D0%BB%D0%B5%D0%BD%D0%B0#doctor-card-a", "/services/family#family-declaration", "/services/screening-40#screening-doctors"]) {
+  for (const target of ["/doctors", "/doctors?specialty=group%3Afamily#doctor-card-a", "/doctors?search=%D0%9E%D0%BB%D0%B5%D0%BD%D0%B0#doctor-card-a", "/services/family#family-declaration", "/services/screening-40#screening-doctors", "/services/mri", "/services/mri#mri-doctors", "/services/mri#doctor-card-a"]) {
     assert.equal(safeDoctorReturnTo(target), target);
   }
-  for (const target of ["https://evil.test", "//evil.test", "/\\evil.test", "/admin", "/api/bookings", "/doctors/other", "/services/ct", "/doctors#booking", "/services/family?next=evil", "/doctors\n", null]) {
+  for (const target of ["https://evil.test", "//evil.test", "/\\evil.test", "/admin", "/api/bookings", "/doctors/other", "/services/ct", "/doctors#booking", "/services/family?next=evil", "/services/mri?next=evil", "/services/mri#booking", "/services/mri/other", "/doctors\n", null]) {
     assert.equal(safeDoctorReturnTo(target), undefined, String(target));
   }
   assert.equal(doctorProfileHref("a?returnTo=/admin"), "/doctors/a%3FreturnTo%3D%2Fadmin");
@@ -62,7 +62,7 @@ test("clean profile navigation retains filtered card destination and refresh/bac
 });
 
 test("full page and new-tab visits use copied session context only from its recorded source", () => {
-  for (const target of ["/services/family#family-declaration", "/services/screening-40#screening-doctors"]) {
+  for (const target of ["/services/family#family-declaration", "/services/screening-40#screening-doctors", "/services/mri#doctor-card-a"]) {
     const env = browser(target);
     env.load().rememberDoctorProfileNavigation("a", target);
     env.visit("/doctors/a");
@@ -72,6 +72,20 @@ test("full page and new-tab visits use copied session context only from its reco
   env.load().rememberDoctorProfileNavigation("a", "/doctors?specialty=group%3Afamily#doctor-card-a");
   env.visit("/doctors/a", { referrer: "https://google.com/" });
   assert.equal(env.load().resolveDoctorProfileReturnTo("a"), undefined, "direct/external visit does not inherit pending context");
+});
+
+test("MRI profiles retain their card destination after client navigation, reload and native navigation", () => {
+  const target = "/services/mri#doctor-card-a";
+  const env = browser("/services/mri");
+  const nav = env.load();
+  nav.rememberDoctorProfileNavigation("a", target);
+  env.visit("/doctors/a");
+  assert.equal(nav.resolveDoctorProfileReturnTo("a"), target);
+  assert.equal(env.load().resolveDoctorProfileReturnTo("a"), target);
+
+  const native = browser("/services/mri");
+  native.visit("/doctors/a");
+  assert.equal(native.load().resolveDoctorProfileReturnTo("a"), target);
 });
 
 test("legacy returnTo wins and generic profile links clear a previous selection", () => {

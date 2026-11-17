@@ -5,6 +5,7 @@ import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
 import { getPublicDoctorById } from "../../api/doctors/publicDoctors";
 import { safeDoctorReturnTo } from "../../../lib/doctorProfileNavigation";
 import { DoctorProfileDetails } from "./DoctorProfileDetails";
+import { getMriReportingPartner } from "../doctorData";
 
 export const dynamic = "force-dynamic";
 const loadDoctor = cache(getPublicDoctorById);
@@ -18,10 +19,13 @@ export async function generateMetadata({
   const doctor = await loadDoctor(id);
 
   if (!doctor) notFound();
+  const reportingPartner = getMriReportingPartner(doctor);
 
   return {
     title: `${doctor.name} — Здорова Родина`,
-    description: `${doctor.specialty}. Інформація про лікаря, графік прийому та запис у медичному центрі «Здорова Родина».`,
+    description: reportingPartner
+      ? `${doctor.specialty}${reportingPartner.organization ? ` ${reportingPartner.organization}` : ""}. Опис МРТ-досліджень для медичного центру «Здорова Родина». Професійний досвід та напрями роботи.`
+      : `${doctor.specialty}. Інформація про лікаря, графік прийому та запис у медичному центрі «Здорова Родина».`,
   };
 }
 

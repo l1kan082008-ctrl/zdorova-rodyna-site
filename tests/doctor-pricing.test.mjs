@@ -81,6 +81,7 @@ function loadProfile(publicDoctors) {
     "../../components/SiteChrome": { SiteHeader: () => null, SiteFooter: () => null },
     "../../api/doctors/publicDoctors": publicDoctors,
     "../../../lib/doctorProfileNavigation": profileNavigation,
+    "../doctorData": doctorData,
     "./DoctorProfileDetails": { DoctorProfileDetails: () => null },
   });
 }
@@ -153,6 +154,17 @@ function request(method, body) {
     method, headers: { "content-type": "application/json" }, body: JSON.stringify(body),
   });
 }
+
+test("MRI partner experience labels survive database round trips", async (context) => {
+  const { store } = fixture(context);
+  const doctor = doctorData.defaultDoctors.find((item) => item.id === "ahii-vladyslava");
+  await store.createDoctor(doctor);
+  await store.updateDoctor(doctor.id, doctor);
+  const persisted = await store.getDoctorById(doctor.id);
+  assert.equal(persisted.experienceYears, 18);
+  assert.equal(doctorData.getDoctorExperienceLabel(persisted), "Медична практика з 2008 року");
+});
+
 function legacyTable(sqlite, primary = true) {
   sqlite.exec(`CREATE TABLE doctors (
     id TEXT PRIMARY KEY, name TEXT NOT NULL, specialty TEXT NOT NULL,

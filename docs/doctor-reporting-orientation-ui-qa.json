@@ -1,0 +1,39 @@
+{
+  "date": "2026-11-18",
+  "status": "verified locally; not published",
+  "visualCoherence": 9,
+  "componentConsistency": 10,
+  "responsive": 9,
+  "typography": 9,
+  "layoutSpacing": 9,
+  "accessibility": 9,
+  "performance": 10,
+  "motion": 9,
+  "contentFlow": 10,
+  "stateCoverage": 9,
+  "changes": {
+    "ctDoctors": "Five original CT radiologists show Що описує лікар instead of schedules; Rohalskyi КТ та МРТ, remaining four КТ. Stored schedules unchanged.",
+    "ahii": "Owner-confirmed label Медична практика з 2008 року; biography retains 18 years radiology / 10 years MRI as confirmed on 2026-11-18.",
+    "deresh": "All 45 documents reviewed. 22 CSS rotations; original assets and thumbnails unchanged."
+  },
+  "verification": {
+    "http": "All five CT doctor profiles and filtered directory HTTP 200; five reporting rows; no displayed schedule in these profiles. Voloshko consultation schedule and booking preserved.",
+    "desktop": "1360px catalogue, Deresh rail and full viewer checked; documents 01,02,36 upright and fitted.",
+    "tablet": "900px two-card rail and full viewer checked.",
+    "mobile": "390px expanded CT card/profile and certificate rail/viewer checked; no horizontal page overflow.",
+    "zoom": "2.5x zoom and mouse pan on rotated document: translate 220px/90px, scale retained; mobile zoom works.",
+    "keyboard": "Escape closes viewer and restores focus to selected document.",
+    "regression": "Chumak certificate 01 remains 0deg and fits viewer.",
+    "checks": "Targeted ESLint and TypeScript passed; original 90 Deresh asset SHA-256 values unchanged."
+  },
+  "proof": [
+    "work/lifescan-doctors/qa/ct-reporting-modalities-desktop.jpg",
+    "work/lifescan-doctors/qa/ct-reporting-modalities-mobile.jpg",
+    "work/lifescan-doctors/qa/deresh-certificates-upright-rail.jpg",
+    "work/lifescan-doctors/qa/deresh-certificate-upright-desktop.jpg",
+    "work/lifescan-doctors/qa/deresh-certificate-upright-mobile.jpg"
+  ],
+  "limitations": [
+    "Existing local Next.js React/CSP diagnostic remains; security settings unchanged."
+  ]
+}

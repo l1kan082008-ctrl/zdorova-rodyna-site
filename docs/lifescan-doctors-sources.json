@@ -1,0 +1,835 @@
+{
+  "retrievedAt": "2026-11-17",
+  "source": "https://lifescan.ua/pro-centr/#doctors",
+  "status": "Prepared locally; not published and no production doctor records created.",
+  "publicationNotes": [
+    "Production listPublicDoctors reads database rows; adding defaultDoctors does not publish these records.",
+    "When publication is requested, use the existing doctor store or admin workflow to create the records below with the stable IDs below. Check for existing IDs and matching names, including inactive records, before inserting. Do not overwrite or reactivate existing entries automatically.",
+    "Keep MRI reporting doctors after the existing five radiologists. Their work for this clinic is MRI reporting; no individual consultation booking, unconfirmed branch or consultation price.",
+    "The imported certificate galleries have no document captions; neutral accessible document numbering is intentional.",
+    "Anatolii source items 7 and 24 are byte-identical. Item 24 was omitted.",
+    "Biographies use ## section headings, - list items and **emphasis** inside the existing biography field. Keep this formatting when saving the records below; DoctorBiography renders it as semantic HTML.",
+    "Chumak Yaroslav was removed from the pending additions at the owner's request on 2026-11-17. Do not publish a doctor record for chumak-yaroslav. His unused local portrait asset is retained.",
+    "Radchenko and Ahii added locally on 2026-11-17. Ahii is not labelled LifeScan; her work history at Diamed is attributed in the biography. Both official profiles lack available personal certificate scans.",
+    "Owner confirmed Deresh Natalia Volodymyrivna. Stable profile ID deresh-nataliia, official Ukrainian name Дереш Наталя Володимирівна. Full biography and45unique certificates prepared locally; include this record in the existing store/admin publishing workflow when requested. Do not create Maiia Deresh."
+  ],
+  "doctors": [
+    {
+      "id": "chumak-anatolii",
+      "name": "Чумак Анатолій Анатолійович",
+      "profileSource": "https://lifescan.ua/chumak-anatolij-anatolijovich/",
+      "portraitSource": "https://lifescan.ua/wp-content/uploads/2022/07/chumak-aa-lk.png",
+      "portrait": "/doctors/chumak-anatolii.webp",
+      "certificates": [
+        {
+          "src": "/doctors/certificates/chumak-anatolii/01.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Чумак-Анатолій-Анатолійович-Сертифікат-2025-2163-1005465-101770-МК1-учасник.webp",
+          "sourceSha256": "7a23ff007e72b1ca3812fcb893522a04718f8bf2fbfa6604265bd2ef1b1b405c"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/02.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Чумак-Анатолій-Анатолійович-Сертифікат-2025-2163-1005668-101719-НПК-учасник.webp",
+          "sourceSha256": "8d97eb8dce6dadfeac1b85b69b919942c3f1313976fb7000dc669e55f2507a14"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/03.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Чумак-Анатолій-Анатолійович-Сертифікат-2025-2163-1005046-100906-НПК-учасник.webp",
+          "sourceSha256": "59b20980ea9d5e6384ccb83479a8066a5d14dcfe27166217ce954a9af0ff2e1d"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/04.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/certificate_2025_2155_1013298_090921_1759393381.webp",
+          "sourceSha256": "2903bbac8560373a703ebb3fc74a784e47ac715b55a4dd950ae81b754350010c"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/05.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Чумак-Анатолій-Анатолійович-Сертифікат-2025-2163-1005545-101779-МК2-учасник.webp",
+          "sourceSha256": "7f0a802abbe18171778eb065bc31df99c5851d073de3c53f3bcdced9a0d0dcb3"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/06.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Чумак-Анатолій-Анатолійович-100210.webp",
+          "sourceSha256": "4a11970638710352be167ededa2dc9f2a9d17e63439921a827d58b409068b4cd"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/07.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Чумак-Анатолій-Анатолійович-389-2024-1108-3701618-101469-1.webp",
+          "sourceSha256": "95018af5666549882c6a885036caafa9a5e29c7576e99af8ce4e6daaebe1bb17"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/08.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Чумак-Анатолій-Анатолійович-Сертифікат-2024-1352-3702538-102280-Учасник.webp",
+          "sourceSha256": "209e50d64f2b4c27557c754f796451ef1eaa90c7072dfb4e3907db633a7cf2b4"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/09.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Чумак-Анатолій-Анатолійович-Сертифікат-2024-1352-3702539-101759-Учасник-МК1.webp",
+          "sourceSha256": "04f0d481b3c94a054f3714e3d872e6edf2b46aa98abb589902204ac8eed0d9b8"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/10.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Чумак-Анатолій-Анатолійович-Сертифікат-2024-1352-3702540-101758-Учасник-МК2.webp",
+          "sourceSha256": "cc8dd81a34b80d72e157ecbbe1294e9b9302ee1f611cc63a3d03717370681527"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/11.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Чумак-Анатолій-Анатолійович-103167.webp",
+          "sourceSha256": "3368cd52e5ae9d8f92618e59a14c9b431df0efa757c457815a0b2e36f3aacbf3"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/12.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/3702411-Чумак-Анатолій-Анатолійович.webp",
+          "sourceSha256": "d88aaee822f90a73ad574e72eef1b2a1bd9114cfb9a36a5b5e61ca84fdc835e9"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/13.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Чумак-Анатолій-Анатолійович-395-2024-1108-3702370-101436.webp",
+          "sourceSha256": "6f8e8a17b1b01edc4f7b92cc4eff91e5c36daae1eb1dc94433a7cf2d735a993c"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/14.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Certificate_204093_cme_96817.webp",
+          "sourceSha256": "c87e914dd389b6355ca78097975fb108cccc415665c56c02b4b8ca46a465442d"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/15.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/2026_certificate-1.webp",
+          "sourceSha256": "303b42fcb43ee7fc2e60dd3aa2e53378b3fa39a19639615a941e8562d658673c"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/16.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Сучасна-нейрорадіологія-Необхідні-та-цікаві-дослідження.webp",
+          "sourceSha256": "b3fd1815a7e1eec98f6b84eab347c64e03a545f1171150ae0ed6272928f08ee1"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/17.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Чумак-Анатолій-Анатолійович-389-2024-1108-3701617-101469.webp",
+          "sourceSha256": "c44856d1e30ab7d89f7f3860a74c02363d15f2be4a536f3ec0937f8a743226f9"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/18.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/АРУ-30-балів.webp",
+          "sourceSha256": "157556ad1c426972fdc9777ef2f7beb6cac3054850ba1d1fc5ecd4d67bcfcc97"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/19.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/ортопедія-10балів.webp",
+          "sourceSha256": "4d18ea2f25f784aa85058b9835c4b349a25ddbe273f958c16f5c39cb155a111a"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/20.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/у_одесса_21_Р14.webp",
+          "sourceSha256": "529f7bbac3745f1f11a14a40d057558b591b9234e62fd530ddb827700a4289b5"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/21.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/УЗД-колінного-суглобу-20-балів.webp",
+          "sourceSha256": "aa28a6ddca59a5ee68d16d7664775155573ef4a8483abc8b5fea2d1a0a7f5d0c"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/22.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Промемена-терапія-в-лікуванні-рака-мол-з-зи-10-балів.webp",
+          "sourceSha256": "cde7808b10cfb45acb1a4cbba607a8a9e015869adbaa5959c785ed4c85ceb8c9"
+        },
+        {
+          "src": "/doctors/certificates/chumak-anatolii/23.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/ортопедія-5балів.webp",
+          "sourceSha256": "3a59adc7f7bb4bb0a468e9d19d5168a5f4bd87e60d8af0d1b8bbb0fe8cd68290"
+        }
+      ],
+      "biographyEvidenceNotes": [
+        "Highest professional category confirmed by visible H2 in the directly downloaded LifeScan profile.",
+        "ECR 2026, ESOR prostate imaging in September 2025, and MS diagnostic criteria training in May 2025 confirmed visually in the sourced certificates. ECR attendance mode is not asserted."
+      ]
+    },
+    {
+      "id": "pyzhuk-mariia",
+      "name": "Пижук Марія Олександрівна",
+      "profileSource": "https://lifescan.ua/pizhuk-marija-oleksandrivna/",
+      "portraitSource": "https://lifescan.ua/wp-content/uploads/2024/02/imgonline-com-ua-Resize-XJACfmHvFG.png",
+      "portrait": "/doctors/pyzhuk-mariia.webp",
+      "certificates": [
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/01.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_1_2025-07-26_15-28-35.webp",
+          "sourceSha256": "b7d4e5757d3b572a295009b30e7e8315c17303c491e7767f44d0424b7aa63360"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/02.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_2_2025-07-26_15-28-35.webp",
+          "sourceSha256": "0a81f7f402cfd0d116d6ea372dbe78ce2bd87d7a85c5e106ae862ad1116f859b"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/03.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_3_2025-07-26_15-28-35.webp",
+          "sourceSha256": "97646d38eac9eb0736b536d432ae9660abb34f30cb73ee6a7909e0d00b68cd83"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/04.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_4_2025-07-26_15-28-35.webp",
+          "sourceSha256": "9cdaf2f6d71860599557af6bd8b139442ca9df478d66a30cbea5b1ad99a8d2cb"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/05.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_6_2025-07-26_15-28-35.webp",
+          "sourceSha256": "611cbcd348b2309571db3b85eb5da10595090815fbabc930d169895f4c7e9b79"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/06.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_20_2025-07-26_15-28-35.webp",
+          "sourceSha256": "a9cad558ff6a976ba224483cbf1202b2e521dd538b993aa5a4027d57b9762428"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/07.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_7_2025-07-26_15-28-35.webp",
+          "sourceSha256": "8b5084cc550be57cd4634b92587cbf1274bf0f6ce95b30c141946294111e46ba"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/08.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_8_2025-07-26_15-28-35.webp",
+          "sourceSha256": "f7788b7bb698af19d81d096f2faaf5c70ad002c76133430ad8fe5b75a0cc02aa"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/09.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_10_2025-07-26_15-28-35.webp",
+          "sourceSha256": "e98d50dd4e5959f5f888a041e58ba78bc066fca175c28657619b5cde35e8773c"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/10.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_12_2025-07-26_15-28-35.webp",
+          "sourceSha256": "960b2340ea1e3ab16fbde2b6361454d65ada87e3b846f360eeaf6953226255ab"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/11.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_15_2025-07-26_15-28-35.webp",
+          "sourceSha256": "b031bebbec54ecb68883c3761349387bff19d7ad862ac5c5e1f0b5a9580282f0"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/12.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_16_2025-07-26_15-28-35.webp",
+          "sourceSha256": "6c22162956eda8e1b552a02c97f702bfb451bbdc9252a19f83128647a5c83069"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/13.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_17_2025-07-26_15-28-35.webp",
+          "sourceSha256": "d04d82348a568309a8d7f82673642aa6c0d69cc48f5bda60c33e1844ad120374"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/14.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_18_2025-07-26_15-28-35.webp",
+          "sourceSha256": "f310e5abec187bcabe06ecd265233400be4b41b02f802e39ffb985e8aa7e30cc"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/15.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2025/08/photo_19_2025-07-26_15-28-35.webp",
+          "sourceSha256": "2c14a4ad4196bd346641b52ecd0f65cc4f0a2390ae9fd5fa2029ad58b7d9c4d8"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/16.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/2023_certificate.webp",
+          "sourceSha256": "4c833e683a6b39fea94bb901d912950480905ae8a26b11a8a9f9a8256ef5907f"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/17.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Копія-_спец-рентген.webp",
+          "sourceSha256": "2222f5007e2596dd44ea8faa29050541c411963a3dddd177f670e2a6b572307d"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/18.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Копія-_спец-радіол.webp",
+          "sourceSha256": "0d1133d78c11e2ef9a5f7726ac5cb4cb8a54710345035e847166c82656502eb3"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/19.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Certificate_89010_cme_80395-1.webp",
+          "sourceSha256": "c900ee8cda06895f9ae12b2da61e28782a8085250bf6cf8e95097e6c8a8b9bab"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/20.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/2024_certificate-1.webp",
+          "sourceSha256": "75aff7bf05ae3c9d0b74989fd955d8eb93337179ae856b06e084d9b7b119272b"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/21.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/HW-5Pa_hands_on_workshop_attendance-3.webp",
+          "sourceSha256": "65d45f95f4a846d865cd4d3a45246685e98833a83389c5065993b3d76f028f4d"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/22.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/2025_confirmation_of_epos_on_the_go_presentation-3.webp",
+          "sourceSha256": "af8eb09f0ee3ec944afa242417cb0002c7266e8f3ceac723f8bd833f9c47bca2"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/23.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/2025_certificate-1.webp",
+          "sourceSha256": "4b1789e5bd8fe4a0c9f8df61a9cd264c13ee7261a93f094f4a958aa79046836b"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/24.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Certificate_145609_cme_80395-3.webp",
+          "sourceSha256": "649e911c9f6816005ac4fc28ede71126577f9368233ca90973fb8db81fd6ec54"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/25.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/ESOI-EORTC23_Certificate_31-3.webp",
+          "sourceSha256": "98cfb4b9d7aec02959fdc660bb7642e8642a95960d0fcf378b0b185c254ce4f1"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/26.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Certificate_204093_cme_80395-1.webp",
+          "sourceSha256": "6151f32c655634fc9bd5560d3c7b1ed722ca2689318b878425682ad28fe897bc"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/27.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/2026_certificate.webp",
+          "sourceSha256": "02db77670ff16218df4f1f2095f472b2c7e3ee860ec33b62385991d2219cb2c1"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/28.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/certificate-2.webp",
+          "sourceSha256": "24dd23366084f308ec1a1075c0391e79bd224983b9bc1dc22e98dc72dc3aee87"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/29.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/certificate-3.webp",
+          "sourceSha256": "fd8776a0697cd02b06d5fb3ca2c931d7a524a702e7d08af9bf49e81947148fb8"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/30.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/certificate-1-1.webp",
+          "sourceSha256": "05c445fd00251cd562934b6bc3cb18b2267ef86a86ab1f7c011d5187be14fb06"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/31.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Certificate_53_00001.webp",
+          "sourceSha256": "0e88cd9a73995012635061775a87f62bcaabd7d42f969d87b04adcca0283ec35"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/32.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/image001-3.webp",
+          "sourceSha256": "c227f607bc6214a7eeea6004a5a2f081d1b9745dfdbd1a5a48079280c103eb01"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/33.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/10049_workshop__attendance-2.webp",
+          "sourceSha256": "de40a91f2d0115d4b14e31de5980d7ea0e5c1f9860d17349149f078674dda824"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/34.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/certificate_80395-1-1.webp",
+          "sourceSha256": "3b8e91294817c9f1326833b73acae08841a3544ea4642d087938860161192f62"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/35.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/certificate__________________________________________________1761397853.webp",
+          "sourceSha256": "3f6fb70572283827ed73767d4d4be6409d09f57a516493d7d9743b24444b0e01"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/36.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/ESOI-Webinar-09_CME-certificate__Part19.webp",
+          "sourceSha256": "86ef17fbed7567db3e269b853f8fcf2de22a741e71134d6e7b650b4585a094e4"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/37.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/certificate_80395-2-1.webp",
+          "sourceSha256": "84dda335673249e72d925f3e34aefdf352a346768b51bcec17f4b39a638c00f0"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/38.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/certificate_80395-3-1.webp",
+          "sourceSha256": "ac56b820f4e9d0bde922a39be0b7a4f57a6b08d1611b1d08100ed2a3616be8ff"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/39.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/image001-7.webp",
+          "sourceSha256": "7d6f32e5fe3039169f906dac7c795b7151102dbcf7668cb07f647558c646ea12"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/40.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Progress_certificate_009326-1.webp",
+          "sourceSha256": "6f6f2e5ae1752f7d756fa81c50f7432dcffab292d8df6604bf5e01c70b295927"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/41.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/e39938e57abcff03b5ae79c63e6df3fd.webp",
+          "sourceSha256": "0ca60af8edfe5df114db016d842eafe7448452cf85711273ac3df60e7afaac38"
+        },
+        {
+          "src": "/doctors/certificates/pyzhuk-mariia/42.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/certificate_80395-1-2.webp",
+          "sourceSha256": "39fb682fb39450838f8aa202491b351f5edd179209aa5f6a0ec19bbfc48ed974"
+        }
+      ]
+    },
+    {
+      "id": "pavliuk-romanna",
+      "name": "Павлюк Романна Святославівна",
+      "profileSource": "https://lifescan.ua/pavljuk-romanna/",
+      "portraitSource": "https://lifescan.ua/wp-content/uploads/2022/07/pavlyuk-lk.png",
+      "portrait": "/doctors/pavliuk-romanna.webp",
+      "certificates": [
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/01.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/xcertificate-1.webp.pagespeed.ic.7NS6lAScIi.webp",
+          "sourceSha256": "cf7b935af14f427a7196bb311d68b82e022650f798382dd6bbb3390e60e38a64"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/02.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/x10049_workshop__attendance.webp.pagespeed.ic.K0-sTIY5MB.webp",
+          "sourceSha256": "5dc6fe5175b0595dc02757f96ab4df0802302711822334b34c0bce2602c889ea"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/03.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/xcertificate-2026-2556-1027583-000178.webp.pagespeed.ic.BOhvmgN1yD.webp",
+          "sourceSha256": "630cb3b8306dd4a5002d8969be08510eecf4c57f15987d7170804432ef3c3871"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/04.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/xcertificate_2025_2155_1012961_109220_1761402942.webp.pagespeed.ic.8wG8wOZSo_.webp",
+          "sourceSha256": "2ceb5629e70e82740fa7715b3dd184a521cc8c07823b10aeb5515dd0a77c027f"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/05.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/xradiopaedia-radiopaedia-2023-virtual-conference-certificate.webp.pagespeed.ic.MB3JdsAJin.webp",
+          "sourceSha256": "0610b5b50098a59f21505f4350b5c9983d468770f53eea4d440156ad8e1114aa"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/06.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/xuser_cert_910091.webp.pagespeed.ic.gWFTxo43S7.webp",
+          "sourceSha256": "04ca88c1e390de553f9eb0fd02b2b8690e33c16ac4384ad2b60b89bd71799362"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/07.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/xESOI-Touchdown-2023_CME-certificate_16.webp.pagespeed.ic.icFA8pRLFn.webp",
+          "sourceSha256": "db013dc736885bff9f360d6ce16b26f95f92d817ee7f11e3513dcded7f0d5dfe"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/08.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/xcme_certificate_14869-2.webp.pagespeed.ic.4G5Jl4jIma.webp",
+          "sourceSha256": "9648abeb9671da5baa0c1e5b7b9651cab5e8669211cdb920e0a6a4b9f820aa38"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/09.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/ESOI-EORTC23_Certificate_28.webp",
+          "sourceSha256": "6be55780503b36eccdd6b43465e2a0f80a1864df7ae1a08a278da29ce0bae442"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/10.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/certificate_14869.webp",
+          "sourceSha256": "802a79ba96f1af469d67667484830971f07786056d21eb6c3eb50c2e55eaef97"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/11.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/ESOI-EORTC-Workshop-2023_CME_24.webp",
+          "sourceSha256": "b076f215e3c315d22a3e8209212f42233807dfcea6af9576628145fb162288cb"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/12.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Павлюк-Романна-Святославівна-Сертифікат-2023-1185-5507148-100453-Учасник-1.webp",
+          "sourceSha256": "5d63d70312210c8e298adecc42c8bf38408c286d25ae30e714f0d29a365571d2"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/13.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/certificate_of_attendance_14869.webp",
+          "sourceSha256": "f621dee63afb94fcd7f3727c71577c915e0be8f3bad1657ab31168460703cab0"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/14.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/cme_certificate_14869-1.webp",
+          "sourceSha256": "19178a6697e17d08041c5dad5f77877edf71239377b6be08f132226fa834ece6"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/15.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Pavliuk.webp",
+          "sourceSha256": "1411d63e17f4dc6113125dc57e8d71f08223eae93a9b70b9dd64a2e4532a6261"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/16.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/PavliukI296.webp",
+          "sourceSha256": "316d65cde39138125c16b30d9534618e6488bf12bc191a9b58988f1ad513b7dc"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/17.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/1728932283557369.webp",
+          "sourceSha256": "828fa09003eb2358e004f875e3c7909ea04e9dfb859564b535d3b3e2f0d304f2"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/18.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/image-scaled.webp",
+          "sourceSha256": "9a7b2ab74a46c93c8173a68144c880d9064d106c5c063a2a357d1d39c9e6b565"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/19.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/PavliukI296-1.webp",
+          "sourceSha256": "95db0dfece8d7176f34feb7abb4f0b55f0aba033fc60ed25ff5eda1a2f68a1fe"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/20.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/СЕРТИФІКАТ.webp",
+          "sourceSha256": "8aa80c9e9aa27efccbd41258c9522b4fc0f8ec7d1e610fcd0670621287d44e40"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/21.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/Certificate_50_00001.webp",
+          "sourceSha256": "4f0974ca2bc03e011c7348a8ca97694c89aaba6eb083dc6419cc556f6d622c32"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/22.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/cert_utd5_sp_076.webp",
+          "sourceSha256": "b03c24008fa178c97d73720d0aa8d7f432d790650ae74f85e46139d7a89c633b"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/23.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/2025_confirmation_of_poster_presentation.webp",
+          "sourceSha256": "19d20724050203ea350e2ac3e15f47183df7f48085f1495ec6d4b7e840b5f6ac"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/24.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/photo_2025-09-30_13-21-04.webp",
+          "sourceSha256": "3aa64c607352bad80b75dc0d96f7ccf988571b92af03c6f05ac3f0e45d2877e0"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/25.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/utd6_esmo_cert_0563.webp",
+          "sourceSha256": "ac1d4d1228d4c59295d42e1b92a44ae98a01f193ab342d587488b87323b73076"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/26.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/certificate_2025_2155_1012961_109220_1761402942-1.webp",
+          "sourceSha256": "8589d79f5d350242d2e706788ac308852e1a6ff4988983c771ec93de4d21abae"
+        },
+        {
+          "src": "/doctors/certificates/pavliuk-romanna/27.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/certificate_2025_2155_1013298_090933_1759393437.webp",
+          "sourceSha256": "fb446c1f45bfe2a5394e4dd1819cb5e19fbc3b3d81b36eba7aa719224db3c754"
+        }
+      ],
+      "biographyEvidenceNotes": [
+        "The directly downloaded source HTML states medical practice since 2020. This supersedes the cached web extraction that said 2016. Radiology since 2022 is unchanged."
+      ]
+    },
+    {
+      "id": "radchenko-kateryna",
+      "name": "Радченко Катерина Андріївна",
+      "profileSource": "https://lifescan.ua/radchenko-katerina-andriivna/",
+      "portraitSource": "https://lifescan.ua/wp-content/uploads/2026/08/radchenko-katerina-andriyivna.webp",
+      "portrait": "/doctors/radchenko-kateryna.webp",
+      "certificates": [],
+      "certificateNote": "Official page displays the certificate heading but provides no certificate image or document link in its gallery. No certificates were fabricated or borrowed from other profiles."
+    },
+    {
+      "id": "deresh-nataliia",
+      "name": "Дереш Наталя Володимирівна",
+      "profileSource": "https://lifescan.ua/deresh-natalja-volodimirivna/",
+      "portraitSource": "https://lifescan.ua/wp-content/uploads/2026/08/deresh-natalya-volodimirivna-scaled.webp",
+      "portrait": "/doctors/deresh-nataliia.webp",
+      "certificates": [
+        {
+          "src": "/doctors/certificates/deresh-nataliia/01.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0003-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/02.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0002-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/03.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0001-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/04.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0004-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/05.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_011-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/06.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0005-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/07.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_07224-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/08.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0009-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/09.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0008-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/10.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0006-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/11.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0007-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/12.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0764-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/13.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0458-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/14.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_9753-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/15.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0010-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/16.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0012-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/17.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0013-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/18.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0011-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/19.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0014-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/20.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0015-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/21.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0016-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/22.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0260-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/23.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0250-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/24.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0026-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/25.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0025-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/26.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0023-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/27.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0240-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/28.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0028-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/29.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0340-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/30.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0032-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/31.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0035-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/32.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0029-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/33.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0030-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/34.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0031-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/35.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0027-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/36.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0042-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/37.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0043-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/38.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0350-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/39.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0360-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/40.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0038-1-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/41.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0039-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/42.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0040-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/43.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0041-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/44.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0036-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        },
+        {
+          "src": "/doctors/certificates/deresh-nataliia/45.webp",
+          "source": "https://lifescan.ua/wp-content/uploads/2026/08/IMG_0037-scaled.webp",
+          "width": 1697,
+          "height": 2400
+        }
+      ],
+      "certificateNote": "45 unique certificates from46official gallery entries; the last source is an exact duplicate of source40 and was omitted.",
+      "identityConfirmedByOwner": true
+    },
+    {
+      "id": "ahii-vladyslava",
+      "name": "Агій Владислава Іванівна",
+      "ownerConfirmedExperience": {
+        "confirmedOn": "2026-11-18",
+        "radiologyYears": 18,
+        "mriYears": 10,
+        "practiceStartYear": 2008,
+        "source": "Owner confirmed experience and requested the label: Медична практика з 2008 року."
+      },
+      "profileSource": "https://diamed.uz.ua/doctors/agij-vladyslava-ivanivna/",
+      "portraitSource": "User-selected attachment: codex-clipboard-8638c023-a1c5-43e4-b445-d76a3ba03c15.png",
+      "portrait": "/doctors/ahii-vladyslava-selected.webp",
+      "certificates": [],
+      "certificateNote": "No public personal certificate or diploma scans found on the checked official profiles or team page.",
+      "additionalSources": [
+        "https://diamed.uz.ua/doctors/agij-vladyslava-ivanivna/",
+        "https://www.diamedneuro.com.ua/team/agii-vladuslava/",
+        "https://chomolyak-neurosurgery.com/epilepsy/",
+        "https://www.uzhnu.edu.ua/uk/cat/pdodp-postradionko/staff",
+        "https://www.uarctmrt.org/fahova-shkola-z-promenevoyi-diagnostyky-zahvoryuvan-suglobiv-yaremche-8-9-lystopada-2024/",
+        "https://uzhnu.edu.ua/uk/novyny/vidbulasia-cherhova-robocha-zustrich-u-viner-noishtadti-v-mezhakh-spilnoho-ukrainsko-avstriiskoho-proiektu-zastosuvannia-shi-dlia-radiolohichnoi-diahnostyky-pukhlyn",
+        "https://dir.ukrintei.ua/view/okd/f851e694bea503ae3c50e49f013d47f6"
+      ],
+      "uncertainties": [
+        "Category conflicts: Diamed profile says first category; DiamedNeuro profile says highest category. Omit until owner confirms.",
+        "No LifeScan affiliation found. Use generic MRI reporting partner metadata.",
+        "Graduation date, clinical experience start year and complete education history were not established."
+      ],
+      "previousPortraitSource": "https://diamed.uz.ua/wp-content/uploads/2022/07/11.jpg",
+      "portraitNote": "Extracted photo rectangle from supplied screenshot, removing left page gutter and top Pinterest interface; no retouching or generative changes."
+    }
+  ],
+  "biographyReviewedAt": "2026-11-17"
+}

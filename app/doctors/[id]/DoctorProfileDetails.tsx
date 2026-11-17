@@ -6,8 +6,15 @@ import { screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
 import "../portraits.css";
 import screeningStyles from "../screening-actions.module.css";
 import { DoctorProfileBackLink } from "./DoctorProfileBackLink";
+import { DoctorCertificates } from "./DoctorCertificates";
+import { DoctorBiography } from "./DoctorBiography";
+import { doctorCertificates } from "../doctorCertificates";
 import {
   getDoctorInitials,
+  getDoctorPosition,
+  getDoctorReportingModalities,
+  getDoctorExperienceLabel,
+  getMriReportingPartner,
   formatDoctorConsultations,
   canBookDoctorConsultation,
   getDoctorPatientGroups,
@@ -36,18 +43,19 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
   }
 
   const consultationSummary = formatDoctorConsultations(doctor);
+  const position = getDoctorPosition(doctor);
+  const reportingModalities = getDoctorReportingModalities(doctor);
+  const reportingPartner = getMriReportingPartner(doctor);
   const canBookScreening = canBookDoctorConsultation(doctor)
     && screeningDoctorIds.some((id) => id === doctor.id);
   const branches = splitDoctorBranches(doctor.branch);
   const activeDays = getDoctorScheduleDays(doctor.schedule);
-  const biographyParagraphs = doctor.biography
-    .split(/\n+/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
+  const hasBiography = Boolean(doctor.biography.trim());
+  const structuredBiography = Boolean(reportingPartner) && /^##\s+/m.test(doctor.biography);
 
   return (
     <>
-      <section className="doctor-detail-shell">
+      <section className={`doctor-detail-shell${doctorCertificates[doctor.id]?.length ? " doctor-detail-shell--certificates" : ""}`}>
         <DoctorProfileBackLink doctorId={doctor.id} returnTo={returnTo} />
 
         <div className="doctor-detail-hero">
@@ -74,30 +82,35 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
           <div className="doctor-detail-heading">
             <span className="doctor-specialty">{doctor.specialty}</span>
             <h1>{doctor.name}</h1>
+            {position && <p className="doctor-detail-lead">{position}</p>}
 
             <dl className="doctor-detail-facts">
-              <div>
+              {(!reportingPartner || getDoctorExperienceLabel(doctor, "")) && <div>
                 <dt>Стаж роботи</dt>
                 <dd>
-                  {doctor.experienceLabel ?? (doctor.experienceYears ? `${doctor.experienceYears} років` : "Уточнюється")}
+                  {getDoctorExperienceLabel(doctor, "Уточнюється")}
                 </dd>
-              </div>
+              </div>}
               {canBookDoctorConsultation(doctor) && (<div><dt>Приймає</dt><dd>{getDoctorPatientGroups(doctor.patientGroups ?? [])}</dd></div>)}
               <div>
-                <dt>{branches.length > 1 ? "Місця прийому" : "Місце прийому"}</dt>
-                <dd className="doctor-branch-addresses">{branches.join("\n") || "Відділення уточнюйте"}</dd>
+                <dt>{reportingPartner ? reportingPartner.organization ? "Співпраця" : "Напрям роботи" : branches.length > 1 ? "Місця прийому" : "Місце прийому"}</dt>
+                <dd className="doctor-branch-addresses">{reportingPartner ? reportingPartner.organization ? `Медичний центр ${reportingPartner.organization}` : "Опис МРТ-досліджень" : branches.join("\n") || "Відділення уточнюйте"}</dd>
               </div>
               {canBookDoctorConsultation(doctor) && consultationSummary && (<div>
                 <dt>Вартість консультації</dt>
                 <dd>{consultationSummary}</dd>
               </div>)}
+              {reportingModalities && <div>
+                <dt>Що описує лікар</dt>
+                <dd>{reportingModalities}</dd>
+              </div>}
             </dl>
 
             {doctor.description ? (
               <p className="doctor-detail-lead">{doctor.description}</p>
             ) : null}
 
-            {activeDays.length ? (
+            {!reportingModalities && (activeDays.length ? (
               <aside className="doctor-detail-schedule doctor-detail-schedule--inline">
                 <h2>{canBookDoctorConsultation(doctor) ? "Години прийому" : "Години роботи"}</h2>
                 <div>
@@ -112,9 +125,9 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
                   Перед візитом радимо підтвердити актуальний час в адміністратора.
                 </small>
               </aside>
-            ) : (
+            ) : !reportingPartner ? (
               <p className="doctor-schedule-notice">{getDoctorScheduleNotice(doctor)}</p>
-            )}
+            ) : null)}
 
             {canBookDoctorConsultation(doctor) && (<div className={`doctor-detail-actions${canBookScreening ? ` ${screeningStyles.profileActions}` : ""}`}>
               {canBookScreening && (
@@ -136,17 +149,20 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
           </div>
         </div>
 
-        {biographyParagraphs.length > 0 && (
-          <div className="doctor-detail-content">
+        {hasBiography && (
+          <div className={`doctor-detail-content${structuredBiography ? " doctor-detail-content--structured" : ""}`}>
             <article className="doctor-biography">
               <span className="section-kicker">Про лікаря</span>
-              <h2>Біографія та професійний досвід</h2>
-              {biographyParagraphs.map((paragraph, index) => (
+              <h2>{structuredBiography ? "Професійний досвід" : "Біографія та професійний досвід"}</h2>
+              {reportingPartner ? (
+                <DoctorBiography biography={doctor.biography} instagramUrl={reportingPartner.instagramUrl} />
+              ) : doctor.biography.split(/\n+/).map((paragraph) => paragraph.trim()).filter(Boolean).map((paragraph, index) => (
                 <p key={`${index}-${paragraph.slice(0, 20)}`}>{paragraph}</p>
               ))}
             </article>
           </div>
         )}
+        <DoctorCertificates doctorName={doctor.name} certificates={doctorCertificates[doctor.id] ?? []} />
       </section>
     </>
   );

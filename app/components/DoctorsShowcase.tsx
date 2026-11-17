@@ -7,7 +7,7 @@ import "../doctors/portraits.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMouseDragScroll } from "./useMouseDragScroll";
 import type { Doctor } from "../doctors/doctorData";
-import { getDoctorInitials } from "../doctors/doctorData";
+import { getDoctorInitials, getDoctorPosition } from "../doctors/doctorData";
 
 type DoctorsShowcaseProps = {
   doctors: Doctor[];
@@ -180,6 +180,7 @@ export function DoctorsShowcase({ doctors }: DoctorsShowcaseProps) {
                   >
                     <strong>{doctor.name}</strong>
                     <span>{formatSpecialty(doctor.specialty)}</span>
+                    {getDoctorPosition(doctor) && <span>{getDoctorPosition(doctor)}</span>}
                     <small>
                       {doctor.experienceYears
                         ? `Досвід ${doctor.experienceYears} років`
