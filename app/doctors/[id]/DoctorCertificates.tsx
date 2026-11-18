@@ -233,7 +233,7 @@ export function DoctorCertificates({ doctorName, certificates }: Props) {
             onClick={(event) => { if (event.target === event.currentTarget && Date.now() > suppressBackdropClickUntil.current) close(); }}
             tabIndex={zoomed ? 0 : -1} role="region" aria-describedby={viewerTitleId + "-zoom-help"} aria-label={zoomed ? "Збільшений документ — перетягуйте для перегляду" : "Перегляд сертифіката"}>
             <span id={viewerTitleId + "-zoom-help"} className={styles.srOnly}>Подвійне клацання або коліщатко миші змінює масштаб. Клавіші + та − — масштаб, 0 — увесь документ. У збільшеному вигляді стрілки переміщують документ.</span>
-            {(imageStatus === "loading" || pending) && <span className={styles.imageStatus} role="status">Завантажуємо…</span>}
+            {(imageStatus === "loading" || pending) && <span className={styles.srOnly} role="status">Завантажуємо…</span>}
             {outgoing && transition && <div key={"outgoing-" + transition.key} className={styles.slide + " " + styles.outgoing} aria-hidden="true" style={{ "--slide-direction": transition.direction, "--slide-offset": transition.offset + "px" } as CSSProperties}>
               <CertificatePaper certificate={outgoing} alt="" />
             </div>}

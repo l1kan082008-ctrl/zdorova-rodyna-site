@@ -53,6 +53,11 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
   const activeDays = getDoctorScheduleDays(doctor.schedule);
   const hasBiography = Boolean(doctor.biography.trim());
   const structuredBiography = Boolean(reportingPartner) && /^##\s+/m.test(doctor.biography);
+  const hasOriginalDereshPortrait = doctor.id === "deresh-nataliia"
+    && doctor.photoUrl === "/doctors/deresh-nataliia.webp";
+  const portraitSource = hasOriginalDereshPortrait
+    ? "/doctors/deresh-nataliia-full.webp"
+    : resolveImageSource(doctor.photoUrl ?? "");
 
   return (
     <>
@@ -65,14 +70,17 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
               <div className="doctor-detail-portrait-frame">
                 <Image
                   className="doctor-portrait doctor-detail-portrait"
-                  src={resolveImageSource(doctor.photoUrl)}
-                  unoptimized={!canOptimizeImage(doctor.photoUrl)}
+                  src={portraitSource}
+                  unoptimized={!canOptimizeImage(portraitSource)}
                   alt={`Фотографія лікаря ${doctor.name}`}
                   fill
-                  quality={85}
+                  quality={hasOriginalDereshPortrait ? 90 : 85}
                   loading="eager"
                   fetchPriority="high"
-                  sizes="(max-width: 720px) calc(100vw - 32px), (max-width: 1288px) 43vw, 534px"
+                  // This landscape original covers a tall frame; select enough pixels for its height.
+                  sizes={hasOriginalDereshPortrait
+                    ? "(max-width: 720px) 720px, 900px"
+                    : "(max-width: 720px) calc(100vw - 32px), (max-width: 1288px) 43vw, 534px"}
                 />
               </div>
             ) : (
