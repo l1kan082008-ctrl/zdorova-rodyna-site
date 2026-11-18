@@ -287,6 +287,15 @@ export default async function ServiceDetailPage({
     const item = homeNurseCatalog.find(price => price.id === id);
     return item && item.isActive !== false && Number.isFinite(item.amount) && item.amount >= 0 ? [item] : [];
   });
+  const dermoscopyCatalog = isCinematicDermoscopy
+    ? process.env.NODE_ENV === "development" && !process.env.DATABASE_URL?.trim()
+      ? catalogItems.map(proofreadPriceItem)
+      : await listPublicPriceItems().catch(() => [])
+    : [];
+  const dermoscopyPrices = ["official-256-002", "official-256-003"].flatMap(id => {
+    const item = dermoscopyCatalog.find(price => price.id === id);
+    return item && item.isActive !== false && Number.isFinite(item.amount) && item.amount >= 0 ? [item] : [];
+  });
   const ultrasoundLocations = isCinematicUltrasound
     ? (await listPublicLocations()).filter(location =>
         ["stelmakha-18m", "zviahel-shevchenka-41-1"].includes(location.id),
@@ -978,9 +987,9 @@ export default async function ServiceDetailPage({
               <Link className="book-button" href={bookingHref}>
                 Записатися <span>→</span>
               </Link>
-              <Link className="outline-button" href={priceHref}>
+              <a className="outline-button" href="#dermoscopy-prices">
                 Переглянути вартість <span>→</span>
-              </Link>
+              </a>
             </div>
           </div>
         </section>
@@ -1521,6 +1530,29 @@ export default async function ServiceDetailPage({
             buttonLabel="Зателефонувати"
             ariaLabel="Аналізи без попереднього запису"
           />
+        ) : isCinematicDermoscopy ? (
+          <ServiceBookingCta
+            id="dermoscopy-prices"
+            bookingHref={bookingHref}
+            title="Вартість дерматоскопії"
+            description=""
+            showKicker={false}
+            ariaLabel="Вартість дерматоскопії та запис"
+          >
+            {dermoscopyPrices.length > 0 && (
+              <dl className="dermoscopy-prices">
+                {dermoscopyPrices.map(item => (
+                  <div key={item.id} data-price-item-id={item.id}>
+                    <dt>{item.name}</dt>
+                    <dd>{new Intl.NumberFormat("uk-UA").format(item.amount)} грн</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {dermoscopyPrices.length < 2 && (
+              <p>Вартість та доступність дерматоскопії уточніть в адміністратора.</p>
+            )}
+          </ServiceBookingCta>
         ) : <ServiceBookingCta bookingHref={bookingHref} />
       )}
       </>

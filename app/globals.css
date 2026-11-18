@@ -24901,3 +24901,21 @@ body .service-preparation-list li > p { margin: 0; align-self: center; color: #5
 @media (min-width: 761px) and (max-width: 900px) {
   .family-declaration-layout { grid-template-columns: minmax(0, 1fr); }
 }
+
+#dermoscopy-prices { scroll-margin-top: 110px; }
+.dermoscopy-prices { margin: 20px 0 0; }
+.dermoscopy-prices > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid rgb(255 255 255 / 22%);
+}
+.dermoscopy-prices dt { font-size: 16px; line-height: 1.5; }
+.dermoscopy-prices dd { margin: 0; font-size: 20px; font-weight: 700; white-space: nowrap; }
+@media (max-width: 760px) {
+  .dermoscopy-prices > div { gap: 12px; }
+  .dermoscopy-prices dt { font-size: 14px; }
+  .dermoscopy-prices dd { font-size: 18px; }
+}
