@@ -8,6 +8,7 @@ import screeningStyles from "../screening-actions.module.css";
 import { DoctorProfileBackLink } from "./DoctorProfileBackLink";
 import { DoctorCertificates } from "./DoctorCertificates";
 import { DoctorBiography } from "./DoctorBiography";
+import styles from "./DoctorProfileDetails.module.css";
 import { doctorCertificates } from "../doctorCertificates";
 import {
   getDoctorInitials,
@@ -103,6 +104,25 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
               {reportingModalities && <div>
                 <dt>Що описує лікар</dt>
                 <dd>{reportingModalities}</dd>
+              </div>}
+              {reportingPartner?.instagramUrl && <div className={styles.socialFact}>
+                <dt className="sr-only">Instagram</dt>
+                <dd>
+                  <a
+                    className={`footer-social-link ${styles.instagram}`}
+                    href={reportingPartner.instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Instagram — ${doctor.name}, відкриється в новій вкладці`}
+                    title={`Instagram — ${doctor.name}`}
+                  >
+                    <svg className="footer-social-icon footer-social-icon-instagram" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <rect x="3.75" y="3.75" width="16.5" height="16.5" rx="5" />
+                      <circle cx="12" cy="12" r="3.65" />
+                      <circle className="footer-social-icon-dot" cx="17.35" cy="6.8" r="1" />
+                    </svg>
+                  </a>
+                </dd>
               </div>}
             </dl>
 

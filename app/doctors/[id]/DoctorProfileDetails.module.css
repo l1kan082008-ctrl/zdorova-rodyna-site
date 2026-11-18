@@ -1,0 +1,16 @@
+.socialFact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.instagram:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 4px;
+}
+
+@media (max-width: 900px) {
+  .socialFact {
+    justify-content: flex-start;
+  }
+}
