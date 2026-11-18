@@ -5,7 +5,8 @@ import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
 import { doctorBookingHref } from "@/lib/doctorBranches";
 import { responsiveBackground } from "@/lib/responsiveBackground";
 import { sitePhoneHref } from "@/lib/siteSettings";
-import { centerLocations, getDirectionsUrl } from "../../contacts/locationData";
+import { formatPhoneNumber } from "@/lib/ukrainianPhone";
+import { getDirectionsUrl } from "../../contacts/locationData";
 import serviceStyles from "./CtServicePage.module.css";
 import { UltrasoundPriceList } from "./UltrasoundPriceList";
 import type { Metadata, ResolvingMetadata } from "next";
@@ -276,6 +277,12 @@ export default async function ServiceDetailPage({
     ? sitePhoneHref((await getSiteSettings()).phone)
     : undefined;
   const laboratoryLocations = isCinematicLaboratory ? await listPublicLocations() : [];
+  const ultrasoundLocations = isCinematicUltrasound
+    ? (await listPublicLocations()).filter(location =>
+        ["stelmakha-18m", "zviahel-shevchenka-41-1"].includes(location.id),
+      )
+    : [];
+  const zviahelUltrasoundLocation = ultrasoundLocations.find(location => location.id === "zviahel-shevchenka-41-1");
   const [holterPrices, holterLocations] = isCinematicHolter
     ? await Promise.all([
         process.env.NODE_ENV === "development" && !process.env.DATABASE_URL?.trim()
@@ -1180,8 +1187,9 @@ export default async function ServiceDetailPage({
       {isCinematicUltrasound && (
         <section className="ultrasound-price-list" id="ultrasound-prices" aria-labelledby="ultrasound-prices-title">
           <header className={serviceStyles.sectionTitle}>
-          <h2 id="ultrasound-prices-title">Ціна та запис на УЗД</h2>
-          <p>Оберіть дослідження. Вартість і запис — нижче, підготовка — у «Детальніше».</p></header>
+            <h2 id="ultrasound-prices-title">Ціна та запис на УЗД</h2>
+            <p>Оберіть дослідження, перегляньте вартість і запишіться. Інформація про підготовку доступна в розділі «Детальніше».</p>
+          </header>
           <UltrasoundPriceList items={cardiologyPriceItems.filter(item => item.isActive !== false && ["ultrasound", "doppler"].includes(item.category))} />
         </section>
       )}
@@ -1400,17 +1408,25 @@ export default async function ServiceDetailPage({
             <p>Адміністратор допоможе обрати зручний час для УЗД та підкаже, як підготуватися до обстеження.</p>
           </div>
           <div className={`${serviceStyles.locationGrid} ultrasound-locations-grid`}>
-            {centerLocations.filter((location) => ["stelmakha-18m", "zviahel-shevchenka-41-1"].includes(location.id)).map((location) => (
-              <article key={location.id}>
-                <div className={serviceStyles.locationPhoto}>
+            {ultrasoundLocations.map((location) => (
+              <article key={location.id} id={`ultrasound-location-${location.id}`} tabIndex={-1} className={!location.gallery[0] ? "ultrasound-location-without-photo" : undefined}>
+                {location.gallery[0] && <div className={serviceStyles.locationPhoto}>
                   <Image src={resolveImageSource(location.gallery[0].src)} unoptimized={!canOptimizeImage(location.gallery[0].src)} alt={location.gallery[0].alt} fill quality={85} sizes="(max-width: 760px) 112px, 140px" />
-                </div>
-                <div>
+                </div>}
+                <div className="ultrasound-location-content">
                   <strong><Link className={serviceStyles.locationLink} href={`/contacts?location=${encodeURIComponent(location.id)}#locations`} aria-label={`Переглянути відділення: ${location.fullAddress}`}>{location.city}</Link></strong>
                   <p>{location.address}</p>
                   <span>{location.hours.map((hours, index) => <span key={hours}>{index > 0 && <br />}{hours}</span>)}</span>
                   <a href={getDirectionsUrl(location)} target="_blank" rel="noreferrer">Показати на карті <span>→</span></a>
                 </div>
+                {location.id === zviahelUltrasoundLocation?.id && (
+                  <div className="ultrasound-zviahel-details">
+                    <p>У Звягелі проводимо УЗД під час вагітності на всіх термінах, а також обстеження органів малого таза, молочних залоз і щитоподібної залози.</p>
+                    {location.phone && (
+                      <p>Запис у Звягелі — <a href={sitePhoneHref(location.phone)}>{formatPhoneNumber(location.phone).replace(/^\+38 /, "").replaceAll("-", " ")}</a>.</p>
+                    )}
+                  </div>
+                )}
               </article>
             ))}
           </div>

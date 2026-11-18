@@ -1,6 +1,15 @@
 /* Reuse the CT/MRI location cards and heading. */
 .ultrasound-page .ultrasound-locations { width: var(--site-content-width); padding-top: 0; margin: 0 auto 48px; }
-.ultrasound-page .ultrasound-locations-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ultrasound-page .ultrasound-locations-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.ultrasound-page .ultrasound-locations-grid article { scroll-margin-top: 110px; }
+.ultrasound-page .ultrasound-locations-grid article:focus-visible { outline: 2px solid var(--ct-teal); outline-offset: 3px; }
+.ultrasound-page .ultrasound-locations-grid .ultrasound-location-content { padding: 22px; min-width: 0; }
+.ultrasound-page .ultrasound-locations-grid .ultrasound-location-without-photo { grid-template-columns: minmax(0, 1fr); }
+.ultrasound-page .ultrasound-zviahel-details { grid-column: 1 / -1; border-top: 1px solid var(--ct-border); }
+.ultrasound-page .ultrasound-zviahel-details p { margin: 0; line-height: 1.6; }
+.ultrasound-page .ultrasound-zviahel-details p + p { margin-top: 8px; }
+.ultrasound-page .ultrasound-zviahel-details a { position: relative; z-index: 1; display: inline-flex; align-items: center; min-height: 44px; font-size: inherit; white-space: nowrap; }
+.ultrasound-page .ultrasound-zviahel-details a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-radius: 4px; }
 @media (max-width: 760px) {
   .ultrasound-page .ultrasound-locations { margin-bottom: 32px; }
   .ultrasound-page .ultrasound-locations-grid { grid-template-columns: 1fr; }
