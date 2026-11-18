@@ -296,6 +296,14 @@ export default async function ServiceDetailPage({
     const item = dermoscopyCatalog.find(price => price.id === id);
     return item && item.isActive !== false && Number.isFinite(item.amount) && item.amount >= 0 ? [item] : [];
   });
+  const earPiercingCatalog = isCinematicEarPiercing
+    ? process.env.NODE_ENV === "development" && !process.env.DATABASE_URL?.trim()
+      ? catalogItems.map(proofreadPriceItem)
+      : await listPublicPriceItems().catch(() => [])
+    : [];
+  const earPiercingPrice = earPiercingCatalog.find(item =>
+    item.id === "official-256-020" && item.isActive !== false && Number.isFinite(item.amount) && item.amount >= 0,
+  );
   const ultrasoundLocations = isCinematicUltrasound
     ? (await listPublicLocations()).filter(location =>
         ["stelmakha-18m", "zviahel-shevchenka-41-1"].includes(location.id),
@@ -935,6 +943,10 @@ export default async function ServiceDetailPage({
               Акуратне проколювання мочки вуха з попередньою розміткою,
               дотриманням гігієни та рекомендаціями щодо догляду.
             </p>
+            <dl className="ear-piercing-price" data-price-item-id={earPiercingPrice?.id}>
+              <dt>Вартість проколювання вух</dt>
+              <dd>{earPiercingPrice ? `${new Intl.NumberFormat("uk-UA").format(earPiercingPrice.amount)} грн` : "Уточнюйте"}</dd>
+            </dl>
             <div className="service-detail-actions">
               <Link className="book-button" href={bookingHref}>
                 Записатися <span>→</span>

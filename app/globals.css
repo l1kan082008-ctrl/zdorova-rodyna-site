@@ -24919,3 +24919,21 @@ body .service-preparation-list li > p { margin: 0; align-self: center; color: #5
   .dermoscopy-prices dt { font-size: 14px; }
   .dermoscopy-prices dd { font-size: 18px; }
 }
+
+.ear-piercing-price {
+  display: grid;
+  grid-template-columns: minmax(0, auto) max-content;
+  justify-content: start;
+  align-items: baseline;
+  gap: 16px;
+  margin: 24px 0 0;
+  color: #fff;
+  line-height: 1.5;
+}
+.ear-piercing-price dt { font-size: 16px; }
+.ear-piercing-price dd { margin: 0; font-size: 22px; font-weight: 700; }
+@media (max-width: 760px) {
+  .ear-piercing-price { gap: 12px; margin-top: 20px; }
+  .ear-piercing-price dt { font-size: 14px; }
+  .ear-piercing-price dd { font-size: 20px; }
+}
