@@ -59,8 +59,12 @@ const attributes = tag => Object.fromEntries([...tag.matchAll(/([\w-]+)="([^"]*)
   .map(([, name, value]) => [name, decode(value)]));
 const links = html => [...html.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)]
   .map(([tag]) => ({ attributes: attributes(tag), text: plainText(tag) }));
-const buttons = html => [...html.matchAll(/<button\b[^>]*>[\s\S]*?<\/button>/g)]
-  .map(([tag]) => ({ attributes: attributes(tag), text: plainText(tag) }));
+const buttons = html => [...html.matchAll(/(<button\b[^>]*>)([\s\S]*?)<\/button>/g)]
+  .map(match => ({
+    attributes: attributes(match[1]), text: plainText(match[2]), html: match[2],
+    start: match.index, end: match.index + match[0].length,
+  }));
+const branchButtons = html => buttons(html).filter(button => button.attributes["aria-controls"]?.startsWith("branch-location-panel-"));
 
 function divs(html, predicate) {
   const matches = [...html.matchAll(/<div\b[^>]*>/g)].filter(([tag]) => predicate(attributes(tag)));
@@ -75,6 +79,8 @@ function divs(html, predicate) {
       attributes: attributes(match[0]),
       hidden: /\shidden(?:[\s=>])/.test(match[0]),
       html: html.slice(match.index + match[0].length, closing.index),
+      start: match.index,
+      end: closing.index + closing[0].length,
     };
   });
 }
@@ -124,8 +130,10 @@ test("every selected branch retains all panels but reveals exactly one branch an
     assert.deepEqual(renderedPanels.filter(panel => !panel.hidden).map(panel => panel.attributes["data-location-panel"]), [selected.id]);
     const visibleCities = cityPanels(html).filter(panel => !panel.hidden);
     assert.equal(visibleCities.length, 1);
-    const cityBranches = buttons(visibleCities[0].html).map(button => button.attributes["aria-controls"]);
-    assert.deepEqual(cityBranches, locations.filter(location => location.city === selected.city).map(location => `branch-location-panel-${location.id}`));
+    const cityLocations = locations.filter(location => location.city === selected.city);
+    const cityBranches = branchButtons(visibleCities[0].html).map(button => button.attributes["aria-controls"]);
+    assert.deepEqual(cityBranches, cityLocations.length === 1 ? [] : cityLocations.map(location => `branch-location-panel-${location.id}`));
+    assert.deepEqual(panels(visibleCities[0].html).map(panel => panel.attributes["data-location-panel"]), cityLocations.map(location => location.id));
     const maps = iframes(html);
     assert.equal(maps.length, 1);
     assert.equal(maps[0].src, getMapEmbedUrl(selected));
@@ -134,7 +142,7 @@ test("every selected branch retains all panels but reveals exactly one branch an
   }
 });
 
-test("city tabs and branch buttons have unique IDs, correct panel targets and a single keyboard tab stop", () => {
+test("city tabs and branch disclosures have unique IDs, correct targets and a single city keyboard tab stop", () => {
   const html = render(locations.at(-1).id);
   const allButtons = buttons(html);
   const tabs = allButtons.filter(button => button.attributes.role === "tab");
@@ -149,14 +157,53 @@ test("city tabs and branch buttons have unique IDs, correct panel targets and a 
     assert.equal(tab.attributes.tabindex, panel.hidden ? "-1" : "0");
   }
   for (const panel of panels(html)) {
+    const location = locations.find(value => value.id === panel.attributes["data-location-panel"]);
+    const single = locations.filter(value => value.city === location.city).length === 1;
     const branchButton = allButtons.find(button => button.attributes["aria-controls"] === panel.attributes.id);
-    assert.ok(branchButton);
-    assert.equal(branchButton.attributes["aria-pressed"], String(!panel.hidden));
+    if (single) {
+      assert.equal(branchButton, undefined, "a city with one branch has no redundant selection control");
+    } else {
+      assert.ok(branchButton);
+      assert.equal(branchButton.attributes["aria-expanded"], String(!panel.hidden));
+      assert.equal(branchButton.attributes["aria-pressed"], undefined);
+    }
     assert.equal(panel.attributes.role, "region");
     assert.ok(panel.html.includes(`id="${panel.attributes["aria-labelledby"]}"`));
   }
   const ids = [...html.matchAll(/\sid="([^"]*)"/g)].map(([, id]) => decode(id));
   assert.equal(new Set(ids).size, ids.length);
+});
+
+test("branch headers and inline details are siblings with no nested interactive actions", () => {
+  for (const selected of locations) {
+    const html = render(selected.id);
+    const entries = byClass(html, "locationEntry");
+    assert.equal(entries.length, locations.length);
+    for (const entry of entries) {
+      const [panel] = panels(entry.html);
+      assert.ok(panel, "each photo card owns its full text panel");
+      const location = locations.find(value => value.id === panel.attributes["data-location-panel"]);
+      const single = locations.filter(value => value.city === location.city).length === 1;
+      const disclosures = branchButtons(entry.html);
+      const staticHeaders = byClass(entry.html, "locationCard");
+      assert.equal(disclosures.length, single ? 0 : 1);
+      assert.equal(staticHeaders.length, single ? 1 : 0);
+      const header = single ? staticHeaders[0] : disclosures[0];
+      const details = byClass(entry.html, "details");
+      assert.equal(details.length, 1);
+      assert.equal(entry.html.slice(0, header.start).trim(), "");
+      assert.equal(entry.html.slice(header.end, details[0].start).trim(), "", "details follow the header as its sibling");
+      assert.equal(details[0].end, entry.html.length);
+      assert.doesNotMatch(header.html, /<(?:a|button|input|select|textarea|summary)\b/i, "header contains no nested links or actions");
+      assert.equal(panels(header.html).length, 0);
+      assert.equal(panels(details[0].html).length, 1);
+      assert.equal(details[0].hidden, panel.hidden);
+      assert.equal(entry.attributes["data-expanded"], String(!panel.hidden));
+      assert.equal(buttons(details[0].html).filter(button => button.text === "Фото і відео").length, 1);
+      assert.equal(links(details[0].html).filter(link => link.text === "Прокласти маршрут").length, 1);
+      assert.equal(iframes(details[0].html).length, location.id === selected.id ? 1 : 0);
+    }
+  }
 });
 
 test("SSR includes branch preview photographs but no opened gallery or repeated maps", () => {
