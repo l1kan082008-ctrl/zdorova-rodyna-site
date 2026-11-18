@@ -1,6 +1,22 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { compatibleLocations, formatBookingPhone, serviceCategory } from "../lib/bookingRequest.ts";
+import { readFileSync } from "node:fs";
+import ts from "typescript";
+
+// Load the real TypeScript modules, including Next's extensionless imports.
+function load(url) {
+  const { outputText } = ts.transpileModule(readFileSync(url, "utf8"), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  });
+  const loaded = { exports: {} };
+  new Function("require", "module", "exports", outputText)(specifier => {
+    assert.ok(specifier.startsWith("."), "only local dependencies are expected");
+    return load(new URL(specifier.endsWith(".ts") ? specifier : `${specifier}.ts`, url));
+  }, loaded, loaded.exports);
+  return loaded.exports;
+}
+
+const { compatibleLocations, formatBookingPhone, serviceCategory, normalizeBookingService, isHomeVisitService, homeVisitAddressComment } = load(new URL("../lib/bookingRequest.ts", import.meta.url));
 
 test("phone accepts national, international and pasted formatted Ukrainian numbers", () => {
   for (const input of ["0671234567", "+38 (067) 123-45-67", "380671234567", "00380671234567"]) {
@@ -20,7 +36,7 @@ test("specific investigations map to supported department capabilities", () => {
 });
 
 test("a laboratory-only branch is not offered for CT or a doctor", () => {
-  const locations = [{ id: "main", services: ["ct", "doctors", "laboratory"] }, { id: "lab", services: ["laboratory"] }];
+  const locations = [{ id: "main", city: "Рівне", services: ["ct", "doctors", "laboratory"] }, { id: "lab", city: "Рівне", services: ["laboratory"] }];
   assert.deepEqual(compatibleLocations(locations, "КТ").map(({ id }) => id), ["main"]);
   assert.deepEqual(compatibleLocations(locations, "Консультації лікарів").map(({ id }) => id), ["main"]);
   assert.equal(compatibleLocations(locations, "Лабораторні дослідження").length, 2);
@@ -30,15 +46,20 @@ test("a laboratory-only branch is not offered for CT or a doctor", () => {
 });
 
 
-test("home visit aliases share one booking service and preserve the Rivne address", async () => {
-  const { normalizeBookingService, isHomeVisitService, homeVisitAddressComment } = await import("../lib/bookingRequest.ts");
+test("home visit aliases share one booking service and preserve the entered address", () => {
   for (const label of ["Медсестра додому", "Виїзд медичної сестри додому", "Аналізи вдома"]) {
     assert.equal(normalizeBookingService(label), "Медсестра додому");
     assert.equal(isHomeVisitService(label), true);
   }
   assert.equal(normalizeBookingService("КТ"), "КТ");
   assert.equal(isHomeVisitService("КТ"), false);
-  assert.equal(homeVisitAddressComment("  Тестова, 10  "), "Адреса виїзду: м. Рівне, Тестова, 10.");
+  assert.equal(homeVisitAddressComment("  Тестова, 10  "), "Адреса виїзду: Тестова, 10.");
   assert.equal(homeVisitAddressComment("   "), "");
+  assert.equal(homeVisitAddressComment("1234"), "");
   assert.equal(homeVisitAddressComment("x".repeat(201)), "");
+});
+
+test("home visits retain suburban settlements and do not duplicate Rivne", () => {
+  assert.equal(homeVisitAddressComment("  с. Бармаки, вул. Тестова, 10  "), "Адреса виїзду: с. Бармаки, вул. Тестова, 10.");
+  assert.equal(homeVisitAddressComment("м. Рівне, вул. Тестова, 20, кв. 3"), "Адреса виїзду: м. Рівне, вул. Тестова, 20, кв. 3.");
 });

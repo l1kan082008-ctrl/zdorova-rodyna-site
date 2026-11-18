@@ -24598,10 +24598,18 @@ body .service-banner-secondary { border-radius:999px; }
 .service-overview--home-nurse h2 { font-size: 30px; line-height: 1.2; letter-spacing: -.02em; }
 .home-nurse-area { display: inline-flex; padding: 6px 12px; border-radius: 8px; background: var(--orange); color: #fff; font-size: 13px; line-height: 1.5; font-weight: 700; }
 .service-overview--home-nurse p { max-width: 900px; margin: 12px 0 0; font-size: 16px; line-height: 1.6; color: #53676a; }
+.home-nurse-page #home-nurse-prices { scroll-margin-top: 110px; }
+.home-nurse-page #home-nurse-prices:focus-visible { outline: 2px solid var(--teal); outline-offset: 6px; }
+.home-nurse-prices { margin: 24px 0 0; }
+.home-nurse-prices > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 12px 24px; padding: 16px 0; border-top: 1px solid var(--border-soft); }
+.home-nurse-prices dt { min-width: 0; font-size: 16px; line-height: 1.6; }
+.home-nurse-prices dd { margin: 0; color: var(--teal); font-size: 20px; font-weight: 700; white-space: nowrap; }
 @media (max-width: 720px) {
   .service-overview--home-nurse { margin-bottom: 24px; }
   .service-overview--home-nurse > article:not(.service-center-card) { padding: 20px; }
   .service-overview--home-nurse h2 { font-size: 26px; }
+  .home-nurse-prices > div { gap: 12px; }
+  .home-nurse-prices dd { font-size: 18px; }
 }
 
 /* Home visit page: a consistent vertical rhythm and shorter mobile hero. */

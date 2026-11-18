@@ -319,7 +319,7 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
       <button className="book-button" type="button" onClick={onClose}>Готово</button>
     </div> : <>
       <h2 id="quick-booking-title">{isScreening ? "Заявка на скринінг 40+" : isHomeVisit ? "Замовити виїзд медсестри" : isLabInquiry ? "Уточнення щодо аналізів" : "Запис на прийом"}</h2>
-      <p id="quick-booking-description">{isHomeVisit ? "Виїзд доступний тільки у Рівному. Адміністратор уточнить аналізи, адресу та зручний час." : isLabInquiry ? "Залиште контакти — адміністратор допоможе уточнити аналізи, вартість і підготовку. Забір у центрі — без попереднього запису, у порядку живої черги." : "Залиште контакти — адміністратор погодить з вами час візиту."}</p>
+      <p id="quick-booking-description">{isHomeVisit ? "Виїзд доступний у Рівному та передмісті до 20 км. Адміністратор уточнить аналізи, адресу та зручний час." : isLabInquiry ? "Залиште контакти — адміністратор допоможе уточнити аналізи, вартість і підготовку. Забір у центрі — без попереднього запису, у порядку живої черги." : "Залиште контакти — адміністратор погодить з вами час візиту."}</p>
       <form onSubmit={preventNativeBookingSubmit} aria-busy={submitting}>
         <fieldset disabled={submitting}>
           {isScreening ? <>
@@ -364,8 +364,8 @@ function BookingDialog({ request, opening, sourcePathname, onClose }: { request:
             <optgroup label="Консультації за напрямами">{consultationServices.map((item) => <option key={item}>{item}</option>)}</optgroup>
           </select>
           </label>}
-          {isScreening ? <div className="quick-booking__selection"><span>Місце проведення</span><strong>{screeningAddress}</strong></div> : isHomeVisit ? <label htmlFor="quick-address">Адреса виїзду в Рівному
-            <input id="quick-address" name="address" autoComplete="street-address" minLength={5} maxLength={200} placeholder="Вулиця, будинок, квартира" required />
+          {isScreening ? <div className="quick-booking__selection"><span>Місце проведення</span><strong>{screeningAddress}</strong></div> : isHomeVisit ? <label htmlFor="quick-address">Адреса виїзду
+            <input id="quick-address" name="address" autoComplete="street-address" minLength={5} maxLength={200} placeholder="Населений пункт, вулиця, будинок, квартира" required />
           </label> : <label htmlFor="quick-location"><span id="quick-location-label">Відділення</span><select id="quick-location" aria-labelledby="quick-location-label" aria-busy={branchLoading} disabled={branchLoading} value={selectedLocation?.id || ""} onChange={(event) => setLocationId(event.target.value)}>
             {!canAutoSelect && <option value="">{branchLoading ? "Завантажуємо відділення…" : locationStatus || (isDoctorBooking && doctorLookupStatus === "unavailable") || !availableLocations.length || (category === null && service !== helpService) ? "Адміністратор допоможе обрати" : "Допоможіть обрати"}</option>}
             {availableLocations.map((location) => <option key={location.id} value={location.id}>{location.label}</option>)}

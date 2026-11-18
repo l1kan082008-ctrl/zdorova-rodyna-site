@@ -19,6 +19,7 @@ import { getSiteSettings } from "../../api/settings/settingsStore";
 import { GlowPriceCard } from "../../components/GlowPriceCard";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
 import { catalogItems } from "../../prices/priceData";
+import { proofreadPriceItem } from "../../prices/nameCorrections";
 import {
   priceReferences,
   resolvePriceItem,
@@ -277,6 +278,15 @@ export default async function ServiceDetailPage({
     ? sitePhoneHref((await getSiteSettings()).phone)
     : undefined;
   const laboratoryLocations = isCinematicLaboratory ? await listPublicLocations() : [];
+  const homeNurseCatalog = isHomeNurse
+    ? process.env.NODE_ENV === "development" && !process.env.DATABASE_URL?.trim()
+      ? catalogItems.map(proofreadPriceItem)
+      : await listPublicPriceItems().catch(() => [])
+    : [];
+  const homeNursePrices = ["official-255-016", "official-255-017"].flatMap(id => {
+    const item = homeNurseCatalog.find(price => price.id === id);
+    return item && item.isActive !== false && Number.isFinite(item.amount) && item.amount >= 0 ? [item] : [];
+  });
   const ultrasoundLocations = isCinematicUltrasound
     ? (await listPublicLocations()).filter(location =>
         ["stelmakha-18m", "zviahel-shevchenka-41-1"].includes(location.id),
@@ -722,9 +732,9 @@ export default async function ServiceDetailPage({
               <Link className="book-button" href={bookingHref}>
                 Замовити виїзд <span>→</span>
               </Link>
-              <Link className="outline-button" href={priceHref}>
+              <a className="outline-button" href="#home-nurse-prices">
                 Переглянути вартість <span>→</span>
-              </Link>
+              </a>
             </div>
           </div>
           <div className="home-nurse-route" aria-hidden="true">
@@ -1317,13 +1327,24 @@ export default async function ServiceDetailPage({
           </div>
         </section>
       ) : isHomeNurse ? (
-        <section className="service-overview service-overview--home-nurse">
+        <section className="service-overview service-overview--home-nurse" id="home-nurse-prices" tabIndex={-1} aria-labelledby="home-nurse-overview-title">
           <article>
             <div className="home-nurse-intro-heading">
-              <h2>{service.centerTitle}</h2>
-              <span className="home-nurse-area">Тільки у Рівному</span>
+              <h2 id="home-nurse-overview-title">{service.centerTitle}</h2>
+              <span className="home-nurse-area">У Рівному та передмісті до 20 км</span>
             </div>
             <p>{service.overview}</p>
+            {homeNursePrices.length > 0 && (
+              <dl className="home-nurse-prices" aria-label="Вартість виїзду">
+                {homeNursePrices.map(item => (
+                  <div key={item.id} data-price-item-id={item.id}>
+                    <dt>{item.name}</dt>
+                    <dd>{new Intl.NumberFormat("uk-UA").format(item.amount)} грн</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {homeNursePrices.length < 2 && <p>Наявність і вартість виїзду за вашою адресою уточніть в адміністратора.</p>}
           </article>
         </section>
       ) : isCinematicHolter ? (

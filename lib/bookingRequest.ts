@@ -46,6 +46,6 @@ export function normalizeBookingService(service: string) {
 export function homeVisitAddressComment(address: string) {
   const trimmed = address.trim();
   return trimmed.length >= 5 && trimmed.length <= 200
-    ? `Адреса виїзду: м. Рівне, ${trimmed}.`
+    ? `Адреса виїзду: ${trimmed}.`
     : "";
 }
