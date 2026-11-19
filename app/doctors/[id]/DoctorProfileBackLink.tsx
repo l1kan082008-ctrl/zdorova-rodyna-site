@@ -9,7 +9,11 @@ export function DoctorProfileBackLink({ doctorId, returnTo }: { doctorId: string
   useEffect(() => {
     setDestination(resolveDoctorProfileReturnTo(doctorId, returnTo));
   }, [doctorId, returnTo]);
+  // Native navigation keeps a direct CT entry's fragment from being appended twice by the router.
+  if (destination?.startsWith("/services/ct#")) {
+    return <a className="doctor-detail-back" href={destination}>← Повернутися до лікарів КТ</a>;
+  }
   return <Link className="doctor-detail-back" href={destination ?? "/doctors"}>
-    {destination?.startsWith("/services/ct") ? "← Повернутися до лікарів КТ" : destination?.startsWith("/services/mri") ? "← Повернутися до лікарів МРТ" : destination ? "← Повернутися до вибору лікаря" : "← Всі лікарі"}
+    {destination?.startsWith("/services/mri") ? "← Повернутися до лікарів МРТ" : destination ? "← Повернутися до вибору лікаря" : "← Всі лікарі"}
   </Link>;
 }
