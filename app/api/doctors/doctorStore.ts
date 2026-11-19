@@ -53,11 +53,16 @@ const createDoctorsTable = `
   )
 `;
 
-function prepareDefaultDoctorInsert(doctor: Doctor) {
+function prepareDefaultDoctorInsert(doctor: Doctor, migration?: string) {
   return env.DB.prepare(
-    `INSERT OR IGNORE INTO doctors
+    `INSERT INTO doctors
       (id, name, specialty, experience_years, consultation_price, repeat_consultation_price, show_consultation_price_on_request, is_active, sort_order, branch, description, biography, patient_groups, schedule, photo_key)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '')`,
+     SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ''
+     WHERE ? = 0 OR (
+       NOT EXISTS (SELECT 1 FROM doctor_migrations WHERE id = ?)
+       AND NOT EXISTS (SELECT 1 FROM doctors WHERE name = ?)
+     )
+     ON CONFLICT(id) DO NOTHING`,
   ).bind(
     doctor.id,
     doctor.name,
@@ -73,6 +78,9 @@ function prepareDefaultDoctorInsert(doctor: Doctor) {
     doctor.biography,
     JSON.stringify(doctor.patientGroups),
     JSON.stringify(doctor.schedule),
+    migration ? 1 : 0,
+    migration ?? "",
+    doctor.name,
   );
 }
 
@@ -148,9 +156,25 @@ async function initializeSchemaTables() {
     "SELECT COUNT(*) AS total FROM doctors",
   ).first<{ total: number }>();
 
-  if (Number(count?.total ?? 0) === 0 && process.env.BOOTSTRAP_DEFAULT_CONTENT === "true") {
-    await env.DB.batch(defaultDoctors.map(prepareDefaultDoctorInsert));
+  const isEmpty = Number(count?.total ?? 0) === 0;
+  if (isEmpty && process.env.BOOTSTRAP_DEFAULT_CONTENT !== "true") return;
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS doctor_migrations (id TEXT PRIMARY KEY)").run();
+  if (isEmpty) {
+    await env.DB.batch(defaultDoctors.map((doctor) => prepareDefaultDoctorInsert(doctor)));
   }
+  await migrateChukanovProfile();
+}
+
+async function migrateChukanovProfile() {
+  const migration = "chukanov-oleksandr-profile-v1";
+  if (await env.DB.prepare("SELECT id FROM doctor_migrations WHERE id = ?").bind(migration).first()) return;
+
+  const doctor = defaultDoctors.find(({ id }) => id === "chukanov-oleksandr");
+  if (!doctor) throw new Error("Missing Chukanov profile data.");
+  await env.DB.batch([
+    prepareDefaultDoctorInsert(doctor, migration),
+    env.DB.prepare("INSERT INTO doctor_migrations (id) VALUES (?) ON CONFLICT(id) DO NOTHING").bind(migration),
+  ]);
 }
 
 function parseSchedule(value: string): DoctorSchedule {

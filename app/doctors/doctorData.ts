@@ -39,7 +39,7 @@ export type Doctor = {
   photoUrl: string;
 };
 
-type MriReportingPartner = {
+type ReportingPartner = {
   id: string;
   sourceUrl: string;
   experienceLabel?: string;
@@ -47,7 +47,14 @@ type MriReportingPartner = {
   instagramUrl?: string;
 };
 
-export const mriReportingPartners: readonly MriReportingPartner[] = [
+const ctReportingPartner: ReportingPartner = {
+  id: "chukanov-oleksandr",
+  organization: "LifeScan",
+  sourceUrl: "https://lifescan.ua/chukanov-oleksandr-mikolajovich/",
+  experienceLabel: "У медицині з 1999 року",
+};
+
+export const mriReportingPartners: readonly ReportingPartner[] = [
   { id: "chumak-anatolii", organization: "LifeScan", sourceUrl: "https://lifescan.ua/chumak-anatolij-anatolijovich/", experienceLabel: "У рентгенології з 2007 року", instagramUrl: "https://www.instagram.com/_rad_bros_/" },
   { id: "pyzhuk-mariia", organization: "LifeScan", sourceUrl: "https://lifescan.ua/pizhuk-marija-oleksandrivna/", experienceLabel: "Медична практика з 2021 року" },
   { id: "pavliuk-romanna", organization: "LifeScan", sourceUrl: "https://lifescan.ua/pavljuk-romanna/", experienceLabel: "У рентгенології з 2022 року" },
@@ -60,14 +67,38 @@ export function getMriReportingPartner(doctor: { id?: string }) {
   return mriReportingPartners.find((partner) => partner.id === doctor.id);
 }
 
+export function getReportingPartner(doctor: { id?: string }) {
+  return doctor.id === ctReportingPartner.id ? ctReportingPartner : getMriReportingPartner(doctor);
+}
+
+export function getFullLandscapePortrait(doctor: Pick<Doctor, "id" | "photoUrl">) {
+  return doctor.id === "deresh-nataliia" && doctor.photoUrl === "/doctors/deresh-nataliia.webp"
+    ? "/doctors/deresh-nataliia-full.webp"
+    : undefined;
+}
+
+const radiologyStartYears = new Map<string, number>([
+  ["pysarchuk-taras", 2016],
+  ["zhyber-kostiantyn", 2017],
+  ["verchenko-dmytro", 2021],
+  ["novak-bohdana", 2022],
+]);
+
+export function getRadiologyExperienceLabel(doctor: Pick<Doctor, "id">) {
+  if (doctor.id === "rohalskyi-vitalii") return "Медична практика з 2013 року";
+  const year = radiologyStartYears.get(doctor.id);
+  return year === undefined ? undefined : `У рентгенології з ${year} року`;
+}
+
 export function getDoctorExperienceLabel(doctor: Pick<Doctor, "id" | "experienceLabel" | "experienceYears">, fallback = "Уточнюйте") {
-  return doctor.experienceLabel ?? getMriReportingPartner(doctor)?.experienceLabel ?? (doctor.experienceYears
+  return getRadiologyExperienceLabel(doctor) ?? doctor.experienceLabel ?? getReportingPartner(doctor)?.experienceLabel ?? (doctor.experienceYears
     ? `${doctor.experienceYears} років`
     : fallback);
 }
 
 // Organisational positions are separate from medical specialties and filters.
 export function getDoctorPosition(doctor: Pick<Doctor, "id">): string | null {
+  if (doctor.id === ctReportingPartner.id) return "Керівник відділу розвитку та якості медичних послуг";
   if (doctor.id === "deresh-nataliia") return "Завідувачка діагностичного центру LifeScan";
   const reportingPartner = getMriReportingPartner(doctor);
   if (reportingPartner) return reportingPartner.organization ? `${reportingPartner.organization} · опис МРТ` : "Опис МРТ";
@@ -77,6 +108,7 @@ export function getDoctorPosition(doctor: Pick<Doctor, "id">): string | null {
 }
 
 export function getDoctorReportingModalities(doctor: Pick<Doctor, "id">): string | null {
+  if (doctor.id === ctReportingPartner.id) return "КТ";
   if (doctor.id === "rohalskyi-vitalii") return "КТ та МРТ";
   return ["pysarchuk-taras", "zhyber-kostiantyn", "verchenko-dmytro", "novak-bohdana"].includes(doctor.id)
     ? "КТ"
@@ -108,6 +140,7 @@ export function getPublicDoctors(doctors: readonly Doctor[]): Doctor[] {
 }
 
 export const doctorPhotoUrls: Record<string, string> = {
+  "chukanov-oleksandr": "/doctors/chukanov-oleksandr.webp",
   "chumak-anatolii": "/doctors/chumak-anatolii.webp",
   "pyzhuk-mariia": "/doctors/pyzhuk-mariia.webp",
   "pavliuk-romanna": "/doctors/pavliuk-romanna.webp",
@@ -242,6 +275,23 @@ export const defaultDoctors: Doctor[] = [
   doctor("antonenko-oleksandra", "Антоненко Олександра Равилівна", "Гастроентеролог"),
   doctor("videlska-tetiana", "Відельська Тетяна Юріївна", "Дитячий гастроентеролог"),
   doctor("talalaieva-daria", "Талалаєва Дар’я Володимирівна", "Акушер-гінеколог"),
+  {
+    ...doctor("chukanov-oleksandr", "Чуканов Олександр Миколайович", "Рентгенолог"),
+    description: "Лікар-рентгенолог. Описує КТ-дослідження для медичного центру «Здорова Родина».",
+    biography: [
+      "## Напрями роботи",
+      "Спеціалізується на онкорадіології та візуалізації органів черевної порожнини. Досліджує пухлини та запальні зміни шлунково-кишкового тракту. Працює з КТ, МРТ та рентгенівськими зображеннями.",
+      "## Освіта",
+      "- **2002** — закінчив Луганський державний медичний університет.",
+      "- **2002–2003** — пройшов інтернатуру з рентгенології в Луганській обласній клінічній лікарні.",
+      "## Наукова й освітня робота",
+      "- **2019** — співавтор роботи про вимірювання об’єму та 3D-моделювання печінки за даними КТ для планування втручань при пухлинах печінки.",
+      "- **2023** — співавтор електронного постера Європейського конгресу радіології про захворювання, які на зображеннях нагадують пухлину Клацкіна.",
+      "- Виступає на освітніх заходах для радіологів і лікарів інших спеціальностей.",
+      "## Професійні спільноти",
+      "Член Асоціації радіологів України та європейських фахових товариств із радіології (ESR), онкологічної візуалізації (ESOI) й абдомінальної радіології (ESGAR).",
+    ].join("\n"),
+  },
   // Official profiles checked 2026-11-17; MRI reporting team confirmed by the owner.
   // Existing production databases are managed separately; defaults never restore hidden records.
   {
@@ -400,6 +450,7 @@ export function getDoctorScheduleDays(schedule: DoctorSchedule) {
 }
 
 export function getDoctorScheduleNotice(doctor: Pick<Doctor, "specialty"> & { id?: string }) {
+  if (doctor.id === ctReportingPartner.id) return "Опис КТ-досліджень для медичного центру «Здорова Родина».";
   if (getMriReportingPartner(doctor)) return "Опис МРТ-досліджень для медичного центру «Здорова Родина».";
   return canBookDoctorConsultation(doctor)
     ? "Графік прийому уточнюйте в адміністратора."

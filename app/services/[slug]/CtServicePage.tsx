@@ -6,7 +6,7 @@ import { DoctorProfileLink } from "../../components/DoctorProfileLink";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
 import type { CenterLocation } from "../../contacts/locationData";
 import { centerLocations, getDirectionsUrl } from "../../contacts/locationData";
-import { getPublicDoctors, type Doctor } from "../../doctors/doctorData";
+import { getDoctorPosition, getPublicDoctors, type Doctor } from "../../doctors/doctorData";
 import type { PriceItem } from "../../prices/priceData";
 import type { ServiceDetail } from "../serviceData";
 import { CtFaqAccordion } from "./CtFaqAccordion";
@@ -36,9 +36,10 @@ const areaDetails: Record<CtPriceGroupId, { title?: string; text: string; artwor
 
 const areas = CT_PRICE_GROUPS.map((group) => ({ ...group, ...areaDetails[group.id] }));
 const ctDoctorOrder = new Map([
-  ["rohalskyi-vitalii", 0],
-  ["pysarchuk-taras", 1],
-  ["zhyber-kostiantyn", 2],
+  ["chukanov-oleksandr", 0],
+  ["rohalskyi-vitalii", 1],
+  ["pysarchuk-taras", 2],
+  ["zhyber-kostiantyn", 3],
 ]);
 
 const important = [
@@ -69,8 +70,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
   ]);
   const locations = centerLocations.filter((location) => ctLocationIds.has(location.id));
   const shownDoctors = getPublicDoctors(doctors)
-    .sort((first, second) => (ctDoctorOrder.get(first.id) ?? ctDoctorOrder.size) - (ctDoctorOrder.get(second.id) ?? ctDoctorOrder.size))
-    .slice(0, 5);
+    .sort((first, second) => (ctDoctorOrder.get(first.id) ?? ctDoctorOrder.size) - (ctDoctorOrder.get(second.id) ?? ctDoctorOrder.size));
 
   return (
     <main className={styles.page}>
@@ -136,7 +136,29 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
         </article>
         <div className={styles.doctorsPanel}>
           <SectionTitle title="Наші лікарі-рентгенологи" />
-          <div className={styles.doctorRail}>{shownDoctors.map((doctor) => <DoctorProfileLink doctorId={doctor.id} aria-label={`Профіль лікаря: ${doctor.name}`} className={styles.doctorCard} data-doctor-id={doctor.id} key={doctor.id}><div className={styles.doctorPhoto}><Image src={resolveImageSource(doctor.photoUrl)} unoptimized={!canOptimizeImage(doctor.photoUrl)} alt={doctor.name} fill quality={85} sizes="(max-width: 760px) calc(70vw - 22px), (max-width: 1100px) calc(33.33vw - 27px), (max-width: 1288px) calc(20vw - 22px), 236px" /></div><strong>{doctor.name}</strong><span>{doctor.specialty}</span></DoctorProfileLink>)}</div>
+          <div className={`${styles.doctorRail} ${styles.ctDoctorRail}`}>
+            {shownDoctors.map(doctor => {
+              const position = getDoctorPosition(doctor);
+              return (
+                <DoctorProfileLink
+                  key={doctor.id}
+                  doctorId={doctor.id}
+                  id={`doctor-card-${doctor.id}`}
+                  returnTo={`/services/ct#doctor-card-${doctor.id}`}
+                  aria-label={`Профіль лікаря: ${doctor.name}`}
+                  className={styles.doctorCard}
+                  data-doctor-id={doctor.id}
+                >
+                  <div className={styles.doctorPhoto}>
+                    <Image src={resolveImageSource(doctor.photoUrl)} unoptimized={!canOptimizeImage(doctor.photoUrl)} alt={doctor.name} fill quality={85} sizes="(max-width: 760px) calc(70vw - 22px), (max-width: 1100px) calc(33.33vw - 27px), (max-width: 1288px) calc(16.67vw - 22px), 194px" />
+                  </div>
+                  <strong>{doctor.name}</strong>
+                  <span>{doctor.specialty}</span>
+                  {position && <span>{position}</span>}
+                </DoctorProfileLink>
+              );
+            })}
+          </div>
         </div>
       </section>
 

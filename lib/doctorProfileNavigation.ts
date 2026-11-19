@@ -30,6 +30,9 @@ export function safeDoctorReturnTo(value: unknown): string | undefined {
     if (url.pathname === "/services/screening-40" && (!url.hash || url.hash === "#screening-doctors")) {
       return `${url.pathname}${url.hash}`;
     }
+    if (url.pathname === "/services/ct" && /^#doctor-card-[\w%-]+$/u.test(url.hash)) {
+      return `${url.pathname}${url.hash}`;
+    }
     if (url.pathname === "/services/mri" && (!url.hash || url.hash === "#mri-doctors" || /^#doctor-card-[\w%-]+$/u.test(url.hash))) {
       return `${url.pathname}${url.hash}`;
     }
@@ -112,8 +115,8 @@ export function resolveDoctorProfileReturnTo(doctorId: string, legacyReturnTo?: 
         returnTo = "/services/family#family-declaration";
       } else if (referrer.pathname === "/services/screening-40") {
         returnTo = "/services/screening-40#screening-doctors";
-      } else if (referrer.pathname === "/services/mri") {
-        returnTo = safeDoctorReturnTo(`/services/mri#doctor-card-${encodeURIComponent(doctorId)}`);
+      } else if (referrer.pathname === "/services/mri" || referrer.pathname === "/services/ct") {
+        returnTo = safeDoctorReturnTo(`${referrer.pathname}#doctor-card-${encodeURIComponent(doctorId)}`);
       }
     }
   }

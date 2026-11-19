@@ -165,6 +165,34 @@ test("MRI partner experience labels survive database round trips", async (contex
   assert.equal(doctorData.getDoctorExperienceLabel(persisted), "Медична практика з 2008 року");
 });
 
+test("Chukanov release adds only the prepared profile once and respects subsequent edits and deletion", async (context) => {
+  const { store, DB } = fixture(context);
+  assert.deepEqual(await store.listDoctors(), []);
+  const original = await store.createDoctor({ ...identity, id: "existing" });
+  const released = storeFor(DB);
+  const source = doctorData.defaultDoctors.find(({ id }) => id === "chukanov-oleksandr");
+  const added = await released.getDoctorById(source.id);
+  assert.deepEqual((await released.listDoctors()).map(({ id }) => id).sort(), [source.id, original.id].sort());
+  assert.deepEqual(await released.getDoctorById(original.id), original);
+  for (const key of ["name", "specialty", "biography", "description", "photoUrl", "patientGroups", "schedule"]) {
+    assert.deepEqual(added[key], source[key]);
+  }
+  await released.updateDoctor(source.id, { ...added, biography: "Оновлена біографія", isActive: false });
+  const reopened = storeFor(DB);
+  assert.equal(await reopened.getDoctorById(source.id), null);
+  assert.equal((await reopened.getDoctorById(source.id, { includeInactive: true })).biography, "Оновлена біографія");
+  await reopened.deleteDoctor(source.id);
+  assert.equal(await storeFor(DB).getDoctorById(source.id, { includeInactive: true }), null);
+});
+
+test("Chukanov release preserves an existing unpublished doctor with the same name", async (context) => {
+  const { store, DB } = fixture(context);
+  const original = await store.createDoctor({ ...identity, name: "Чуканов Олександр Миколайович", isActive: false });
+  const reopened = storeFor(DB);
+  assert.deepEqual(await reopened.listDoctors({ includeInactive: true }), [original]);
+  assert.deepEqual(await reopened.listDoctors(), []);
+});
+
 function legacyTable(sqlite, primary = true) {
   sqlite.exec(`CREATE TABLE doctors (
     id TEXT PRIMARY KEY, name TEXT NOT NULL, specialty TEXT NOT NULL,
@@ -208,7 +236,8 @@ test("legacy rows gain nullable price columns without overwriting primary prices
   const reloaded = await storeFor(DB, true).getDoctorById("voloshko-tetiana");
   assert.equal(reloaded.consultationPrice, 700);
   assert.equal(reloaded.repeatConsultationPrice, null);
-  assert.equal(sqlite.prepare("SELECT COUNT(*) AS n FROM doctors").get().n, 1);
+  assert.deepEqual(sqlite.prepare("SELECT id FROM doctors ORDER BY id").all().map((row) => row.id),
+    ["chukanov-oleksandr", "voloshko-tetiana"]);
 });
 
 test("legacy schema without either price migrates and repeated initialization is harmless", async (context) => {
@@ -415,6 +444,17 @@ test("PostgreSQL adapter translates migration and binds both prices correctly wi
   legacyTable(sqlite);
   const queries = [];
   const client = {
+    transaction: async (prepare) => {
+      sqlite.exec("BEGIN");
+      try {
+        const results = await Promise.all(prepare(client));
+        sqlite.exec("COMMIT");
+        return results;
+      } catch (error) {
+        sqlite.exec("ROLLBACK");
+        throw error;
+      }
+    },
     query: async (sql, values = []) => {
       queries.push({ sql, values });
       assert.doesNotMatch(sql, /PRAGMA|\?|COLLATE NOCASE/);

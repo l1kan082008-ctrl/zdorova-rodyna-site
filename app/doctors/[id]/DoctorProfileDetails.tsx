@@ -13,9 +13,10 @@ import { doctorCertificates } from "../doctorCertificates";
 import {
   getDoctorInitials,
   getDoctorPosition,
+  getFullLandscapePortrait,
   getDoctorReportingModalities,
   getDoctorExperienceLabel,
-  getMriReportingPartner,
+  getReportingPartner,
   formatDoctorConsultations,
   canBookDoctorConsultation,
   getDoctorPatientGroups,
@@ -46,18 +47,15 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
   const consultationSummary = formatDoctorConsultations(doctor);
   const position = getDoctorPosition(doctor);
   const reportingModalities = getDoctorReportingModalities(doctor);
-  const reportingPartner = getMriReportingPartner(doctor);
+  const reportingPartner = getReportingPartner(doctor);
   const canBookScreening = canBookDoctorConsultation(doctor)
     && screeningDoctorIds.some((id) => id === doctor.id);
   const branches = splitDoctorBranches(doctor.branch);
   const activeDays = getDoctorScheduleDays(doctor.schedule);
   const hasBiography = Boolean(doctor.biography.trim());
   const structuredBiography = Boolean(reportingPartner) && /^##\s+/m.test(doctor.biography);
-  const hasOriginalDereshPortrait = doctor.id === "deresh-nataliia"
-    && doctor.photoUrl === "/doctors/deresh-nataliia.webp";
-  const portraitSource = hasOriginalDereshPortrait
-    ? "/doctors/deresh-nataliia-full.webp"
-    : resolveImageSource(doctor.photoUrl ?? "");
+  const fullLandscapePortrait = getFullLandscapePortrait(doctor);
+  const portraitSource = fullLandscapePortrait ?? resolveImageSource(doctor.photoUrl ?? "");
 
   return (
     <>
@@ -74,11 +72,11 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
                   unoptimized={!canOptimizeImage(portraitSource)}
                   alt={`Фотографія лікаря ${doctor.name}`}
                   fill
-                  quality={hasOriginalDereshPortrait ? 90 : 85}
+                  quality={fullLandscapePortrait ? 90 : 85}
                   loading="eager"
                   fetchPriority="high"
                   // This landscape original covers a tall frame; select enough pixels for its height.
-                  sizes={hasOriginalDereshPortrait
+                  sizes={fullLandscapePortrait
                     ? "(max-width: 720px) 720px, 900px"
                     : "(max-width: 720px) calc(100vw - 32px), (max-width: 1288px) 43vw, 534px"}
                 />

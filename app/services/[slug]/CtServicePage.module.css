@@ -358,6 +358,10 @@
 .doctorsPanel > .sectionTitle h2 { font-size: clamp(30px, 2.6vw, 42px); }
 .doctorsPanel > .sectionTitle p { margin-inline: 0; }
 .doctorRail { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+.ctDoctorRail > a { scroll-margin-top: 120px; }
+@media (min-width: 1101px) {
+  .ctDoctorRail:has(> :nth-child(6)) { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
 .doctorCard { min-width: 0; padding: 0; border: 0; border-radius: 0; color: var(--ct-ink); background: transparent; }
 .doctorPhoto { position: relative; aspect-ratio: .95; overflow: hidden; border-radius: 18px; background: var(--ct-surface); }
 .doctorPhoto img { object-fit: cover; object-position: center var(--portrait-position-y, 0%); transform: translate(var(--portrait-x, 0%), var(--portrait-y, 0%)) scale(var(--portrait-scale, 1)); transform-origin: center top; }
@@ -521,8 +525,8 @@
   .equipmentCard { grid-template-columns: minmax(300px, 42%) minmax(0, 58%); min-height: 300px; }
   .doctorRail { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .doctorCard { grid-column: span 2; }
-  .doctorCard:nth-child(4) { grid-column: 2 / span 2; }
-  .doctorCard:nth-child(5) { grid-column: 4 / span 2; }
+  .doctorCard:nth-child(4):where(:nth-last-child(2)) { grid-column: 2 / span 2; }
+  .doctorCard:nth-child(5):where(:last-child) { grid-column: 4 / span 2; }
   .locationGrid { grid-template-columns: 1fr; }
   .finalCta { grid-template-columns: minmax(0, 1fr) minmax(280px, 330px); gap: 32px; }
 }

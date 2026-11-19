@@ -16,9 +16,10 @@ import {
   doctorPatientGroupOptions,
   getDoctorInitials,
   getDoctorPosition,
+  getFullLandscapePortrait,
   getDoctorReportingModalities,
   getDoctorExperienceLabel,
-  getMriReportingPartner,
+  getReportingPartner,
   mriReportingPartners,
   formatDoctorConsultations,
   getDoctorConsultationPrices,
@@ -50,6 +51,7 @@ type MobileDoctorView = "double" | "quad";
 
 const radiologyDoctorOrder = new Map(
   [...new Set([
+    "chukanov-oleksandr",
     "rohalskyi-vitalii",
     "pysarchuk-taras",
     "zhyber-kostiantyn",
@@ -200,6 +202,16 @@ export function DoctorsDirectory({
         (radiologyDoctorOrder.get(first.id) ?? radiologyDoctorOrder.size) -
         (radiologyDoctorOrder.get(second.id) ?? radiologyDoctorOrder.size),
       );
+    } else if (specialty === "all") {
+      const chukanovIndex = matchingDoctors.findIndex(doctor => doctor.id === "chukanov-oleksandr");
+      const radiology = groupedSpecialties.find(group => group.value === "group:radiology");
+      if (chukanovIndex > 0 && radiology) {
+        const firstRadiologist = matchingDoctors.findIndex(doctor => matchesPublicDoctorCategory(doctor.specialty, radiology));
+        if (firstRadiologist >= 0 && firstRadiologist < chukanovIndex) {
+          const [chukanov] = matchingDoctors.splice(chukanovIndex, 1);
+          matchingDoctors.splice(firstRadiologist, 0, chukanov);
+        }
+      }
     }
 
     return matchingDoctors;
@@ -275,7 +287,7 @@ export function DoctorsDirectory({
           {visibleDoctors.map((doctor) => {
             const position = getDoctorPosition(doctor);
             const reportingModalities = getDoctorReportingModalities(doctor);
-            const reportingPartner = getMriReportingPartner(doctor);
+            const reportingPartner = getReportingPartner(doctor);
             const activeSchedule = getDoctorScheduleDays(doctor.schedule);
             const profileLinkLabel = doctor.biography.trim() ? "Біографія" : "Профіль";
             const returnTo = `${directoryUrl(specialty, query)}#doctor-card-${doctor.id}`;
@@ -287,6 +299,13 @@ export function DoctorsDirectory({
             const consultationSummary = formatDoctorConsultations(doctor);
             const isFocused = focusedDoctorId === doctor.id;
             const isExpanded = expandedDoctorId === doctor.id;
+            const fullLandscapePortrait = getFullLandscapePortrait(doctor);
+            // A 3:2 source fills this narrow frame by height, so its rendered width exceeds the card width.
+            const portraitSizes = fullLandscapePortrait
+              ? "(max-width: 720px) 650px, 800px"
+              : mobileView === "double" || isFocused || isExpanded
+                ? "(max-width: 720px) calc(100vw - 32px), (max-width: 1180px) 40vw, (max-width: 1288px) 22vw, 266px"
+                : "(max-width: 720px) calc((100vw - 42px) / 2), (max-width: 1180px) 40vw, (max-width: 1288px) 22vw, 266px";
             const patientGroups = doctorPatientGroupOptions
               .filter((option) => doctor.patientGroups?.includes(option.value))
               .map((option) => option.label)
@@ -303,15 +322,13 @@ export function DoctorsDirectory({
                     <span className="doctor-photo-image">
                       <Image
                         className="doctor-portrait"
-                        src={resolveImageSource(doctor.photoUrl)}
+                        src={fullLandscapePortrait ?? resolveImageSource(doctor.photoUrl)}
                         unoptimized={!canOptimizeImage(doctor.photoUrl)}
                         alt={`Фотографія лікаря ${doctor.name}`}
                         fill
-                        quality={85}
+                        quality={fullLandscapePortrait ? 90 : 85}
                         loading="lazy"
-                        sizes={mobileView === "double" || isFocused || isExpanded
-                          ? "(max-width: 720px) calc(100vw - 32px), (max-width: 1180px) 40vw, (max-width: 1288px) 22vw, 266px"
-                          : "(max-width: 720px) calc((100vw - 42px) / 2), (max-width: 1180px) 40vw, (max-width: 1288px) 22vw, 266px"}
+                        sizes={portraitSizes}
                       />
                     </span>
                   ) : (

@@ -10,6 +10,6 @@ export function DoctorProfileBackLink({ doctorId, returnTo }: { doctorId: string
     setDestination(resolveDoctorProfileReturnTo(doctorId, returnTo));
   }, [doctorId, returnTo]);
   return <Link className="doctor-detail-back" href={destination ?? "/doctors"}>
-    {destination?.startsWith("/services/mri") ? "← Повернутися до лікарів МРТ" : destination ? "← Повернутися до вибору лікаря" : "← Всі лікарі"}
+    {destination?.startsWith("/services/ct") ? "← Повернутися до лікарів КТ" : destination?.startsWith("/services/mri") ? "← Повернутися до лікарів МРТ" : destination ? "← Повернутися до вибору лікаря" : "← Всі лікарі"}
   </Link>;
 }
