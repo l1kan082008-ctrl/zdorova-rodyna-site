@@ -165,32 +165,48 @@ test("MRI partner experience labels survive database round trips", async (contex
   assert.equal(doctorData.getDoctorExperienceLabel(persisted), "Медична практика з 2008 року");
 });
 
-test("Chukanov release adds only the prepared profile once and respects subsequent edits and deletion", async (context) => {
+test("radiologist releases add only the prepared profiles and respect subsequent edits and deletion", async (context) => {
   const { store, DB } = fixture(context);
   assert.deepEqual(await store.listDoctors(), []);
   const original = await store.createDoctor({ ...identity, id: "existing" });
   const released = storeFor(DB);
-  const source = doctorData.defaultDoctors.find(({ id }) => id === "chukanov-oleksandr");
-  const added = await released.getDoctorById(source.id);
-  assert.deepEqual((await released.listDoctors()).map(({ id }) => id).sort(), [source.id, original.id].sort());
+  const ids = ["chukanov-oleksandr", "subotina-olha"];
+  assert.deepEqual((await released.listDoctors()).map(({ id }) => id).sort(), [...ids, original.id].sort());
   assert.deepEqual(await released.getDoctorById(original.id), original);
-  for (const key of ["name", "specialty", "biography", "description", "photoUrl", "patientGroups", "schedule"]) {
-    assert.deepEqual(added[key], source[key]);
+  for (const doctorId of ids) {
+    const source = doctorData.defaultDoctors.find(({ id }) => id === doctorId);
+    const added = await released.getDoctorById(doctorId);
+    for (const key of ["name", "specialty", "biography", "description", "photoUrl", "patientGroups", "schedule"]) {
+      assert.deepEqual(added[key], source[key]);
+    }
+    await released.updateDoctor(doctorId, { ...added, biography: "Оновлена біографія", isActive: false });
+    const reopened = storeFor(DB);
+    assert.equal(await reopened.getDoctorById(doctorId), null);
+    assert.equal((await reopened.getDoctorById(doctorId, { includeInactive: true })).biography, "Оновлена біографія");
+    await reopened.deleteDoctor(doctorId);
+    assert.equal(await storeFor(DB).getDoctorById(doctorId, { includeInactive: true }), null);
   }
-  await released.updateDoctor(source.id, { ...added, biography: "Оновлена біографія", isActive: false });
-  const reopened = storeFor(DB);
-  assert.equal(await reopened.getDoctorById(source.id), null);
-  assert.equal((await reopened.getDoctorById(source.id, { includeInactive: true })).biography, "Оновлена біографія");
-  await reopened.deleteDoctor(source.id);
-  assert.equal(await storeFor(DB).getDoctorById(source.id, { includeInactive: true }), null);
 });
 
-test("Chukanov release preserves an existing unpublished doctor with the same name", async (context) => {
+test("radiologist releases preserve existing unpublished profiles with the same names", async (context) => {
   const { store, DB } = fixture(context);
-  const original = await store.createDoctor({ ...identity, name: "Чуканов Олександр Миколайович", isActive: false });
+  const originals = [];
+  for (const name of ["Чуканов Олександр Миколайович", "Суботіна Ольга Сергіївна"]) {
+    originals.push(await store.createDoctor({ ...identity, name, isActive: false }));
+  }
   const reopened = storeFor(DB);
-  assert.deepEqual(await reopened.listDoctors({ includeInactive: true }), [original]);
+  assert.equal((await reopened.listDoctors({ includeInactive: true })).length, originals.length);
+  for (const original of originals) assert.deepEqual(await reopened.getDoctorById(original.id, { includeInactive: true }), original);
   assert.deepEqual(await reopened.listDoctors(), []);
+});
+
+test("Subotina release respects the existing Chukanov release marker", async (context) => {
+  const { store, sqlite, DB } = fixture(context);
+  const original = await store.createDoctor({ ...identity, id: "existing" });
+  sqlite.exec("CREATE TABLE doctor_migrations (id TEXT PRIMARY KEY)");
+  sqlite.prepare("INSERT INTO doctor_migrations (id) VALUES (?)").run("chukanov-oleksandr-profile-v1");
+  const doctors = await storeFor(DB).listDoctors({ includeInactive: true });
+  assert.deepEqual(doctors.map(({ id }) => id).sort(), [original.id, "subotina-olha"]);
 });
 
 function legacyTable(sqlite, primary = true) {
@@ -237,7 +253,7 @@ test("legacy rows gain nullable price columns without overwriting primary prices
   assert.equal(reloaded.consultationPrice, 700);
   assert.equal(reloaded.repeatConsultationPrice, null);
   assert.deepEqual(sqlite.prepare("SELECT id FROM doctors ORDER BY id").all().map((row) => row.id),
-    ["chukanov-oleksandr", "voloshko-tetiana"]);
+    ["chukanov-oleksandr", "subotina-olha", "voloshko-tetiana"]);
 });
 
 test("legacy schema without either price migrates and repeated initialization is harmless", async (context) => {
@@ -301,13 +317,13 @@ test("multiple doctor branches retain full addresses and order through create, r
   assert.equal(response.status, 201);
   const { doctor, doctors } = await response.json();
   assert.equal(doctor.branch, branches);
-  assert.equal(doctors[0].branch, branches);
+  assert.equal(doctors.find(({ id }) => id === doctor.id).branch, branches);
   assert.equal((await storeFor(DB).getDoctorById(doctor.id)).branch, branches);
 
   const admin = await route.GET(new Request("http://test.invalid/api/admin/doctors"));
-  assert.equal((await admin.json()).doctors[0].branch, branches);
+  assert.equal((await admin.json()).doctors.find(({ id }) => id === doctor.id).branch, branches);
   const publicList = await publicRoute.GET(new Request("http://test.invalid/api/doctors"));
-  assert.equal((await publicList.json()).doctors[0].branch, branches);
+  assert.equal((await publicList.json()).doctors.find(({ id }) => id === doctor.id).branch, branches);
   const publicProfile = await publicRoute.GET(new Request(`http://test.invalid/api/doctors?id=${doctor.id}`));
   assert.equal((await publicProfile.json()).doctor.branch, branches);
 });
@@ -319,7 +335,7 @@ test("doctor branch updates support legacy addresses, multiple choices, omission
   const branches = `${branch}\nм. Рівне, вул. Київська, 21`;
   const changed = await route.PUT(request("PUT", { id: original.id, ...identity, branch: branches }));
   assert.equal(changed.status, 200);
-  assert.equal((await changed.json()).doctors[0].branch, branches);
+  assert.equal((await changed.json()).doctors.find(({ id }) => id === original.id).branch, branches);
 
   const nameOnly = await route.PUT(request("PUT", { id: original.id, ...identity, name: "Змінене ім’я" }));
   assert.equal(nameOnly.status, 200);
@@ -327,7 +343,7 @@ test("doctor branch updates support legacy addresses, multiple choices, omission
 
   const cleared = await route.PUT(request("PUT", { id: original.id, ...identity, branch: "" }));
   assert.equal(cleared.status, 200);
-  assert.equal((await cleared.json()).doctors[0].branch, "");
+  assert.equal((await cleared.json()).doctors.find(({ id }) => id === original.id).branch, "");
   assert.equal((await storeFor(DB, true).getDoctorById(original.id)).branch, "");
 });
 

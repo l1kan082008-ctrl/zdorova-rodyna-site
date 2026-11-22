@@ -162,19 +162,22 @@ async function initializeSchemaTables() {
   if (isEmpty) {
     await env.DB.batch(defaultDoctors.map((doctor) => prepareDefaultDoctorInsert(doctor)));
   }
-  await migrateChukanovProfile();
+  await migrateDoctorProfiles();
 }
 
-async function migrateChukanovProfile() {
-  const migration = "chukanov-oleksandr-profile-v1";
-  if (await env.DB.prepare("SELECT id FROM doctor_migrations WHERE id = ?").bind(migration).first()) return;
+async function migrateDoctorProfiles() {
+  const applied = await env.DB.prepare("SELECT id FROM doctor_migrations").all<{ id: string }>();
+  for (const doctorId of ["chukanov-oleksandr", "subotina-olha"]) {
+    const migration = `${doctorId}-profile-v1`;
+    if (applied.results.some(({ id }) => id === migration)) continue;
 
-  const doctor = defaultDoctors.find(({ id }) => id === "chukanov-oleksandr");
-  if (!doctor) throw new Error("Missing Chukanov profile data.");
-  await env.DB.batch([
-    prepareDefaultDoctorInsert(doctor, migration),
-    env.DB.prepare("INSERT INTO doctor_migrations (id) VALUES (?) ON CONFLICT(id) DO NOTHING").bind(migration),
-  ]);
+    const doctor = defaultDoctors.find(({ id }) => id === doctorId);
+    if (!doctor) throw new Error(`Missing profile data for ${doctorId}.`);
+    await env.DB.batch([
+      prepareDefaultDoctorInsert(doctor, migration),
+      env.DB.prepare("INSERT INTO doctor_migrations (id) VALUES (?) ON CONFLICT(id) DO NOTHING").bind(migration),
+    ]);
+  }
 }
 
 function parseSchedule(value: string): DoctorSchedule {
