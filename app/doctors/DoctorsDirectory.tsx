@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
-import { doctorBookingHref, getPublicDoctorBranches } from "@/lib/doctorBranches";
+import { doctorBookingHref, getDoctorPhoneBooking, getPublicDoctorBranches } from "@/lib/doctorBranches";
 import { screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
 import "./portraits.css";
 import screeningStyles from "./screening-actions.module.css";
@@ -295,6 +295,7 @@ export function DoctorsDirectory({
             const profileLinkLabel = doctor.biography.trim() ? "Біографія" : "Профіль";
             const returnTo = `${directoryUrl(specialty, query)}#doctor-card-${doctor.id}`;
             const bookingHref = doctorBookingHref(doctor);
+            const phoneBooking = getDoctorPhoneBooking(doctor.id);
             const canBookScreening = canBookDoctorConsultation(doctor)
               && screeningDoctorIds.some((id) => id === doctor.id);
             const screeningBookingHref = doctorBookingHref(doctor, screeningServiceName);
@@ -391,7 +392,13 @@ export function DoctorsDirectory({
                       )}
                       <DoctorProfileLink className="doctor-photo-biography" doctorId={doctor.id} returnTo={returnTo}>{profileLinkLabel}</DoctorProfileLink>
                       {canBookDoctorConsultation(doctor) && (
-                        <a className="doctor-photo-booking" href={bookingHref}>Записатися</a>
+                        <a
+                          className="doctor-photo-booking"
+                          href={bookingHref}
+                          aria-label={phoneBooking ? `Зателефонувати лікарці ${phoneBooking.phone}` : undefined}
+                        >
+                          {phoneBooking ? "Зателефонувати" : "Записатися"}
+                        </a>
                       )}
                     </div>
                   )}
@@ -447,7 +454,7 @@ export function DoctorsDirectory({
                         ))}
                       </div>
                     </details>
-                  </div> : <p className="doctor-schedule-notice">{getDoctorScheduleNotice(doctor)}</p>)}
+                  </div> : <p className="doctor-schedule-notice">{phoneBooking?.notice ?? getDoctorScheduleNotice(doctor)}</p>)}
 
                   <div className={`doctor-card-text-actions${canBookScreening ? ` ${screeningStyles.cardActions}` : ""}`}>
                     {canBookScreening && (
@@ -470,7 +477,7 @@ export function DoctorsDirectory({
                       className="doctor-book-text-link doctor-book-cta"
                       href={bookingHref}
                     >
-                      Записатися <span>→</span>
+                      {phoneBooking ? `Зателефонувати ${phoneBooking.phone}` : <>Записатися <span>→</span></>}
                     </a>)}
                   </div>
                 </div>

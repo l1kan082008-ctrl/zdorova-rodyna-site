@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
-import { doctorBookingHref, getPublicDoctorBranches } from "@/lib/doctorBranches";
+import { doctorBookingHref, getDoctorPhoneBooking, getPublicDoctorBranches } from "@/lib/doctorBranches";
 import { screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
 import "../portraits.css";
 import screeningStyles from "../screening-actions.module.css";
@@ -51,6 +51,7 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
   const canBookScreening = canBookDoctorConsultation(doctor)
     && screeningDoctorIds.some((id) => id === doctor.id);
   const branches = getPublicDoctorBranches(doctor);
+  const phoneBooking = getDoctorPhoneBooking(doctor.id);
   const activeDays = getDoctorScheduleDays(doctor.schedule);
   const hasBiography = Boolean(doctor.biography.trim());
   const structuredBiography = Boolean(reportingPartner) && /^##\s+/m.test(doctor.biography);
@@ -155,11 +156,11 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
                   ))}
                 </div>
                 <small>
-                  Перед візитом радимо підтвердити актуальний час в адміністратора.
+                  {phoneBooking?.notice ?? "Перед візитом радимо підтвердити актуальний час в адміністратора."}
                 </small>
               </aside>
             ) : !reportingPartner ? (
-              <p className="doctor-schedule-notice">{getDoctorScheduleNotice(doctor)}</p>
+              <p className="doctor-schedule-notice">{phoneBooking?.notice ?? getDoctorScheduleNotice(doctor)}</p>
             ) : null)}
 
             {canBookDoctorConsultation(doctor) && (<div className={`doctor-detail-actions${canBookScreening ? ` ${screeningStyles.profileActions}` : ""}`}>
@@ -176,7 +177,7 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
                 className="book-button"
                 href={doctorBookingHref(doctor)}
               >
-                Записатися на прийом <span>→</span>
+                {phoneBooking ? `Зателефонувати ${phoneBooking.phone}` : <>Записатися на прийом <span>→</span></>}
               </a>
             </div>)}
           </div>

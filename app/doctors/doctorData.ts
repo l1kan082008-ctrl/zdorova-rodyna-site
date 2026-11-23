@@ -159,7 +159,7 @@ export const doctorPhotoUrls: Record<string, string> = {
   "romanchuk-andrii": "/doctors/romanchuk-andrii.webp",
   "ponomarova-olena": "/doctors/ponomarova-olena.webp",
   "pysarchuk-taras": "/doctors/pysarchuk-taras.webp",
-  "rudenko-iryna": "/doctors/rudenko-iryna.webp",
+  "rudenko-iryna": "/doctors/rudenko-iryna-standing.webp",
   // Temporary fictional portraits; replace through the admin panel.
   "kyselchuk-tetiana": "/doctors/kyselchuk-tetiana.webp",
   "bereska-oksana": "/doctors/bereska-oksana.webp",

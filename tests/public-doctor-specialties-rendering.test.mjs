@@ -130,8 +130,9 @@ test("pediatric allergy links keep their filter and open Rudenko’s bookable ca
     const directory = renderToStaticMarkup(React.createElement(DoctorsDirectory, { initialDoctors: catalog }));
     assert.ok(directory.includes('href="/doctors/rudenko-iryna"'));
     assert.ok(!directory.includes(`href="/doctors/${otherDoctor.id}"`));
-    const bookingHref = `/contacts?doctor=${encodeURIComponent("Руденко Ірина Василівна")}&amp;doctorId=rudenko-iryna#booking`;
-    assert.match(linkContent(directory, bookingHref), /Записатися/u);
+    assert.match(linkContent(directory, "tel:+380504268995"), /Зателефонувати/u);
+    assert.ok(directory.includes("Зателефонувати 050 426 89 95"));
+    assert.ok(!directory.includes("doctorId=rudenko-iryna#booking"));
   }
 });
 

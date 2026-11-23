@@ -502,7 +502,7 @@ export function HomeSearch({ items }: { items: HomeSearchItem[] }) {
                           >
                             <span className="home-search-result-action-label">
                               {item.kind === "doctor"
-                                ? "Записатися"
+                                ? (item.actionHref.startsWith("tel:") ? "Зателефонувати" : "Записатися")
                                 : item.kind === "service"
                                   ? "Переглянути"
                                   : "Детальніше"}
