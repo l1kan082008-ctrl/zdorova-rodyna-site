@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
 import { getPublicDoctorById } from "../../api/doctors/publicDoctors";
+import { rudenkoBooking } from "../../../lib/doctorBranches";
 import { safeDoctorReturnTo } from "../../../lib/doctorProfileNavigation";
 import { DoctorProfileDetails } from "./DoctorProfileDetails";
 import { getDoctorReportingModalities, getReportingPartner } from "../doctorData";
@@ -19,6 +20,12 @@ export async function generateMetadata({
   const doctor = await loadDoctor(id);
 
   if (!doctor) notFound();
+  if (doctor.id === rudenkoBooking.id) {
+    return {
+      title: `${doctor.name} — дитячий алерголог у Рівному | Здорова Родина`,
+      description: `Ірина Руденко консультує дітей у Рівному. ${rudenkoBooking.notice} Телефон для запису ${rudenkoBooking.phone}.`,
+    };
+  }
   const reportingPartner = getReportingPartner(doctor);
 
   return {

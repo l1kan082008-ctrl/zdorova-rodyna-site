@@ -7,6 +7,7 @@ import ts from "typescript";
 import { cache, createElement, Suspense } from "react";
 import * as jsxRuntime from "react/jsx-runtime";
 import { renderToPipeableStream } from "react-dom/server";
+import { rudenkoBooking } from "../lib/doctorBranches.ts";
 
 // Run actual stores and route handlers against disposable SQLite only.
 // No environment files, production credentials, network, or external database are used.
@@ -80,6 +81,7 @@ function loadProfile(publicDoctors) {
     "react/jsx-runtime": jsxRuntime,
     "../../components/SiteChrome": { SiteHeader: () => null, SiteFooter: () => null },
     "../../api/doctors/publicDoctors": publicDoctors,
+    "../../../lib/doctorBranches": { rudenkoBooking },
     "../../../lib/doctorProfileNavigation": profileNavigation,
     "../doctorData": doctorData,
     "./DoctorProfileDetails": { DoctorProfileDetails: () => null },
@@ -536,6 +538,14 @@ test("public API excludes hidden doctors even with includeInactive query and adm
   assert.deepEqual((await adminResponse.json()).doctors.map((doctor) => doctor.id), [hidden.id, visible.id]);
   assert.equal(await store.getDoctorById(hidden.id), null);
   assert.equal((await store.getDoctorById(hidden.id, { includeInactive: true })).isActive, false);
+});
+
+test("Rudenko's profile metadata identifies her specialty, city and direct booking phone", async () => {
+  const doctor = doctorData.defaultDoctors.find(({ id }) => id === "rudenko-iryna");
+  const profile = loadProfile({ getPublicDoctorById: async () => doctor });
+  const metadata = await profile.generateMetadata({ params: Promise.resolve({ id: doctor.id }) });
+  assert.equal(metadata.title, "Руденко Ірина Василівна — дитячий алерголог у Рівному | Здорова Родина");
+  assert.equal(metadata.description, "Ірина Руденко консультує дітей у Рівному. Лікарка веде запис самостійно. Телефон для запису 050 426 89 95.");
 });
 
 test("active profiles emit exactly one self-canonical in the original head even when metadata is delayed", async (context) => {

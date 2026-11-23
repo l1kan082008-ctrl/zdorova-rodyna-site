@@ -21,13 +21,14 @@ export function getPublicDoctorBranches(doctor: { specialty: string; branch: str
   return splitDoctorBranches(doctor.branch);
 }
 
-const rudenkoBooking = {
+export const rudenkoBooking = {
+  id: "rudenko-iryna",
   phone: "050 426 89 95",
   notice: "Лікарка веде запис самостійно.",
 };
 
 export function getDoctorPhoneBooking(id: string) {
-  return id === "rudenko-iryna" ? rudenkoBooking : null;
+  return id === rudenkoBooking.id ? rudenkoBooking : null;
 }
 
 export function doctorBookingHref(doctor: { id: string; name: string }, service?: string): string {
