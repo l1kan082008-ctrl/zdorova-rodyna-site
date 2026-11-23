@@ -6,7 +6,7 @@ import { DoctorProfileLink } from "../../components/DoctorProfileLink";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
 import type { CenterLocation } from "../../contacts/locationData";
 import { centerLocations, getDirectionsUrl } from "../../contacts/locationData";
-import { getDoctorPosition, getPublicDoctors, type Doctor } from "../../doctors/doctorData";
+import { doctorPhotoUrls, getDoctorPosition, getPublicDoctors, type Doctor } from "../../doctors/doctorData";
 import type { PriceItem } from "../../prices/priceData";
 import type { ServiceDetail } from "../serviceData";
 import { CtFaqAccordion } from "./CtFaqAccordion";
@@ -146,7 +146,7 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
           <div className={`${styles.doctorRail} ${styles.ctDoctorRail}`}>
             {shownDoctors.map(doctor => {
               const position = getDoctorPosition(doctor);
-              const isRebrykPortrait = doctor.photoUrl === "/doctors/rebryk-volodymyr.jpg";
+              const isRebrykPortrait = doctor.photoUrl === doctorPhotoUrls["rebryk-volodymyr"];
               const portraitSizes = isRebrykPortrait
                 ? "(max-width: 760px) calc(97vw - 30px), (max-width: 1100px) calc(46vw - 37px), min(34.5vw, 412px)"
                 : `(max-width: 760px) calc(70vw - 22px), (max-width: 1100px) calc(33.33vw - 27px), ${desktopPortraitSize}`;

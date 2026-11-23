@@ -183,7 +183,7 @@ export const doctorPhotoUrls: Record<string, string> = {
   "vankevych-iryna": "/doctors/vankevych-iryna.webp",
   "novak-bohdana": "/doctors/novak-bohdana.webp",
   "subotina-olha": "/doctors/subotina-olha.webp",
-  "rebryk-volodymyr": "/doctors/rebryk-volodymyr.jpg",
+  "rebryk-volodymyr": "/doctors/rebryk-volodymyr-2026-11.jpg",
   "skakalska-tetiana": "/doctors/skakalska-tetiana.webp",
   "pochtar-kateryna": "/doctors/pochtar-kateryna.webp",
   "antonenko-oleksandra": "/doctors/antonenko-oleksandra.webp",
