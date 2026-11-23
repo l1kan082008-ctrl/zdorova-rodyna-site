@@ -42,7 +42,10 @@ export function getPublicDoctorCategories(doctors: readonly DoctorSpecialties[])
     }
   }
   return [
-    ...doctorCategories,
+    ...doctorCategories.filter((category) =>
+      category.value !== "group:oncology" ||
+      doctors.some((doctor) => doctor.isActive !== false && matchesPublicDoctorCategory(doctor.specialty, category)),
+    ),
     ...[...additional].sort(([, a], [, b]) => a.localeCompare(b, "uk-UA")).map(([key, label]) => ({
       value: `specialty:${key}`,
       label,
@@ -58,6 +61,10 @@ export function matchesPublicDoctorCategory(specialties: string, category: Publi
     return specialtyTokens(specialties).some((token) => publicDoctorSpecialtyKey(token) === category.specialty);
   }
   const normalized = publicDoctorSpecialtyKey(specialties);
+  if (category.value === "group:oncology") {
+    // A compound role such as «уролог-онколог» qualifies; an adjective such as «онкологічний» does not.
+    return normalized.split(/[^\p{L}]+/u).some((word) => category.urlAliases.includes(word));
+  }
   return category.keywords.some((keyword) => normalized.includes(keyword));
 }
 

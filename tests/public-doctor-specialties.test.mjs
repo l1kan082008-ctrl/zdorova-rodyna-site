@@ -3,9 +3,30 @@ import test from "node:test";
 import { doctorCategories } from "../app/doctors/doctorCategories.ts";
 import { findPublicDoctorCategory, getPublicDoctorCategories, matchesPublicDoctorCategory } from "../lib/publicDoctorSpecialties.ts";
 
-test("canonical public categories and their order remain intact", () => {
-  assert.deepEqual(getPublicDoctorCategories([]), doctorCategories);
+test("canonical public categories keep their order when oncology is available or hidden", () => {
+  assert.deepEqual(getPublicDoctorCategories([]), doctorCategories.filter(({ value }) => value !== "group:oncology"));
   assert.deepEqual(getPublicDoctorCategories([{ specialty: "Кардіолог, терапевт, Лікар УЗД серця, Уролог-онколог, Ортопед-травматолог" }]), doctorCategories);
+});
+
+test("oncology directions require a published oncology specialty", () => {
+  const otherDoctors = [
+    { specialty: "Уролог-онколог", isActive: false },
+    { specialty: "Рентгенолог", biography: "Викладає на кафедрі онкології." },
+    { specialty: "Рентгенолог, онкологічна візуалізація" },
+  ];
+  const aliases = ["Онкологія", "group:oncology"];
+  const categories = getPublicDoctorCategories(otherDoctors);
+  for (const alias of aliases) assert.equal(findPublicDoctorCategory(alias, categories), undefined);
+
+  for (const specialty of ["Онкологія", "Онколог", "Уролог-онколог, к.мед.н."]) {
+    const active = getPublicDoctorCategories([...otherDoctors, { specialty, isActive: true }]);
+    for (const alias of aliases) {
+      const oncology = findPublicDoctorCategory(alias, active);
+      assert.equal(oncology?.value, "group:oncology");
+      assert.ok(matchesPublicDoctorCategory(specialty, oncology));
+      assert.equal(matchesPublicDoctorCategory("Рентгенолог, онкологічна візуалізація", oncology), false);
+    }
+  }
 });
 
 test("only active doctors add new individual specialties, without degrees or qualifiers", () => {
@@ -15,12 +36,12 @@ test("only active doctors add new individual specialties, without degrees or qua
     { specialty: "Нейрохірург", isActive: false },
     { specialty: "Гепатолог, доктор медичних наук, кандидат медичних наук" },
   ]);
-  assert.deepEqual(categories.slice(doctorCategories.length).map(({ label }) => label), ["Гепатолог", "Проктолог-хірург"]);
+  assert.deepEqual(categories.filter(({ specialty }) => specialty).map(({ label }) => label), ["Гепатолог", "Проктолог-хірург"]);
 });
 
 test("unknown half of compound specialty and pediatric specialty keep a dedicated filter", () => {
   const categories = getPublicDoctorCategories([{ specialty: "Кардіолог-аритмолог, Дитячий проктолог" }]);
-  assert.deepEqual(categories.slice(doctorCategories.length).map(({ label }) => label), ["Дитячий проктолог", "Кардіолог-аритмолог"]);
+  assert.deepEqual(categories.filter(({ specialty }) => specialty).map(({ label }) => label), ["Дитячий проктолог", "Кардіолог-аритмолог"]);
 });
 
 test("a dynamic filter matches every doctor with the exact individual specialty", () => {
