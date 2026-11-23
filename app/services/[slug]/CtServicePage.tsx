@@ -43,6 +43,7 @@ const ctDoctorOrder = new Map([
   ["verchenko-dmytro", 4],
   ["novak-bohdana", 5],
   ["subotina-olha", 6],
+  ["rebryk-volodymyr", 7],
 ]);
 
 const important = [
@@ -74,6 +75,9 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
   const locations = centerLocations.filter((location) => ctLocationIds.has(location.id));
   const shownDoctors = getPublicDoctors(doctors)
     .sort((first, second) => (ctDoctorOrder.get(first.id) ?? ctDoctorOrder.size) - (ctDoctorOrder.get(second.id) ?? ctDoctorOrder.size));
+  const desktopPortraitSize = shownDoctors.length >= 8
+    ? "(max-width: 1288px) calc(25vw - 24px), 298px"
+    : "(max-width: 1288px) calc(16.67vw - 22px), 194px";
 
   return (
     <main className={styles.page}>
@@ -142,6 +146,10 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
           <div className={`${styles.doctorRail} ${styles.ctDoctorRail}`}>
             {shownDoctors.map(doctor => {
               const position = getDoctorPosition(doctor);
+              const isRebrykPortrait = doctor.photoUrl === "/doctors/rebryk-volodymyr.jpg";
+              const portraitSizes = isRebrykPortrait
+                ? "(max-width: 760px) calc(97vw - 30px), (max-width: 1100px) calc(46vw - 37px), min(34.5vw, 412px)"
+                : `(max-width: 760px) calc(70vw - 22px), (max-width: 1100px) calc(33.33vw - 27px), ${desktopPortraitSize}`;
               return (
                 <DoctorProfileLink
                   key={doctor.id}
@@ -152,8 +160,8 @@ export function CtServicePage({ service, doctors, prices, bookingHref }: Props) 
                   className={styles.doctorCard}
                   data-doctor-id={doctor.id}
                 >
-                  <div className={styles.doctorPhoto}>
-                    <Image src={resolveImageSource(doctor.photoUrl)} unoptimized={!canOptimizeImage(doctor.photoUrl)} alt={doctor.name} fill quality={85} sizes="(max-width: 760px) calc(70vw - 22px), (max-width: 1100px) calc(33.33vw - 27px), (max-width: 1288px) calc(16.67vw - 22px), 194px" />
+                  <div className={isRebrykPortrait ? `${styles.doctorPhoto} ${styles.rebrykPortrait}` : styles.doctorPhoto}>
+                    <Image src={resolveImageSource(doctor.photoUrl)} unoptimized={!canOptimizeImage(doctor.photoUrl)} alt={doctor.name} fill quality={85} sizes={portraitSizes} />
                   </div>
                   <strong>{doctor.name}</strong>
                   <span>{doctor.specialty}</span>

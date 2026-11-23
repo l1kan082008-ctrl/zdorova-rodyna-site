@@ -1,7 +1,7 @@
 import { isInformationOnlyLocation } from "../lib/locationPolicy";
 import { getSiteSettings } from "./api/settings/settingsStore";
 import { sitePhoneHref } from "@/lib/siteSettings";
-import { doctorBookingHref, splitDoctorBranches } from "@/lib/doctorBranches";
+import { doctorBookingHref, getPublicDoctorBranches } from "@/lib/doctorBranches";
 import { priceSearchIdentity } from "./prices/deduplicateSearch";
 import { rankPopularPriceItems } from "@/lib/popularServices";
 import Link from "next/link";
@@ -313,7 +313,7 @@ export default async function Home() {
       id: doctor.id,
       kind: "doctor" as const,
       title: doctor.name,
-      meta: [doctor.specialty, ...splitDoctorBranches(doctor.branch)].join(" · "),
+      meta: [doctor.specialty, ...(getPublicDoctorBranches(doctor) ?? [])].join(" · "),
       href: `/doctors/${doctor.id}`,
       actionHref: doctorBookingHref(doctor),
       keywords: `${doctor.description} ${doctor.biography} ${doctor.patientGroups.join(" ")}`,

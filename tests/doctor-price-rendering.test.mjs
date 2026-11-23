@@ -97,6 +97,19 @@ for (const [name, render] of surfaces) {
     assert.ok(html.includes(`doctorId=${encodeURIComponent(baseline.id)}`));
     assert.ok(!html.includes('Відділення уточнюйте'));
   });
+  test(name + ': radiologists show their reporting work without a reception address', () => {
+    const address = 'вул. Тестова, 25';
+    for (const branch of ['', address]) {
+      const html = render({ ...baseline, id: 'rohalskyi-vitalii', specialty: 'Рентгенолог', branch });
+      assert.doesNotMatch(text(html), /Місц[ея] прийому|Відділення|вул\. Тестова/u);
+      assert.match(text(html), /Що описує лікар\s+КТ та МРТ/u);
+    }
+    for (const [id, fact] of [['chumak-anatolii', 'Співпраця'], ['ahii-vladyslava', 'Напрям роботи']]) {
+      const html = render({ ...baseline, id, specialty: 'Рентгенолог', branch: address });
+      assert.ok(text(html).includes(fact));
+      assert.ok(!text(html).includes(address));
+    }
+  });
   test(name + ': missing prices hide the full price block and retain booking', () => {
     const doctor = { ...baseline };
     delete doctor.showConsultationPriceOnRequest;

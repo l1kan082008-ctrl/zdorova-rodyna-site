@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
-import { doctorBookingHref, splitDoctorBranches } from "@/lib/doctorBranches";
+import { doctorBookingHref, getPublicDoctorBranches } from "@/lib/doctorBranches";
 import { screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
 import "./portraits.css";
 import screeningStyles from "./screening-actions.module.css";
@@ -58,6 +58,7 @@ const radiologyDoctorOrder = new Map(
     "verchenko-dmytro",
     "novak-bohdana",
     "subotina-olha",
+    "rebryk-volodymyr",
     "deresh-nataliia",
     "chumak-anatolii",
     "radchenko-kateryna",
@@ -289,6 +290,7 @@ export function DoctorsDirectory({
             const position = getDoctorPosition(doctor);
             const reportingModalities = getDoctorReportingModalities(doctor);
             const reportingPartner = getReportingPartner(doctor);
+            const branches = getPublicDoctorBranches(doctor);
             const activeSchedule = getDoctorScheduleDays(doctor.schedule);
             const profileLinkLabel = doctor.biography.trim() ? "Біографія" : "Профіль";
             const returnTo = `${directoryUrl(specialty, query)}#doctor-card-${doctor.id}`;
@@ -405,10 +407,17 @@ export function DoctorsDirectory({
                       </strong>
                     </div>}
                     {canBookDoctorConsultation(doctor) && (<div><span>Приймає</span><strong>{patientGroups || "Вік уточнюйте"}</strong></div>)}
-                    <div>
-                      <span>{reportingPartner ? reportingPartner.organization ? "Співпраця" : "Напрям роботи" : "Відділення"}</span>
-                      <strong className="doctor-branch-addresses">{reportingPartner ? reportingPartner.organization ? `Медичний центр ${reportingPartner.organization}` : "Опис МРТ-досліджень" : splitDoctorBranches(doctor.branch).map(formatDoctorBranch).join("\n") || "Відділення уточнюйте"}</strong>
-                    </div>
+                    {reportingPartner ? (
+                      <div>
+                        <span>{reportingPartner.organization ? "Співпраця" : "Напрям роботи"}</span>
+                        <strong>{reportingPartner.organization ? `Медичний центр ${reportingPartner.organization}` : "Опис МРТ-досліджень"}</strong>
+                      </div>
+                    ) : branches && (
+                      <div>
+                        <span>Відділення</span>
+                        <strong className="doctor-branch-addresses">{branches.map(formatDoctorBranch).join("\n") || "Відділення уточнюйте"}</strong>
+                      </div>
+                    )}
                     {canBookDoctorConsultation(doctor) && consultationSummary && (<div>
                       <span>Консультація</span>
                       <strong>{consultationSummary}</strong>

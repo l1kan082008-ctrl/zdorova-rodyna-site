@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { canOptimizeImage, resolveImageSource } from "@/lib/imageSource";
-import { doctorBookingHref, splitDoctorBranches } from "@/lib/doctorBranches";
+import { doctorBookingHref, getPublicDoctorBranches } from "@/lib/doctorBranches";
 import { screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
 import "../portraits.css";
 import screeningStyles from "../screening-actions.module.css";
@@ -50,7 +50,7 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
   const reportingPartner = getReportingPartner(doctor);
   const canBookScreening = canBookDoctorConsultation(doctor)
     && screeningDoctorIds.some((id) => id === doctor.id);
-  const branches = splitDoctorBranches(doctor.branch);
+  const branches = getPublicDoctorBranches(doctor);
   const activeDays = getDoctorScheduleDays(doctor.schedule);
   const hasBiography = Boolean(doctor.biography.trim());
   const structuredBiography = Boolean(reportingPartner) && /^##\s+/m.test(doctor.biography);
@@ -99,10 +99,17 @@ export function DoctorProfileDetails({ doctor, returnTo }: DoctorProfileDetailsP
                 </dd>
               </div>}
               {canBookDoctorConsultation(doctor) && (<div><dt>Приймає</dt><dd>{getDoctorPatientGroups(doctor.patientGroups ?? [])}</dd></div>)}
-              <div>
-                <dt>{reportingPartner ? reportingPartner.organization ? "Співпраця" : "Напрям роботи" : branches.length > 1 ? "Місця прийому" : "Місце прийому"}</dt>
-                <dd className="doctor-branch-addresses">{reportingPartner ? reportingPartner.organization ? `Медичний центр ${reportingPartner.organization}` : "Опис МРТ-досліджень" : branches.join("\n") || "Відділення уточнюйте"}</dd>
-              </div>
+              {reportingPartner ? (
+                <div>
+                  <dt>{reportingPartner.organization ? "Співпраця" : "Напрям роботи"}</dt>
+                  <dd>{reportingPartner.organization ? `Медичний центр ${reportingPartner.organization}` : "Опис МРТ-досліджень"}</dd>
+                </div>
+              ) : branches && (
+                <div>
+                  <dt>{branches.length > 1 ? "Місця прийому" : "Місце прийому"}</dt>
+                  <dd className="doctor-branch-addresses">{branches.join("\n") || "Відділення уточнюйте"}</dd>
+                </div>
+              )}
               {canBookDoctorConsultation(doctor) && consultationSummary && (<div>
                 <dt>Вартість консультації</dt>
                 <dd>{consultationSummary}</dd>

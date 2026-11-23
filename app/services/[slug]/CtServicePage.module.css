@@ -362,6 +362,7 @@
 @media (min-width: 1101px) {
   .ctDoctorRail:has(> :nth-child(6)) { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .ctDoctorRail:has(> :nth-child(7)) { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .ctDoctorRail:has(> :nth-child(8)) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 .doctorCard { min-width: 0; padding: 0; border: 0; border-radius: 0; color: var(--ct-ink); background: transparent; }
 .doctorPhoto { position: relative; aspect-ratio: .95; overflow: hidden; border-radius: 18px; background: var(--ct-surface); }
@@ -371,6 +372,12 @@
 .doctorCard[data-doctor-id="pysarchuk-taras"] { --portrait-position-y: 30%; }
 .doctorCard[data-doctor-id="verchenko-dmytro"] { --portrait-scale: 1.12; --portrait-y: -5%; }
 .doctorCard[data-doctor-id="novak-bohdana"] { --portrait-scale: 1; --portrait-y: 0%; --portrait-position-y: 19%; }
+.rebrykPortrait {
+  --portrait-scale: 1.38;
+  --portrait-y: 5.5%;
+  /* Continue the studio backdrop above this tightly framed portrait. */
+  background: linear-gradient(90deg, #c2c7cd, #babfc5 25%, #b4b9bf 50%, #b2b7bd 75%, #adb2b8);
+}
 .doctorCard strong { display: block; min-height: 38px; margin: 14px 2px 5px; font-size: 16px; line-height: 1.2; }
 .doctorCard > span { display: block; margin: 0 2px 2px; color: var(--ct-muted); font-size: 13px; }
 

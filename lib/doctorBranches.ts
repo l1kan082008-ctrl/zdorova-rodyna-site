@@ -13,6 +13,12 @@ export function joinDoctorBranches(values: readonly string[]): string {
   return splitDoctorBranches(values.join("\n")).join("\n");
 }
 
+/** Radiologists have no public reception address; an empty list means the address is unspecified. */
+export function getPublicDoctorBranches(doctor: { specialty: string; branch: string }): string[] | null {
+  if (/рентгенолог|радіолог|radiolog/iu.test(doctor.specialty)) return null;
+  return splitDoctorBranches(doctor.branch);
+}
+
 export function doctorBookingHref(doctor: { id: string; name: string }, service?: string): string {
   return `/contacts?doctor=${encodeURIComponent(doctor.name)}&doctorId=${encodeURIComponent(doctor.id)}${service ? `&service=${encodeURIComponent(service)}` : ""}#booking`;
 }
