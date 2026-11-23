@@ -56,6 +56,16 @@ const { DoctorsDirectory } = load("app/doctors/DoctorsDirectory.tsx");
 const { defaultDoctors } = load("app/doctors/doctorData.ts");
 const { ConsultationExperience } = load("app/services/[slug]/ConsultationExperience.tsx");
 
+const allergyMenuHref = "/doctors?specialty=" + encodeURIComponent("Алерголог");
+const allergyCardHref = "/doctors?specialty=" + encodeURIComponent("group:allergy");
+const pediatricAllergyDescription = "Консультація алерголога для дітей у Рівному. Профіль лікаря та запис на прийом.";
+const rudenko = defaultDoctors.find(({ id }) => id === "rudenko-iryna");
+
+function linkContent(html, href) {
+  const links = html.matchAll(/<a\b[^>]*\bhref="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gu);
+  return Array.from(links).find(([, target]) => target === href)?.[2];
+}
+
 function renderHeader(catalog) {
   return renderToStaticMarkup(React.createElement(PublicDoctorSpecialtiesProvider, { categories: getPublicDoctorCategories(catalog) }, React.createElement(SiteHeader)));
 }
@@ -101,5 +111,44 @@ test("both oncology links open the filtered directory when an oncologist is publ
     const directory = renderToStaticMarkup(React.createElement(DoctorsDirectory, { initialDoctors: catalog }));
     assert.ok(directory.includes('href="/doctors/published-oncologist"'));
     assert.ok(!directory.includes('href="/doctors/radiologist"'));
+  }
+});
+
+test("pediatric allergy links keep their filter and open Rudenko’s bookable card", async (t) => {
+  const otherDoctor = { ...defaultDoctors[0], specialty: "Кардіолог", patientGroups: ["adults"] };
+  const catalog = [rudenko, otherDoctor];
+  const data = [...catalog, { specialty: "Алерголог", patientGroups: ["adults"], isActive: false }];
+  t.mock.method(publicDoctors, "listPublicDoctors", async () => data);
+  assert.equal(linkContent(renderHeader(data), allergyMenuHref), "Дитячий алерголог");
+  const card = linkContent(renderToStaticMarkup(await ConsultationExperience()), allergyCardHref);
+  assert.ok(card?.includes("<strong>Дитячий алерголог</strong>"));
+  assert.ok(card.includes(`<small>${pediatricAllergyDescription}</small>`));
+
+  const search = t.mock.method(navigation, "useSearchParams");
+  for (const href of [allergyMenuHref, allergyCardHref]) {
+    search.mock.mockImplementation(() => new URL(href, "https://example.test").searchParams);
+    const directory = renderToStaticMarkup(React.createElement(DoctorsDirectory, { initialDoctors: catalog }));
+    assert.ok(directory.includes('href="/doctors/rudenko-iryna"'));
+    assert.ok(!directory.includes(`href="/doctors/${otherDoctor.id}"`));
+    const bookingHref = `/contacts?doctor=${encodeURIComponent("Руденко Ірина Василівна")}&amp;doctorId=rudenko-iryna#booking`;
+    assert.match(linkContent(directory, bookingHref), /Записатися/u);
+  }
+});
+
+test("adult, mixed, unknown and empty allergy rosters keep the general direction", async (t) => {
+  const source = t.mock.method(publicDoctors, "listPublicDoctors");
+  const rosters = [
+    [],
+    ...[["adults"], ["children", "adults"], [], undefined].map((patientGroups) => [
+      rudenko,
+      { specialty: "Алерголог", patientGroups, isActive: true },
+    ]),
+  ];
+  for (const roster of rosters) {
+    source.mock.mockImplementation(async () => roster);
+    assert.equal(linkContent(renderHeader(roster), allergyMenuHref), "Алерголог");
+    const card = linkContent(renderToStaticMarkup(await ConsultationExperience()), allergyCardHref);
+    assert.ok(card?.includes("<strong>Алерголог</strong>"));
+    assert.ok(!card.includes(pediatricAllergyDescription));
   }
 });

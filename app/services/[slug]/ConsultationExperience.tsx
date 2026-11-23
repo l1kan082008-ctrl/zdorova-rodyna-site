@@ -30,8 +30,8 @@ export async function ConsultationExperience() {
   const categories = getPublicDoctorCategories(await listPublicDoctors());
   const consultationDirections = categories.map((category, index) => ({
     number: String(index + 1).padStart(2, "0"),
-    title: category.label,
-    description: directionDescriptions[category.value] ?? "Профілі лікарів, графік прийому та запис.",
+    title: category.displayLabel ?? category.label,
+    description: category.description ?? directionDescriptions[category.value] ?? "Профілі лікарів, графік прийому та запис.",
     href: `/doctors?specialty=${encodeURIComponent(category.value)}`,
   }));
   return (

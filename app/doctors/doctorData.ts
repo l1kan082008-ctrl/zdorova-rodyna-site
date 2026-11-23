@@ -243,7 +243,10 @@ export const defaultDoctors: Doctor[] = [
   doctor("romanchuk-andrii", "Романчук Андрій Володимирович", "Флеболог"),
   doctor("ponomarova-olena", "Пономарьова Олена Іванівна", "Ревматолог"),
   doctor("pysarchuk-taras", "Писарчук Тарас Валерійович", "Рентгенолог"),
-  doctor("rudenko-iryna", "Руденко Ірина Василівна", "Дитячий алерголог"),
+  {
+    ...doctor("rudenko-iryna", "Руденко Ірина Василівна", "Дитячий алерголог"),
+    patientGroups: ["children"],
+  },
   doctor("kyselchuk-tetiana", "Кисельчук Тетяна Василівна", "Кардіолог"),
   doctor("bereska-oksana", "Береська Оксана Ростиславівна", "Мамолог"),
   doctor("kondratyshyna-oksana", "Кондратишина Оксана Ярославівна", "Кардіолог"),

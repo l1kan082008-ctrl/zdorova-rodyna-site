@@ -91,7 +91,10 @@ const navigationForSpecialties = (doctorCategories: PublicDoctorCategory[]): Nav
     key: "doctors",
     children: [
       { href: "/doctors", label: "Усі категорії лікарів" },
-      ...doctorCategories.map(({ label }) => ({ href: `/doctors?specialty=${encodeURIComponent(label)}`, label })),
+      ...doctorCategories.map(({ label, displayLabel }) => ({
+        href: `/doctors?specialty=${encodeURIComponent(label)}`,
+        label: displayLabel ?? label,
+      })),
     ],
   },
   {

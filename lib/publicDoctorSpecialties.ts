@@ -1,14 +1,17 @@
 import { doctorCategories } from "../app/doctors/doctorCategories.ts";
+import type { DoctorPatientGroup } from "../app/doctors/doctorData.ts";
 
 export type PublicDoctorCategory = {
   value: string;
   label: string;
+  displayLabel?: string;
+  description?: string;
   keywords: string[];
   urlAliases: string[];
   specialty?: string;
 };
 
-type DoctorSpecialties = { specialty: string; isActive?: boolean };
+type DoctorSpecialties = { specialty: string; isActive?: boolean; patientGroups?: readonly DoctorPatientGroup[] };
 
 export const publicDoctorSpecialtyKey = (value: string) => value.normalize("NFC").trim().replace(/\s+/gu, " ").replace(/[\u2010-\u2014\u2212]/gu, "-").replace(/\s*-\s*/gu, "-").toLocaleLowerCase("uk-UA");
 
@@ -31,9 +34,9 @@ function hasExistingCategory(value: string) {
 }
 
 export function getPublicDoctorCategories(doctors: readonly DoctorSpecialties[]): PublicDoctorCategory[] {
+  const activeDoctors = doctors.filter((doctor) => doctor.isActive !== false);
   const additional = new Map<string, string>();
-  for (const doctor of doctors) {
-    if (doctor.isActive === false) continue;
+  for (const doctor of activeDoctors) {
     for (const specialty of specialtyTokens(doctor.specialty)) {
       const key = publicDoctorSpecialtyKey(specialty);
       if (!hasExistingCategory(specialty) && !additional.has(key)) {
@@ -44,8 +47,19 @@ export function getPublicDoctorCategories(doctors: readonly DoctorSpecialties[])
   return [
     ...doctorCategories.filter((category) =>
       category.value !== "group:oncology" ||
-      doctors.some((doctor) => doctor.isActive !== false && matchesPublicDoctorCategory(doctor.specialty, category)),
-    ),
+      activeDoctors.some((doctor) => matchesPublicDoctorCategory(doctor.specialty, category)),
+    ).map((category) => {
+      if (category.value !== "group:allergy") return category;
+      const allergists = activeDoctors.filter((doctor) => matchesPublicDoctorCategory(doctor.specialty, category));
+      const childrenOnly = allergists.length > 0 && allergists.every(({ patientGroups = [] }) =>
+        patientGroups.length > 0 && patientGroups.every((group) => group === "children"),
+      );
+      return childrenOnly ? {
+        ...category,
+        displayLabel: "Дитячий алерголог",
+        description: "Консультація алерголога для дітей у Рівному. Профіль лікаря та запис на прийом.",
+      } : category;
+    }),
     ...[...additional].sort(([, a], [, b]) => a.localeCompare(b, "uk-UA")).map(([key, label]) => ({
       value: `specialty:${key}`,
       label,
