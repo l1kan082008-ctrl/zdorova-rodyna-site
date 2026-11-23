@@ -584,7 +584,7 @@ export default async function ServiceDetailPage({
               <span>{service.shortTitle}</span>
             </nav>
             <span className="section-kicker">Точна діагностика серця</span>
-            <h1 id="service-detail-title">Серце під надійним наглядом</h1>
+            <h1 id="service-detail-title">Консультація кардіолога та діагностика серця у Рівному</h1>
             <p>{service.lead}</p>
             <div className="service-detail-actions">
               <Link className="book-button" href="#cardiology-services">

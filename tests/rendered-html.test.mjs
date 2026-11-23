@@ -483,7 +483,7 @@ test("cardiology page includes Holter as a fourth service", async () => {
   ]);
 
   assert.match(page, /service-detail-hero--cardiology-cinematic/);
-  assert.match(page, /Серце під надійним наглядом/);
+  assert.ok(page.includes('<h1 id="service-detail-title">Консультація кардіолога та діагностика серця у Рівному</h1>'));
   assert.match(page, /\/prices\?category=heart#price-calculator/);
   assert.match(
     css,
