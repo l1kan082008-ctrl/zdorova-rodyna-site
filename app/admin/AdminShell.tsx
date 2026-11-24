@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { useModalDialog } from "../components/useModalDialog";
 import { AdminThemeToggle } from "./AdminThemeToggle";
+import { NewBookingsBadge } from "./NewBookingsBadge";
 import { persistAdminTheme, type AdminTheme } from "./adminTheme";
 import { useAdminSession } from "./useAdminSession";
 import "./admin-ui.css";
@@ -142,7 +143,13 @@ export default function AdminShell({ children, initialTheme = "light" }: { child
           <nav className={styles.nav} aria-label="Розділи адмінпанелі">
             {sections.map((section) => {
               const active = "exact" in section ? pathname === section.href : pathname.startsWith(section.href);
-              return <Link key={section.href} className={styles.navLink + (active ? " " + styles.navLinkActive : "")} href={section.href} aria-current={active ? "page" : undefined} onClick={() => setMenuPath(null)}><NavigationIcon name={section.icon} /><span>{section.label}</span></Link>;
+              return (
+                <Link key={section.href} className={styles.navLink + (active ? " " + styles.navLinkActive : "")} href={section.href} aria-current={active ? "page" : undefined} onClick={() => setMenuPath(null)}>
+                  <NavigationIcon name={section.icon} />
+                  <span>{section.label}</span>
+                  {section.icon === "bookings" && <NewBookingsBadge />}
+                </Link>
+              );
             })}
           </nav>
           <div className={styles.sidebarFooter}>

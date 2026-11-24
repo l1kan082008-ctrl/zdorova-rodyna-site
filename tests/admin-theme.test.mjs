@@ -88,6 +88,7 @@ function shellHarness(options = {}) {
     "next/navigation": { usePathname: () => options.pathname ?? "/admin/bookings", useRouter: () => ({}) },
     "../components/useModalDialog": { useModalDialog() {} },
     "./AdminThemeToggle": { AdminThemeToggle },
+    "./NewBookingsBadge": { NewBookingsBadge: Symbol("NewBookingsBadge") },
     "./adminTheme": preference,
     "./useAdminSession": { useAdminSession() {} },
     "./admin-ui.css": {}, "./admin-legacy-theme.css": {},

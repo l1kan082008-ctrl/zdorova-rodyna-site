@@ -1,5 +1,6 @@
 "use client";
 import { adminFetch } from "../adminFetch";
+import { refreshNewBookingsCount } from "../NewBookingsBadge";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { formatBookingDateTime } from "./bookingDateTime";
@@ -127,6 +128,11 @@ export default function BookingsAdminPage() {
     listHeadingRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
   };
 
+  const refreshBookings = () => {
+    setRevision((value) => value + 1);
+    refreshNewBookingsCount();
+  };
+
   const mutateBooking = async (booking: AdminBooking, nextStatus?: BookingStatus) => {
     if (pendingId) return;
     if (!nextStatus && !window.confirm(`Видалити заявку ${booking.reference}? Цю дію неможливо скасувати.`)) return;
@@ -140,7 +146,7 @@ export default function BookingsAdminPage() {
       if (!response.ok) throw new Error(payload.error || "Не вдалося зберегти зміни");
       setNotice(nextStatus ? `Статус заявки ${booking.reference} оновлено.` : `Заявку ${booking.reference} видалено.`);
       if (!nextStatus) setExpandedId("");
-      setRevision((value) => value + 1);
+      refreshBookings();
     } catch (reason) { setMutationError(reason instanceof Error ? reason.message : "Не вдалося зберегти зміни"); }
     finally { setPendingId(""); }
   };
@@ -155,7 +161,7 @@ export default function BookingsAdminPage() {
     <div className={`admin-bookings-page ${styles.page}`} data-pulse={pulseEnabled}>
       <header className={styles.heading}>
         <div className="admin-intro"><span className="section-kicker">Адмін-панель</span><h1>Заявки пацієнтів</h1><p>Кількість звернень, напрямки та робота із заявками.</p></div>
-        <button type="button" className="admin-ui-button" data-variant="secondary" disabled={loading || Boolean(pendingId)} onClick={() => setRevision((value) => value + 1)}>
+        <button type="button" className="admin-ui-button" data-variant="secondary" disabled={loading || Boolean(pendingId)} onClick={refreshBookings}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5" /><path d="M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1" /></svg>Оновити
         </button>
       </header>

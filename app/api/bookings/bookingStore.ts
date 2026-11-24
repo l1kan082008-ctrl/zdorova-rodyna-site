@@ -1,4 +1,5 @@
 import { env } from "@/lib/runtimeEnv";
+import { initializeOnce } from "@/lib/initializeOnce";
 import { parseBookingDetails } from "@/lib/bookingDetails";
 import {
   selectAdminBookings,
@@ -67,7 +68,9 @@ const createBookingsTable = `
   )
 `;
 
-export async function ensureBookingsTable() {
+const initializeSchema = initializeOnce();
+
+async function initializeBookingsTable() {
   await env.DB.prepare(createBookingsTable).run();
   const columns = await env.DB.prepare("PRAGMA table_info(bookings)")
     .all<{ name: string }>();
@@ -98,6 +101,10 @@ export async function ensureBookingsTable() {
   await env.DB.prepare(
     "CREATE INDEX IF NOT EXISTS bookings_retention_idx ON bookings (retention_until)",
   ).run();
+}
+
+export async function ensureBookingsTable() {
+  await initializeSchema(initializeBookingsTable);
   await env.DB.prepare(`
     DELETE FROM bookings
     WHERE (
@@ -179,6 +186,15 @@ export async function listBookings() {
   ).all<BookingRow>();
 
   return result.results.map(toBooking);
+}
+
+export async function countNewBookings() {
+  await initializeSchema(initializeBookingsTable);
+  const row = await env.DB.prepare(
+    `SELECT COUNT(*) AS count FROM bookings
+     WHERE status = 'new' AND NOT (datetime(created_at) <= datetime('now', '-365 days'))`,
+  ).first<{ count: number | string }>();
+  return Number(row?.count ?? 0);
 }
 
 export async function listAdminBookings(

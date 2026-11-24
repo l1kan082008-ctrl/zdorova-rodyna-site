@@ -14,6 +14,7 @@ function load(path, overrides = {}) {
   new Function("require", "module", "exports", outputText)((name) => {
     for (const [suffix, value] of Object.entries(overrides)) if (name.endsWith(suffix)) return value;
     if (name.endsWith("bookingDetails")) return load("../lib/bookingDetails.ts");
+    if (name.endsWith("initializeOnce")) return load("../lib/initializeOnce.ts");
     if (name.endsWith("bookingDateTime")) return load("../app/admin/bookings/bookingDateTime.ts");
     if (name.endsWith("adminBookingStatistics")) return load("../lib/adminBookingStatistics.ts");
     throw new Error(`Unexpected dependency: ${name}`);
@@ -197,6 +198,7 @@ function isolatedStore() {
   const prepare = (sql, values = []) => ({
     bind: (...bound) => prepare(sql, bound),
     all: async () => { queries.push({ sql, values }); return { results: sqlite.prepare(sql).all(...values) }; },
+    first: async () => sqlite.prepare(sql).get(...values) ?? null,
     run: async () => ({ meta: { changes: Number(sqlite.prepare(sql).run(...values).changes) } }),
   });
   return { sqlite, queries, store: load("../app/api/bookings/bookingStore.ts", { runtimeEnv: { env: { DB: { prepare } } } }) };
@@ -215,6 +217,7 @@ test("storage counts beyond 250 and fetches full personal data for only the sele
       index === 0 ? "confirmed" : "new", new Date().toISOString(),
     );
     const result = await fixture.store.listAdminBookings(query("page=13"), catalog);
+    assert.equal(await fixture.store.countNewBookings(), 300);
     assert.equal(result.total, 301);
     assert.equal(result.stats.total, 301);
     assert.equal(result.totalPages, 13);
@@ -256,6 +259,27 @@ test("GET authenticates, validates parameters and returns private paginated resu
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await response.json(), result);
+});
+
+test("navigation count requires an admin session and returns only a private count", async () => {
+  let authorized = false;
+  let reads = 0;
+  const route = load("../app/api/admin/bookings/new-count/route.ts", {
+    adminAuth: {
+      isAuthorizedAdmin: async () => authorized,
+      unauthorizedAdminResponse: () => new Response(null, { status: 401 }),
+    },
+    bookingStore: { countNewBookings: async () => { reads += 1; return 4; } },
+  });
+  const request = new Request("https://example.invalid/api/admin/bookings/new-count");
+  assert.equal((await route.GET(request)).status, 401);
+  assert.equal(reads, 0);
+  authorized = true;
+  const response = await route.GET(request);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("cache-control"), "private, no-store");
+  assert.deepEqual(await response.json(), { count: 4 });
+  assert.equal(reads, 1);
 });
 
 test("PATCH authenticates unanswered calls, rejects unknown statuses and preserves legacy completed values", async () => {

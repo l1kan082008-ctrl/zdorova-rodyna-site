@@ -24,6 +24,21 @@
 .nav { display: grid; gap: 4px; }
 .navLink { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 10px 12px; border: 1px solid transparent; border-radius: var(--admin-control-radius); color: var(--admin-muted); font-size: 14px; font-weight: 600; text-decoration: none; transition: background-color 160ms ease, color 160ms ease; }
 .navLink svg { flex: 0 0 20px; }
+.bookingCount {
+  flex: none;
+  min-width: 24px;
+  margin-inline-start: auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--admin-primary-solid);
+  color: var(--admin-on-primary);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 18px;
+  text-align: center;
+}
+.bookingCount[data-unavailable] { background: var(--admin-canvas); color: var(--admin-muted); }
 .navLink:hover { color: var(--admin-ink); background: var(--admin-canvas); }
 .navLinkActive, .navLinkActive:hover { border-color: var(--admin-selection-border); color: var(--admin-primary); background: var(--admin-selection); }
 .sidebarFooter { display: grid; gap: 8px; margin-top: auto; padding-top: 24px; }

@@ -15,6 +15,7 @@ function loadModule(path, env) {
   const require = (name) => {
     if (name === "server-only") return {};
     if (name.endsWith("runtimeEnv")) return { env };
+    if (name.endsWith("initializeOnce")) return loadModule("../lib/initializeOnce.ts", env);
     if (name.endsWith("bookingDetails")) return loadModule("../lib/bookingDetails.ts", env);
     if (name.endsWith("adminBookingStatistics")) return loadModule("../lib/adminBookingStatistics.ts", env);
     if (name.endsWith("bookingDateTime")) return loadModule("../app/admin/bookings/bookingDateTime.ts", env);
@@ -75,6 +76,27 @@ test("booking is persisted, readable by admin, confirmed and removed in an isola
   } finally {
     database.sqlite.close();
   }
+});
+
+test("navigation count follows new bookings across dates, status changes, and deletions", async (context) => {
+  const database = temporaryDatabase();
+  context.after(() => database.sqlite.close());
+  const store = loadModule("../app/api/bookings/bookingStore.ts", database);
+  assert.equal(await store.countNewBookings(), 0);
+  const daysAgo = (days) => new Date(Date.now() - days * 86_400_000).toISOString();
+  const newId = insertBookingFixture(database, { service: "МРТ", source: "callback", createdAt: daysAgo(45) });
+  insertBookingFixture(database, { service: "КТ" });
+  insertBookingFixture(database, { service: "КТ", createdAt: daysAgo(366) });
+  for (const status of ["contacted", "confirmed", "no_answer", "closed", "cancelled"]) {
+    insertBookingFixture(database, { service: "КТ", status });
+  }
+  assert.equal(await store.countNewBookings(), 2);
+  await store.updateBookingStatus(newId, "no_answer");
+  assert.equal(await store.countNewBookings(), 1);
+  await store.updateBookingStatus(newId, "new");
+  assert.equal(await store.countNewBookings(), 2);
+  await store.deleteBooking(newId);
+  assert.equal(await store.countNewBookings(), 1);
 });
 
 test("popular services count all submitted statuses in the last 30 days, excluding cancelled and non-service enquiries", async () => {
