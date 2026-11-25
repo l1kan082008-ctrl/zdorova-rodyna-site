@@ -11,6 +11,11 @@ export const promoThemes = [
 
 export type PromoTheme = (typeof promoThemes)[number];
 
+export const promoDetailsById = new Map([
+  ["home-nurse", "/services/home-nurse"],
+  ["cardiology", "/services/cardiology"],
+]);
+
 export type PromoSlide = {
   id: string;
   eyebrow: string;

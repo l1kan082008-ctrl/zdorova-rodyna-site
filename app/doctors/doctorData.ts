@@ -84,6 +84,7 @@ const radiologyStartYears = new Map<string, number>([
   ["novak-bohdana", 2022],
   ["subotina-olha", 2018],
   ["rebryk-volodymyr", 2018],
+  ["marchenko-maksym", 2014],
 ]);
 
 export function getRadiologyExperienceLabel(doctor: Pick<Doctor, "id">) {
@@ -112,7 +113,7 @@ export function getDoctorPosition(doctor: Pick<Doctor, "id">): string | null {
 export function getDoctorReportingModalities(doctor: Pick<Doctor, "id">): string | null {
   if (doctor.id === ctReportingPartner.id) return "КТ";
   if (doctor.id === "rohalskyi-vitalii") return "КТ та МРТ";
-  return ["pysarchuk-taras", "zhyber-kostiantyn", "verchenko-dmytro", "novak-bohdana", "subotina-olha", "rebryk-volodymyr"].includes(doctor.id)
+  return ["pysarchuk-taras", "zhyber-kostiantyn", "verchenko-dmytro", "novak-bohdana", "subotina-olha", "rebryk-volodymyr", "marchenko-maksym"].includes(doctor.id)
     ? "КТ"
     : null;
 }
@@ -184,6 +185,7 @@ export const doctorPhotoUrls: Record<string, string> = {
   "novak-bohdana": "/doctors/novak-bohdana.webp",
   "subotina-olha": "/doctors/subotina-olha.webp",
   "rebryk-volodymyr": "/doctors/rebryk-volodymyr-2026-11.jpg",
+  "marchenko-maksym": "/doctors/marchenko-maksym-light.webp",
   "skakalska-tetiana": "/doctors/skakalska-tetiana.webp",
   "pochtar-kateryna": "/doctors/pochtar-kateryna.webp",
   "antonenko-oleksandra": "/doctors/antonenko-oleksandra.webp",
@@ -282,6 +284,7 @@ export const defaultDoctors: Doctor[] = [
   doctor("novak-bohdana", "Новак Богдана Ігорівна", "Рентгенолог"),
   doctor("subotina-olha", "Суботіна Ольга Сергіївна", "Рентгенолог", "Описує дослідження комп’ютерної томографії для медичного центру «Здорова Родина»."),
   doctor("rebryk-volodymyr", "Ребрик Володимир Володимирович", "Рентгенолог", "Описує дослідження комп’ютерної томографії для медичного центру «Здорова Родина»."),
+  doctor("marchenko-maksym", "Марченко Максим Олександрович", "Рентгенолог", "Описує дослідження комп’ютерної томографії для медичного центру «Здорова Родина»."),
   doctor("skakalska-tetiana", "Скакальська Тетяна Георгіївна", "Кардіолог"),
   doctor("pochtar-kateryna", "Почтар Катерина Дмитрівна", "Сімейний лікар, терапевт"),
   doctor("antonenko-oleksandra", "Антоненко Олександра Равилівна", "Гастроентеролог"),

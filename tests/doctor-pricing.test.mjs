@@ -172,7 +172,7 @@ test("radiologist releases add only the prepared profiles and respect subsequent
   assert.deepEqual(await store.listDoctors(), []);
   const original = await store.createDoctor({ ...identity, id: "existing" });
   const released = storeFor(DB);
-  const ids = ["chukanov-oleksandr", "subotina-olha", "rebryk-volodymyr"];
+  const ids = ["chukanov-oleksandr", "subotina-olha", "rebryk-volodymyr", "marchenko-maksym"];
   assert.deepEqual((await released.listDoctors()).map(({ id }) => id).sort(), [...ids, original.id].sort());
   assert.deepEqual(await released.getDoctorById(original.id), original);
   for (const doctorId of ids) {
@@ -193,7 +193,7 @@ test("radiologist releases add only the prepared profiles and respect subsequent
 test("radiologist releases preserve existing unpublished profiles with the same names", async (context) => {
   const { store, DB } = fixture(context);
   const originals = [];
-  for (const name of ["Чуканов Олександр Миколайович", "Суботіна Ольга Сергіївна", "Ребрик Володимир Володимирович"]) {
+  for (const name of ["Чуканов Олександр Миколайович", "Суботіна Ольга Сергіївна", "Ребрик Володимир Володимирович", "Марченко Максим Олександрович"]) {
     originals.push(await store.createDoctor({ ...identity, name, isActive: false }));
   }
   const reopened = storeFor(DB);
@@ -202,15 +202,18 @@ test("radiologist releases preserve existing unpublished profiles with the same 
   assert.deepEqual(await reopened.listDoctors(), []);
 });
 
-test("Rebryk release respects both earlier radiologist release markers", async (context) => {
+test("Marchenko release respects earlier radiologist release markers", async (context) => {
   const { store, sqlite, DB } = fixture(context);
   const original = await store.createDoctor({ ...identity, id: "existing" });
   sqlite.exec("CREATE TABLE doctor_migrations (id TEXT PRIMARY KEY)");
-  for (const previousId of ["chukanov-oleksandr", "subotina-olha"]) {
+  for (const previousId of ["chukanov-oleksandr", "subotina-olha", "rebryk-volodymyr"]) {
     sqlite.prepare("INSERT INTO doctor_migrations (id) VALUES (?)").run(`${previousId}-profile-v1`);
   }
   const doctors = await storeFor(DB).listDoctors({ includeInactive: true });
-  assert.deepEqual(doctors.map(({ id }) => id).sort(), [original.id, "rebryk-volodymyr"]);
+  assert.deepEqual(doctors.map(({ id }) => id).sort(), [original.id, "marchenko-maksym"]);
+  const marchenko = doctors.find(({ id }) => id === "marchenko-maksym");
+  assert.equal(doctorData.getDoctorExperienceLabel(marchenko), "У рентгенології з 2014 року");
+  assert.equal(doctorData.getDoctorReportingModalities(marchenko), "КТ");
 });
 
 function legacyTable(sqlite, primary = true) {
@@ -257,7 +260,7 @@ test("legacy rows gain nullable price columns without overwriting primary prices
   assert.equal(reloaded.consultationPrice, 700);
   assert.equal(reloaded.repeatConsultationPrice, null);
   assert.deepEqual(sqlite.prepare("SELECT id FROM doctors ORDER BY id").all().map((row) => row.id),
-    ["chukanov-oleksandr", "rebryk-volodymyr", "subotina-olha", "voloshko-tetiana"]);
+    ["chukanov-oleksandr", "marchenko-maksym", "rebryk-volodymyr", "subotina-olha", "voloshko-tetiana"]);
 });
 
 test("legacy schema without either price migrates and repeated initialization is harmless", async (context) => {

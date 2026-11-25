@@ -59,6 +59,7 @@ const radiologyDoctorOrder = new Map(
     "novak-bohdana",
     "subotina-olha",
     "rebryk-volodymyr",
+    "marchenko-maksym",
     "deresh-nataliia",
     "chumak-anatolii",
     "radchenko-kateryna",

@@ -48,7 +48,8 @@ const advantages = [
   {
     icon: "team",
     title: "Прийом лікарів",
-    text: "Сімейні лікарі, терапевти та педіатри",
+    text: "Сімейні лікарі",
+    extraText: "Профільні лікарі",
   },
   {
     icon: "heart",

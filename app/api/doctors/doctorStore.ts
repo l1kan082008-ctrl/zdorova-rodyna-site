@@ -167,7 +167,7 @@ async function initializeSchemaTables() {
 
 async function migrateDoctorProfiles() {
   const applied = await env.DB.prepare("SELECT id FROM doctor_migrations").all<{ id: string }>();
-  for (const doctorId of ["chukanov-oleksandr", "subotina-olha", "rebryk-volodymyr"]) {
+  for (const doctorId of ["chukanov-oleksandr", "subotina-olha", "rebryk-volodymyr", "marchenko-maksym"]) {
     const migration = `${doctorId}-profile-v1`;
     if (applied.results.some(({ id }) => id === migration)) continue;
 

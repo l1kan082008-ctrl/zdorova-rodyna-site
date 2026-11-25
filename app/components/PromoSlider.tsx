@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { responsiveBackground } from "../../lib/responsiveBackground";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
-import { defaultPromoSlides, type PromoSlide } from "./promoData";
+import { defaultPromoSlides, promoDetailsById, type PromoSlide } from "./promoData";
 
 const promoImages = {
   laboratory: "/promo/laboratory-user-v10.jpg",
@@ -275,6 +275,8 @@ export function PromoSlider() {
               ? `/api/banners/image?key=${encodeURIComponent(slide.imageKey)}`
               : promoImages[slide.theme];
             const ready = loadedSlides.has(slide.id);
+            const detailsHref = promoDetailsById.get(slide.id);
+            const linkTabIndex = !clone && selectedSlide === index ? 0 : -1;
             return (
               <article
                 className={`promo-slide promo-slide--${slide.theme}`}
@@ -301,11 +303,22 @@ export function PromoSlider() {
                     <Link
                       className="promo-button"
                       href={slide.href}
-                      tabIndex={!clone && selectedSlide === index ? 0 : -1}
+                      tabIndex={linkTabIndex}
                       draggable={false}
                     >
                       {slide.action} <span aria-hidden="true">→</span>
                     </Link>
+                    {detailsHref && (
+                      <Link
+                        className="promo-button promo-button--secondary"
+                        href={detailsHref}
+                        tabIndex={linkTabIndex}
+                        draggable={false}
+                        aria-label={`Детальніше: ${slide.title}`}
+                      >
+                        Детальніше
+                      </Link>
+                    )}
                     <span className="promo-note">{slide.note}</span>
                   </div>
                 </div>

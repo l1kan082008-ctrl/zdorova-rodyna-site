@@ -2185,6 +2185,23 @@ footer {
   background: #eb7000;
 }
 
+.promo-button--secondary {
+  border: 1px solid rgb(255 255 255 / 65%);
+  background: transparent;
+  box-shadow: none;
+}
+
+.promo-button--secondary:hover,
+.promo-button--secondary:focus-visible {
+  border-color: #fff;
+  background: rgb(255 255 255 / 15%);
+}
+
+.promo-button--secondary:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
 .promo-note {
   position: relative;
   padding-left: 18px;
@@ -8413,6 +8430,20 @@ body.calculator-is-open .site-header {
 
   .promo-button {
     min-height: 46px;
+  }
+
+  .promo-actions:has(.promo-button--secondary) {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .promo-actions:has(.promo-button--secondary) .promo-button {
+    gap: 8px;
+    padding-inline: 14px;
+  }
+
+  .promo-actions:has(.promo-button--secondary) .promo-note {
+    flex-basis: 100%;
   }
 
   .promo-visual {

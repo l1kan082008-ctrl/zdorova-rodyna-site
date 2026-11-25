@@ -13,6 +13,7 @@ import {
 import AdminNavigation from "../AdminNavigation";
 import {
   defaultPromoSlides,
+  promoDetailsById,
   promoThemes,
   type PromoSlide,
   type PromoTheme,
@@ -321,6 +322,7 @@ export default function BannersAdminPage() {
                       <p>{draft.text}</p>
                       <div className="promo-actions">
                         <span className="promo-button">{draft.action} <span aria-hidden="true">→</span></span>
+                        {promoDetailsById.has(draft.id) && <span className="promo-button promo-button--secondary">Детальніше</span>}
                         <span className="promo-note">{draft.note}</span>
                       </div>
                     </div>

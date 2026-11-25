@@ -44,6 +44,7 @@ const ctDoctorOrder = new Map([
   ["novak-bohdana", 5],
   ["subotina-olha", 6],
   ["rebryk-volodymyr", 7],
+  ["marchenko-maksym", 8],
 ]);
 
 const important = [
