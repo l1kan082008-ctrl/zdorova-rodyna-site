@@ -4,6 +4,7 @@ import { parseBookingDetails } from "./bookingDetails";
 import { env } from "./runtimeEnv";
 
 type BookingNotification = {
+  bookingId: string;
   reference: string;
   patientName: string;
   phone: string;
@@ -51,7 +52,7 @@ export async function sendBookingNotification(booking: BookingNotification) {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "Idempotency-Key": `booking-${booking.reference}`,
+      "Idempotency-Key": `booking-${booking.bookingId}`,
       "User-Agent": "Zdorova-Rodyna-Website/1.0",
     },
     body: JSON.stringify({

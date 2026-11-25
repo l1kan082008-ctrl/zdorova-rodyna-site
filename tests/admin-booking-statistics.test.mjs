@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import ts from "typescript";
 import { types } from "@neondatabase/serverless";
+import { generateBookingReference } from "../lib/bookingReference.ts";
 
 function load(path, overrides = {}) {
   const source = readFileSync(new URL(path, import.meta.url), "utf8");
@@ -14,6 +15,7 @@ function load(path, overrides = {}) {
   new Function("require", "module", "exports", outputText)((name) => {
     for (const [suffix, value] of Object.entries(overrides)) if (name.endsWith(suffix)) return value;
     if (name.endsWith("bookingDetails")) return load("../lib/bookingDetails.ts");
+    if (name.endsWith("bookingReference")) return { generateBookingReference };
     if (name.endsWith("initializeOnce")) return load("../lib/initializeOnce.ts");
     if (name.endsWith("bookingDateTime")) return load("../app/admin/bookings/bookingDateTime.ts");
     if (name.endsWith("adminBookingStatistics")) return load("../lib/adminBookingStatistics.ts");

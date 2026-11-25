@@ -6,6 +6,7 @@ import {
 } from "@/lib/publicSubmissionSecurity";
 import { createBooking } from "./bookingStore";
 import { sendBookingNotification } from "@/lib/bookingNotification";
+import { generateBookingReference } from "@/lib/bookingReference";
 import { formatBookingComment } from "@/lib/bookingDetails";
 import { applyImagingBookingPrice } from "@/lib/bookingPricing";
 import { isScreeningFullName, screeningAddress, screeningDoctorIds, screeningServiceName } from "@/lib/screening40";
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
 
     if (website) {
       return Response.json(
-        { reference: `ZR-${crypto.randomUUID().slice(0, 8).toUpperCase()}` },
+        { reference: generateBookingReference() },
         { status: 201, headers: { "Cache-Control": "no-store" } },
       );
     }
@@ -158,7 +159,7 @@ export async function POST(request: Request) {
       source, service, doctor, comment, priceItemId: payload.priceItemId,
     });
 
-    const reference = await createBooking({
+    const { id, reference } = await createBooking({
       patientName,
       phone,
       service,
@@ -170,6 +171,7 @@ export async function POST(request: Request) {
 
     try {
       await sendBookingNotification({
+        bookingId: id,
         reference,
         patientName,
         phone,

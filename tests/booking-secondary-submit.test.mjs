@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
+import * as bookingReference from "../lib/bookingReference.ts";
 
 // Exercise the real callback/declaration handlers, analytics helper and API route.
 // React rendering, browser effects, persistence and delivery are isolated boundaries;
@@ -38,6 +39,7 @@ const bookingPricing = load("../lib/bookingPricing.ts", {
 });
 const bookingRequest = load("../lib/bookingRequest.ts", {
   "./locationPolicy": load("../lib/locationPolicy.ts"),
+  "../app/prices/priceReferences": load("../app/prices/priceReferences.ts"),
 });
 const familyDoctor = { id: "isolated-doctor", name: "Тестовий лікар", specialty: "Сімейна медицина" };
 
@@ -60,9 +62,10 @@ function harness(kind, options = {}) {
       checkPublicSubmissionRateLimit: async () => ({ allowed: true }),
       verifyTurnstileIfConfigured: async () => true,
     },
+    "@/lib/bookingReference": bookingReference,
     "./bookingStore": { createBooking: async data => {
       stored.push(data);
-      return "ZR-SECONDARY-ISOLATED";
+      return { id: crypto.randomUUID(), reference: "MC-37642" };
     } },
     "@/lib/bookingNotification": { sendBookingNotification: async data => notifications.push(data) },
     "@/lib/bookingDetails": load("../lib/bookingDetails.ts"),
@@ -137,11 +140,12 @@ function harness(kind, options = {}) {
     const loaded = load("../app/services/[slug]/FamilyDeclarationForm.tsx", {
       ...dependencies,
       "@/app/components/useBookingConfirmation": confirmation,
+      "@/app/components/DoctorProfileLink": { DoctorProfileLink: Symbol("DoctorProfileLink") },
       "@/app/components/BookingHoursNotice": {
         BookingHoursNotice: Symbol("BookingHoursNotice"),
         useBookingHours: () => ({ currentHours: null, submittedHours: null, captureSubmissionHours() {} }),
       },
-      "@/lib/doctorBranches": load("../lib/doctorBranches.ts"),
+      "@/lib/doctorBranches": load("../lib/doctorBranches.ts", { "./siteSettings.ts": siteSettings }),
       "@/lib/ukrainianPhone": load("../lib/ukrainianPhone.ts"),
       "@/lib/imageSource": {},
       "@/app/components/TurnstileField": {},
@@ -286,6 +290,7 @@ for (const kind of ["callback", "family_declaration"]) {
     await pending;
     assert.equal(h.stored.length, 1);
     assert.equal(h.notifications.length, 1);
+    assert.equal(h.notifications[0].reference, "MC-37642");
     assert.equal(h.stored[0].source, kind === "callback" ? "callback" : "family-declaration");
     assert.deepEqual(h.window.dataLayer, [], "API confirmation alone cannot emit before the success UI commits");
     assert.equal(h.success(), true);

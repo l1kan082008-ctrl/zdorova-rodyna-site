@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
+import * as bookingReference from "../lib/bookingReference.ts";
 
 // Run the actual route and validation with isolated storage, notifier and doctor
 // boundaries. Tests cannot connect to a real database or send notifications.
@@ -19,6 +20,7 @@ function load(path, dependencies = {}) {
 
 const screening = load("../lib/screening40.ts");
 const details = load("../lib/bookingDetails.ts");
+const bookingIdentity = { id: "80c87822-7df0-48fa-9e96-0422ea08263e", reference: "MC-37642" };
 const payload = (extra = {}) => ({
   name: "Тестова Олена Іванівна", phone: "+38 067 123-45-67",
   doctorId: screening.screeningDoctorIds[0], service: screening.screeningServiceName,
@@ -49,7 +51,8 @@ function harness(options = {}) {
       doctorLookups.push(id);
       return options.unavailable ? null : { ...doctor, id, isActive: options.active !== false };
     } },
-    "./bookingStore": { createBooking: async (value) => { saved.push(value); return "ZR-SCREENING-ISOLATED"; } },
+    "@/lib/bookingReference": bookingReference,
+    "./bookingStore": { createBooking: async (value) => { saved.push(value); return bookingIdentity; } },
     "@/lib/bookingNotification": { sendBookingNotification: async (value) => { notifications.push(value); } },
   });
   return { saved, notifications, doctorLookups, doctor, submit: (body = payload()) => route.POST(new Request("https://example.test/api/bookings", {
@@ -69,7 +72,7 @@ test("screening saves and notifies once with the published doctor and fixed prog
   const response = await h.submit(payload({ name: "  Тестова   Олена  Іванівна ", doctor: "Підроблений лікар", branch: "Підроблена адреса", comment: "Обрані дослідження:\n• Феритин" }));
   assert.equal(response.status, 201);
   assert.equal(response.headers.get("cache-control"), "no-store");
-  assert.equal((await response.json()).reference, "ZR-SCREENING-ISOLATED");
+  assert.deepEqual(await response.json(), { reference: bookingIdentity.reference });
   assert.equal(h.saved.length, 1);
   assert.equal(h.notifications.length, 1);
   const saved = h.saved[0];
@@ -81,6 +84,8 @@ test("screening saves and notifies once with the published doctor and fixed prog
   assert.equal(details.parseBookingDetails(saved.comment).location, screening.screeningAddress);
   assert.deepEqual(details.parseBookingDetails(saved.comment).studies, []);
   assert.doesNotMatch(JSON.stringify(saved), /Підроблен|Феритин|Костопіль/u);
+  assert.equal(h.notifications[0].reference, bookingIdentity.reference);
+  assert.equal(h.notifications[0].bookingId, bookingIdentity.id);
   assert.equal(h.notifications[0].doctor, saved.doctor);
   assert.equal(h.notifications[0].comment, saved.comment);
 });
@@ -174,7 +179,9 @@ test("screening uses existing origin, rate limit, turnstile and honeypot protect
     assert.equal(h.saved.length, 0);
   }
   const h = harness();
-  assert.equal((await h.submit(payload({ website: "bot.invalid" }))).status, 201);
+  const decoy = await h.submit(payload({ website: "bot.invalid" }));
+  assert.equal(decoy.status, 201);
+  assert.match((await decoy.json()).reference, /^MC-[1-9]\d{4}$/u);
   assert.equal(h.saved.length, 0);
   assert.equal(h.notifications.length, 0);
   assert.equal(h.doctorLookups.length, 0);

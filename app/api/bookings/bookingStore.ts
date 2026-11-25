@@ -1,6 +1,7 @@
 import { env } from "@/lib/runtimeEnv";
 import { initializeOnce } from "@/lib/initializeOnce";
 import { parseBookingDetails } from "@/lib/bookingDetails";
+import { generateBookingReference } from "@/lib/bookingReference";
 import {
   selectAdminBookings,
   type AdminBookingQuery,
@@ -144,22 +145,22 @@ export async function createBooking(values: {
 }) {
   await ensureBookingsTable();
   const id = crypto.randomUUID();
-  const reference = `ZR-${Date.now().toString(36).slice(-6).toUpperCase()}-${id
-    .slice(0, 3)
-    .toUpperCase()}`;
   const consentAt = new Date().toISOString();
   const retentionUntil = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
     .toISOString();
 
-  await env.DB.prepare(
+  const insert = env.DB.prepare(
     `INSERT INTO bookings
       (id, reference, patient_name, phone, service, doctor, comment,
        source, consent_version, consent_at, retention_until)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  )
-    .bind(
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT (reference) DO NOTHING
+     RETURNING reference`,
+  );
+  for (let attempt = 0; attempt < 32; attempt++) {
+    const row = await insert.bind(
       id,
-      reference,
+      generateBookingReference(),
       values.patientName,
       values.phone,
       values.service,
@@ -169,10 +170,10 @@ export async function createBooking(values: {
       values.consentVersion,
       consentAt,
       retentionUntil,
-    )
-    .run();
-
-  return reference;
+    ).first<{ reference: string }>();
+    if (row) return { id, reference: row.reference };
+  }
+  throw new Error("Could not allocate a unique booking reference");
 }
 
 export async function listBookings() {

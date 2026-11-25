@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
+import * as bookingReference from "../lib/bookingReference.ts";
 
 // Execute the real component handlers and API route with in-memory boundaries.
 // This is not a browser rendering test. No database, credentials or network are used.
@@ -33,6 +34,7 @@ function text(node) {
 
 const bookingRequest = load("../lib/bookingRequest.ts", {
   "./locationPolicy": load("../lib/locationPolicy.ts"),
+  "../app/prices/priceReferences": load("../app/prices/priceReferences.ts"),
 });
 const siteSettings = load("../lib/siteSettings.ts");
 const screening = load("../lib/screening40.ts");
@@ -47,7 +49,7 @@ const publicDoctorSpecialties = load("../lib/publicDoctorSpecialties.ts", {
   "../app/doctors/doctorCategories.ts": load("../app/doctors/doctorCategories.ts"),
 });
 const doctorBookingLocations = load("../lib/doctorBookingLocations.ts", {
-  "./doctorBranches": load("../lib/doctorBranches.ts"),
+  "./doctorBranches": load("../lib/doctorBranches.ts", { "./siteSettings.ts": siteSettings }),
   "./locationPolicy": load("../lib/locationPolicy.ts"),
 });
 // The picker is a controlled child boundary, not a mocked native select.
@@ -96,7 +98,11 @@ function harness(responseOverride, options = {}) {
       checkPublicSubmissionRateLimit: async () => ({ allowed: true }),
       verifyTurnstileIfConfigured: async () => true,
     },
-    "./bookingStore": { createBooking: async data => { stored.push(data); return "ZR-ISOLATED-TEST"; } },
+    "@/lib/bookingReference": bookingReference,
+    "./bookingStore": { createBooking: async data => {
+      stored.push(data);
+      return { id: crypto.randomUUID(), reference: "MC-37642" };
+    } },
     "@/lib/bookingNotification": { sendBookingNotification: async data => notifications.push(data) },
     "@/lib/bookingDetails": bookingDetails,
     "@/lib/bookingPricing": {
@@ -404,6 +410,7 @@ test("successful booking confirms, clears cart and CITO, and blocks a rapid dupl
   await pending;
   assert.equal(h.stored.length, 1);
   assert.equal(h.notifications.length, 1);
+  assert.equal(h.notifications[0].reference, "MC-37642");
   assert.deepEqual(h.conversions, [], "API confirmation alone cannot emit before the confirmation UI commits");
   assert.match(h.stored[0].comment, /Обрані дослідження:\n• КТ/);
   assert.match(h.stored[0].comment, /4\s?100/);

@@ -3,10 +3,11 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import ts from "typescript";
+import { generateBookingReference } from "../lib/bookingReference.ts";
 
 // Execute the production modules with a disposable database and no credentials.
 // This covers storage semantics, not the deployed PostgreSQL connection.
-function loadModule(path, env) {
+function loadModule(path, env, generateReference = generateBookingReference) {
   const source = readFileSync(new URL(path, import.meta.url), "utf8");
   const { outputText } = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
@@ -15,6 +16,7 @@ function loadModule(path, env) {
   const require = (name) => {
     if (name === "server-only") return {};
     if (name.endsWith("runtimeEnv")) return { env };
+    if (name.endsWith("bookingReference")) return { generateBookingReference: generateReference };
     if (name.endsWith("initializeOnce")) return loadModule("../lib/initializeOnce.ts", env);
     if (name.endsWith("bookingDetails")) return loadModule("../lib/bookingDetails.ts", env);
     if (name.endsWith("adminBookingStatistics")) return loadModule("../lib/adminBookingStatistics.ts", env);
@@ -41,7 +43,7 @@ function insertBookingFixture(database, values) {
   database.sqlite.prepare(`INSERT INTO bookings
     (id, reference, patient_name, phone, service, comment, source, status, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-    .run(id, `ZR-${id}`, "ТЕСТ — не пацієнт", "+380000000001", values.service,
+    .run(id, values.reference ?? `ZR-${id}`, "ТЕСТ — не пацієнт", "+380000000001", values.service,
       values.comment ?? "", values.source ?? "contacts", values.status ?? "new",
       values.createdAt ?? new Date().toISOString());
   return id;
@@ -51,7 +53,7 @@ test("booking is persisted, readable by admin, confirmed and removed in an isola
   const database = temporaryDatabase();
   try {
     const store = loadModule("../app/api/bookings/bookingStore.ts", database);
-    const reference = await store.createBooking({
+    const { id, reference } = await store.createBooking({
       patientName: "ТЕСТ — не пацієнт",
       phone: "+380000000001",
       service: "ЕХО (УЗД) серця",
@@ -60,8 +62,9 @@ test("booking is persisted, readable by admin, confirmed and removed in an isola
       source: "contacts",
       consentVersion: "contacts-v1",
     });
-    assert.match(reference, /^ZR-/);
+    assert.match(reference, /^MC-[1-9]\d{4}$/u);
     const [booking] = await store.listBookings();
+    assert.equal(booking.id, id);
     assert.equal(booking.reference, reference);
     assert.equal(booking.service, "ЕХО (УЗД) серця");
     assert.equal(booking.status, "new");
@@ -76,6 +79,47 @@ test("booking is persisted, readable by admin, confirmed and removed in an isola
   } finally {
     database.sqlite.close();
   }
+});
+
+const newBooking = {
+  patientName: "Тестова заявка", phone: "+380000000000", service: "КТ", doctor: "",
+  comment: "", source: "contacts", consentVersion: "test",
+};
+
+test("concurrent bookings retry a colliding reference and both old and new numbers are searchable", async (context) => {
+  const database = temporaryDatabase();
+  context.after(() => database.sqlite.close());
+  const candidates = ["MC-73248", "MC-73248", "MC-15487"];
+  const store = loadModule("../app/api/bookings/bookingStore.ts", database, () => candidates.shift());
+  await store.ensureBookingsTable();
+  const legacyReference = "ZR-UJL49P-1FB";
+  insertBookingFixture(database, { service: "КТ", reference: legacyReference });
+  const created = await Promise.all([store.createBooking(newBooking), store.createBooking(newBooking)]);
+  assert.deepEqual(created.map(({ reference }) => reference).sort(), ["MC-15487", "MC-73248"]);
+  assert.notEqual(created[0].id, created[1].id);
+  assert.equal(candidates.length, 0);
+  for (const [q, expected] of [["mc-15487", "MC-15487"], ["73248", "MC-73248"], ["zr-ujl49p-1fb", legacyReference]]) {
+    const { bookings } = await store.listAdminBookings({ q, page: 1, pageSize: 25 }, []);
+    assert.deepEqual(bookings.map((booking) => booking.reference), [expected]);
+  }
+});
+
+test("reference retries stop at the limit and other storage errors propagate on the first attempt", async (context) => {
+  const database = temporaryDatabase();
+  context.after(() => database.sqlite.close());
+  const candidate = context.mock.fn(() => "MC-73248");
+  const store = loadModule("../app/api/bookings/bookingStore.ts", database, candidate);
+  await store.ensureBookingsTable();
+  insertBookingFixture(database, { service: "КТ", reference: "MC-73248" });
+  await assert.rejects(store.createBooking(newBooking), /unique booking reference/i);
+  assert.equal(candidate.mock.callCount(), 32);
+  assert.equal((await store.listBookings()).length, 1);
+
+  candidate.mock.resetCalls();
+  database.sqlite.exec("CREATE TRIGGER refuse_test BEFORE INSERT ON bookings BEGIN SELECT RAISE(ABORT, 'simulated failure'); END");
+  await assert.rejects(store.createBooking(newBooking), /simulated failure/);
+  assert.equal(candidate.mock.callCount(), 1);
+  assert.equal((await store.listBookings()).length, 1);
 });
 
 test("navigation count follows new bookings across dates, status changes, and deletions", async (context) => {
@@ -262,15 +306,20 @@ test("notification payload preserves booking reference without sending mail", as
     BOOKING_NOTIFICATION_TO: "admin@example.invalid",
     BOOKING_NOTIFICATION_FROM: "test@example.invalid",
   });
-  assert.deepEqual(await sendBookingNotification({
-    reference: "ZR-TEST", patientName: "ТЕСТ", phone: "+380000000001",
-    service: "МРТ", doctor: "", comment: "", source: "contacts",
-  }), { sent: true, configured: true });
-  assert.equal(captured.options.headers["Idempotency-Key"], "booking-ZR-TEST");
-  const payload = JSON.parse(captured.options.body);
-  assert.match(payload.text, /ZR-TEST/);
-  assert.match(payload.text, /МРТ/);
-  assert.deepEqual(payload.to, ["admin@example.invalid"]);
+  for (const reference of ["MC-73248", "MC-73248", "ZR-TEST"]) {
+    const bookingId = crypto.randomUUID();
+    assert.deepEqual(await sendBookingNotification({
+      bookingId, reference, patientName: "ТЕСТ", phone: "+380000000001",
+      service: "МРТ", doctor: "", comment: "", source: "contacts",
+    }), { sent: true, configured: true });
+    const headers = new Headers(captured.options.headers);
+    assert.equal(headers.get("Idempotency-Key"), `booking-${bookingId}`);
+    const payload = JSON.parse(captured.options.body);
+    assert.equal(payload.subject, `Нова заявка ${reference}`);
+    assert.ok(payload.text.includes(reference));
+    assert.match(payload.text, /МРТ/);
+    assert.deepEqual(payload.to, ["admin@example.invalid"]);
+  }
 });
 
 test("notification separates structured studies, branch, total and multiline patient comment", async (context) => {
@@ -290,7 +339,7 @@ test("notification separates structured studies, branch, total and multiline pat
     "Доплата СІТО (2 досл., до 2 годин) — 400 ₴",
   ];
   await sendBookingNotification({
-    reference: "ZR-FORMAT", patientName: "ТЕСТ — не пацієнт", phone: "+380000000001",
+    bookingId: crypto.randomUUID(), reference: "ZR-FORMAT", patientName: "ТЕСТ — не пацієнт", phone: "+380000000001",
     service: "Комплекс досліджень", doctor: "", source: "contacts",
     comment: [
       "Бажане відділення: м. Рівне, вул. Тестова, 1.",
@@ -328,7 +377,7 @@ test("notification makes legacy laboratory selection readable without splitting 
     "Доплата СІТО (2 досл., до 2 годин) — 400 ₴",
   ];
   await sendBookingNotification({
-    reference: "ZR-LEGACY", patientName: "ТЕСТ — не пацієнт", phone: "+380000000001",
+    bookingId: crypto.randomUUID(), reference: "ZR-LEGACY", patientName: "ТЕСТ — не пацієнт", phone: "+380000000001",
     service: "Комплекс досліджень", doctor: "", source: "contacts",
     comment: `Допоможіть обрати відділення. Обрані дослідження: ${studies.join(", ")}. Орієнтовна сума: 1 570 ₴. Технічна перевірка.`,
   });

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
+import * as bookingReference from "../lib/bookingReference.ts";
 
 const compiled = new Map();
 function load(path, dependencies = {}, globals = {}) {
@@ -54,7 +55,11 @@ function harness(options = {}) {
       checkPublicSubmissionRateLimit: async () => ({ allowed: true }),
       verifyTurnstileIfConfigured: async () => true,
     },
-    "./bookingStore": { createBooking: async (value) => { state.stored.push(structuredClone(value)); return "ZR-PRICING-TEST"; } },
+    "@/lib/bookingReference": bookingReference,
+    "./bookingStore": { createBooking: async (value) => {
+      state.stored.push(structuredClone(value));
+      return { id: crypto.randomUUID(), reference: "MC-37642" };
+    } },
     "@/lib/bookingNotification": { sendBookingNotification: async (value) => state.notifications.push(structuredClone(value)) },
   });
   const submit = (extra = {}) => route.POST(new Request("https://example.test/api/bookings", {
